@@ -1,0 +1,75 @@
+# Ejemplo de "copia fiel": asignaciones para C111, C112, C113.
+#
+# Diseñado como demostración coherente (inspirado en la prueba de concepto del tutor,
+# pero normalizado al esquema limpio de config/facultad.yaml). Ver NOTAS.md.
+#
+# Idea: las CONFERENCIAS (sufijo -C) son compartidas por los 3 grupos del año en la
+# misma aula (Aula 1) — así la hoja Aulas muestra "C111,C112,C113" juntos.
+# Las CLASES PRÁCTICAS (sufijo -CP) y EF van en el aula propia de cada grupo.
+# Cada asignatura se planifica EXACTAMENTE su frecuencia => toda la tabla queda en verde.
+
+# --- C111 (prácticas en Aula 2) ---
+C111:
+  Lunes:
+    1: { asig: AMI-C,  aula: Aula 1 }
+    2: { asig: AMI-CP, aula: Aula 2 }
+    3: { asig: AMI-CP, aula: Aula 2 }
+  Martes:
+    1: { asig: Pro-C,  aula: Aula 1 }
+    2: { asig: Pro-CP, aula: Aula 2 }
+    3: { asig: Pro-CP, aula: Aula 2 }
+  Miércoles:
+    1: { asig: A1-C,   aula: Aula 1 }
+    2: { asig: A1-C,   aula: Aula 1 }
+    3: { asig: A1-CP,  aula: Aula 2 }
+  Jueves:
+    1: { asig: F-C,    aula: Aula 1 }
+    2: { asig: F-CP,   aula: Aula 2 }
+    3: { asig: L-C,    aula: Aula 1 }
+  Viernes:
+    1: { asig: L-CP,   aula: Aula 2 }
+    2: { asig: EF,     aula: Lab }
+
+# --- C112 (prácticas en Aula 3) ---
+C112:
+  Lunes:
+    1: { asig: AMI-C,  aula: Aula 1 }
+    2: { asig: AMI-CP, aula: Aula 3 }
+    3: { asig: AMI-CP, aula: Aula 3 }
+  Martes:
+    1: { asig: Pro-C,  aula: Aula 1 }
+    2: { asig: Pro-CP, aula: Aula 3 }
+    3: { asig: Pro-CP, aula: Aula 3 }
+  Miércoles:
+    1: { asig: A1-C,   aula: Aula 1 }
+    2: { asig: A1-C,   aula: Aula 1 }
+    3: { asig: A1-CP,  aula: Aula 3 }
+  Jueves:
+    1: { asig: F-C,    aula: Aula 1 }
+    2: { asig: F-CP,   aula: Aula 3 }
+    3: { asig: L-C,    aula: Aula 1 }
+  Viernes:
+    1: { asig: L-CP,   aula: Aula 3 }
+    2: { asig: EF,     aula: Lab }
+
+# --- C113 (prácticas en Aula 4) ---
+C113:
+  Lunes:
+    1: { asig: AMI-C,  aula: Aula 1 }
+    2: { asig: AMI-CP, aula: Aula 4 }
+    3: { asig: AMI-CP, aula: Aula 4 }
+  Martes:
+    1: { asig: Pro-C,  aula: Aula 1 }
+    2: { asig: Pro-CP, aula: Aula 4 }
+    3: { asig: Pro-CP, aula: Aula 4 }
+  Miércoles:
+    1: { asig: A1-C,   aula: Aula 1 }
+    2: { asig: A1-C,   aula: Aula 1 }
+    3: { asig: A1-CP,  aula: Aula 4 }
+  Jueves:
+    1: { asig: F-C,    aula: Aula 1 }
+    2: { asig: F-CP,   aula: Aula 4 }
+    3: { asig: L-C,    aula: Aula 1 }
+  Viernes:
+    1: { asig: L-CP,   aula: Aula 4 }
+    2: { asig: EF,     aula: Lab }
