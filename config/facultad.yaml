@@ -1,0 +1,24 @@
+aulas: [Aula 1, Aula 2, Aula 3, Aula 4, Aula 5, Aula 6, Aula 7, Aula 8, Aula 9, Lab]
+dias:   [Lunes, Martes, Miércoles, Jueves, Viernes]
+turnos: 6
+
+carreras:
+  C:
+    nombre: Carrera C
+    años:
+      1:
+        sesiones:
+          1: { grupos: [1, 2, 3] }   # C111, C112, C113
+          2: { grupos: [1, 2] }      # C121, C122
+        asignaturas:
+          - { id: AMI-C,  nombre: "Análisis Matemático I (Conf)", frecuencia: 1 }
+          - { id: AMI-CP, nombre: "Análisis Matemático I (C.P.)", frecuencia: 2 }
+          - { id: Pro-C,  nombre: "Programación (Conf)",          frecuencia: 1 }
+          - { id: Pro-CP, nombre: "Programación (C.P.)",          frecuencia: 2 }
+          - { id: A1-C,   nombre: "Álgebra I (Conf)",             frecuencia: 2 }
+          - { id: A1-CP,  nombre: "Álgebra I (C.P.)",             frecuencia: 1 }
+          - { id: F-C,    nombre: "Filosofía (Conf)",             frecuencia: 1 }
+          - { id: F-CP,   nombre: "Filosofía (C.P.)",             frecuencia: 1 }
+          - { id: L-C,    nombre: "Lógica (Conf)",                frecuencia: 1 }
+          - { id: L-CP,   nombre: "Lógica (C.P.)",               frecuencia: 1 }
+          - { id: EF,     nombre: "Educación Física",             frecuencia: 1 }
