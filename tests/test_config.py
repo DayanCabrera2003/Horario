@@ -1,11 +1,16 @@
 import pytest
 from pathlib import Path
-from horarios.config import cargar_facultad, ErrorConfig
+from horarios.config import cargar_facultad, cargar_horarios, ErrorConfig
 
 FIXT = Path(__file__).parent / "fixtures"
 
 def escribir(tmp_path, texto):
     p = tmp_path / "facultad.yaml"
+    p.write_text(texto, encoding="utf-8")
+    return p
+
+def escribir_horarios(tmp_path, texto):
+    p = tmp_path / "horarios.yaml"
     p.write_text(texto, encoding="utf-8")
     return p
 
@@ -45,3 +50,49 @@ def test_config_invalida_asignaturas_faltan(tmp_path):
     mal = BASE.replace('        asignaturas:\n          - { id: L-C, nombre: "Lógica", frecuencia: 1 }\n', "")
     with pytest.raises(ErrorConfig, match="asignaturas"):
         cargar_facultad(escribir(tmp_path, mal))
+
+
+def _fac(tmp_path):
+    return cargar_facultad(escribir(tmp_path, BASE))
+
+def test_cargar_horarios_happy_path(tmp_path):
+    fac = _fac(tmp_path)
+    hor = """
+C111:
+  Lunes:
+    1: { asig: L-C, aula: Aula 1 }
+"""
+    horarios = cargar_horarios(escribir_horarios(tmp_path, hor), fac)
+    celda = horarios["C111"].celdas[("Lunes", 1)]
+    assert celda.asig == "L-C"
+    assert celda.aula == "Aula 1"
+
+def test_cargar_horarios_grupo_inexistente(tmp_path):
+    fac = _fac(tmp_path)
+    hor = "C999:\n  Lunes:\n    1: { asig: L-C, aula: Aula 1 }\n"
+    with pytest.raises(ErrorConfig, match="inexistente"):
+        cargar_horarios(escribir_horarios(tmp_path, hor), fac)
+
+def test_cargar_horarios_dia_desconocido(tmp_path):
+    fac = _fac(tmp_path)
+    hor = "C111:\n  Domingo:\n    1: { asig: L-C, aula: Aula 1 }\n"
+    with pytest.raises(ErrorConfig, match="día"):
+        cargar_horarios(escribir_horarios(tmp_path, hor), fac)
+
+def test_cargar_horarios_turno_fuera_de_rango(tmp_path):
+    fac = _fac(tmp_path)
+    hor = "C111:\n  Lunes:\n    9: { asig: L-C, aula: Aula 1 }\n"
+    with pytest.raises(ErrorConfig, match="turno"):
+        cargar_horarios(escribir_horarios(tmp_path, hor), fac)
+
+def test_cargar_horarios_aula_desconocida(tmp_path):
+    fac = _fac(tmp_path)
+    hor = "C111:\n  Lunes:\n    1: { asig: L-C, aula: Aula 42 }\n"
+    with pytest.raises(ErrorConfig, match="aula"):
+        cargar_horarios(escribir_horarios(tmp_path, hor), fac)
+
+def test_cargar_horarios_celda_incompleta(tmp_path):
+    fac = _fac(tmp_path)
+    hor = "C111:\n  Lunes:\n    1: { aula: Aula 1 }\n"
+    with pytest.raises(ErrorConfig, match="'asig' y 'aula'"):
+        cargar_horarios(escribir_horarios(tmp_path, hor), fac)

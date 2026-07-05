@@ -72,6 +72,8 @@ def cargar_horarios(ruta, facultad: Facultad) -> dict:
                 turno = int(turno)
                 if not (1 <= turno <= facultad.turnos):
                     raise ErrorConfig(f"{grupo_id}/{dia}: turno {turno} fuera de rango")
+                if not isinstance(celda, dict) or "asig" not in celda or "aula" not in celda:
+                    raise ErrorConfig(f"{grupo_id}/{dia}/{turno}: cada celda necesita 'asig' y 'aula'")
                 aula = celda["aula"]
                 if aula not in facultad.aulas:
                     raise ErrorConfig(f"{grupo_id}/{dia}/{turno}: aula '{aula}' no existe")
