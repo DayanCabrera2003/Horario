@@ -24,3 +24,8 @@ def test_tabla_asignaturas_posiciones():
     assert L.celda_asig_tabla_frec(fila_datos=0) == "K4"
     assert L.celda_asig_tabla_asignadas(fila_datos=0) == "L4"
     assert L.celda_asig_tabla_faltan(fila_datos=0) == "M4"
+
+
+def test_rango_ids_asignaturas_abs():
+    assert L.rango_ids_asignaturas_abs(2) == "$I$4:$I$5"
+    assert L.rango_ids_asignaturas_abs(11) == "$I$4:$I$14"

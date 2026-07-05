@@ -78,3 +78,9 @@ def celda_asig_tabla_faltan(fila_datos: int) -> str:
 
 def rango_ids_asignaturas(n_asig: int) -> str:
     return f"I{FILA_PRIMERA_ASIG}:I{FILA_PRIMERA_ASIG + n_asig - 1}"
+
+
+def rango_ids_asignaturas_abs(n_asig: int) -> str:
+    """Igual que rango_ids_asignaturas pero absoluto ($I$), para usos que no deben
+    desplazarse (dropdowns, lookups de formato condicional sobre sqref multi-rango)."""
+    return f"$I${FILA_PRIMERA_ASIG}:$I${FILA_PRIMERA_ASIG + n_asig - 1}"

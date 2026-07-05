@@ -1,9 +1,13 @@
 from openpyxl.worksheet.datavalidation import DataValidation
 from horarios import layout as L
 from horarios import estilos
+from horarios.modelo import Grupo, Facultad, Horario
 
 
-def construir_hoja_grupo(ws, grupo, facultad, horario=None):
+def construir_hoja_grupo(ws, grupo: Grupo, facultad: Facultad,
+                         horario: Horario | None = None) -> None:
+    """Rellena `ws` en el sitio con la hoja de un grupo: rejilla de horario, tabla de
+    asignaturas con fórmulas, dropdowns de aula/asignatura y formato condicional."""
     ws.title = grupo.id
     ws["A1"] = "Grupo"
     ws[L.CELDA_GRUPO_ID] = grupo.id
@@ -44,7 +48,7 @@ def construir_hoja_grupo(ws, grupo, facultad, horario=None):
     _aplicar_formato_condicional(ws, grupo, facultad)
 
 
-def _aplicar_dropdown_aulas(ws, facultad):
+def _aplicar_dropdown_aulas(ws, facultad: Facultad) -> None:
     # Fuente en la hoja Datos (creada por hoja_datos). Rango nombrado 'AulasValidas'.
     # OJO: openpyxl escribe formula1 verbatim en el XML; NO lleva '=' inicial o el
     # dropdown no se puebla al abrir en Excel/LibreOffice.
@@ -53,22 +57,22 @@ def _aplicar_dropdown_aulas(ws, facultad):
     dv.sqref = L.rangos_filas_aula(len(facultad.dias), facultad.turnos)
 
 
-def _aplicar_dropdown_asignaturas(ws, grupo, facultad):
+def _aplicar_dropdown_asignaturas(ws, grupo: Grupo, facultad: Facultad) -> None:
     # Fuente: los ids de la tabla de asignaturas del propio grupo (misma hoja).
     # Sin '=' inicial y con rango absoluto para que no se desplace al insertar filas.
     n_asig = len(facultad.asignaturas_de(grupo))
-    rango = L.rango_ids_asignaturas(n_asig).replace("I", "$I$")   # I4:I5 -> $I$4:$I$5
+    rango = L.rango_ids_asignaturas_abs(n_asig)   # $I$4:$I$5
     dv = DataValidation(type="list", formula1=rango, allow_blank=True)
     ws.add_data_validation(dv)
     dv.sqref = L.rangos_filas_asig(len(facultad.dias), facultad.turnos)
 
 
-def _aplicar_formato_condicional(ws, grupo, facultad):
+def _aplicar_formato_condicional(ws, grupo: Grupo, facultad: Facultad) -> None:
     n_dias, n_turnos = len(facultad.dias), facultad.turnos
     n_asig = len(facultad.asignaturas_de(grupo))
     # Rango absoluto ($I$): la regla se aplica sobre un sqref multi-rango; si fuera
     # relativo, Excel lo desplazaría por fila y comprobaría el rango equivocado.
-    rango_ids = L.rango_ids_asignaturas(n_asig).replace("I", "$I$")
+    rango_ids = L.rango_ids_asignaturas_abs(n_asig)
 
     # Asignatura desconocida (naranja) en filas de asignatura
     sq_asig = L.rangos_filas_asig(n_dias, n_turnos)

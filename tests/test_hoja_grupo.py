@@ -35,7 +35,13 @@ def test_hay_dropdowns_de_aula_y_asignatura():
     ws = wb.active
     construir_hoja_grupo(ws, g, fac, horario=None)
     # dos validaciones de lista: aula (filas de aula) y asignatura (filas de asignatura)
-    assert len(ws.data_validations.dataValidation) == 2
+    dvs = ws.data_validations.dataValidation
+    assert len(dvs) == 2
+    formulas = {dv.formula1 for dv in dvs}
+    assert "AulasValidas" in formulas
+    assert "$I$4:$I$5" in formulas
+    # openpyxl escribe formula1 verbatim: un '=' inicial rompe el dropdown en Excel.
+    assert all(not f.startswith("=") for f in formulas)
 
 
 def test_horario_rellena_celdas():
