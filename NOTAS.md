@@ -47,6 +47,12 @@ Abrir `propuesta-generada.xlsx` en LibreOffice/Excel y confirmar visualmente:
   la carrera C, año 1. La detección de conflicto (aula compartida por años distintos → rojo intenso)
   requiere tener grupos de años/carreras distintos en la config. Se activará al ir llenando la
   facultad completa (C2–C4, M, D) en los próximos "batches" del tutor.
+- **Longitud de fórmulas a escala**: la firma de año (hoja `Datos`) tiene un `COUNTIF` por grupo y
+  por año en cada celda, y la ocupación (hoja `Aulas`) un `IF` por grupo. Con la config actual (una
+  carrera, un año) es trivial, pero al llenar la facultad completa (C2–C4, M, D → decenas de grupos)
+  las fórmulas de firma pueden acercarse al límite de Excel (~8192 caracteres por celda). A vigilar
+  cuando el tutor cargue más años; si hiciera falta, se optimiza la firma (p. ej. `SUMPRODUCT` o
+  celdas auxiliares por año).
 - El horario de ejemplo está **normalizado** al esquema limpio de `config/facultad.yaml`. La prueba
   de concepto original del tutor (`.ods`) usaba abreviaturas e identificadores de aula inconsistentes
   (p. ej. `AM1-C` vs `AMI-C`, aulas como `6` en vez de `Aula 6`); se optó por un ejemplo coherente
