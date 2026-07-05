@@ -1,4 +1,4 @@
-from openpyxl.utils import get_column_letter, quote_sheetname
+from openpyxl.utils import quote_sheetname
 from horarios import layout as L
 from horarios import estilos
 from horarios.modelo import Facultad
@@ -31,7 +31,7 @@ def _formato_por_anio(ws, celda, dir_firma: str, facultad: Facultad) -> None:
         coord, estilos.regla_formula(f'{dir_firma}="MIX"', estilos.COLOR_CONFLICTO))
 
 
-def construir_hoja_aulas(wb, facultad: Facultad, firmas: dict) -> None:
+def construir_hoja_aulas(wb, facultad: Facultad, firmas: dict[tuple[str, int, str], str]) -> None:
     """Crea la hoja Aulas con un bloque por día (columnas=aulas, filas=turnos).
 
     Cada celda de datos contiene una fórmula que concatena los grupos que ocupan
