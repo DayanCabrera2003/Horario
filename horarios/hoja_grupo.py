@@ -1,0 +1,103 @@
+from openpyxl.worksheet.datavalidation import DataValidation
+from horarios import layout as L
+from horarios import estilos
+
+
+def construir_hoja_grupo(ws, grupo, facultad, horario=None):
+    ws.title = grupo.id
+    ws["A1"] = "Grupo"
+    ws[L.CELDA_GRUPO_ID] = grupo.id
+
+    # Encabezado de días
+    for i, dia in enumerate(facultad.dias):
+        ws[f"{L.col_dia(i)}{L.FILA_ENCABEZADO_DIAS}"] = dia
+    # Etiquetas de turno
+    for t in range(1, facultad.turnos + 1):
+        ws[f"A{L.fila_asig(t)}"] = f"Turno {t}"
+
+    # Rejilla de horario (rellena si hay horario)
+    if horario:
+        for (dia, turno), asg in horario.celdas.items():
+            dia_idx = facultad.dias.index(dia)
+            ws[L.celda_asig(dia_idx, turno)] = asg.asig
+            ws[L.celda_aula(dia_idx, turno)] = asg.aula
+
+    # Tabla de asignaturas + fórmulas
+    asignaturas = facultad.asignaturas_de(grupo)
+    # 'rango' cubre filas de asignatura Y de aula; COUNTIF sobre él es correcto porque
+    # los nombres de aula nunca coinciden con ids de asignatura.
+    rango = L.rango_horario(len(facultad.dias), facultad.turnos)
+    ws["I3"] = "Asignatura"
+    ws["J3"], ws["K3"], ws["L3"], ws["M3"] = "Nombre", "Frec", "Asignadas", "Faltan"
+    for i, a in enumerate(asignaturas):
+        id_cell = L.celda_asig_tabla_id(i)
+        ws[id_cell] = a.id
+        ws[L.celda_asig_tabla_nombre(i)] = a.nombre
+        frec_cell = L.celda_asig_tabla_frec(i)
+        ws[frec_cell] = a.frecuencia
+        asignadas_cell = L.celda_asig_tabla_asignadas(i)
+        ws[asignadas_cell] = f"=COUNTIF({rango},{id_cell})"
+        ws[L.celda_asig_tabla_faltan(i)] = f"={frec_cell}-{asignadas_cell}"
+
+    _aplicar_dropdown_aulas(ws, facultad)
+    _aplicar_dropdown_asignaturas(ws, grupo, facultad)
+    _aplicar_formato_condicional(ws, grupo, facultad)
+
+
+def _aplicar_dropdown_aulas(ws, facultad):
+    # Fuente en la hoja Datos (creada por hoja_datos). Rango nombrado 'AulasValidas'.
+    # OJO: openpyxl escribe formula1 verbatim en el XML; NO lleva '=' inicial o el
+    # dropdown no se puebla al abrir en Excel/LibreOffice.
+    dv = DataValidation(type="list", formula1="AulasValidas", allow_blank=True)
+    ws.add_data_validation(dv)
+    dv.sqref = L.rangos_filas_aula(len(facultad.dias), facultad.turnos)
+
+
+def _aplicar_dropdown_asignaturas(ws, grupo, facultad):
+    # Fuente: los ids de la tabla de asignaturas del propio grupo (misma hoja).
+    # Sin '=' inicial y con rango absoluto para que no se desplace al insertar filas.
+    n_asig = len(facultad.asignaturas_de(grupo))
+    rango = L.rango_ids_asignaturas(n_asig).replace("I", "$I$")   # I4:I5 -> $I$4:$I$5
+    dv = DataValidation(type="list", formula1=rango, allow_blank=True)
+    ws.add_data_validation(dv)
+    dv.sqref = L.rangos_filas_asig(len(facultad.dias), facultad.turnos)
+
+
+def _aplicar_formato_condicional(ws, grupo, facultad):
+    n_dias, n_turnos = len(facultad.dias), facultad.turnos
+    n_asig = len(facultad.asignaturas_de(grupo))
+    # Rango absoluto ($I$): la regla se aplica sobre un sqref multi-rango; si fuera
+    # relativo, Excel lo desplazaría por fila y comprobaría el rango equivocado.
+    rango_ids = L.rango_ids_asignaturas(n_asig).replace("I", "$I$")
+
+    # Asignatura desconocida (naranja) en filas de asignatura
+    sq_asig = L.rangos_filas_asig(n_dias, n_turnos)
+    primera = L.celda_asig(0, 1)
+    ws.conditional_formatting.add(
+        sq_asig,
+        estilos.regla_formula(
+            f'AND({primera}<>"",COUNTIF({rango_ids},{primera})=0)',
+            estilos.COLOR_ASIG_DESCONOCIDA),
+    )
+    # Aula inválida (amarillo) en filas de aula
+    sq_aula = L.rangos_filas_aula(n_dias, n_turnos)
+    primera_aula = L.celda_aula(0, 1)
+    ws.conditional_formatting.add(
+        sq_aula,
+        estilos.regla_formula(
+            f'AND({primera_aula}<>"",COUNTIF(AulasValidas,{primera_aula})=0)',
+            estilos.COLOR_AULA_INVALIDA),
+    )
+    # Tabla de asignaturas: sobre-planificada (rojo) y frecuencia exacta (verde)
+    l_ini = L.celda_asig_tabla_asignadas(0)
+    l_fin = L.celda_asig_tabla_asignadas(n_asig - 1)
+    k_ini = L.celda_asig_tabla_frec(0)
+    rango_asignadas = f"{l_ini}:{l_fin}"
+    ws.conditional_formatting.add(
+        rango_asignadas,
+        estilos.regla_formula(f"{l_ini}>{k_ini}", estilos.COLOR_SOBRE_PLANIFICADA),
+    )
+    ws.conditional_formatting.add(
+        rango_asignadas,
+        estilos.regla_formula(f"{l_ini}={k_ini}", estilos.COLOR_FREC_EXACTA),
+    )

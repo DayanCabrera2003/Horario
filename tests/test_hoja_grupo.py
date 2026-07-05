@@ -1,0 +1,72 @@
+from openpyxl import Workbook
+from horarios.modelo import Grupo, Asignatura, Anio, Facultad, Horario, Asignacion
+from horarios.hoja_grupo import construir_hoja_grupo
+from horarios import layout as L
+
+
+def _facultad():
+    anio = Anio(carrera="C", numero=1, asignaturas=(
+        Asignatura("L-C", "Lógica", 1),
+        Asignatura("Pro-C", "Programación", 2),
+    ))
+    g = Grupo("C", 1, 1, 1)
+    return Facultad(aulas=("Aula 1", "Lab"), dias=("Lunes", "Martes"),
+                    turnos=6, grupos=(g,), anios={"C1": anio}), g
+
+
+def test_escribe_id_y_formulas():
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    assert ws[L.CELDA_GRUPO_ID].value == "C111"
+    # Asignadas de la primera asignatura = COUNTIF sobre el rango del horario
+    asignadas = ws[L.celda_asig_tabla_asignadas(0)].value
+    assert asignadas.startswith("=COUNTIF(")
+    # fixture: 2 días, 6 turnos -> rango del horario C4:D15
+    assert "C4:D15" in asignadas
+    faltan = ws[L.celda_asig_tabla_faltan(0)].value
+    assert faltan.startswith("=")
+
+
+def test_hay_dropdowns_de_aula_y_asignatura():
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    # dos validaciones de lista: aula (filas de aula) y asignatura (filas de asignatura)
+    assert len(ws.data_validations.dataValidation) == 2
+
+
+def test_horario_rellena_celdas():
+    fac, g = _facultad()
+    h = Horario(grupo_id="C111")
+    h.celdas[("Lunes", 1)] = Asignacion(asig="L-C", aula="Aula 1")
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=h)
+    assert ws[L.celda_asig(0, 1)].value == "L-C"
+    assert ws[L.celda_aula(0, 1)].value == "Aula 1"
+
+
+def test_esqueleto_deja_celdas_vacias():
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    assert ws[L.celda_asig(0, 1)].value is None
+
+
+def test_regla_asig_desconocida_usa_rango_absoluto():
+    # La regla "asignatura desconocida" se aplica sobre un sqref multi-rango que abarca
+    # todas las filas de asignatura. El COUNTIF debe apuntar SIEMPRE a la tabla de ids
+    # (rango absoluto $I$), o Excel lo desplaza por fila y comprueba el rango equivocado.
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    formulas = [r.formula[0]
+                for rng in ws.conditional_formatting
+                for r in ws.conditional_formatting[rng]]
+    desconocida = [f for f in formulas if "COUNTIF($I$" in f]
+    assert desconocida, f"esperaba un COUNTIF con rango absoluto, vi: {formulas}"
