@@ -1,4 +1,4 @@
-from openpyxl.styles import PatternFill
+from openpyxl.styles import PatternFill, Border, Side
 from openpyxl.formatting.rule import FormulaRule
 
 # Colores por "año" (carrera+año). Fijos en código; el usuario no los cambia.
@@ -20,3 +20,9 @@ def fill(hex_rgb: str) -> PatternFill:
 
 def regla_formula(formula: str, color_hex: str) -> FormulaRule:
     return FormulaRule(formula=[formula], fill=fill(color_hex))
+
+
+def borde_fino() -> Border:
+    """Borde fino en las cuatro caras, para delimitar las celdas de las tablas."""
+    lado = Side(style="thin")
+    return Border(left=lado, right=lado, top=lado, bottom=lado)

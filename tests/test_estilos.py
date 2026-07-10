@@ -14,3 +14,13 @@ def test_color_conflicto_definido():
 def test_fill_devuelve_patternfill():
     from openpyxl.styles import PatternFill
     assert isinstance(estilos.fill(estilos.ANIO_COLOR["C1"]), PatternFill)
+
+
+def test_borde_fino_tiene_los_cuatro_lados_thin():
+    from openpyxl.styles import Border
+    b = estilos.borde_fino()
+    assert isinstance(b, Border)
+    assert b.left.style == "thin"
+    assert b.right.style == "thin"
+    assert b.top.style == "thin"
+    assert b.bottom.style == "thin"

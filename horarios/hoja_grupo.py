@@ -1,6 +1,7 @@
 from openpyxl.worksheet.datavalidation import DataValidation
 from horarios import layout as L
 from horarios import estilos
+from horarios import formato
 from horarios.modelo import Grupo, Facultad, Horario
 
 
@@ -46,6 +47,17 @@ def construir_hoja_grupo(ws, grupo: Grupo, facultad: Facultad,
     _aplicar_dropdown_aulas(ws, facultad)
     _aplicar_dropdown_asignaturas(ws, grupo, facultad)
     _aplicar_formato_condicional(ws, grupo, facultad)
+    _aplicar_bordes(ws, grupo, facultad)
+
+
+def _aplicar_bordes(ws, grupo: Grupo, facultad: Facultad) -> None:
+    """Bordea las celdas de la rejilla de horario, las etiquetas de turno y la tabla de asignaturas."""
+    n_dias, n_turnos = len(facultad.dias), facultad.turnos
+    n_asig = len(facultad.asignaturas_de(grupo))
+    borde = estilos.borde_fino()
+    formato.aplicar_borde(ws, L.rango_bloque_horario(n_dias, n_turnos), borde)
+    formato.aplicar_borde(ws, L.rango_etiquetas_turno(n_turnos), borde)
+    formato.aplicar_borde(ws, L.rango_tabla_asignaturas(n_asig), borde)
 
 
 def _aplicar_dropdown_aulas(ws, facultad: Facultad) -> None:

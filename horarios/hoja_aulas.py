@@ -1,6 +1,7 @@
-from openpyxl.utils import quote_sheetname
+from openpyxl.utils import quote_sheetname, get_column_letter
 from horarios import layout as L
 from horarios import estilos
+from horarios import formato
 from horarios.modelo import Facultad
 
 NOMBRE_HOJA = "Aulas"
@@ -39,8 +40,11 @@ def construir_hoja_aulas(wb, facultad: Facultad, firmas: dict[tuple[str, int, st
     más una regla de conflicto para el caso MIX.
     """
     ws = wb.create_sheet(NOMBRE_HOJA, index=0)
+    borde = estilos.borde_fino()
+    col_fin = get_column_letter(1 + len(facultad.aulas))
     fila = 1
     for dia_idx, dia in enumerate(facultad.dias):
+        fila_ini = fila
         # Encabezado del bloque
         ws.cell(row=fila, column=1, value=dia)
         for j, aula in enumerate(facultad.aulas, start=2):
@@ -53,4 +57,7 @@ def construir_hoja_aulas(wb, facultad: Facultad, firmas: dict[tuple[str, int, st
                                 value=_formula_ocupacion(facultad, dia_idx, turno, aula))
                 _formato_por_anio(ws, celda, firmas[(dia, turno, aula)], facultad)
             fila += 1
+        # Bordea el bloque completo (encabezado + filas de turno); la fila en blanco
+        # siguiente queda fuera para separar visualmente los bloques.
+        formato.aplicar_borde(ws, f"A{fila_ini}:{col_fin}{fila - 1}", borde)
         fila += 1  # línea en blanco entre bloques

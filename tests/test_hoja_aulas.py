@@ -49,6 +49,18 @@ def test_formula_usa_substitute_trim_y_refs_entrecomilladas():
     assert any("'C111'" in f for f in formulas)
 
 
+def test_bloques_tienen_bordes():
+    fac = _fac()
+    wb = Workbook()
+    firmas = construir_hoja_datos(wb, fac)
+    construir_hoja_aulas(wb, fac, firmas)
+    ws = wb[NOMBRE_HOJA]
+    # encabezado del primer bloque (dia)
+    assert ws["A1"].border.left.style == "thin"
+    # celda de ocupacion (turno 1, primera aula)
+    assert ws["B2"].border.left.style == "thin"
+
+
 def test_regla_mix_emitida_para_celda():
     """El formato condicional de al menos una celda incluye una regla con 'MIX'."""
     fac = _fac()

@@ -60,6 +60,19 @@ def test_dropdowns_no_bloquean_valores_fuera_de_lista():
         assert dv.showErrorMessage is True
 
 
+def test_tablas_tienen_bordes():
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    # encabezado de la tabla de asignaturas
+    assert ws["I3"].border.left.style == "thin"
+    # celda de la rejilla de horario
+    assert ws[L.celda_asig(0, 1)].border.top.style == "thin"
+    # etiqueta de turno (columna A)
+    assert ws[f"A{L.fila_asig(1)}"].border.left.style == "thin"
+
+
 def test_horario_rellena_celdas():
     fac, g = _facultad()
     h = Horario(grupo_id="C111")

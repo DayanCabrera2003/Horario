@@ -51,6 +51,18 @@ def rangos_filas_aula(n_dias: int, n_turnos: int) -> str:
                     for t in range(1, n_turnos + 1))
 
 
+def rango_bloque_horario(n_dias: int, n_turnos: int) -> str:
+    """Rectangulo de la rejilla: encabezado de dias mas las filas asig/aula (para bordear)."""
+    c1 = f"{col_dia(0)}{FILA_ENCABEZADO_DIAS}"
+    c2 = f"{col_dia(n_dias - 1)}{fila_aula(n_turnos)}"
+    return f"{c1}:{c2}"
+
+
+def rango_etiquetas_turno(n_turnos: int) -> str:
+    """Columna A con las etiquetas 'Turno t', de la primera fila de asignatura a la ultima de aula."""
+    return f"A{fila_asig(1)}:A{fila_aula(n_turnos)}"
+
+
 # --- Tabla de asignaturas (I=id, J=nombre, K=frec, L=asignadas, M=faltan) ---
 def _fila_tabla(fila_datos: int) -> int:
     return FILA_PRIMERA_ASIG + fila_datos
@@ -78,6 +90,11 @@ def celda_asig_tabla_faltan(fila_datos: int) -> str:
 
 def rango_ids_asignaturas(n_asig: int) -> str:
     return f"I{FILA_PRIMERA_ASIG}:I{FILA_PRIMERA_ASIG + n_asig - 1}"
+
+
+def rango_tabla_asignaturas(n_asig: int) -> str:
+    """Tabla de asignaturas I..M: fila de encabezado (3) mas n_asig filas de datos (para bordear)."""
+    return f"I3:M{FILA_PRIMERA_ASIG + n_asig - 1}"
 
 
 def rango_ids_asignaturas_abs(n_asig: int) -> str:
