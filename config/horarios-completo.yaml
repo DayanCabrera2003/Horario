@@ -1,0 +1,94 @@
+# Horario "completo" — copia fiel densa para estresar el generador.
+# Usar con: python generar.py --config config/facultad-completa.yaml \
+#                             --horarios config/horarios-completo.yaml \
+#                             --salida propuesta-completa.xlsx
+#
+# Casos deliberados incluidos (para verlos resaltados al abrir el .xlsx):
+#   * Conferencias COMPARTIDAS dentro del mismo año  -> celda de Aulas concatena varios grupos,
+#     pintada con el color del año (sin conflicto).      Ej: Aula 1 / Lunes T1 -> C111,C112,C113
+#   * CONFLICTO ENTRE AÑOS (MIX)                      -> dos años distintos en la misma aula/turno,
+#     celda de Aulas en ROJO INTENSO.                    Ej: Aula 2 / Lunes T2 -> C111(C1)+M111(M1)
+#   * SOBRE-PLANIFICACIÓN                             -> asignatura por encima de su frecuencia,
+#     fila de la tabla en ROJO.                          Ej: C121 planifica AMI-CP 3 veces (frec 2)
+#   * ASIGNATURA DESCONOCIDA                          -> id que no existe en el año, celda NARANJA.
+#     (el cargador NO valida 'asig', así que pasa)       Ej: C121 usa XYZ-C
+#   * Grupos "verdes"                                 -> planificados a su frecuencia exacta.
+#
+# Nota: no se puede meter un AULA inválida desde aquí (el cargador la rechaza); el resaltado
+# amarillo de "aula inválida" solo se ve editando a mano una celda de aula en Excel.
+
+# ======================= C1 — sesión 1 (verdes, confs compartidas en Aula 1) =======================
+
+C111:   # prácticas en Aula 2
+  Lunes:     { 1: {asig: AMI-C, aula: Aula 1}, 2: {asig: AMI-CP, aula: Aula 2}, 3: {asig: AMI-CP, aula: Aula 2} }
+  Martes:    { 1: {asig: Pro-C, aula: Aula 1}, 2: {asig: Pro-CP, aula: Aula 2}, 3: {asig: Pro-CP, aula: Aula 2} }
+  Miércoles: { 1: {asig: A1-C,  aula: Aula 1}, 2: {asig: A1-C,   aula: Aula 1}, 3: {asig: A1-CP,  aula: Aula 2} }
+  Jueves:    { 1: {asig: F-C,   aula: Aula 1}, 2: {asig: F-CP,   aula: Aula 2} }
+  Viernes:   { 1: {asig: EF,    aula: Lab 1} }
+
+C112:   # prácticas en Aula 3
+  Lunes:     { 1: {asig: AMI-C, aula: Aula 1}, 2: {asig: AMI-CP, aula: Aula 3}, 3: {asig: AMI-CP, aula: Aula 3} }
+  Martes:    { 1: {asig: Pro-C, aula: Aula 1}, 2: {asig: Pro-CP, aula: Aula 3}, 3: {asig: Pro-CP, aula: Aula 3} }
+  Miércoles: { 1: {asig: A1-C,  aula: Aula 1}, 2: {asig: A1-C,   aula: Aula 1}, 3: {asig: A1-CP,  aula: Aula 3} }
+  Jueves:    { 1: {asig: F-C,   aula: Aula 1}, 2: {asig: F-CP,   aula: Aula 3} }
+  Viernes:   { 1: {asig: EF,    aula: Lab 1} }
+
+C113:   # prácticas en Aula 4
+  Lunes:     { 1: {asig: AMI-C, aula: Aula 1}, 2: {asig: AMI-CP, aula: Aula 4}, 3: {asig: AMI-CP, aula: Aula 4} }
+  Martes:    { 1: {asig: Pro-C, aula: Aula 1}, 2: {asig: Pro-CP, aula: Aula 4}, 3: {asig: Pro-CP, aula: Aula 4} }
+  Miércoles: { 1: {asig: A1-C,  aula: Aula 1}, 2: {asig: A1-C,   aula: Aula 1}, 3: {asig: A1-CP,  aula: Aula 4} }
+  Jueves:    { 1: {asig: F-C,   aula: Aula 1}, 2: {asig: F-CP,   aula: Aula 4} }
+  Viernes:   { 1: {asig: EF,    aula: Lab 1} }
+
+# ======================= C1 — sesión 2 (con errores a propósito) =======================
+
+C121:   # SOBRE-PLANIFICADA (AMI-CP x3, frec 2) y ASIGNATURA DESCONOCIDA (XYZ-C)
+  Lunes:     { 1: {asig: AMI-C, aula: Aula 1}, 2: {asig: AMI-CP, aula: Aula 5}, 3: {asig: AMI-CP, aula: Aula 5} }
+  Martes:    { 1: {asig: AMI-CP, aula: Aula 5}, 2: {asig: XYZ-C, aula: Aula 5} }   # <-- rojo y naranja
+  Miércoles: { 1: {asig: Pro-C, aula: Aula 1}, 2: {asig: Pro-CP, aula: Aula 5} }
+
+C122:   # parcial, prácticas en Aula 6
+  Lunes:     { 1: {asig: AMI-C, aula: Aula 1}, 2: {asig: AMI-CP, aula: Aula 6} }
+  Martes:    { 1: {asig: Pro-C, aula: Aula 1}, 2: {asig: Pro-CP, aula: Aula 6} }
+
+# ======================= C2 (verdes, confs compartidas en Aula 8) =======================
+
+C211:   # prácticas en Aula 7
+  Lunes:     { 1: {asig: AMII-C, aula: Aula 8}, 2: {asig: AMII-CP, aula: Aula 7}, 3: {asig: AMII-CP, aula: Aula 7} }
+  Martes:    { 1: {asig: EDA-C,  aula: Aula 8}, 2: {asig: EDA-C,   aula: Aula 8}, 3: {asig: EDA-CP,  aula: Aula 7} }
+  Miércoles: { 1: {asig: EDA-CP, aula: Aula 7}, 2: {asig: A2-C,    aula: Aula 8}, 3: {asig: A2-CP,   aula: Aula 7} }
+  Jueves:    { 1: {asig: FMat-C, aula: Aula 8}, 2: {asig: EF,      aula: Lab 2} }
+
+C212:   # prácticas en Aula 9
+  Lunes:     { 1: {asig: AMII-C, aula: Aula 8}, 2: {asig: AMII-CP, aula: Aula 9}, 3: {asig: AMII-CP, aula: Aula 9} }
+  Martes:    { 1: {asig: EDA-C,  aula: Aula 8}, 2: {asig: EDA-C,   aula: Aula 8}, 3: {asig: EDA-CP,  aula: Aula 9} }
+  Miércoles: { 1: {asig: EDA-CP, aula: Aula 9}, 2: {asig: A2-C,    aula: Aula 8}, 3: {asig: A2-CP,   aula: Aula 9} }
+  Jueves:    { 1: {asig: FMat-C, aula: Aula 8}, 2: {asig: EF,      aula: Lab 2} }
+
+# ======================= M1 — M111 provoca el CONFLICTO con C111 en Aula 2 =======================
+
+M111:   # AM1-CP en Aula 2 (Lunes T2 y T3) -> choca con C111 (año distinto) -> MIX/rojo
+  Lunes:     { 1: {asig: AM1-C, aula: Aula 10}, 2: {asig: AM1-CP, aula: Aula 2}, 3: {asig: AM1-CP, aula: Aula 2} }
+  Martes:    { 1: {asig: AM1-C, aula: Aula 10}, 2: {asig: AlgL-C, aula: Aula 10}, 3: {asig: AlgL-CP, aula: Aula 11} }
+  Miércoles: { 1: {asig: GA-C,  aula: Aula 10}, 2: {asig: GA-CP,  aula: Aula 11} }
+  Jueves:    { 1: {asig: EF,    aula: Lab 2} }
+
+M112:   # sin conflicto, prácticas en Aula 11
+  Lunes:     { 1: {asig: AM1-C, aula: Aula 10}, 2: {asig: AM1-CP, aula: Aula 11}, 3: {asig: AM1-CP, aula: Aula 11} }
+  Martes:    { 1: {asig: AM1-C, aula: Aula 10}, 2: {asig: AlgL-C, aula: Aula 10}, 3: {asig: AlgL-CP, aula: Aula 11} }
+  Miércoles: { 1: {asig: GA-C,  aula: Aula 10}, 2: {asig: GA-CP,  aula: Aula 11} }
+  Jueves:    { 1: {asig: EF,    aula: Lab 2} }
+
+# ======================= D1 (verdes, confs compartidas en Salón) =======================
+
+D111:   # prácticas en Aula 12
+  Lunes:     { 1: {asig: Est1-C, aula: Salón}, 2: {asig: Est1-CP, aula: Aula 12}, 3: {asig: Est1-CP, aula: Aula 12} }
+  Martes:    { 1: {asig: Est1-C, aula: Salón}, 2: {asig: ProgD-C, aula: Salón},   3: {asig: ProgD-CP, aula: Aula 12} }
+  Miércoles: { 1: {asig: ProgD-CP, aula: Aula 12}, 2: {asig: CalcD-C, aula: Salón}, 3: {asig: CalcD-CP, aula: Aula 12} }
+  Jueves:    { 1: {asig: EF,     aula: Lab 1} }
+
+D112:   # prácticas en Lab 2
+  Lunes:     { 1: {asig: Est1-C, aula: Salón}, 2: {asig: Est1-CP, aula: Lab 2}, 3: {asig: Est1-CP, aula: Lab 2} }
+  Martes:    { 1: {asig: Est1-C, aula: Salón}, 2: {asig: ProgD-C, aula: Salón}, 3: {asig: ProgD-CP, aula: Lab 2} }
+  Miércoles: { 1: {asig: ProgD-CP, aula: Lab 2}, 2: {asig: CalcD-C, aula: Salón}, 3: {asig: CalcD-CP, aula: Lab 2} }
+  Jueves:    { 1: {asig: EF,     aula: Lab 1} }

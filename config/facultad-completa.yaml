@@ -1,0 +1,150 @@
+# Facultad "completa" — escenario de estrés para el generador.
+#
+# A diferencia de config/facultad.yaml (solo carrera C, año 1), aquí están las 3
+# carreras (C, M, D) con años 1-4. De esto se derivan ~22 grupos => 22 hojas de grupo,
+# y las fórmulas de firma de año (hoja Datos) y de ocupación (hoja Aulas) crecen mucho
+# (un COUNTIF/IF por grupo y por año en CADA celda). Es justo lo que "cuesta procesar".
+#
+# Recordatorio del convenio Casg: Carrera + Año + Sesión + Grupo. Solo C1 tiene 2 sesiones.
+
+aulas: [Aula 1, Aula 2, Aula 3, Aula 4, Aula 5, Aula 6, Aula 7, Aula 8,
+        Aula 9, Aula 10, Aula 11, Aula 12, Lab 1, Lab 2, Salón]
+dias:   [Lunes, Martes, Miércoles, Jueves, Viernes]
+turnos: 6
+
+carreras:
+
+  C:
+    nombre: Ciencias de la Computación
+    años:
+      1:
+        sesiones:
+          1: { grupos: [1, 2, 3] }   # C111, C112, C113
+          2: { grupos: [1, 2] }      # C121, C122
+        asignaturas:
+          - { id: AMI-C,  nombre: "Análisis Matemático I (Conf)",  frecuencia: 1 }
+          - { id: AMI-CP, nombre: "Análisis Matemático I (C.P.)",  frecuencia: 2 }
+          - { id: Pro-C,  nombre: "Programación (Conf)",           frecuencia: 1 }
+          - { id: Pro-CP, nombre: "Programación (C.P.)",           frecuencia: 2 }
+          - { id: A1-C,   nombre: "Álgebra I (Conf)",              frecuencia: 2 }
+          - { id: A1-CP,  nombre: "Álgebra I (C.P.)",              frecuencia: 1 }
+          - { id: F-C,    nombre: "Filosofía (Conf)",              frecuencia: 1 }
+          - { id: F-CP,   nombre: "Filosofía (C.P.)",              frecuencia: 1 }
+          - { id: EF,     nombre: "Educación Física",              frecuencia: 1 }
+      2:
+        sesiones:
+          1: { grupos: [1, 2] }      # C211, C212
+        asignaturas:
+          - { id: AMII-C,  nombre: "Análisis Matemático II (Conf)", frecuencia: 1 }
+          - { id: AMII-CP, nombre: "Análisis Matemático II (C.P.)", frecuencia: 2 }
+          - { id: EDA-C,   nombre: "Estructuras de Datos (Conf)",   frecuencia: 2 }
+          - { id: EDA-CP,  nombre: "Estructuras de Datos (C.P.)",   frecuencia: 2 }
+          - { id: A2-C,    nombre: "Álgebra II (Conf)",             frecuencia: 1 }
+          - { id: A2-CP,   nombre: "Álgebra II (C.P.)",             frecuencia: 1 }
+          - { id: FMat-C,  nombre: "Física Matemática (Conf)",      frecuencia: 1 }
+          - { id: EF,      nombre: "Educación Física",              frecuencia: 1 }
+      3:
+        sesiones:
+          1: { grupos: [1, 2] }      # C311, C312
+        asignaturas:
+          - { id: SO-C,    nombre: "Sistemas Operativos (Conf)",   frecuencia: 1 }
+          - { id: SO-CP,   nombre: "Sistemas Operativos (C.P.)",   frecuencia: 2 }
+          - { id: BD-C,    nombre: "Bases de Datos (Conf)",        frecuencia: 2 }
+          - { id: BD-CP,   nombre: "Bases de Datos (C.P.)",        frecuencia: 2 }
+          - { id: Redes-C, nombre: "Redes (Conf)",                 frecuencia: 1 }
+          - { id: Redes-CP,nombre: "Redes (C.P.)",                 frecuencia: 1 }
+          - { id: IA-C,    nombre: "Inteligencia Artificial (Conf)",frecuencia: 1 }
+      4:
+        sesiones:
+          1: { grupos: [1, 2] }      # C411, C412
+        asignaturas:
+          - { id: Comp-C,  nombre: "Compiladores (Conf)",          frecuencia: 1 }
+          - { id: Comp-CP, nombre: "Compiladores (C.P.)",          frecuencia: 2 }
+          - { id: ML-C,    nombre: "Machine Learning (Conf)",      frecuencia: 2 }
+          - { id: ML-CP,   nombre: "Machine Learning (C.P.)",      frecuencia: 2 }
+          - { id: Tesis,   nombre: "Trabajo de Diploma",           frecuencia: 1 }
+          - { id: Sem,     nombre: "Seminario",                    frecuencia: 1 }
+
+  M:
+    nombre: Matemática
+    años:
+      1:
+        sesiones:
+          1: { grupos: [1, 2] }      # M111, M112
+        asignaturas:
+          - { id: AM1-C,  nombre: "Análisis Matemático I (Conf)",  frecuencia: 2 }
+          - { id: AM1-CP, nombre: "Análisis Matemático I (C.P.)",  frecuencia: 2 }
+          - { id: AlgL-C, nombre: "Álgebra Lineal (Conf)",         frecuencia: 1 }
+          - { id: AlgL-CP,nombre: "Álgebra Lineal (C.P.)",         frecuencia: 1 }
+          - { id: GA-C,   nombre: "Geometría Analítica (Conf)",    frecuencia: 1 }
+          - { id: GA-CP,  nombre: "Geometría Analítica (C.P.)",    frecuencia: 1 }
+          - { id: EF,     nombre: "Educación Física",              frecuencia: 1 }
+      2:
+        sesiones:
+          1: { grupos: [1, 2] }      # M211, M212
+        asignaturas:
+          - { id: AM2-C,  nombre: "Análisis Matemático II (Conf)", frecuencia: 2 }
+          - { id: AM2-CP, nombre: "Análisis Matemático II (C.P.)", frecuencia: 2 }
+          - { id: EDO-C,  nombre: "Ecuaciones Diferenciales (Conf)",frecuencia: 1 }
+          - { id: EDO-CP, nombre: "Ecuaciones Diferenciales (C.P.)",frecuencia: 1 }
+          - { id: Prob-C, nombre: "Probabilidades (Conf)",         frecuencia: 1 }
+          - { id: Prob-CP,nombre: "Probabilidades (C.P.)",         frecuencia: 1 }
+      3:
+        sesiones:
+          1: { grupos: [1] }         # M311
+        asignaturas:
+          - { id: AF-C,   nombre: "Análisis Funcional (Conf)",     frecuencia: 1 }
+          - { id: AF-CP,  nombre: "Análisis Funcional (C.P.)",     frecuencia: 1 }
+          - { id: Top-C,  nombre: "Topología (Conf)",              frecuencia: 1 }
+          - { id: Top-CP, nombre: "Topología (C.P.)",              frecuencia: 1 }
+          - { id: MedIn-C,nombre: "Medida e Integración (Conf)",   frecuencia: 1 }
+      4:
+        sesiones:
+          1: { grupos: [1] }         # M411
+        asignaturas:
+          - { id: Optim-C, nombre: "Optimización (Conf)",          frecuencia: 1 }
+          - { id: Optim-CP,nombre: "Optimización (C.P.)",          frecuencia: 1 }
+          - { id: TesisM,  nombre: "Trabajo de Diploma",           frecuencia: 1 }
+          - { id: SemM,    nombre: "Seminario",                    frecuencia: 1 }
+
+  D:
+    nombre: Ciencia de Datos
+    años:
+      1:
+        sesiones:
+          1: { grupos: [1, 2] }      # D111, D112
+        asignaturas:
+          - { id: Est1-C,  nombre: "Estadística I (Conf)",         frecuencia: 2 }
+          - { id: Est1-CP, nombre: "Estadística I (C.P.)",         frecuencia: 2 }
+          - { id: ProgD-C, nombre: "Programación para Datos (Conf)",frecuencia: 1 }
+          - { id: ProgD-CP,nombre: "Programación para Datos (C.P.)",frecuencia: 2 }
+          - { id: CalcD-C, nombre: "Cálculo (Conf)",               frecuencia: 1 }
+          - { id: CalcD-CP,nombre: "Cálculo (C.P.)",               frecuencia: 1 }
+          - { id: EF,      nombre: "Educación Física",             frecuencia: 1 }
+      2:
+        sesiones:
+          1: { grupos: [1] }         # D211
+        asignaturas:
+          - { id: Est2-C,  nombre: "Estadística II (Conf)",        frecuencia: 1 }
+          - { id: Est2-CP, nombre: "Estadística II (C.P.)",        frecuencia: 2 }
+          - { id: MinD-C,  nombre: "Minería de Datos (Conf)",      frecuencia: 2 }
+          - { id: MinD-CP, nombre: "Minería de Datos (C.P.)",      frecuencia: 2 }
+          - { id: BDD-C,   nombre: "Bases de Datos (Conf)",        frecuencia: 1 }
+          - { id: BDD-CP,  nombre: "Bases de Datos (C.P.)",        frecuencia: 1 }
+      3:
+        sesiones:
+          1: { grupos: [1] }         # D311
+        asignaturas:
+          - { id: VisD-C,  nombre: "Visualización (Conf)",         frecuencia: 1 }
+          - { id: VisD-CP, nombre: "Visualización (C.P.)",         frecuencia: 2 }
+          - { id: BigD-C,  nombre: "Big Data (Conf)",              frecuencia: 1 }
+          - { id: BigD-CP, nombre: "Big Data (C.P.)",              frecuencia: 1 }
+          - { id: DL-C,    nombre: "Deep Learning (Conf)",         frecuencia: 1 }
+      4:
+        sesiones:
+          1: { grupos: [1] }         # D411
+        asignaturas:
+          - { id: NLP-C,   nombre: "Procesamiento de Lenguaje (Conf)", frecuencia: 1 }
+          - { id: NLP-CP,  nombre: "Procesamiento de Lenguaje (C.P.)", frecuencia: 2 }
+          - { id: TesisD,  nombre: "Trabajo de Diploma",           frecuencia: 1 }
+          - { id: SemD,    nombre: "Seminario",                    frecuencia: 1 }
