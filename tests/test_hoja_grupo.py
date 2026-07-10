@@ -73,6 +73,15 @@ def test_tablas_tienen_bordes():
     assert ws[f"A{L.fila_asig(1)}"].border.left.style == "thin"
 
 
+def test_columnas_ajustadas_al_contenido():
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    # La columna de nombres (J) debe caber la asignatura mas larga ("Programación").
+    assert ws.column_dimensions["J"].width >= len("Programación") + 2
+
+
 def test_horario_rellena_celdas():
     fac, g = _facultad()
     h = Horario(grupo_id="C111")

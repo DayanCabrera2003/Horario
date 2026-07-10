@@ -48,6 +48,7 @@ def construir_hoja_grupo(ws, grupo: Grupo, facultad: Facultad,
     _aplicar_dropdown_asignaturas(ws, grupo, facultad)
     _aplicar_formato_condicional(ws, grupo, facultad)
     _aplicar_bordes(ws, grupo, facultad)
+    formato.autoajustar_columnas(ws)
 
 
 def _aplicar_bordes(ws, grupo: Grupo, facultad: Facultad) -> None:

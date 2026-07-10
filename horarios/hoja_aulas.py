@@ -61,3 +61,4 @@ def construir_hoja_aulas(wb, facultad: Facultad, firmas: dict[tuple[str, int, st
         # siguiente queda fuera para separar visualmente los bloques.
         formato.aplicar_borde(ws, f"A{fila_ini}:{col_fin}{fila - 1}", borde)
         fila += 1  # línea en blanco entre bloques
+    formato.autoajustar_columnas(ws)

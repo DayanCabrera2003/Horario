@@ -61,6 +61,17 @@ def test_bloques_tienen_bordes():
     assert ws["B2"].border.left.style == "thin"
 
 
+def test_columnas_ajustadas_al_contenido():
+    fac = _fac()
+    wb = Workbook()
+    firmas = construir_hoja_datos(wb, fac)
+    construir_hoja_aulas(wb, fac, firmas)
+    ws = wb[NOMBRE_HOJA]
+    # La columna B se ajusta a "Aula 1" (las celdas de ocupacion son formulas y se ignoran).
+    # El valor exacto (8) prueba que el autoajuste corrio: difiere del ancho por defecto (13).
+    assert ws.column_dimensions["B"].width == len("Aula 1") + 2
+
+
 def test_regla_mix_emitida_para_celda():
     """El formato condicional de al menos una celda incluye una regla con 'MIX'."""
     fac = _fac()
