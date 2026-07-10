@@ -44,6 +44,22 @@ def test_hay_dropdowns_de_aula_y_asignatura():
     assert all(not f.startswith("=") for f in formulas)
 
 
+def test_dropdowns_no_bloquean_valores_fuera_de_lista():
+    # En Calc, un dropdown de lista sin accion de error configurada rechaza (Stop) los
+    # valores nuevos. Para poder escribir aulas/asignaturas fuera de la lista sin que se
+    # bloquee, ambas validaciones usan errorStyle 'information' (aviso no bloqueante) con
+    # el mensaje de error activo. El desplegable se mantiene como ayuda.
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    dvs = ws.data_validations.dataValidation
+    assert dvs, "esperaba validaciones de datos"
+    for dv in dvs:
+        assert dv.errorStyle == "information"
+        assert dv.showErrorMessage is True
+
+
 def test_horario_rellena_celdas():
     fac, g = _facultad()
     h = Horario(grupo_id="C111")
