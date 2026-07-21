@@ -74,6 +74,15 @@ def test_tablas_tienen_bordes():
     assert ws[f"A{L.fila_asig(1)}"].border.left.style == "medium"
 
 
+def test_inmoviliza_dias_y_turnos():
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    # Freeze en la primera celda editable: fija la fila de dias (3) y la columna A
+    assert ws.freeze_panes == L.celda_asig(0, 1)  # "C4"
+
+
 def test_columnas_ajustadas_al_contenido():
     fac, g = _facultad()
     wb = Workbook()

@@ -83,6 +83,16 @@ def test_celdas_de_ocupacion_tienen_ajuste_de_texto():
     assert ws["B2"].alignment.wrap_text is True
 
 
+def test_inmoviliza_columna_de_turnos():
+    fac = _fac()
+    wb = Workbook()
+    firmas = construir_hoja_datos(wb, fac)
+    construir_hoja_aulas(wb, fac, firmas)
+    ws = wb[NOMBRE_HOJA]
+    # Solo se congela la columna A (etiquetas); los bloques se apilan en vertical
+    assert ws.freeze_panes == "B1"
+
+
 def test_regla_mix_emitida_para_celda():
     """El formato condicional de al menos una celda incluye una regla con 'MIX'."""
     fac = _fac()

@@ -68,3 +68,6 @@ def construir_hoja_aulas(wb, facultad: Facultad, firmas: dict[tuple[str, int, st
                                     estilos.lado_fino(), estilos.lado_medio())
         fila += 1  # línea en blanco entre bloques
     formato.autoajustar_columnas(ws)
+    # Inmoviliza la columna A (etiquetas de turno); no hay una unica fila de
+    # encabezado porque los bloques-dia se apilan en vertical.
+    ws.freeze_panes = "B1"

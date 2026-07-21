@@ -49,6 +49,8 @@ def construir_hoja_grupo(ws, grupo: Grupo, facultad: Facultad,
     _aplicar_formato_condicional(ws, grupo, facultad)
     _aplicar_bordes(ws, grupo, facultad)
     formato.autoajustar_columnas(ws)
+    # Inmoviliza la fila de dias y la columna de etiquetas de turno.
+    ws.freeze_panes = L.celda_asig(0, 1)
 
 
 def _aplicar_bordes(ws, grupo: Grupo, facultad: Facultad) -> None:
