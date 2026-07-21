@@ -106,6 +106,18 @@ def test_encabezados_de_bloque_con_estilo():
     assert ws["A2"].font.bold is True
 
 
+def test_hoja_aulas_tiene_leyenda_de_anios_y_conflicto():
+    fac = _fac()   # facultad con año C1
+    wb = Workbook()
+    firmas = construir_hoja_datos(wb, fac)
+    construir_hoja_aulas(wb, fac, firmas)
+    ws = wb[NOMBRE_HOJA]
+    textos = [c.value for row in ws.iter_rows() for c in row if isinstance(c.value, str)]
+    assert any("Leyenda" in t for t in textos)
+    assert any("Conflicto" in t for t in textos)
+    assert any("C1" in t for t in textos)   # año presente
+
+
 def test_regla_mix_emitida_para_celda():
     """El formato condicional de al menos una celda incluye una regla con 'MIX'."""
     fac = _fac()

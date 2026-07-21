@@ -108,6 +108,16 @@ def test_columnas_ajustadas_al_contenido():
     assert ws.column_dimensions["J"].width >= len("Programación") + 2
 
 
+def test_hoja_grupo_tiene_leyenda():
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    textos = [c.value for row in ws.iter_rows() for c in row if isinstance(c.value, str)]
+    assert any("Leyenda" in t for t in textos)
+    assert any("fuera del listado" in t for t in textos)  # descripcion de aula invalida
+
+
 def test_horario_rellena_celdas():
     fac, g = _facultad()
     h = Horario(grupo_id="C111")

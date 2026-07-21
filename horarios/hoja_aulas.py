@@ -2,6 +2,7 @@ from openpyxl.utils import quote_sheetname, get_column_letter
 from horarios import layout as L
 from horarios import estilos
 from horarios import formato
+from horarios import leyenda
 from horarios.modelo import Facultad
 
 NOMBRE_HOJA = "Aulas"
@@ -76,6 +77,13 @@ def construir_hoja_aulas(wb, facultad: Facultad, firmas: dict[tuple[str, int, st
                                     estilos.lado_fino(), estilos.lado_medio())
         fila += 1  # línea en blanco entre bloques
     formato.autoajustar_columnas(ws)
+    # Leyenda tras el autoajuste (para que su texto largo no ensanche la columna
+    # B de aulas): colores por año presentes + conflicto, bajo el ultimo bloque.
+    ws[f"A{fila}"] = "Leyenda"
+    items = [(estilos.ANIO_COLOR[cod], f"Año {cod}")
+             for cod in facultad.anios if cod in estilos.ANIO_COLOR]
+    items.append((estilos.COLOR_CONFLICTO, "Conflicto (varios años en la misma aula)"))
+    leyenda.escribir_leyenda(ws, f"A{fila + 1}", items)
     # Inmoviliza la columna A (etiquetas de turno); no hay una unica fila de
     # encabezado porque los bloques-dia se apilan en vertical.
     ws.freeze_panes = "B1"

@@ -2,6 +2,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 from horarios import layout as L
 from horarios import estilos
 from horarios import formato
+from horarios import leyenda
 from horarios.modelo import Grupo, Facultad, Horario
 
 
@@ -50,6 +51,9 @@ def construir_hoja_grupo(ws, grupo: Grupo, facultad: Facultad,
     _aplicar_bordes(ws, grupo, facultad)
     _aplicar_estilo_encabezados(ws, grupo, facultad)
     formato.autoajustar_columnas(ws)
+    # La leyenda va tras el autoajuste para que sus textos largos no ensanchen
+    # la columna J (que es tambien la columna "Nombre" de la tabla).
+    _aplicar_leyenda(ws, grupo, facultad)
     # Inmoviliza la fila de dias y la columna de etiquetas de turno.
     ws.freeze_panes = L.celda_asig(0, 1)
 
@@ -75,6 +79,21 @@ def _aplicar_estilo_encabezados(ws, grupo: Grupo, facultad: Facultad) -> None:
     formato.aplicar_estilo_encabezado(
         ws, coords, estilos.fuente_encabezado(),
         estilos.fill(estilos.COLOR_ENCABEZADO))
+
+
+def _aplicar_leyenda(ws, grupo: Grupo, facultad: Facultad) -> None:
+    """Mini-leyenda bajo la tabla de asignaturas (columna I), con los colores
+    que aparecen en esta hoja."""
+    n_asig = len(facultad.asignaturas_de(grupo))
+    fila = L.FILA_PRIMERA_ASIG + n_asig - 1 + 2   # dos filas bajo la tabla
+    ws[f"I{fila}"] = "Leyenda"
+    items = [
+        (estilos.COLOR_AULA_INVALIDA, "Aula fuera del listado de la facultad"),
+        (estilos.COLOR_ASIG_DESCONOCIDA, "Asignatura fuera de la tabla del grupo"),
+        (estilos.COLOR_SOBRE_PLANIFICADA, "Sobre-planificada (asignadas > frecuencia)"),
+        (estilos.COLOR_FREC_EXACTA, "Frecuencia exacta cumplida"),
+    ]
+    leyenda.escribir_leyenda(ws, f"I{fila + 1}", items)
 
 
 def _aplicar_dropdown_aulas(ws, facultad: Facultad) -> None:
