@@ -54,6 +54,14 @@ def test_aplicar_borde_tabla_perimetro_medium_interior_thin():
     assert ws["D4"].border.right.style == "medium"
 
 
+def test_aplicar_ajuste_texto_activa_wrap_en_el_rango():
+    wb = Workbook()
+    ws = wb.active
+    formato.aplicar_ajuste_texto(ws, "B2:C3", estilos.alineacion_ajuste())
+    for coord in ("B2", "C2", "B3", "C3"):
+        assert ws[coord].alignment.wrap_text is True
+
+
 def test_autoajustar_columnas_ignora_formulas():
     # El texto de una formula ("=...") no refleja el valor mostrado; no debe inflar el ancho.
     wb = Workbook()

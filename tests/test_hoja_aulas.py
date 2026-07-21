@@ -73,6 +73,16 @@ def test_columnas_ajustadas_al_contenido():
     assert ws.column_dimensions["B"].width == len("Aula 1") + 2
 
 
+def test_celdas_de_ocupacion_tienen_ajuste_de_texto():
+    fac = _fac()
+    wb = Workbook()
+    firmas = construir_hoja_datos(wb, fac)
+    construir_hoja_aulas(wb, fac, firmas)
+    ws = wb[NOMBRE_HOJA]
+    # B2 = primera aula, turno 1 del primer bloque: celda de ocupacion (formula)
+    assert ws["B2"].alignment.wrap_text is True
+
+
 def test_regla_mix_emitida_para_celda():
     """El formato condicional de al menos una celda incluye una regla con 'MIX'."""
     fac = _fac()

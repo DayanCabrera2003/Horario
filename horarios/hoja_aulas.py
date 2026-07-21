@@ -56,6 +56,11 @@ def construir_hoja_aulas(wb, facultad: Facultad, firmas: dict[tuple[str, int, st
                                 value=_formula_ocupacion(facultad, dia_idx, turno, aula))
                 _formato_por_anio(ws, celda, firmas[(dia, turno, aula)], facultad)
             fila += 1
+        # Ajuste de texto en las celdas de ocupacion: si un aula/turno junta
+        # varios grupos, el resultado salta de linea y la fila crece sola.
+        fila_ocup_ini = fila_ini + 1  # fila_ini es el encabezado del bloque
+        formato.aplicar_ajuste_texto(ws, f"B{fila_ocup_ini}:{col_fin}{fila - 1}",
+                                     estilos.alineacion_ajuste())
         # Bordea el bloque completo (encabezado + filas de turno): enrejado fino
         # interno y perimetro medio. La fila en blanco siguiente queda fuera para
         # separar visualmente los bloques.

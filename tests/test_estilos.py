@@ -36,3 +36,10 @@ def test_lado_fino_es_thin():
 def test_lado_medio_es_medium():
     lado = estilos.lado_medio()
     assert lado.style == "medium"
+
+
+def test_alineacion_ajuste_activa_wrap():
+    from openpyxl.styles import Alignment
+    al = estilos.alineacion_ajuste()
+    assert isinstance(al, Alignment)
+    assert al.wrap_text is True

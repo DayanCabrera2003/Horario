@@ -36,6 +36,14 @@ def aplicar_borde_tabla(ws, rango: str, interno: Side, externo: Side) -> None:
             )
 
 
+def aplicar_ajuste_texto(ws, rango: str, alineacion) -> None:
+    """Aplica `alineacion` (con wrap_text) a cada celda del `rango`, para que
+    el contenido largo salte de linea en vez de desbordarse."""
+    for fila in ws[rango]:
+        for celda in fila:
+            celda.alignment = alineacion
+
+
 def autoajustar_columnas(ws, min_ancho: int = 8, max_ancho: int = 45,
                          extra: int = 2) -> None:
     """Fija el ancho de cada columna al del texto mas largo que contiene.

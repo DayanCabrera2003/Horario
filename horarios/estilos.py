@@ -1,4 +1,4 @@
-from openpyxl.styles import PatternFill, Border, Side
+from openpyxl.styles import PatternFill, Border, Side, Alignment
 from openpyxl.formatting.rule import FormulaRule
 
 # Colores por "año" (carrera+año). Fijos en código; el usuario no los cambia.
@@ -36,3 +36,9 @@ def borde_fino() -> Border:
     """Borde fino en las cuatro caras, para delimitar las celdas de las tablas."""
     lado = lado_fino()
     return Border(left=lado, right=lado, top=lado, bottom=lado)
+
+
+def alineacion_ajuste() -> Alignment:
+    """Alineacion con ajuste de texto (wrap): el contenido que no cabe salta
+    de linea y la fila crece, para que nada quede cortado."""
+    return Alignment(wrap_text=True, vertical="top")
