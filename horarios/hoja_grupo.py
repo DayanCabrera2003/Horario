@@ -52,13 +52,14 @@ def construir_hoja_grupo(ws, grupo: Grupo, facultad: Facultad,
 
 
 def _aplicar_bordes(ws, grupo: Grupo, facultad: Facultad) -> None:
-    """Bordea las celdas de la rejilla de horario, las etiquetas de turno y la tabla de asignaturas."""
+    """Bordea la rejilla de horario, las etiquetas de turno y la tabla de
+    asignaturas: enrejado fino interno y perimetro medio en cada tabla."""
     n_dias, n_turnos = len(facultad.dias), facultad.turnos
     n_asig = len(facultad.asignaturas_de(grupo))
-    borde = estilos.borde_fino()
-    formato.aplicar_borde(ws, L.rango_bloque_horario(n_dias, n_turnos), borde)
-    formato.aplicar_borde(ws, L.rango_etiquetas_turno(n_turnos), borde)
-    formato.aplicar_borde(ws, L.rango_tabla_asignaturas(n_asig), borde)
+    interno, externo = estilos.lado_fino(), estilos.lado_medio()
+    formato.aplicar_borde_tabla(ws, L.rango_bloque_horario(n_dias, n_turnos), interno, externo)
+    formato.aplicar_borde_tabla(ws, L.rango_etiquetas_turno(n_turnos), interno, externo)
+    formato.aplicar_borde_tabla(ws, L.rango_tabla_asignaturas(n_asig), interno, externo)
 
 
 def _aplicar_dropdown_aulas(ws, facultad: Facultad) -> None:

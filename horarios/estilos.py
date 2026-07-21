@@ -22,7 +22,17 @@ def regla_formula(formula: str, color_hex: str) -> FormulaRule:
     return FormulaRule(formula=[formula], fill=fill(color_hex))
 
 
+def lado_fino() -> Side:
+    """Lado de grosor fino, para el enrejado interno de las tablas."""
+    return Side(style="thin")
+
+
+def lado_medio() -> Side:
+    """Lado de grosor medio, para el borde exterior (perimetro) de las tablas."""
+    return Side(style="medium")
+
+
 def borde_fino() -> Border:
     """Borde fino en las cuatro caras, para delimitar las celdas de las tablas."""
-    lado = Side(style="thin")
+    lado = lado_fino()
     return Border(left=lado, right=lado, top=lado, bottom=lado)

@@ -65,12 +65,13 @@ def test_tablas_tienen_bordes():
     wb = Workbook()
     ws = wb.active
     construir_hoja_grupo(ws, g, fac, horario=None)
-    # encabezado de la tabla de asignaturas
-    assert ws["I3"].border.left.style == "thin"
-    # celda de la rejilla de horario
+    # Esquina superior izquierda de la tabla de asignaturas: perimetro medium
+    assert ws["I3"].border.left.style == "medium"
+    assert ws["I3"].border.top.style == "medium"
+    # Cara interna de la rejilla de horario: fina
     assert ws[L.celda_asig(0, 1)].border.top.style == "thin"
-    # etiqueta de turno (columna A)
-    assert ws[f"A{L.fila_asig(1)}"].border.left.style == "thin"
+    # Etiqueta de turno (esquina superior de la columna A): perimetro medium
+    assert ws[f"A{L.fila_asig(1)}"].border.left.style == "medium"
 
 
 def test_columnas_ajustadas_al_contenido():

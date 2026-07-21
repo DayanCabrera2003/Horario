@@ -1,7 +1,7 @@
 """Utilidades para aplicar formato de presentacion (bordes, ancho de columnas)
 sobre una worksheet ya construida. Separado de `estilos`, que solo define objetos
 de estilo puros, y de `layout`, que solo calcula posiciones."""
-from openpyxl.styles import Border
+from openpyxl.styles import Border, Side
 
 
 def aplicar_borde(ws, rango: str, borde: Border) -> None:
@@ -13,6 +13,27 @@ def aplicar_borde(ws, rango: str, borde: Border) -> None:
     for fila in ws[rango]:
         for celda in fila:
             celda.border = borde
+
+
+def aplicar_borde_tabla(ws, rango: str, interno: Side, externo: Side) -> None:
+    """Bordea un rango rectangular: `externo` en las caras del perimetro y
+    `interno` en las caras internas.
+
+    openpyxl no tiene borde de rango; el borde es un estilo por celda. Se
+    compone el Border de cada celda segun su posicion en el rango: las celdas
+    del borde reciben el lado `externo` en la cara que da al exterior.
+    """
+    filas = ws[rango]
+    n_filas = len(filas)
+    n_cols = len(filas[0]) if n_filas else 0
+    for i, fila in enumerate(filas):
+        for j, celda in enumerate(fila):
+            celda.border = Border(
+                top=externo if i == 0 else interno,
+                bottom=externo if i == n_filas - 1 else interno,
+                left=externo if j == 0 else interno,
+                right=externo if j == n_cols - 1 else interno,
+            )
 
 
 def autoajustar_columnas(ws, min_ancho: int = 8, max_ancho: int = 45,

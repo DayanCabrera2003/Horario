@@ -24,3 +24,15 @@ def test_borde_fino_tiene_los_cuatro_lados_thin():
     assert b.right.style == "thin"
     assert b.top.style == "thin"
     assert b.bottom.style == "thin"
+
+
+def test_lado_fino_es_thin():
+    from openpyxl.styles.borders import Side
+    lado = estilos.lado_fino()
+    assert isinstance(lado, Side)
+    assert lado.style == "thin"
+
+
+def test_lado_medio_es_medium():
+    lado = estilos.lado_medio()
+    assert lado.style == "medium"

@@ -36,6 +36,24 @@ def test_autoajustar_columnas_respeta_los_limites():
     assert ws.column_dimensions["B"].width == 45
 
 
+def test_aplicar_borde_tabla_perimetro_medium_interior_thin():
+    wb = Workbook()
+    ws = wb.active
+    formato.aplicar_borde_tabla(ws, "B2:D4",
+                                estilos.lado_fino(), estilos.lado_medio())
+    # Esquina superior izquierda: arriba e izquierda medium
+    assert ws["B2"].border.top.style == "medium"
+    assert ws["B2"].border.left.style == "medium"
+    # Celda central: las cuatro caras thin
+    assert ws["C3"].border.top.style == "thin"
+    assert ws["C3"].border.left.style == "thin"
+    assert ws["C3"].border.right.style == "thin"
+    assert ws["C3"].border.bottom.style == "thin"
+    # Esquina inferior derecha: abajo y derecha medium
+    assert ws["D4"].border.bottom.style == "medium"
+    assert ws["D4"].border.right.style == "medium"
+
+
 def test_autoajustar_columnas_ignora_formulas():
     # El texto de una formula ("=...") no refleja el valor mostrado; no debe inflar el ancho.
     wb = Workbook()

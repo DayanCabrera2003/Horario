@@ -55,9 +55,10 @@ def test_bloques_tienen_bordes():
     firmas = construir_hoja_datos(wb, fac)
     construir_hoja_aulas(wb, fac, firmas)
     ws = wb[NOMBRE_HOJA]
-    # encabezado del primer bloque (dia)
-    assert ws["A1"].border.left.style == "thin"
-    # celda de ocupacion (turno 1, primera aula)
+    # Esquina superior izquierda del primer bloque: perimetro medium
+    assert ws["A1"].border.left.style == "medium"
+    assert ws["A1"].border.top.style == "medium"
+    # Celda de ocupacion interior: fina
     assert ws["B2"].border.left.style == "thin"
 
 
