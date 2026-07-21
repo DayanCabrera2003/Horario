@@ -1,4 +1,4 @@
-from openpyxl.styles import PatternFill, Border, Side, Alignment
+from openpyxl.styles import PatternFill, Border, Side, Alignment, Font
 from openpyxl.formatting.rule import FormulaRule
 
 # Colores por "año" (carrera+año). Fijos en código; el usuario no los cambia.
@@ -12,6 +12,7 @@ COLOR_AULA_INVALIDA = "FFF176"   # amarillo
 COLOR_ASIG_DESCONOCIDA = "FFB74D"  # naranja
 COLOR_SOBRE_PLANIFICADA = "EF9A9A"  # rojo
 COLOR_FREC_EXACTA = "A5D6A7"       # verde
+COLOR_ENCABEZADO = "D9D9D9"        # gris claro neutro para cabeceras
 
 
 def fill(hex_rgb: str) -> PatternFill:
@@ -42,3 +43,8 @@ def alineacion_ajuste() -> Alignment:
     """Alineacion con ajuste de texto (wrap): el contenido que no cabe salta
     de linea y la fila crece, para que nada quede cortado."""
     return Alignment(wrap_text=True, vertical="top")
+
+
+def fuente_encabezado() -> Font:
+    """Fuente en negrita para las celdas de encabezado."""
+    return Font(bold=True)

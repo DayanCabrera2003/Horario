@@ -43,3 +43,14 @@ def test_alineacion_ajuste_activa_wrap():
     al = estilos.alineacion_ajuste()
     assert isinstance(al, Alignment)
     assert al.wrap_text is True
+
+
+def test_fuente_encabezado_es_negrita():
+    from openpyxl.styles import Font
+    f = estilos.fuente_encabezado()
+    assert isinstance(f, Font)
+    assert f.bold is True
+
+
+def test_color_encabezado_definido():
+    assert len(estilos.COLOR_ENCABEZADO) == 6  # hex RRGGBB

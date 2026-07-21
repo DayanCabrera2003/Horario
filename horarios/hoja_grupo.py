@@ -48,6 +48,7 @@ def construir_hoja_grupo(ws, grupo: Grupo, facultad: Facultad,
     _aplicar_dropdown_asignaturas(ws, grupo, facultad)
     _aplicar_formato_condicional(ws, grupo, facultad)
     _aplicar_bordes(ws, grupo, facultad)
+    _aplicar_estilo_encabezados(ws, grupo, facultad)
     formato.autoajustar_columnas(ws)
     # Inmoviliza la fila de dias y la columna de etiquetas de turno.
     ws.freeze_panes = L.celda_asig(0, 1)
@@ -62,6 +63,18 @@ def _aplicar_bordes(ws, grupo: Grupo, facultad: Facultad) -> None:
     formato.aplicar_borde_tabla(ws, L.rango_bloque_horario(n_dias, n_turnos), interno, externo)
     formato.aplicar_borde_tabla(ws, L.rango_etiquetas_turno(n_turnos), interno, externo)
     formato.aplicar_borde_tabla(ws, L.rango_tabla_asignaturas(n_asig), interno, externo)
+
+
+def _aplicar_estilo_encabezados(ws, grupo: Grupo, facultad: Facultad) -> None:
+    """Negrita + relleno neutro en dias, etiquetas de turno y cabeceras de la
+    tabla de asignaturas. Solo celdas con contenido (las filas de aula en la
+    columna A quedan sin tocar)."""
+    coords = [f"{L.col_dia(i)}{L.FILA_ENCABEZADO_DIAS}" for i in range(len(facultad.dias))]
+    coords += [f"A{L.fila_asig(t)}" for t in range(1, facultad.turnos + 1)]
+    coords += ["I3", "J3", "K3", "L3", "M3"]
+    formato.aplicar_estilo_encabezado(
+        ws, coords, estilos.fuente_encabezado(),
+        estilos.fill(estilos.COLOR_ENCABEZADO))
 
 
 def _aplicar_dropdown_aulas(ws, facultad: Facultad) -> None:

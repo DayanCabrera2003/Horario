@@ -36,6 +36,15 @@ def aplicar_borde_tabla(ws, rango: str, interno: Side, externo: Side) -> None:
             )
 
 
+def aplicar_estilo_encabezado(ws, celdas, fuente, relleno) -> None:
+    """Aplica `fuente` y `relleno` a las celdas indicadas (iterable de
+    coordenadas). Se estilizan celdas concretas, no rangos, para no pintar
+    celdas en blanco."""
+    for coord in celdas:
+        ws[coord].font = fuente
+        ws[coord].fill = relleno
+
+
 def aplicar_ajuste_texto(ws, rango: str, alineacion) -> None:
     """Aplica `alineacion` (con wrap_text) a cada celda del `rango`, para que
     el contenido largo salte de linea en vez de desbordarse."""

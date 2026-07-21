@@ -62,6 +62,17 @@ def test_aplicar_ajuste_texto_activa_wrap_en_el_rango():
         assert ws[coord].alignment.wrap_text is True
 
 
+def test_aplicar_estilo_encabezado_pone_negrita_y_relleno():
+    wb = Workbook()
+    ws = wb.active
+    ws["A1"] = "Cabecera"
+    formato.aplicar_estilo_encabezado(
+        ws, ["A1"], estilos.fuente_encabezado(),
+        estilos.fill(estilos.COLOR_ENCABEZADO))
+    assert ws["A1"].font.bold is True
+    assert ws["A1"].fill.fgColor.rgb.endswith(estilos.COLOR_ENCABEZADO)
+
+
 def test_autoajustar_columnas_ignora_formulas():
     # El texto de una formula ("=...") no refleja el valor mostrado; no debe inflar el ancho.
     wb = Workbook()

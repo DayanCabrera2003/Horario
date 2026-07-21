@@ -61,6 +61,14 @@ def construir_hoja_aulas(wb, facultad: Facultad, firmas: dict[tuple[str, int, st
         fila_ocup_ini = fila_ini + 1  # fila_ini es el encabezado del bloque
         formato.aplicar_ajuste_texto(ws, f"B{fila_ocup_ini}:{col_fin}{fila - 1}",
                                      estilos.alineacion_ajuste())
+        # Encabezado del bloque (dia + nombres de aula) y etiquetas de turno:
+        # negrita + relleno neutro.
+        coords_encab = [f"{get_column_letter(c)}{fila_ini}"
+                        for c in range(1, 2 + len(facultad.aulas))]
+        coords_encab += [f"A{fila_ini + t}" for t in range(1, facultad.turnos + 1)]
+        formato.aplicar_estilo_encabezado(
+            ws, coords_encab, estilos.fuente_encabezado(),
+            estilos.fill(estilos.COLOR_ENCABEZADO))
         # Bordea el bloque completo (encabezado + filas de turno): enrejado fino
         # interno y perimetro medio. La fila en blanco siguiente queda fuera para
         # separar visualmente los bloques.

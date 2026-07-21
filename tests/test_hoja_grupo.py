@@ -83,6 +83,22 @@ def test_inmoviliza_dias_y_turnos():
     assert ws.freeze_panes == L.celda_asig(0, 1)  # "C4"
 
 
+def test_encabezados_con_estilo():
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    # Encabezado de dia (fila 3) en negrita
+    assert ws[f"{L.col_dia(0)}{L.FILA_ENCABEZADO_DIAS}"].font.bold is True
+    # Cabecera de la tabla de asignaturas en negrita
+    assert ws["I3"].font.bold is True
+    # Etiqueta de turno en negrita
+    assert ws[f"A{L.fila_asig(1)}"].font.bold is True
+    # Una fila de aula intercalada (en blanco) NO recibe relleno de encabezado
+    fill_aula = ws[f"A{L.fila_aula(1)}"].fill
+    assert fill_aula.fgColor.rgb in (None, "00000000")
+
+
 def test_columnas_ajustadas_al_contenido():
     fac, g = _facultad()
     wb = Workbook()
