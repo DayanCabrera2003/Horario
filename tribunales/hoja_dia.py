@@ -37,6 +37,26 @@ def construir_hoja_dia(ws, dia: Dia, facultad: Facultad, asignaciones=()) -> Non
                 )
 
     _aplicar_dropdown_estudiantes(ws, dia, facultad)
+    _aplicar_formato_colision(ws, dia, facultad)
+
+
+def _aplicar_formato_colision(ws, dia: Dia, facultad: Facultad) -> None:
+    """Resalta una celda de profesor si ese profesor aparece en 2+ locales
+    distintos en el mismo momento del dia. Se cuentan locales (no ocurrencias
+    brutas): un profesor con dos roles en una misma tesis no es colision."""
+    n_mom = len(dia.momentos)
+    n_loc = len(facultad.locales)
+    for mi in range(n_mom):
+        rangos_locales = [L.rango_profesores_momento(k, mi, n_mom) for k in range(n_loc)]
+        for li in range(n_loc):
+            f = L.fila_momento(li, mi, n_mom)
+            for col in L.COLS_PROFESOR:
+                celda = f"{col}{f}"
+                # Cuenta en cuantos locales aparece este profesor en este momento.
+                conteo = "+".join(f"IF(COUNTIF({r},{celda})>0,1,0)" for r in rangos_locales)
+                formula = f'AND({celda}<>"",({conteo})>1)'
+                ws.conditional_formatting.add(
+                    celda, estilos.regla_formula(formula, estilos.COLOR_COLISION))
 
 
 def _aplicar_dropdown_estudiantes(ws, dia: Dia, facultad: Facultad) -> None:

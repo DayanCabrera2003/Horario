@@ -47,3 +47,14 @@ def test_dropdown_estudiantes_presente():
     ws = _hoja(_fac())
     formulas_dv = [dv.formula1 for dv in ws.data_validations.dataValidation]
     assert "EstudiantesValidos" in formulas_dv
+
+
+def test_regla_colision_emitida():
+    ws = _hoja(_fac())
+    formulas = []
+    for _sqref, rules in ws.conditional_formatting._cf_rules.items():
+        for rule in rules:
+            if getattr(rule, "formula", None):
+                formulas.extend(rule.formula)
+    # La formula de colision cuenta locales con COUNTIF y compara > 1.
+    assert any("COUNTIF" in f and ">1" in f.replace(" ", "") for f in formulas)
