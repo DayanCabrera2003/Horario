@@ -4,7 +4,7 @@ Responsabilidad unica: dado un anclaje y una lista de pares (color, texto),
 escribe una fila por item con una celda rellena del color y su descripcion en
 la celda de al lado. No decide colores ni textos: los recibe ya resueltos."""
 from openpyxl.utils.cell import coordinate_to_tuple
-from horarios import estilos
+from comun import estilos_base as estilos
 
 
 def escribir_leyenda(ws, celda_ancla: str, items) -> None:

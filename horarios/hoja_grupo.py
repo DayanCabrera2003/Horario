@@ -2,7 +2,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 from horarios import layout as L
 from horarios import estilos
 from comun import formato
-from horarios import leyenda
+from comun import leyenda
 from horarios.modelo import Grupo, Facultad, Horario
 
 
