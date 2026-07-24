@@ -1,0 +1,33 @@
+# Configuracion de ejemplo del generador de tribunales de tesis.
+# Entidades "satelite" (profesores, estudiantes, locales), dias con sus momentos
+# y las tesis con su tribunal. Todo se referencia por id.
+
+profesores:
+  - {id: PIAD, nombre: "Pedro I. Alonso Diaz", grado: "Dr."}
+  - {id: MARA, nombre: "Maria Ramirez",        grado: "MSc."}
+  - {id: LGOM, nombre: "Luis Gomez",           grado: "Dr."}
+  - {id: ANSU, nombre: "Ana Suarez",           grado: "MSc."}
+  - {id: RTOR, nombre: "Raul Torres",          grado: "Dr."}
+
+estudiantes:
+  - {id: JPER, nombre: "Juan Perez"}
+  - {id: LFDZ, nombre: "Laura Fernandez"}
+
+locales:
+  - {id: POST, nombre: "Postgrado"}
+  - {id: DECA, nombre: "Decanato"}
+
+dias:
+  - fecha: 2026-07-27
+    momentos:
+      - {inicio: "09:00", fin: "10:00"}
+      - {inicio: "10:00", fin: "11:00"}
+  - fecha: 2026-07-28
+    momentos:
+      - {inicio: "09:00", fin: "10:00"}
+
+tesis:
+  # PIAD es tutor de esta tesis y secretario de la siguiente: si ambas caen en el
+  # mismo momento en locales distintos, se resalta la colision.
+  - {estudiante: JPER, tutor: PIAD, oponente: MARA, presidente: LGOM, secretario: ANSU}
+  - {estudiante: LFDZ, tutor: RTOR, oponente: LGOM, presidente: MARA, secretario: PIAD}
