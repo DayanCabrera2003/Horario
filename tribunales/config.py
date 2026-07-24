@@ -62,3 +62,29 @@ def cargar_facultad(ruta) -> Facultad:
         profesores=profesores, estudiantes=estudiantes, locales=locales,
         dias=dias, tesis=tuple(tesis),
     )
+
+
+def cargar_asignaciones(ruta, facultad: Facultad) -> tuple:
+    """Devuelve tuple[Asignacion]. Valida estudiante, local, fecha y momento."""
+    if ruta is None:
+        return ()
+    datos = yaml.safe_load(Path(ruta).read_text(encoding="utf-8")) or []
+    ids_est = {e.id for e in facultad.estudiantes}
+    ids_local = {l.id for l in facultad.locales}
+    # {fecha: {momento_id}}
+    momentos_por_fecha = {d.fecha: {m.id for m in d.momentos} for d in facultad.dias}
+
+    asignaciones = []
+    for a in datos:
+        est, local = a["estudiante"], a["local"]
+        fecha, momento = str(a["fecha"]), str(a["momento"])
+        if est not in ids_est:
+            raise ErrorConfig(f"asignacion: estudiante inexistente '{est}'")
+        if local not in ids_local:
+            raise ErrorConfig(f"asignacion: local inexistente '{local}'")
+        if fecha not in momentos_por_fecha:
+            raise ErrorConfig(f"asignacion: fecha inexistente '{fecha}'")
+        if momento not in momentos_por_fecha[fecha]:
+            raise ErrorConfig(f"asignacion {fecha}: momento inexistente '{momento}'")
+        asignaciones.append(Asignacion(estudiante=est, local=local, fecha=fecha, momento=momento))
+    return tuple(asignaciones)
