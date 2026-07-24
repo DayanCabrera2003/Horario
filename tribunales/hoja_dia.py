@@ -1,4 +1,6 @@
 from openpyxl.worksheet.datavalidation import DataValidation
+from comun import formato
+from comun import leyenda
 from tribunales import layout as L
 from tribunales import estilos
 from tribunales.modelo import Dia, Facultad
@@ -38,6 +40,37 @@ def construir_hoja_dia(ws, dia: Dia, facultad: Facultad, asignaciones=()) -> Non
 
     _aplicar_dropdown_estudiantes(ws, dia, facultad)
     _aplicar_formato_colision(ws, dia, facultad)
+    _aplicar_presentacion(ws, dia, facultad)
+
+
+def _aplicar_presentacion(ws, dia: Dia, facultad: Facultad) -> None:
+    """Bordes por bloque, encabezados en negrita, autoajuste, congelado de la
+    columna A y leyenda con el color de colision."""
+    n_mom = len(dia.momentos)
+    interno, externo = estilos.lado_fino(), estilos.lado_medio()
+    coords_encab = []
+    for li in range(len(facultad.locales)):
+        f_tit = L.fila_titulo_local(li, n_mom)
+        f_enc = L.fila_encabezado_local(li, n_mom)
+        f_ultima = L.fila_momento(li, n_mom - 1, n_mom)
+        # Borde del bloque completo (titulo + encabezado + filas de momento).
+        formato.aplicar_borde_tabla(
+            ws, f"{L.COL_MOMENTO}{f_tit}:{L.COL_ULTIMA}{f_ultima}", interno, externo)
+        coords_encab.append(f"{L.COL_MOMENTO}{f_tit}")                 # titulo de local
+        coords_encab += [f"{col}{f_enc}" for col in "ABCDEF"]         # encabezado de columnas
+    formato.aplicar_estilo_encabezado(
+        ws, coords_encab, estilos.fuente_encabezado(),
+        estilos.fill(estilos.COLOR_ENCABEZADO))
+    formato.autoajustar_columnas(ws)
+    # Inmoviliza la columna A (momentos); los bloques se apilan en vertical.
+    ws.freeze_panes = "B1"
+    # Leyenda tras el autoajuste, dos filas bajo el ultimo bloque.
+    ultimo = len(facultad.locales) - 1
+    fila_leyenda = L.fila_momento(ultimo, n_mom - 1, n_mom) + 2
+    ws[f"{L.COL_MOMENTO}{fila_leyenda}"] = "Leyenda"
+    leyenda.escribir_leyenda(
+        ws, f"{L.COL_MOMENTO}{fila_leyenda + 1}",
+        [(estilos.COLOR_COLISION, "Colision: profesor en dos locales a la vez")])
 
 
 def _aplicar_formato_colision(ws, dia: Dia, facultad: Facultad) -> None:

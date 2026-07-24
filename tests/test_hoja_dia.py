@@ -58,3 +58,21 @@ def test_regla_colision_emitida():
                 formulas.extend(rule.formula)
     # La formula de colision cuenta locales con COUNTIF y compara > 1.
     assert any("COUNTIF" in f and ">1" in f.replace(" ", "") for f in formulas)
+
+
+def test_encabezado_en_negrita():
+    ws = _hoja(_fac())
+    assert ws["A1"].font.bold is True   # titulo de local
+    assert ws["A2"].font.bold is True   # encabezado de columnas
+
+
+def test_congela_columna_a():
+    ws = _hoja(_fac())
+    assert ws.freeze_panes == "B1"
+
+
+def test_hoja_dia_tiene_leyenda_de_colision():
+    ws = _hoja(_fac())
+    textos = [c.value for row in ws.iter_rows() for c in row if isinstance(c.value, str)]
+    assert any("Leyenda" in t for t in textos)
+    assert any("olisi" in t for t in textos)  # "colision"/"Colision"
