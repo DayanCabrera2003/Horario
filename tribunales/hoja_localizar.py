@@ -1,5 +1,6 @@
 from openpyxl.utils import quote_sheetname, absolute_coordinate
 from tribunales import layout as L
+from tribunales import estilos
 from tribunales.modelo import Facultad
 
 NOMBRE_HOJA = "Localizar"
@@ -18,11 +19,21 @@ def construir_hoja_localizar(wb, facultad: Facultad) -> None:
     alturas = 0
     for dia in facultad.dias:
         n_mom = len(dia.momentos)
+        hoja_dia = quote_sheetname(dia.fecha)
         for li, local in enumerate(facultad.locales):
             f_tit = L.localizar_fila_titulo(0, alturas)
             ws[f"{L.LOCALIZAR_COL}{f_tit}"] = f"{dia.fecha} · {local.nombre}"
             for mi, momento in enumerate(dia.momentos):
                 f = f_tit + 1 + mi
                 ws[f"{L.LOCALIZAR_COL}{f}"] = momento.id
-                # (F2 anadira aqui el formato condicional de participacion)
+                # Resalta el momento si la persona de la entrada participa en la
+                # tesis asignada en (dia, local, momento): se compara contra las
+                # celdas B..F de la fila de ese momento en la hoja del dia.
+                r = L.fila_momento(li, mi, n_mom)
+                refs = [f"{entrada}={hoja_dia}!${col}${r}"
+                        for col in ("B", "C", "D", "E", "F")]
+                formula = f'AND({entrada}<>"",OR({",".join(refs)}))'
+                ws.conditional_formatting.add(
+                    f"{L.LOCALIZAR_COL}{f}",
+                    estilos.regla_formula(formula, estilos.COLOR_LOCALIZADO))
             alturas += L.localizar_altura_tabla(n_mom)

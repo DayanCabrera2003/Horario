@@ -20,3 +20,16 @@ def test_celda_entrada_y_titulo():
     assert ws["A1"].value is not None            # etiqueta "Localizar a:"
     textos = [c.value for row in ws.iter_rows() for c in row if isinstance(c.value, str)]
     assert any("Postgrado" in t and "2026-07-27" in t for t in textos)  # titulo dia-local
+
+
+def test_regla_participacion_referencia_hoja_dia():
+    wb = Workbook(); wb.remove(wb.active)
+    construir_hoja_localizar(wb, _fac())
+    ws = wb[NOMBRE_HOJA]
+    formulas = []
+    for _sqref, rules in ws.conditional_formatting._cf_rules.items():
+        for rule in rules:
+            if getattr(rule, "formula", None):
+                formulas.extend(rule.formula)
+    # Debe comparar la entrada global contra celdas de la hoja del dia.
+    assert any("$B$1" in f and "2026-07-27" in f for f in formulas)
