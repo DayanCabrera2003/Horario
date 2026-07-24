@@ -33,3 +33,11 @@ def test_regla_participacion_referencia_hoja_dia():
                 formulas.extend(rule.formula)
     # Debe comparar la entrada global contra celdas de la hoja del dia.
     assert any("$B$1" in f and "2026-07-27" in f for f in formulas)
+
+
+def test_localizar_tiene_leyenda():
+    wb = Workbook(); wb.remove(wb.active)
+    construir_hoja_localizar(wb, _fac())
+    ws = wb[NOMBRE_HOJA]
+    textos = [c.value for row in ws.iter_rows() for c in row if isinstance(c.value, str)]
+    assert any("Leyenda" in t for t in textos)
