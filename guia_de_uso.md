@@ -4,6 +4,7 @@ Guía práctica y paso a paso para **usar** la herramienta: cómo generar el Exc
 dos archivos YAML, qué escribir para ver funcionar cada cosa, y qué se puede y qué no se puede hacer.
 
 > Esta guía es para la persona que arma los horarios: cómo generar el Excel y cómo llenar los YAML.
+> Para el generador de tribunales de tesis, ver [`guia_de_uso_tribunales.md`](guia_de_uso_tribunales.md).
 
 ---
 
