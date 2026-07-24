@@ -1,8 +1,8 @@
 from openpyxl.utils import quote_sheetname, get_column_letter
 from horarios import layout as L
 from horarios import estilos
-from horarios import formato
-from horarios import leyenda
+from comun import formato
+from comun import leyenda
 from horarios.modelo import Facultad
 
 NOMBRE_HOJA = "Aulas"

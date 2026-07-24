@@ -1,5 +1,6 @@
 from openpyxl import Workbook
-from horarios import leyenda, estilos
+from horarios import estilos
+from comun import leyenda
 
 
 def test_escribir_leyenda_pone_color_y_texto_por_fila():

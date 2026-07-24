@@ -1,0 +1,7 @@
+# Asignaciones de ejemplo (copia fiel): que tesis va en cada local, dia y momento.
+# La tesis se identifica por su estudiante. Estas dos comparten el momento
+# 09:00-10:00 del 2026-07-27 en locales distintos, y PIAD participa en ambas:
+# al abrir el archivo, PIAD aparece resaltado (colision).
+
+- {estudiante: JPER, local: POST, fecha: 2026-07-27, momento: "09:00-10:00"}
+- {estudiante: LFDZ, local: DECA, fecha: 2026-07-27, momento: "09:00-10:00"}

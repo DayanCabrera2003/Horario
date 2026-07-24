@@ -1,5 +1,10 @@
-from openpyxl.styles import PatternFill, Border, Side, Alignment, Font
-from openpyxl.formatting.rule import FormulaRule
+"""Colores de dominio del generador de horarios de clases. Las primitivas de
+estilo genericas (fill, reglas, bordes, fuentes) viven en `comun.estilos_base`
+y se reexportan aqui para no tocar el resto del paquete `horarios`."""
+from comun.estilos_base import (  # noqa: F401
+    fill, regla_formula, lado_fino, lado_medio, borde_fino,
+    alineacion_ajuste, fuente_encabezado,
+)
 
 # Colores por "año" (carrera+año). Fijos en código; el usuario no los cambia.
 ANIO_COLOR = {
@@ -13,38 +18,3 @@ COLOR_ASIG_DESCONOCIDA = "FFB74D"  # naranja
 COLOR_SOBRE_PLANIFICADA = "EF9A9A"  # rojo
 COLOR_FREC_EXACTA = "A5D6A7"       # verde
 COLOR_ENCABEZADO = "D9D9D9"        # gris claro neutro para cabeceras
-
-
-def fill(hex_rgb: str) -> PatternFill:
-    return PatternFill(start_color=hex_rgb, end_color=hex_rgb, fill_type="solid")
-
-
-def regla_formula(formula: str, color_hex: str) -> FormulaRule:
-    return FormulaRule(formula=[formula], fill=fill(color_hex))
-
-
-def lado_fino() -> Side:
-    """Lado de grosor fino, para el enrejado interno de las tablas."""
-    return Side(style="thin")
-
-
-def lado_medio() -> Side:
-    """Lado de grosor medio, para el borde exterior (perimetro) de las tablas."""
-    return Side(style="medium")
-
-
-def borde_fino() -> Border:
-    """Borde fino en las cuatro caras, para delimitar las celdas de las tablas."""
-    lado = lado_fino()
-    return Border(left=lado, right=lado, top=lado, bottom=lado)
-
-
-def alineacion_ajuste() -> Alignment:
-    """Alineacion con ajuste de texto (wrap): el contenido que no cabe salta
-    de linea y la fila crece, para que nada quede cortado."""
-    return Alignment(wrap_text=True, vertical="top")
-
-
-def fuente_encabezado() -> Font:
-    """Fuente en negrita para las celdas de encabezado."""
-    return Font(bold=True)

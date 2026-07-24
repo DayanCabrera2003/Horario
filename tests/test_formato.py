@@ -1,5 +1,6 @@
 from openpyxl import Workbook
-from horarios import estilos, formato
+from horarios import estilos
+from comun import formato
 
 
 def test_aplicar_borde_pone_borde_en_cada_celda_del_rango():
