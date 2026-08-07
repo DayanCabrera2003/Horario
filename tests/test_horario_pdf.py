@@ -6,8 +6,15 @@ def test_normalizar_aula():
     assert H.normalizar_aula("8") == "Aula 8"
     assert H.normalizar_aula("Lab") == "Lab"
     assert H.normalizar_aula("Lab2") == "Lab2"
+    assert H.normalizar_aula("Aula Lab") == "Lab"
     assert H.normalizar_aula("SEDER") == "SEDER"
     assert H.normalizar_aula("") == ""
+
+
+def test_normalizar_aula_rechaza_no_reconocidas():
+    # Restos de celdas con notacion rara no son aulas -> "" (pasan a incidencia).
+    assert H.normalizar_aula("4:45pm a 5:35pm") == ""
+    assert H.normalizar_aula("I cp 5") == ""
 
 
 def test_id_asignatura_con_tipo():
@@ -21,6 +28,9 @@ def test_parsear_celda_simple_y_tipo():
     assert H.parsear_celda("IP Aula 8*", abrevs) == [("IP", "Aula 8")]
     assert H.parsear_celda("AM I Aula 7*", abrevs) == [("AM-I", "Aula 7")]
     assert H.parsear_celda("ED c 2", abrevs) == [("ED-C", "Aula 2")]
+    # Tipo pegado al numero ('MD c6') y aula tipo Lab ('cp Lab2').
+    assert H.parsear_celda("MD c6", abrevs | {"MD"}) == [("MD-C", "Aula 6")]
+    assert H.parsear_celda("RN cp Lab2", abrevs | {"RN"}) == [("RN-CP", "Lab2")]
     # La anotacion '(EDO)' se ignora; queda 'MA cp 6'.
     assert H.parsear_celda("MA (EDO) cp 6 (con C211)", abrevs) == [("MA-CP", "Aula 6")]
 
@@ -59,6 +69,9 @@ def test_construir_frecuencias_y_horarios():
     assert asigs["AM-I"] == 3
     assert asigs["IP"] == 2
     assert asigs["L"] == 2
+    # El nombre de 'AM-I' se recupera de la tabla (id con guion != sufijo de tipo).
+    nombres = {a["id"]: a["nombre"] for a in fac["carreras"]["D"]["años"][1]["asignaturas"]}
+    assert nombres["AM-I"] == "Análisis Matemático I"
     # El grupo D111 aparece en la sesion 1 de D1.
     assert fac["carreras"]["D"]["años"][1]["sesiones"] == {1: {"grupos": [1]}}
     # Horario del grupo: celda con asig y aula.

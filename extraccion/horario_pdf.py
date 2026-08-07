@@ -8,6 +8,9 @@ frecuencia por conteo. Las anotaciones entre parentesis ('(con C211)', '(s. 1-8)
 se ignoran, como pidio Fernando.
 """
 import re
+from pathlib import Path
+
+import yaml
 
 DIAS = ("Lunes", "Martes", "Miércoles", "Jueves", "Viernes")
 
@@ -27,17 +30,22 @@ def normalizar_aula(crudo: str) -> str:
     t = crudo.strip().rstrip("*").strip()
     if not t:
         return ""
-    m = re.fullmatch(r"[Aa]ula\s*([0-9A-Za-z]+)", t)
+    # 'Aula X': si X es un numero -> 'Aula N'; si es un nombre (Lab, SEDER) se
+    # normaliza ese nombre ('Aula Lab' -> 'Lab').
+    m = re.fullmatch(r"(?i)aula\s*(.+)", t)
     if m:
-        return f"Aula {m.group(1)}"
+        interior = m.group(1).strip()
+        return f"Aula {interior}" if interior.isdigit() else normalizar_aula(interior)
     if re.fullmatch(r"[0-9]+", t):
         return f"Aula {t}"
-    if re.fullmatch(r"(?i)lab\s*([0-9]*)", t):
+    if re.fullmatch(r"(?i)lab\s*[0-9]*", t):
         num = re.sub(r"(?i)lab\s*", "", t)
         return f"Lab{num}" if num else "Lab"
     if t.upper() == "SEDER":
         return "SEDER"
-    return t   # aula con nombre propio no previsto: se conserva tal cual
+    # No se reconoce como aula (p. ej. resto de una celda con notacion rara): se
+    # devuelve "" para que la celda quede como incidencia, no como un aula falsa.
+    return ""
 
 
 def id_asignatura(abrev: str, tipo: str) -> str:
@@ -64,7 +72,9 @@ def parsear_celda(crudo: str, abreviaturas) -> list:
     if not crudo or not crudo.strip():
         return []
     salida = []
-    for parte in crudo.split("/"):
+    # Solo se divide en ' / ' con espacios (division por semanas); un '/' pegado es
+    # parte de la abreviatura ('SN/DN', 'c/s').
+    for parte in re.split(r"\s+/\s+", crudo):
         limpio = quitar_anotaciones(parte)
         if not limpio:
             continue
@@ -88,9 +98,10 @@ def _match_abreviatura(texto: str, abreviaturas):
 
 
 def _tipo_y_aula(resto: str) -> tuple:
-    """Separa el tipo de clase ('c'/'cp') del resto (el aula). Sin marca de tipo,
-    devuelve ("", resto)."""
-    m = re.match(r"(?i)(cp|c)\b\s*(.*)", resto)
+    """Separa el tipo de clase ('c'/'cp') del resto (el aula). Tolera el tipo
+    pegado al numero ('c6' -> 'c 6'). Sin marca de tipo, devuelve ("", resto)."""
+    resto = re.sub(r"(?i)^(cp|c)(\d)", r"\1 \2", resto)   # 'c6' -> 'c 6'
+    m = re.match(r"(?i)(cp|c)\s+(.+)", resto)
     if m:
         return m.group(1).lower(), m.group(2).strip()
     return "", resto
@@ -113,8 +124,6 @@ def construir(grupos: dict, tablas: dict) -> dict:
     horarios = {}
     # conteo de asignaturas por (carrera, anio): id -> nº de apariciones
     frecuencias = defaultdict(Counter)
-    # nombres por (carrera, anio): id_asig -> nombre legible
-    nombres = defaultdict(dict)
     max_turno = 0
 
     for grupo_id, rejilla in grupos.items():
@@ -138,19 +147,26 @@ def construir(grupos: dict, tablas: dict) -> dict:
                 celdas[(dia, turno)] = {"asig": id_asig, "aula": aula}
                 aulas.add(aula)
                 frecuencias[(carrera, anio)][id_asig] += 1
-                tabla = tablas.get((carrera, anio), {})
-                abrev = id_asig.rsplit("-", 1)[0].replace("-", " ")
-                nombres[(carrera, anio)].setdefault(
-                    id_asig, tabla.get(abrev, abrev))
         if celdas:
             horarios[grupo_id] = celdas
 
-    facultad = _construir_facultad(grupos, frecuencias, nombres, aulas, max_turno)
+    facultad = _construir_facultad(grupos, frecuencias, tablas, aulas, max_turno)
     horarios_yaml = _horarios_a_yaml(horarios)
     return {"facultad": facultad, "horarios": horarios_yaml, "incidencias": incidencias}
 
 
-def _construir_facultad(grupos, frecuencias, nombres, aulas, turnos) -> dict:
+def _nombre_de_id(id_asig: str, tabla: dict) -> str:
+    """Recupera el nombre legible de un id de asignatura probando los sufijos de
+    tipo (sin sufijo, -C, -CP), ya que a partir del id solo no se puede distinguir
+    'AM-I' (abreviatura 'AM I') de un sufijo de tipo."""
+    for abrev, nombre in tabla.items():
+        if id_asig in (id_asignatura(abrev, ""), id_asignatura(abrev, "c"),
+                       id_asignatura(abrev, "cp")):
+            return nombre
+    return id_asig
+
+
+def _construir_facultad(grupos, frecuencias, tablas, aulas, turnos) -> dict:
     """Arma el dict de facultad.yaml: aulas, dias, turnos y carreras/años con sus
     asignaturas (id, nombre, frecuencia) y sesiones (grupos)."""
     from collections import defaultdict
@@ -164,9 +180,9 @@ def _construir_facultad(grupos, frecuencias, nombres, aulas, turnos) -> dict:
     carreras = defaultdict(lambda: {"años": {}})
     claves = sorted(set(list(frecuencias) + list(sesiones)))
     for (carrera, anio) in claves:
+        tabla = tablas.get((carrera, anio), {})
         asignaturas = [
-            {"id": aid, "nombre": nombres[(carrera, anio)].get(aid, aid),
-             "frecuencia": frec}
+            {"id": aid, "nombre": _nombre_de_id(aid, tabla), "frecuencia": frec}
             for aid, frec in sorted(frecuencias[(carrera, anio)].items())
         ]
         ses = {s: {"grupos": sorted(nums)} for s, nums in sorted(sesiones[(carrera, anio)].items())}
@@ -199,3 +215,27 @@ def _horarios_a_yaml(horarios) -> dict:
             for dia in DIAS if dia in por_dia
         }
     return salida
+
+
+def escribir_yaml(datos: dict, ruta_facultad, ruta_horarios) -> None:
+    """Escribe facultad.yaml y horarios.yaml a partir de `datos` (salida de
+    `construir`)."""
+    Path(ruta_facultad).write_text(
+        yaml.safe_dump(datos["facultad"], sort_keys=False, allow_unicode=True,
+                       default_flow_style=False),
+        encoding="utf-8")
+    Path(ruta_horarios).write_text(
+        yaml.safe_dump(datos["horarios"], sort_keys=False, allow_unicode=True,
+                       default_flow_style=False),
+        encoding="utf-8")
+
+
+def escribir_incidencias(datos: dict, ruta) -> None:
+    """Escribe el informe de incidencias (celdas no parseadas, celdas multiples)
+    para revisar la transcripcion a mano."""
+    incidencias = datos["incidencias"]
+    lineas = ["# Incidencias de la importacion del horario (PDF)", "",
+              f"Total: {len(incidencias)}", ""]
+    lineas.extend(f"- {inc}" for inc in incidencias)
+    lineas.append("")
+    Path(ruta).write_text("\n".join(lineas), encoding="utf-8")
