@@ -192,6 +192,35 @@ YAML antes de generar el libro definitivo.
 
 ---
 
+## Importar el horario desde el PDF
+
+La transcripción del horario del Primer Período 2024-2025 de MATCOM (PDF de
+Gianni) vive en `extraccion/datos_horario_2024.py` (datos puros: por grupo,
+turno → día → celda tal cual el PDF). El módulo `extraccion/horario_pdf.py` la
+convierte al `facultad.yaml` y `horarios.yaml` del generador de horarios:
+
+```bash
+python importar_horario.py \
+    --facultad facultad.yaml \
+    --horarios horarios.yaml \
+    --incidencias incidencias-horario.md
+```
+
+Reglas de conversión:
+
+- **Turnos** tal cual el PDF (1-3 mañana, 4-6 tarde según cada año).
+- **Tipo de clase** en el id de la asignatura: `ED c 2` → `ED-C` en `Aula 2`;
+  `ED cp 2` → `ED-CP`. Sin marca de tipo, el id es la abreviatura sola.
+- **Aula** normalizada: `Aula 4`/`4` → `Aula 4`; `Lab`, `Lab2`, `SEDER` tal cual.
+- **Frecuencia** de cada asignatura = número de veces que aparece en el grid.
+- **Anotaciones** entre paréntesis (`(con C211)`, `(s. 1-8)`) se ignoran.
+- Las **celdas divididas por semanas** (`F ... / ICD ...`) toman la primera y
+  registran la segunda como incidencia.
+- Las celdas que no se reconocen (electivas sin aula, notación rara) quedan en el
+  informe de **incidencias** para revisarlas y completarlas a mano.
+
+---
+
 ## Tests
 
 ```bash
