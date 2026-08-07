@@ -161,8 +161,9 @@ tesis:
   lleva su tribunal: `tutor`, `oponente`, `presidente`, `secretario` (todos son
   ids de profesor). El estudiante no es profesor.
 
-> **Todo por id.** Los desplegables muestran ids, las tablas muestran ids y en la
-> hoja Localizar se escribe el id. Los nombres completos viven solo en el YAML.
+> **Casi todo por id.** Los desplegables muestran ids, las tablas de día muestran
+> ids y en la hoja Localizar se escribe el id. Para leer los **nombres completos**
+> sin abrir el YAML, mira la hoja **Tribunales**, que resuelve cada tesis a nombres.
 
 ---
 
@@ -235,7 +236,15 @@ local.
 
 ## 7. Cómo leer el Excel generado
 
-El archivo tiene tres tipos de hoja:
+El archivo tiene cuatro tipos de hoja:
+
+### Hoja `Tribunales`
+
+La primera hoja visible. Una fila por tesis con la información completa en
+**nombres**, no en ids: `Estudiante (id) | Estudiante | Tutor | Oponente |
+Presidente | Secretario`. Los profesores salen con su grado (p. ej. `Dr. Pedro`).
+Es de solo lectura: se regenera desde el YAML en cada ejecución y sirve para
+consultar de un vistazo quién forma cada tribunal.
 
 ### Una hoja por día (`2026-07-27`, `2026-07-28`, …)
 
@@ -252,10 +261,13 @@ Oponente | Presidente | Secretario`. Filas = los momentos de ese día.
 ### Hoja `Localizar`
 
 - Una **celda de entrada global** (arriba) donde escribes el id de una persona.
-- Una tabla de una columna por cada combinación **día–local**, con los momentos
-  de ese día.
+- Una tabla por cada combinación **día–local**, con los momentos de ese día y una
+  columna **Rol** al lado.
 - **Amarillo:** el momento donde la persona escrita participa. La leyenda al pie
   lo recuerda.
+- La columna **Rol** dice en calidad de qué participa en ese momento (tutor,
+  oponente, presidente, secretario o estudiante); queda en blanco donde no
+  participa.
 
 ### Hoja `Datos` (oculta)
 

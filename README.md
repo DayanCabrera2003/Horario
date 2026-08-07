@@ -112,13 +112,18 @@ Planifica las defensas de tesis: qué tribunal (estudiante, tutor, oponente,
 presidente, secretario) va en cada local, día y momento. El `.xlsx` generado
 contiene:
 
+- Una hoja **Tribunales** (la primera visible) con la información completa de
+  cada tesis en **nombres**, no en ids: estudiante y los cuatro roles del
+  tribunal (tutor, oponente, presidente, secretario). Sirve para leer el
+  tribunal de un vistazo sin descifrar los identificadores.
 - Una **hoja por día** con una tabla por local. Eliges el estudiante en un
   desplegable (por id) y el tribunal se autocompleta con fórmulas. Se **resalta
   la colisión** cuando un profesor cae en dos locales distintos en el mismo
   momento.
 - Una hoja **Localizar**: escribes el id de un profesor o estudiante en una
   celda de entrada global y se resaltan todos los momentos en los que participa,
-  por día y local.
+  por día y local. Junto a cada momento, una columna **Rol** indica en calidad
+  de qué participa (tutor, oponente, presidente, secretario o estudiante).
 - Una hoja **Datos** (oculta) con la tabla tesis-tribunal y la lista de
   estudiantes que alimentan los desplegables y las fórmulas.
 
