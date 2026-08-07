@@ -161,6 +161,37 @@ Detalle paso a paso en [`guia_de_uso_tribunales.md`](guia_de_uso_tribunales.md).
 
 ---
 
+## Importar tribunales desde Excel
+
+El paquete `extraccion/` convierte los Excel de tribunales (formato de Carmen:
+`Día, Hora, Estudiante, Tutor, Presidente, Secretario, Vocal, Oponente, Local,
+Observaciones`) al `tribunal.yaml` y `asignaciones.yaml` que consume el generador.
+
+```bash
+python importar_tribunales.py entrada1.xlsx entrada2.xlsx \
+    --tribunal tribunal.yaml \
+    --asignaciones asignaciones.yaml \
+    --revision revision-tribunales.md
+```
+
+Qué hace la importación:
+
+- **Normaliza nombres**: separa el grado (`MSc.`, `Dr.`…), quita anotaciones entre
+  paréntesis y unifica variantes y erratas del mismo profesor en un único `id`.
+- **Deduplica de forma conservadora** y deja el mapa `id → nombre` (con las
+  variantes fusionadas) en el **informe de revisión** para verificarlo a mano.
+- **Detecta co-tutorías** (varios tutores), **tesis conjuntas** (varios
+  estudiantes) y el **vocal**.
+- **Normaliza locales** (`Posgrado`/`Postgrado` → uno) y **horas** (las de la tarde
+  escritas como `1:30` se interpretan como `13:30`).
+- Registra en el informe las **incidencias** (filas sin fecha/estudiante, horas o
+  locales no reconocibles) para revisarlas.
+
+Conviene revisar el informe (sobre todo las fusiones de nombres) y corregir el
+YAML antes de generar el libro definitivo.
+
+---
+
 ## Tests
 
 ```bash
