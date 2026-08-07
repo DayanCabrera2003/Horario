@@ -4,6 +4,7 @@ from openpyxl import Workbook
 
 from tribunales.config import cargar_facultad, cargar_asignaciones
 from tribunales.hoja_datos import construir_hoja_datos
+from tribunales.hoja_tribunales import construir_hoja_tribunales
 from tribunales.hoja_dia import construir_hoja_dia
 from tribunales.hoja_localizar import construir_hoja_localizar
 
@@ -19,6 +20,8 @@ def generar(config_path: Path, asignaciones_path, salida: Path) -> Path:
 
     # Datos primero: define rangos nombrados que usan las hojas de dia.
     construir_hoja_datos(wb, facultad)
+    # Tribunales: vista legible (nombres) y primera hoja visible del libro.
+    construir_hoja_tribunales(wb, facultad)
     for dia in facultad.dias:
         ws = wb.create_sheet(dia.fecha)
         construir_hoja_dia(ws, dia, facultad, asignaciones=asignaciones)

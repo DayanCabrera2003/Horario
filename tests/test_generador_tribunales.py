@@ -32,6 +32,7 @@ def test_genera_hojas_esperadas(tmp_path):
     assert "Localizar" in wb.sheetnames
     assert "2026-07-27" in wb.sheetnames
     assert "Datos" in wb.sheetnames
+    assert "Tribunales" in wb.sheetnames
 
 
 def test_genera_con_asignaciones(tmp_path):
