@@ -23,8 +23,8 @@ def test_escribe_id_y_formulas():
     # Asignadas de la primera asignatura = COUNTIF sobre el rango del horario
     asignadas = ws[L.celda_asig_tabla_asignadas(0)].value
     assert asignadas.startswith("=COUNTIF(")
-    # fixture: 2 días, 6 turnos -> rango del horario C4:D15
-    assert "C4:D15" in asignadas
+    # fixture: 2 días, 6 turnos -> rango del horario B4:C15
+    assert "B4:C15" in asignadas
     faltan = ws[L.celda_asig_tabla_faltan(0)].value
     assert faltan.startswith("=")
 
@@ -80,7 +80,7 @@ def test_inmoviliza_dias_y_turnos():
     ws = wb.active
     construir_hoja_grupo(ws, g, fac, horario=None)
     # Freeze en la primera celda editable: fija la fila de dias (3) y la columna A
-    assert ws.freeze_panes == L.celda_asig(0, 1)  # "C4"
+    assert ws.freeze_panes == L.celda_asig(0, 1)  # "B4"
 
 
 def test_encabezados_con_estilo():

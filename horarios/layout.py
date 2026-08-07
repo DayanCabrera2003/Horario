@@ -3,7 +3,9 @@ from openpyxl.utils import get_column_letter
 # --- Hoja de grupo ---
 CELDA_GRUPO_ID = "B1"
 FILA_ENCABEZADO_DIAS = 3
-COL_PRIMER_DIA = 3          # C
+# Los dias arrancan en la columna B, pegados a la columna A de etiquetas de
+# turno: asi la columna de turnos queda unida a la rejilla de dias, sin hueco.
+COL_PRIMER_DIA = 2          # B
 COL_TABLA_ASIG = 9          # I
 FILA_PRIMERA_ASIG = 4
 
