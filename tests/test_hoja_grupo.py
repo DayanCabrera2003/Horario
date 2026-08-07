@@ -88,6 +88,21 @@ def test_fondo_en_filas_de_aula():
     assert estilos.COLOR_FONDO_AULA not in (asig.fgColor.rgb or "")
 
 
+def test_padding_en_celdas_del_horario():
+    # Padding aproximado para Calc: sangria + centrado vertical en la rejilla y
+    # mayor alto de fila. El .xlsx no tiene padding real de celda.
+    from horarios.hoja_grupo import ALTO_FILA_HORARIO
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    alin = ws[L.celda_asig(0, 1)].alignment
+    assert alin.indent >= 1
+    assert alin.vertical == "center"
+    # La fila de la rejilla tiene un alto mayor que el por defecto.
+    assert ws.row_dimensions[L.fila_asig(1)].height == ALTO_FILA_HORARIO
+
+
 def test_linea_gruesa_separa_turnos():
     # Un turno ocupa 2 filas (asignatura + aula). La frontera inferior de la fila
     # de aula de cada turno (salvo el ultimo) lleva un borde grueso separador.

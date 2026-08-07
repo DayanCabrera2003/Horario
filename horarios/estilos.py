@@ -3,7 +3,7 @@ estilo genericas (fill, reglas, bordes, fuentes) viven en `comun.estilos_base`
 y se reexportan aqui para no tocar el resto del paquete `horarios`."""
 from comun.estilos_base import (  # noqa: F401
     fill, regla_formula, lado_fino, lado_medio, lado_grueso, borde_fino,
-    alineacion_ajuste, fuente_encabezado,
+    alineacion_ajuste, alineacion_padding, fuente_encabezado,
 )
 
 # Colores por "año" (carrera+año). Fijos en código; el usuario no los cambia.

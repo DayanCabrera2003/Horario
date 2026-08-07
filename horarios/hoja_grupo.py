@@ -5,6 +5,10 @@ from comun import formato
 from comun import leyenda
 from horarios.modelo import Grupo, Facultad, Horario
 
+# Alto de fila (en puntos) de la rejilla y la tabla: da aire vertical, parte del
+# padding aproximado que se pide para que en Calc no queden las celdas apretadas.
+ALTO_FILA_HORARIO = 22
+
 
 def construir_hoja_grupo(ws, grupo: Grupo, facultad: Facultad,
                          horario: Horario | None = None) -> None:
@@ -51,12 +55,33 @@ def construir_hoja_grupo(ws, grupo: Grupo, facultad: Facultad,
     _aplicar_formato_condicional(ws, grupo, facultad)
     _aplicar_bordes(ws, grupo, facultad)
     _aplicar_estilo_encabezados(ws, grupo, facultad)
-    formato.autoajustar_columnas(ws)
+    # 'extra' algo mayor que el habitual para dejar sitio a la sangria del padding.
+    formato.autoajustar_columnas(ws, extra=4)
+    _aplicar_padding(ws, grupo, facultad)
     # La leyenda va tras el autoajuste para que sus textos largos no ensanchen
     # la columna J (que es tambien la columna "Nombre" de la tabla).
     _aplicar_leyenda(ws, grupo, facultad)
     # Inmoviliza la fila de dias y la columna de etiquetas de turno.
     ws.freeze_panes = L.celda_asig(0, 1)
+
+
+def _aplicar_padding(ws, grupo: Grupo, facultad: Facultad) -> None:
+    """Da 'aire' a las celdas del horario (padding aproximado para Calc): sangria
+    izquierda y centrado vertical en la rejilla y la tabla, mas un alto de fila
+    mayor. El .xlsx no tiene padding real de celda, asi que se emula asi."""
+    n_dias, n_turnos = len(facultad.dias), facultad.turnos
+    n_asig = len(facultad.asignaturas_de(grupo))
+    alin = estilos.alineacion_padding()
+    col_fin_dias = L.col_dia(n_dias - 1)
+    fila_fin_grid = L.fila_aula(n_turnos)
+    fila_fin_tabla = L.FILA_PRIMERA_ASIG + n_asig - 1
+    # Rejilla (incluye la columna A de turnos) y tabla de asignaturas.
+    formato.aplicar_alineacion(
+        ws, f"A{L.FILA_ENCABEZADO_DIAS}:{col_fin_dias}{fila_fin_grid}", alin)
+    formato.aplicar_alineacion(ws, f"I3:M{fila_fin_tabla}", alin)
+    formato.aplicar_alto_filas(
+        ws, L.FILA_ENCABEZADO_DIAS, max(fila_fin_grid, fila_fin_tabla),
+        ALTO_FILA_HORARIO)
 
 
 def _aplicar_fondo_aulas(ws, facultad: Facultad) -> None:

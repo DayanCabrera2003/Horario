@@ -41,6 +41,14 @@ def alineacion_ajuste() -> Alignment:
     return Alignment(wrap_text=True, vertical="top")
 
 
+def alineacion_padding() -> Alignment:
+    """Alineacion con sangria izquierda y centrado vertical. El formato .xlsx no
+    tiene un 'padding' real de celda; esto lo aproxima para que el contenido no
+    quede pegado a los bordes al abrir en Calc (que ademas no respeta indent muy
+    grandes). Va acompanada de un mayor alto de fila para el aire vertical."""
+    return Alignment(horizontal="left", vertical="center", indent=1)
+
+
 def fuente_encabezado() -> Font:
     """Fuente en negrita para las celdas de encabezado."""
     return Font(bold=True)

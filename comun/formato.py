@@ -66,12 +66,24 @@ def aplicar_relleno(ws, rango: str, relleno) -> None:
             celda.fill = relleno
 
 
-def aplicar_ajuste_texto(ws, rango: str, alineacion) -> None:
-    """Aplica `alineacion` (con wrap_text) a cada celda del `rango`, para que
-    el contenido largo salte de linea en vez de desbordarse."""
+def aplicar_alineacion(ws, rango: str, alineacion) -> None:
+    """Aplica `alineacion` a cada celda del `rango`."""
     for fila in ws[rango]:
         for celda in fila:
             celda.alignment = alineacion
+
+
+def aplicar_ajuste_texto(ws, rango: str, alineacion) -> None:
+    """Aplica `alineacion` (con wrap_text) a cada celda del `rango`, para que
+    el contenido largo salte de linea en vez de desbordarse."""
+    aplicar_alineacion(ws, rango, alineacion)
+
+
+def aplicar_alto_filas(ws, fila_ini: int, fila_fin: int, alto: float) -> None:
+    """Fija el alto (en puntos) de las filas de `fila_ini` a `fila_fin` inclusive,
+    para dar aire vertical (parte del padding aproximado)."""
+    for fila in range(fila_ini, fila_fin + 1):
+        ws.row_dimensions[fila].height = alto
 
 
 def autoajustar_columnas(ws, min_ancho: int = 8, max_ancho: int = 45,
