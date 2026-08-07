@@ -137,7 +137,12 @@ dias:
       - {inicio: "09:00", fin: "10:00"}
 
 tesis:
-  - {estudiante: JPER, tutor: PIAD, oponente: MARA, presidente: LGOM, secretario: ANSU}
+  - estudiantes: [JPER]
+    tutores: [PIAD]
+    oponente: MARA
+    presidente: LGOM
+    secretario: ANSU
+    vocal: RTOR        # opcional
 ```
 
 ### Campo por campo
@@ -157,9 +162,20 @@ tesis:
   - **`momentos`** — la lista de momentos (franjas) posibles **de ese día**. Cada
     momento tiene `inicio` y `fin` (`HH:MM`). Los momentos pueden ser distintos
     de un día a otro.
-- **`tesis`** — lista de tesis. Cada tesis se identifica por su **estudiante** y
-  lleva su tribunal: `tutor`, `oponente`, `presidente`, `secretario` (todos son
-  ids de profesor). El estudiante no es profesor.
+- **`tesis`** — lista de tesis. Cada tesis lleva su tribunal:
+  - **`estudiantes`** — lista de ids de estudiante. Normalmente uno; con **dos** es
+    una **tesis conjunta** (dos estudiantes defienden juntos). El primero es el
+    principal (la clave de la tesis en desplegables y asignaciones).
+  - **`tutores`** — lista de ids de profesor. Normalmente uno; con varios es una
+    **co-tutoría**. El primero es el tutor principal.
+  - **`oponente`**, **`presidente`**, **`secretario`** — un id de profesor cada uno.
+  - **`vocal`** — un id de profesor (**opcional**; se puede omitir).
+  - Se admite también el formato antiguo en singular: `estudiante:` y `tutor:` en
+    vez de las listas. El estudiante no es profesor.
+
+> **Nota sobre co-tutorías.** Cuando hay varios tutores, la casilla de tutor de la
+> hoja de día muestra los nombres unidos; en ese caso la detección de colisión no
+> se aplica a los co-tutores (sí al resto de roles).
 
 > **Casi todo por id.** Los desplegables muestran ids, las tablas de día muestran
 > ids y en la hoja Localizar se escribe el id. Para leer los **nombres completos**
@@ -242,14 +258,15 @@ El archivo tiene cuatro tipos de hoja:
 
 La primera hoja visible. Una fila por tesis con la información completa en
 **nombres**, no en ids: `Estudiante (id) | Estudiante | Tutor | Oponente |
-Presidente | Secretario`. Los profesores salen con su grado (p. ej. `Dr. Pedro`).
+Presidente | Secretario | Vocal`. Los profesores salen con su grado (p. ej.
+`Dr. Pedro`). En tesis conjuntas y co-tutorías los nombres van unidos con ` / `.
 Es de solo lectura: se regenera desde el YAML en cada ejecución y sirve para
 consultar de un vistazo quién forma cada tribunal.
 
 ### Una hoja por día (`2026-07-27`, `2026-07-28`, …)
 
 Una tabla apilada por cada local. Columnas: `Momento | Estudiante | Tutor |
-Oponente | Presidente | Secretario`. Filas = los momentos de ese día.
+Oponente | Presidente | Secretario | Vocal`. Filas = los momentos de ese día.
 
 - La columna **Estudiante** es la que se llena (desplegable de ids de
   estudiantes). Al elegir uno, colocas esa tesis en ese local y momento.
