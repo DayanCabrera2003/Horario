@@ -87,9 +87,18 @@ Opciones de `generar.py`:
 - Los colores se explican en la **leyenda** incluida en cada hoja:
   - Hoja de grupo: amarillo = aula fuera del listado, naranja = asignatura fuera
     de la tabla del grupo, rojo = sobre-planificada (asignadas > frecuencia),
-    verde = frecuencia exacta cumplida.
+    verde = frecuencia exacta cumplida. El rojo y el verde colorean la **fila
+    completa** de la asignatura, no solo la casilla "Asignadas".
   - Hoja Aulas: un color por año y rojo intenso para conflicto (dos años
     distintos en la misma aula y turno).
+- En la rejilla del horario:
+  - La columna de **turnos** va pegada a la de los días (sin hueco).
+  - Una **línea gruesa** separa cada turno del siguiente (cada turno son dos
+    filas: asignatura arriba, aula debajo).
+  - Las filas de **aula** llevan un fondo neutro que marca dónde va cada aula,
+    útil al arrastrar y soltar.
+  - Las celdas llevan algo de **padding** (sangría, centrado vertical y mayor
+    alto de fila) para que en Calc no queden apretadas.
 - Los encabezados (días, turnos y cabeceras de tabla) quedan fijos al hacer
   scroll y las tablas llevan un borde exterior más marcado.
 
