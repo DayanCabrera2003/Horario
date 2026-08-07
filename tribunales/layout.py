@@ -1,14 +1,15 @@
 # Coordenadas de las hojas del generador de tribunales. Solo calcula posiciones;
 # no escribe nada en la worksheet (esa es responsabilidad de las hojas).
 
-# --- Hoja de dia: tabla por local, columnas fijas A..F ---
+# --- Hoja de dia: tabla por local, columnas fijas A..G ---
 COL_MOMENTO = "A"
 COL_ESTUDIANTE = "B"
-COLS_PROFESOR = ("C", "D", "E", "F")  # tutor, oponente, presidente, secretario
-COL_ULTIMA = "F"
+COLS_PROFESOR = ("C", "D", "E", "F", "G")  # tutor, oponente, presidente, secretario, vocal
+COL_ULTIMA = "G"
 
-# Encabezados de columna, en orden A..F.
-ENCABEZADOS = ("Momento", "Estudiante", "Tutor", "Oponente", "Presidente", "Secretario")
+# Encabezados de columna, en orden A..G.
+ENCABEZADOS = ("Momento", "Estudiante", "Tutor", "Oponente", "Presidente",
+               "Secretario", "Vocal")
 
 
 def _altura_bloque(n_momentos: int) -> int:

@@ -8,10 +8,10 @@ from tribunales.modelo import Facultad
 NOMBRE_HOJA = "Localizar"
 COL_ROL = "B"   # columna contigua a la de momentos: muestra el rol de la persona
 
-# Columnas B..F de la hoja de dia y el rol que representa cada una. B=estudiante,
-# C=tutor, D=oponente, E=presidente, F=secretario (ver ENCABEZADOS en layout).
+# Columnas B..G de la hoja de dia y el rol que representa cada una. B=estudiante,
+# C=tutor, D=oponente, E=presidente, F=secretario, G=vocal (ver ENCABEZADOS).
 _COLS_ROL = (("B", "Estudiante"), ("C", "Tutor"), ("D", "Oponente"),
-             ("E", "Presidente"), ("F", "Secretario"))
+             ("E", "Presidente"), ("F", "Secretario"), ("G", "Vocal"))
 
 
 def construir_hoja_localizar(wb, facultad: Facultad) -> None:

@@ -11,7 +11,8 @@ def _fac():
         estudiantes=(Estudiante("JPER", "Juan"),),
         locales=(Local("POST", "Postgrado"), Local("DECA", "Decanato")),
         dias=(Dia("2026-07-27", (Momento("09:00", "10:00"), Momento("10:00", "11:00"))),),
-        tesis=(Tesis("JPER", "PIAD", "MARA", "LGOM", "ANSU"),),
+        tesis=(Tesis(estudiantes=("JPER",), tutores=("PIAD",), oponente="MARA",
+                     presidente="LGOM", secretario="ANSU", vocal="ANSU"),),
     )
 
 
@@ -32,8 +33,9 @@ def test_titulos_de_local_presentes():
 
 def test_encabezados_de_columna():
     ws = _hoja(_fac())
-    fila2 = [ws[f"{c}2"].value for c in "ABCDEF"]
-    assert fila2 == ["Momento", "Estudiante", "Tutor", "Oponente", "Presidente", "Secretario"]
+    fila2 = [ws[f"{c}2"].value for c in "ABCDEFG"]
+    assert fila2 == ["Momento", "Estudiante", "Tutor", "Oponente", "Presidente",
+                     "Secretario", "Vocal"]
 
 
 def test_columnas_profesor_son_lookup():

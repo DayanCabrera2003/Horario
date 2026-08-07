@@ -9,7 +9,8 @@ def _fac():
         estudiantes=(Estudiante("JPER", "Juan"),),
         locales=(Local("POST", "Postgrado"),),
         dias=(Dia("2026-07-27", (Momento("09:00", "10:00"),)),),
-        tesis=(Tesis("JPER", "PIAD", "PIAD", "PIAD", "PIAD"),),
+        tesis=(Tesis(estudiantes=("JPER",), tutores=("PIAD",), oponente="PIAD",
+                     presidente="PIAD", secretario="PIAD"),),
     )
 
 

@@ -2,7 +2,8 @@ from tribunales import layout as L
 
 
 def test_columnas_de_profesor():
-    assert L.COLS_PROFESOR == ("C", "D", "E", "F")
+    # tutor, oponente, presidente, secretario, vocal
+    assert L.COLS_PROFESOR == ("C", "D", "E", "F", "G")
 
 
 def test_fila_titulo_primer_local():

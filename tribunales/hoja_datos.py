@@ -17,20 +17,29 @@ def construir_hoja_datos(wb, facultad: Facultad) -> None:
     ws = wb.create_sheet(NOMBRE_HOJA)
     ws.sheet_state = "hidden"
 
-    # Tabla tesis->tribunal, una fila por tesis, sin encabezado (VLOOKUP directo).
-    for i, t in enumerate(facultad.tesis, start=1):
-        ws[f"A{i}"] = t.estudiante
-        ws[f"B{i}"] = t.tutor
-        ws[f"C{i}"] = t.oponente
-        ws[f"D{i}"] = t.presidente
-        ws[f"E{i}"] = t.secretario
-    n_tesis = len(facultad.tesis)
-    if n_tesis:
-        wb.defined_names.add(_rango_nombrado("TesisTribunal", "A1", f"E{n_tesis}"))
+    # Tabla tesis->tribunal, sin encabezado (VLOOKUP directo). Columnas:
+    # A=estudiante (clave), B=tutor(es), C=oponente, D=presidente, E=secretario,
+    # F=vocal. Los co-tutores se unen con " / " en una sola casilla. Una tesis
+    # conjunta genera una fila por estudiante (todas con el mismo tribunal), para
+    # que al elegir cualquiera de ellos el VLOOKUP encuentre su tribunal.
+    fila = 0
+    for t in facultad.tesis:
+        tutores = " / ".join(t.tutores)
+        for est in t.estudiantes:
+            fila += 1
+            ws[f"A{fila}"] = est
+            ws[f"B{fila}"] = tutores
+            ws[f"C{fila}"] = t.oponente
+            ws[f"D{fila}"] = t.presidente
+            ws[f"E{fila}"] = t.secretario
+            ws[f"F{fila}"] = t.vocal
+    if fila:
+        wb.defined_names.add(_rango_nombrado("TesisTribunal", "A1", f"F{fila}"))
 
-    # Lista de ids de estudiantes en columna G (F en blanco de separacion).
+    # Lista de ids de estudiantes en columna H (G en blanco de separacion, porque
+    # TesisTribunal ahora llega hasta la columna F con el vocal).
     for i, e in enumerate(facultad.estudiantes, start=1):
-        ws[f"G{i}"] = e.id
+        ws[f"H{i}"] = e.id
     n_est = len(facultad.estudiantes)
     if n_est:
-        wb.defined_names.add(_rango_nombrado("EstudiantesValidos", "G1", f"G{n_est}"))
+        wb.defined_names.add(_rango_nombrado("EstudiantesValidos", "H1", f"H{n_est}"))

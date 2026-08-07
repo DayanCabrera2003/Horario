@@ -12,6 +12,7 @@ profesores:
 estudiantes:
   - {id: JPER, nombre: "Juan Perez"}
   - {id: LFDZ, nombre: "Laura Fernandez"}
+  - {id: MGOM, nombre: "Mario Gomez"}
 
 locales:
   - {id: POST, nombre: "Postgrado"}
@@ -27,7 +28,24 @@ dias:
       - {inicio: "09:00", fin: "10:00"}
 
 tesis:
+  # Cada tesis lleva su tribunal. Los roles fijos son oponente, presidente,
+  # secretario y (opcional) vocal. 'estudiantes' y 'tutores' admiten un solo id o
+  # una lista: varios estudiantes = tesis conjunta; varios tutores = co-tutoria.
+  # Se acepta tambien el formato antiguo en singular ('estudiante:', 'tutor:').
+
   # PIAD es tutor de esta tesis y secretario de la siguiente: si ambas caen en el
   # mismo momento en locales distintos, se resalta la colision.
-  - {estudiante: JPER, tutor: PIAD, oponente: MARA, presidente: LGOM, secretario: ANSU}
-  - {estudiante: LFDZ, tutor: RTOR, oponente: LGOM, presidente: MARA, secretario: PIAD}
+  - estudiantes: [JPER]
+    tutores: [PIAD]
+    oponente: MARA
+    presidente: LGOM
+    secretario: ANSU
+    vocal: RTOR
+
+  # Tesis conjunta (dos estudiantes) con co-tutoria (dos tutores). Sin vocal:
+  # el rol es opcional y se puede omitir.
+  - estudiantes: [LFDZ, MGOM]
+    tutores: [RTOR, MARA]
+    oponente: LGOM
+    presidente: PIAD
+    secretario: ANSU

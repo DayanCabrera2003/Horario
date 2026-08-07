@@ -15,7 +15,8 @@ def _fac():
         estudiantes=(Estudiante("JPER", "Juan Perez"),),
         locales=(Local("POST", "Postgrado"),),
         dias=(Dia("2026-07-27", (Momento("09:00", "10:00"),)),),
-        tesis=(Tesis("JPER", "PIAD", "MARA", "LGOM", "ANSU"),),
+        tesis=(Tesis(estudiantes=("JPER",), tutores=("PIAD",), oponente="MARA",
+                     presidente="LGOM", secretario="ANSU"),),
     )
 
 
@@ -49,12 +50,34 @@ def test_fila_con_nombres_completos():
 def test_id_desconocido_se_muestra_como_respaldo():
     # Si un rol referencia un id que no esta en el listado, se muestra el id tal cual.
     fac = _fac()
-    tesis = (Tesis("JPER", "XXXX", "MARA", "LGOM", "ANSU"),)
+    tesis = (Tesis(estudiantes=("JPER",), tutores=("XXXX",), oponente="MARA",
+                   presidente="LGOM", secretario="ANSU"),)
     fac = Facultad(fac.profesores, fac.estudiantes, fac.locales, fac.dias, tesis)
     wb = Workbook(); wb.remove(wb.active)
     construir_hoja_tribunales(wb, fac)
     ws = wb[NOMBRE_HOJA]
     assert ws["C2"].value == "XXXX"
+
+
+def test_conjunta_y_cotutoria_unen_nombres_y_vocal():
+    # Tesis conjunta (dos estudiantes) con co-tutoria (dos tutores) y vocal: los
+    # nombres se unen con ' / ' y el vocal aparece en su columna.
+    fac = Facultad(
+        profesores=(Profesor("PIAD", "Pedro", "Dr."), Profesor("MARA", "Maria", "MSc."),
+                    Profesor("LGOM", "Luis", "Dr."), Profesor("ANSU", "Ana", "MSc.")),
+        estudiantes=(Estudiante("JPER", "Juan Perez"), Estudiante("MGOM", "Mario Gomez")),
+        locales=(Local("POST", "Postgrado"),),
+        dias=(Dia("2026-07-27", (Momento("09:00", "10:00"),)),),
+        tesis=(Tesis(estudiantes=("JPER", "MGOM"), tutores=("PIAD", "MARA"),
+                     oponente="LGOM", presidente="ANSU", secretario="PIAD",
+                     vocal="MARA"),),
+    )
+    wb = Workbook(); wb.remove(wb.active)
+    construir_hoja_tribunales(wb, fac)
+    ws = wb[NOMBRE_HOJA]
+    assert ws["B2"].value == "Juan Perez / Mario Gomez"
+    assert ws["C2"].value == "Dr. Pedro / MSc. Maria"
+    assert ws["G2"].value == "MSc. Maria"   # vocal
 
 
 def test_inmoviliza_encabezado():

@@ -34,6 +34,53 @@ def test_carga_valida(tmp_path):
     assert fac.tesis[0].tutor == "PIAD"
 
 
+NUEVO = """
+profesores:
+  - {id: PIAD, nombre: "Pedro", grado: "Dr."}
+  - {id: MARA, nombre: "Maria", grado: "MSc."}
+  - {id: LGOM, nombre: "Luis", grado: "Dr."}
+  - {id: ANSU, nombre: "Ana", grado: "MSc."}
+  - {id: RTOR, nombre: "Raul", grado: "Dr."}
+estudiantes:
+  - {id: JPER, nombre: "Juan"}
+  - {id: MGOM, nombre: "Mario"}
+locales:
+  - {id: POST, nombre: "Postgrado"}
+dias:
+  - fecha: 2026-07-27
+    momentos:
+      - {inicio: "09:00", fin: "10:00"}
+tesis:
+  - estudiantes: [JPER, MGOM]
+    tutores: [PIAD, MARA]
+    oponente: LGOM
+    presidente: ANSU
+    secretario: RTOR
+    vocal: PIAD
+"""
+
+
+def test_carga_esquema_nuevo_listas_y_vocal(tmp_path):
+    fac = cargar_facultad(_yaml(tmp_path, NUEVO))
+    t = fac.tesis[0]
+    assert t.estudiantes == ("JPER", "MGOM")   # tesis conjunta
+    assert t.tutores == ("PIAD", "MARA")       # co-tutoria
+    assert t.vocal == "PIAD"
+    assert t.estudiante == "JPER" and t.tutor == "PIAD"   # principales
+
+
+def test_vocal_inexistente_falla(tmp_path):
+    malo = NUEVO.replace("vocal: PIAD", "vocal: ZZZZ")
+    with pytest.raises(ErrorConfig):
+        cargar_facultad(_yaml(tmp_path, malo))
+
+
+def test_cotutor_inexistente_falla(tmp_path):
+    malo = NUEVO.replace("tutores: [PIAD, MARA]", "tutores: [PIAD, ZZZZ]")
+    with pytest.raises(ErrorConfig):
+        cargar_facultad(_yaml(tmp_path, malo))
+
+
 def test_tesis_con_estudiante_inexistente(tmp_path):
     malo = BASE.replace("estudiante: JPER, tutor", "estudiante: XXXX, tutor")
     with pytest.raises(ErrorConfig):

@@ -5,9 +5,10 @@ from tribunales import layout as L
 from tribunales import estilos
 from tribunales.modelo import Dia, Facultad
 
-# Indice de columna dentro de TesisTribunal para cada columna de profesor (C..F).
-# TesisTribunal: 1=estudiante, 2=tutor, 3=oponente, 4=presidente, 5=secretario.
-_IDX_VLOOKUP = {"C": 2, "D": 3, "E": 4, "F": 5}
+# Indice de columna dentro de TesisTribunal para cada columna de profesor (C..G).
+# TesisTribunal: 1=estudiante, 2=tutor, 3=oponente, 4=presidente, 5=secretario,
+# 6=vocal.
+_IDX_VLOOKUP = {"C": 2, "D": 3, "E": 4, "F": 5, "G": 6}
 
 
 def construir_hoja_dia(ws, dia: Dia, facultad: Facultad, asignaciones=()) -> None:
@@ -23,7 +24,7 @@ def construir_hoja_dia(ws, dia: Dia, facultad: Facultad, asignaciones=()) -> Non
         f_tit = L.fila_titulo_local(li, n_mom)
         f_enc = L.fila_encabezado_local(li, n_mom)
         ws[f"{L.COL_MOMENTO}{f_tit}"] = local.nombre
-        for col, texto in zip("ABCDEF", L.ENCABEZADOS):
+        for col, texto in zip("ABCDEFG", L.ENCABEZADOS):
             ws[f"{col}{f_enc}"] = texto
         for mi, momento in enumerate(dia.momentos):
             f = L.fila_momento(li, mi, n_mom)
@@ -57,7 +58,7 @@ def _aplicar_presentacion(ws, dia: Dia, facultad: Facultad) -> None:
         formato.aplicar_borde_tabla(
             ws, f"{L.COL_MOMENTO}{f_tit}:{L.COL_ULTIMA}{f_ultima}", interno, externo)
         coords_encab.append(f"{L.COL_MOMENTO}{f_tit}")                 # titulo de local
-        coords_encab += [f"{col}{f_enc}" for col in "ABCDEF"]         # encabezado de columnas
+        coords_encab += [f"{col}{f_enc}" for col in "ABCDEFG"]        # encabezado de columnas
     formato.aplicar_estilo_encabezado(
         ws, coords_encab, estilos.fuente_encabezado(),
         estilos.fill(estilos.COLOR_ENCABEZADO))

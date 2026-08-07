@@ -39,16 +39,33 @@ class Dia:
 
 @dataclass(frozen=True)
 class Tesis:
-    # Una tesis se identifica por su estudiante (relacion 1:1 estudiante-tesis).
-    estudiante: str
-    tutor: str
+    # Una tesis lleva su tribunal. Los datos reales exigen flexibilidad:
+    #  - estudiantes: normalmente uno, pero hay tesis conjuntas (dos estudiantes).
+    #  - tutores: normalmente uno, pero hay co-tutorias (varios tutores).
+    #  - vocal: rol adicional al tutor/oponente/presidente/secretario (opcional).
+    # Se identifica por su estudiante principal (el primero de la lista).
+    estudiantes: tuple     # tuple[str], 1+
+    tutores: tuple         # tuple[str], 1+
     oponente: str
     presidente: str
     secretario: str
+    vocal: str = ""        # opcional: "" si la tesis no tiene vocal
+
+    @property
+    def estudiante(self) -> str:
+        # Estudiante principal: clave de la tesis para desplegables y asignaciones.
+        return self.estudiantes[0]
+
+    @property
+    def tutor(self) -> str:
+        # Tutor principal (el primero), para vistas que muestran una sola casilla.
+        return self.tutores[0]
 
     def profesores(self) -> tuple:
-        # Los cuatro roles de profesor, en orden de columna. El estudiante no es profesor.
-        return (self.tutor, self.oponente, self.presidente, self.secretario)
+        # Todos los profesores del tribunal, para el conteo de colisiones. El
+        # estudiante no es profesor. El vocal solo cuenta si existe.
+        roles = (*self.tutores, self.oponente, self.presidente, self.secretario)
+        return (*roles, self.vocal) if self.vocal else roles
 
 
 @dataclass(frozen=True)
