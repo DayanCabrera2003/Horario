@@ -111,6 +111,12 @@ def rango_tabla_asignaturas(n_asig: int) -> str:
     return f"I3:M{FILA_PRIMERA_ASIG + n_asig - 1}"
 
 
+def rango_datos_tabla_asignaturas(n_asig: int) -> str:
+    """Filas de datos de la tabla de asignaturas (id..faltan, sin encabezado), para
+    aplicar el formato condicional que colorea la fila completa de cada asignatura."""
+    return f"I{FILA_PRIMERA_ASIG}:M{FILA_PRIMERA_ASIG + n_asig - 1}"
+
+
 def rango_ids_asignaturas_abs(n_asig: int) -> str:
     """Igual que rango_ids_asignaturas pero absoluto ($I$), para usos que no deben
     desplazarse (dropdowns, lookups de formato condicional sobre sqref multi-rango)."""

@@ -163,16 +163,17 @@ def _aplicar_formato_condicional(ws, grupo: Grupo, facultad: Facultad) -> None:
             f'AND({primera_aula}<>"",COUNTIF(AulasValidas,{primera_aula})=0)',
             estilos.COLOR_AULA_INVALIDA),
     )
-    # Tabla de asignaturas: sobre-planificada (rojo) y frecuencia exacta (verde)
-    l_ini = L.celda_asig_tabla_asignadas(0)
-    l_fin = L.celda_asig_tabla_asignadas(n_asig - 1)
-    k_ini = L.celda_asig_tabla_frec(0)
-    rango_asignadas = f"{l_ini}:{l_fin}"
+    # Tabla de asignaturas: sobre-planificada (rojo) y frecuencia exacta (verde).
+    # Se colorea la fila completa (I..M) de cada asignatura, no solo la celda
+    # "Asignadas". Las columnas L (asignadas) y K (frec) van fijadas ($L/$K) y la
+    # fila relativa: asi toda la fila evalua el estado de esa misma asignatura.
+    fila_ini = L.FILA_PRIMERA_ASIG
+    rango_filas = L.rango_datos_tabla_asignaturas(n_asig)
     ws.conditional_formatting.add(
-        rango_asignadas,
-        estilos.regla_formula(f"{l_ini}>{k_ini}", estilos.COLOR_SOBRE_PLANIFICADA),
+        rango_filas,
+        estilos.regla_formula(f"$L{fila_ini}>$K{fila_ini}", estilos.COLOR_SOBRE_PLANIFICADA),
     )
     ws.conditional_formatting.add(
-        rango_asignadas,
-        estilos.regla_formula(f"{l_ini}={k_ini}", estilos.COLOR_FREC_EXACTA),
+        rango_filas,
+        estilos.regla_formula(f"$L{fila_ini}=$K{fila_ini}", estilos.COLOR_FREC_EXACTA),
     )

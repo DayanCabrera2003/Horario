@@ -102,6 +102,26 @@ def test_linea_gruesa_separa_turnos():
     assert ws[L.celda_aula(0, fac.turnos)].border.bottom.style == "medium"
 
 
+def test_frecuencia_exacta_colorea_fila_completa():
+    # La regla de frecuencia exacta (verde) y la de sobre-planificada (rojo) cubren
+    # la fila entera de la asignatura (I..M), no solo la columna Asignadas, y usan
+    # columnas fijadas ($L/$K) con fila relativa.
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    pares = [(str(rng.sqref), r.formula[0])
+             for rng in ws.conditional_formatting
+             for r in ws.conditional_formatting[rng]]
+    exacta = [(rng, f) for rng, f in pares if f == "$L4=$K4"]
+    sobre = [(rng, f) for rng, f in pares if f == "$L4>$K4"]
+    assert exacta, pares
+    assert sobre, pares
+    # fixture: 2 asignaturas -> filas 4 y 5, columnas I..M
+    assert exacta[0][0].startswith("I4:M")
+    assert sobre[0][0].startswith("I4:M")
+
+
 def test_inmoviliza_dias_y_turnos():
     fac, g = _facultad()
     wb = Workbook()
