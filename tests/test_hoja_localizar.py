@@ -1,6 +1,6 @@
 from openpyxl import Workbook
 from tribunales.modelo import (Profesor, Estudiante, Local, Momento, Dia, Tesis, Facultad)
-from tribunales.hoja_localizar import construir_hoja_localizar, NOMBRE_HOJA
+from tribunales.hoja_localizar import construir_hoja_localizar, NOMBRE_HOJA, COL_ROL
 
 
 def _fac():
@@ -33,6 +33,25 @@ def test_regla_participacion_referencia_hoja_dia():
                 formulas.extend(rule.formula)
     # Debe comparar la entrada global contra celdas de la hoja del dia.
     assert any("$B$1" in f and "2026-07-27" in f for f in formulas)
+
+
+def test_columna_rol_muestra_el_rol():
+    # Junto a cada momento, una columna Rol con una formula que resuelve en calidad
+    # de que participa la persona buscada, comparando contra las columnas de la hoja
+    # del dia (B..F: estudiante, tutor, oponente, presidente, secretario).
+    wb = Workbook(); wb.remove(wb.active)
+    construir_hoja_localizar(wb, _fac())
+    ws = wb[NOMBRE_HOJA]
+    textos = [c.value for row in ws.iter_rows() for c in row if isinstance(c.value, str)]
+    assert "Rol" in textos                       # cabecera de la columna de rol
+    formulas = [ws[f"{COL_ROL}{r}"].value for r in range(1, ws.max_row + 1)
+                if isinstance(ws[f"{COL_ROL}{r}"].value, str)
+                and ws[f"{COL_ROL}{r}"].value.startswith("=")]
+    assert formulas, "esperaba una formula de rol en la columna B"
+    f = formulas[0]
+    for etiqueta in ("Estudiante", "Tutor", "Oponente", "Presidente", "Secretario"):
+        assert etiqueta in f
+    assert "2026-07-27" in f                      # referencia a la hoja del dia
 
 
 def test_localizar_tiene_leyenda():
