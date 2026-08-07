@@ -39,15 +39,22 @@ class Deduplicador:
         return idx
 
     def _buscar(self, clave: str):
-        """Indice de un grupo compatible con `clave`: coincidencia exacta o, en su
-        defecto, muy parecida (mismo primer nombre y ratio >= umbral)."""
-        primer = clave.split(" ")[0]
+        """Indice de un grupo compatible con `clave`. En orden de confianza:
+        coincidencia exacta; nombre truncado (una lista de tokens es subsecuencia
+        de la otra); o muy parecido (primer token compatible y ratio >= umbral)."""
+        tokens = clave.split(" ")
+        primer = tokens[0]
         mejor_idx, mejor_ratio = None, self._umbral
         for i, g in enumerate(self._grupos):
             if g["clave"] == clave:
                 return i
-            if g["primer"] != primer:
+            gtok = g["clave"].split(" ")
+            if not _primer_token_compatible(gtok[0], primer):
                 continue
+            # Nombre truncado: "Roberto Marti" vs "Roberto Marti Cedeño".
+            if (min(len(tokens), len(gtok)) >= 2
+                    and (_es_subsecuencia(tokens, gtok) or _es_subsecuencia(gtok, tokens))):
+                return i
             ratio = SequenceMatcher(None, g["clave"], clave).ratio()
             if ratio >= mejor_ratio:
                 mejor_idx, mejor_ratio = i, ratio
@@ -68,6 +75,23 @@ class Deduplicador:
             salida[idx] = {"id": id_, "nombre": nombre, "grado": grado,
                            "variantes": variantes}
         return salida
+
+
+def _primer_token_compatible(a: str, b: str) -> bool:
+    """Dos primeros nombres son compatibles si uno es prefijo del otro (p. ej.
+    'ayme'/'aymee') o si se parecen mucho ('joanna'/'johanna')."""
+    if a == b or a.startswith(b) or b.startswith(a):
+        return True
+    return SequenceMatcher(None, a, b).ratio() >= 0.85
+
+
+def _es_subsecuencia(cortos: list, largos: list) -> bool:
+    """True si todos los tokens de `cortos` aparecen en `largos` en el mismo orden
+    (nombre truncado). Requiere que el primer token coincida exactamente."""
+    if not cortos or cortos[0] != largos[0]:
+        return False
+    it = iter(largos)
+    return all(tok in it for tok in cortos)
 
 
 def _generar_id(nombre: str, usados: set) -> str:

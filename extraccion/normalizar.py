@@ -46,11 +46,19 @@ def quitar_anotaciones(texto: str) -> str:
     return normalizar_espacios(re.sub(r"\([^)]*\)", "", texto))
 
 
+def _separar_grado_pegado(texto: str) -> str:
+    """Inserta un espacio cuando un grado con punto queda pegado al nombre
+    ('Dr.Alberto' -> 'Dr. Alberto') y colapsa puntos repetidos ('Dr..' -> 'Dr.')."""
+    alt = "|".join(re.escape(v) for _c, vs in _GRADOS for v in vs if v.endswith("."))
+    texto = re.sub(r"\.{2,}", ".", texto)
+    return re.sub(rf"(?i)({alt})(?=[^\s.])", r"\1 ", texto)
+
+
 def extraer_grado(nombre: str) -> tuple:
     """Separa el grado inicial del nombre. Devuelve (grado_canonico, resto). Si no
     hay grado reconocido, grado es "" y resto es el nombre limpio. Tolera grados
-    repetidos por errata ('Lic. Lic. Alejandro')."""
-    resto = normalizar_espacios(nombre)
+    repetidos por errata ('Lic. Lic. Alejandro') y pegados ('Dr.Alberto')."""
+    resto = normalizar_espacios(_separar_grado_pegado(nombre))
     grado = ""
     # Consume grados iniciales de forma repetida: se queda con el primero.
     while True:
@@ -65,17 +73,35 @@ def extraer_grado(nombre: str) -> tuple:
     return grado, normalizar_espacios(resto)
 
 
+# Formas de grado con punto, para detectar limites de persona ("... Velarde. Lic.
+# Deborah") y grados repetidos por errata ("Lic. Lic. Nombre").
+_GRADOS_PUNTO = [v for _c, vs in _GRADOS for v in vs if v.endswith(".")]
+_GRADOS_ALT = "|".join(re.escape(v) for v in _GRADOS_PUNTO)
+
+
+def _colapsar_grados_repetidos(texto: str) -> str:
+    """Elimina un grado seguido inmediatamente de otro grado ('Lic. Lic.' ->
+    'Lic.'): siempre es la misma persona con el grado escrito dos veces."""
+    patron = rf"(?i)\b(?:{_GRADOS_ALT})\s+(?=(?:{_GRADOS_ALT})\b)"
+    previo = None
+    while previo != texto:
+        previo = texto
+        texto = re.sub(patron, "", texto)
+    return texto
+
+
 def separar_personas(celda: str) -> list:
     """Divide una celda con varias personas en una lista de nombres crudos.
 
     Los separadores son la coma, ' y ' y un punto seguido de un nuevo grado (un
-    punto tras un grado, como en 'Dr. Nombre', NO separa)."""
+    punto tras un grado, como en 'Dr. Nombre', NO separa). Los grados repetidos se
+    colapsan antes, para no crear un fragmento vacio."""
     if not celda:
         return []
-    texto = str(celda)
+    texto = _colapsar_grados_repetidos(_separar_grado_pegado(str(celda)))
     # Punto que precede a un nuevo grado -> separador (evita cortar "Dr. Nombre").
-    grados_alt = "|".join(re.escape(v) for _c, vs in _GRADOS for v in vs)
-    texto = re.sub(rf"\.\s+(?=({grados_alt})\b)", "|", texto, flags=re.IGNORECASE)
+    # Sin \b tras el grado: como termina en '.', el limite de palabra no se cumple.
+    texto = re.sub(rf"\.\s+(?=({_GRADOS_ALT}))", "|", texto, flags=re.IGNORECASE)
     partes = re.split(r"\s*,\s*|\s+y\s+|\s*\|\s*", texto)
     return [normalizar_espacios(p) for p in partes if normalizar_espacios(p)]
 

@@ -19,6 +19,25 @@ def test_une_erratas_cercanas_mismo_nombre():
     assert x == y                 # 'Campbel' / 'Campbell' se fusionan
 
 
+def test_une_nombre_truncado():
+    # Un nombre truncado se fusiona con su version completa.
+    d = Deduplicador()
+    a = d.agregar("Lic. Roberto Marti")
+    b = d.agregar("Lic. Roberto Marti Cedeño")
+    assert a == b
+    c = d.agregar("Lic. Daniel Toledo")
+    e = d.agregar("Lic. Daniel Toledo Martinez")
+    assert c == e
+
+
+def test_une_primer_nombre_casi_igual():
+    # 'Ayme'/'Aymee' y 'Joanna'/'Johanna' se fusionan pese a diferir el 1er nombre.
+    d = Deduplicador()
+    assert d.agregar("Dra. Ayme Marrero Severo") == d.agregar("Dra. Aymee Marrero Severo")
+    d2 = Deduplicador()
+    assert d2.agregar("MSc. Joanna Campbell Amos") == d2.agregar("MSc. Johanna Campbell Amos")
+
+
 def test_no_une_personas_distintas():
     d = Deduplicador()
     p = d.agregar("Dr. Alejandro Piad Morfis")

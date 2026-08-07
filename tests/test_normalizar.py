@@ -40,6 +40,19 @@ def test_separar_personas_no_corta_grado_con_punto():
         "Dra. Suilan Velarde", "Lic. Deborah Famadas"]
 
 
+def test_extraer_grado_pegado_al_nombre():
+    # 'Dr.Alberto' sin espacio -> el grado se separa del nombre.
+    assert N.extraer_grado("Dr.Alberto Fernández Oliva") == ("Dr.", "Alberto Fernández Oliva")
+    assert N.extraer_grado("MSc.Yeneit Delgado")[0] == "MSc."
+
+
+def test_separar_personas_punto_antes_de_grado_con_punto():
+    # Antes fallaba porque el grado termina en '.' (el limite de palabra no se
+    # cumplia): 'Velarde. Lic. Deborah' debe separar en dos personas.
+    assert N.separar_personas("Dra. Suilan Esteves Velarde. Lic. Deborah Famadas") == [
+        "Dra. Suilan Esteves Velarde", "Lic. Deborah Famadas"]
+
+
 def test_clave_persona_unifica_variantes():
     # Acentos, mayusculas, grado y espacios no cambian la clave.
     assert N.clave_persona("MSc. Fernando Raúl Rodríguez Flores") == \
