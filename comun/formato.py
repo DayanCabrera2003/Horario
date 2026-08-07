@@ -58,6 +58,14 @@ def aplicar_estilo_encabezado(ws, celdas, fuente, relleno) -> None:
         ws[coord].fill = relleno
 
 
+def aplicar_relleno(ws, rango: str, relleno) -> None:
+    """Aplica `relleno` (PatternFill) a cada celda del `rango`. Para pintar el
+    fondo de una franja de celdas (p. ej. las filas donde van las aulas)."""
+    for fila in ws[rango]:
+        for celda in fila:
+            celda.fill = relleno
+
+
 def aplicar_ajuste_texto(ws, rango: str, alineacion) -> None:
     """Aplica `alineacion` (con wrap_text) a cada celda del `rango`, para que
     el contenido largo salte de linea en vez de desbordarse."""

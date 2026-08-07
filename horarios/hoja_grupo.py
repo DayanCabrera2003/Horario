@@ -45,6 +45,7 @@ def construir_hoja_grupo(ws, grupo: Grupo, facultad: Facultad,
         ws[asignadas_cell] = f"=COUNTIF({rango},{id_cell})"
         ws[L.celda_asig_tabla_faltan(i)] = f"={frec_cell}-{asignadas_cell}"
 
+    _aplicar_fondo_aulas(ws, facultad)
     _aplicar_dropdown_aulas(ws, facultad)
     _aplicar_dropdown_asignaturas(ws, grupo, facultad)
     _aplicar_formato_condicional(ws, grupo, facultad)
@@ -56,6 +57,16 @@ def construir_hoja_grupo(ws, grupo: Grupo, facultad: Facultad,
     _aplicar_leyenda(ws, grupo, facultad)
     # Inmoviliza la fila de dias y la columna de etiquetas de turno.
     ws.freeze_panes = L.celda_asig(0, 1)
+
+
+def _aplicar_fondo_aulas(ws, facultad: Facultad) -> None:
+    """Pinta un fondo neutro en las filas de aula de la rejilla, para senalar de
+    un vistazo donde van las aulas (util al arrastrar y soltar). El formato
+    condicional de aula invalida se evalua encima y prevalece cuando aplica."""
+    relleno = estilos.fill(estilos.COLOR_FONDO_AULA)
+    n_dias, n_turnos = len(facultad.dias), facultad.turnos
+    for rango in L.rangos_filas_aula(n_dias, n_turnos).split():
+        formato.aplicar_relleno(ws, rango, relleno)
 
 
 def _aplicar_bordes(ws, grupo: Grupo, facultad: Facultad) -> None:

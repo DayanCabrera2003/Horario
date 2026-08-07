@@ -18,3 +18,4 @@ COLOR_ASIG_DESCONOCIDA = "FFB74D"  # naranja
 COLOR_SOBRE_PLANIFICADA = "EF9A9A"  # rojo
 COLOR_FREC_EXACTA = "A5D6A7"       # verde
 COLOR_ENCABEZADO = "D9D9D9"        # gris claro neutro para cabeceras
+COLOR_FONDO_AULA = "ECEFF1"        # gris azulado muy claro: marca donde van las aulas

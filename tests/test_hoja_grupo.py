@@ -2,6 +2,7 @@ from openpyxl import Workbook
 from horarios.modelo import Grupo, Asignatura, Anio, Facultad, Horario, Asignacion
 from horarios.hoja_grupo import construir_hoja_grupo
 from horarios import layout as L
+from horarios import estilos
 
 
 def _facultad():
@@ -72,6 +73,19 @@ def test_tablas_tienen_bordes():
     assert ws[L.celda_asig(0, 1)].border.top.style == "thin"
     # Etiqueta de turno (esquina superior de la columna A): perimetro medium
     assert ws[f"A{L.fila_asig(1)}"].border.left.style == "medium"
+
+
+def test_fondo_en_filas_de_aula():
+    # Las filas de aula llevan un fondo neutro que las marca como zona de aulas;
+    # las filas de asignatura no reciben ese fondo.
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    aula = ws[L.celda_aula(0, 1)].fill
+    assert estilos.COLOR_FONDO_AULA in (aula.fgColor.rgb or "")
+    asig = ws[L.celda_asig(0, 1)].fill
+    assert estilos.COLOR_FONDO_AULA not in (asig.fgColor.rgb or "")
 
 
 def test_linea_gruesa_separa_turnos():
