@@ -74,6 +74,20 @@ def test_tablas_tienen_bordes():
     assert ws[f"A{L.fila_asig(1)}"].border.left.style == "medium"
 
 
+def test_linea_gruesa_separa_turnos():
+    # Un turno ocupa 2 filas (asignatura + aula). La frontera inferior de la fila
+    # de aula de cada turno (salvo el ultimo) lleva un borde grueso separador.
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    # Turno 1: bajo su fila de aula, borde grueso (tanto en dias como en la col A).
+    assert ws[L.celda_aula(0, 1)].border.bottom.style == "thick"
+    assert ws[f"A{L.fila_aula(1)}"].border.bottom.style == "thick"
+    # Ultimo turno (6): su borde inferior es el perimetro medio, no el separador.
+    assert ws[L.celda_aula(0, fac.turnos)].border.bottom.style == "medium"
+
+
 def test_inmoviliza_dias_y_turnos():
     fac, g = _facultad()
     wb = Workbook()

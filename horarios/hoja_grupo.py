@@ -67,6 +67,11 @@ def _aplicar_bordes(ws, grupo: Grupo, facultad: Facultad) -> None:
     formato.aplicar_borde_tabla(ws, L.rango_bloque_horario(n_dias, n_turnos), interno, externo)
     formato.aplicar_borde_tabla(ws, L.rango_etiquetas_turno(n_turnos), interno, externo)
     formato.aplicar_borde_tabla(ws, L.rango_tabla_asignaturas(n_asig), interno, externo)
+    # Linea gruesa separando cada turno del siguiente (bajo su fila de aula), para
+    # distinguir de un vistazo los bloques de dos filas de cada turno.
+    grueso = estilos.lado_grueso()
+    for rango in L.filas_separadoras_turno(n_dias, n_turnos):
+        formato.aplicar_borde_inferior(ws, rango, grueso)
 
 
 def _aplicar_estilo_encabezados(ws, grupo: Grupo, facultad: Facultad) -> None:

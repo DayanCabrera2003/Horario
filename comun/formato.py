@@ -36,6 +36,19 @@ def aplicar_borde_tabla(ws, rango: str, interno: Side, externo: Side) -> None:
             )
 
 
+def aplicar_borde_inferior(ws, rango: str, lado: Side) -> None:
+    """Sobrescribe solo la cara inferior de cada celda del `rango` con `lado`,
+    conservando las otras tres caras del borde existente.
+
+    Se usa para trazar separadores horizontales (p. ej. la linea gruesa entre
+    turnos) encima de un enrejado ya bordeado, sin borrar el resto del borde.
+    """
+    for fila in ws[rango]:
+        for celda in fila:
+            b = celda.border
+            celda.border = Border(left=b.left, right=b.right, top=b.top, bottom=lado)
+
+
 def aplicar_estilo_encabezado(ws, celdas, fuente, relleno) -> None:
     """Aplica `fuente` y `relleno` a las celdas indicadas (iterable de
     coordenadas). Se estilizan celdas concretas, no rangos, para no pintar

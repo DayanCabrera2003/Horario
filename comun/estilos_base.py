@@ -23,6 +23,12 @@ def lado_medio() -> Side:
     return Side(style="medium")
 
 
+def lado_grueso() -> Side:
+    """Lado de grosor grueso, para separadores internos que deben resaltar mas
+    que el perimetro (p. ej. la linea entre dos turnos del horario)."""
+    return Side(style="thick")
+
+
 def borde_fino() -> Border:
     """Borde fino en las cuatro caras, para delimitar las celdas de las tablas."""
     lado = lado_fino()

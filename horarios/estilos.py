@@ -2,7 +2,7 @@
 estilo genericas (fill, reglas, bordes, fuentes) viven en `comun.estilos_base`
 y se reexportan aqui para no tocar el resto del paquete `horarios`."""
 from comun.estilos_base import (  # noqa: F401
-    fill, regla_formula, lado_fino, lado_medio, borde_fino,
+    fill, regla_formula, lado_fino, lado_medio, lado_grueso, borde_fino,
     alineacion_ajuste, fuente_encabezado,
 )
 

@@ -60,6 +60,18 @@ def rango_bloque_horario(n_dias: int, n_turnos: int) -> str:
     return f"{c1}:{c2}"
 
 
+def filas_separadoras_turno(n_dias: int, n_turnos: int) -> list[str]:
+    """Rangos de fila (columna A de turnos hasta el ultimo dia) sobre cuya cara
+    inferior va la linea gruesa que separa un turno del siguiente.
+
+    Un turno ocupa dos filas (asignatura + aula). La separacion va bajo la fila
+    de aula de cada turno salvo el ultimo, cuyo borde inferior ya es el perimetro.
+    """
+    col_fin = col_dia(n_dias - 1)
+    return [f"A{fila_aula(t)}:{col_fin}{fila_aula(t)}"
+            for t in range(1, n_turnos)]
+
+
 def rango_etiquetas_turno(n_turnos: int) -> str:
     """Columna A con las etiquetas 'Turno t', de la primera fila de asignatura a la ultima de aula."""
     return f"A{fila_asig(1)}:A{fila_aula(n_turnos)}"
