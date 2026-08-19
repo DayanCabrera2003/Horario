@@ -37,6 +37,13 @@ def construir_hoja_asignaturas(wb, depto: Departamento) -> None:
     _escribir_leyenda(ws, L.asig_fila_titulo(alturas) + 1)
     ws.freeze_panes = f"A{L.ASIG_FILA_PRIMER_BLOQUE}"
     formato.autoajustar_columnas(ws, extra=4)
+    # Las columnas Profesor y Nombre muestran resultados de formulas
+    # (autoajustar las ignora): el ancho se fija con los valores posibles.
+    formato.fijar_ancho_por_textos(ws, "D", [p.id for p in depto.profesores],
+                                   extra=4)
+    formato.fijar_ancho_por_textos(
+        ws, "E", [p.nombre for p in depto.profesores] + ["(desconocido)"],
+        extra=4)
 
 
 def _construir_bloque(ws, asignatura, alturas: int, idx_carga: int, n: int) -> None:

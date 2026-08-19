@@ -36,6 +36,10 @@ def construir_hoja_profesores(wb, depto: Departamento) -> None:
     _escribir_leyenda(ws, ultimo_total + 2)
     ws.freeze_panes = f"A{L.PROF_FILA_PRIMER_BLOQUE}"
     formato.autoajustar_columnas(ws, extra=4)
+    # La columna A del detalle muestra nombres de asignatura por formula
+    # (autoajustar la ignora): el ancho se fija con los nombres posibles.
+    formato.fijar_ancho_por_textos(
+        ws, "A", [a.nombre for a in depto.asignaturas] + ["Asignatura"], extra=4)
 
 
 def _rango_asignacion(col: str, n_filas: int) -> str:

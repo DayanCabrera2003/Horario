@@ -28,7 +28,7 @@ def construir_hoja_asignacion(wb, depto: Departamento) -> None:
     _escribir_filas(ws, filas)
     _aplicar_dropdown(ws, len(filas))
     _aplicar_formato_condicional(ws, len(filas))
-    _aplicar_formato(ws, len(filas))
+    _aplicar_formato(ws, depto, len(filas))
     _escribir_leyenda(ws, len(filas))
 
     # Encabezados fijos al hacer scroll: todo lo anterior a la primera carga.
@@ -82,7 +82,7 @@ def _aplicar_formato_condicional(ws, n_filas: int) -> None:
             estilos.COLOR_PROFESOR_DESCONOCIDO))
 
 
-def _aplicar_formato(ws, n_filas: int) -> None:
+def _aplicar_formato(ws, depto: Departamento, n_filas: int) -> None:
     fila_fin = L.fila_carga(n_filas - 1)
     rango = f"A{L.FILA_ENCABEZADO_ASIGNACION}:{L.COL_ULTIMA}{fila_fin}"
     formato.aplicar_borde_tabla(ws, rango, interno=estilos.lado_fino(),
@@ -91,6 +91,11 @@ def _aplicar_formato(ws, n_filas: int) -> None:
     formato.aplicar_alineacion(ws, rango, estilos.alineacion_padding())
     formato.aplicar_alto_filas(ws, L.FILA_PRIMERA_CARGA, fila_fin, ALTO_FILA_CARGA)
     formato.autoajustar_columnas(ws, extra=4)
+    # La columna Nombre muestra el resultado de una formula (autoajustar la
+    # ignora): su ancho se fija con los nombres que puede llegar a mostrar.
+    formato.fijar_ancho_por_textos(
+        ws, L.COL_NOMBRE,
+        [p.nombre for p in depto.profesores] + ["(desconocido)"], extra=4)
 
 
 def _escribir_leyenda(ws, n_filas: int) -> None:

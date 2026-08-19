@@ -86,6 +86,16 @@ def aplicar_alto_filas(ws, fila_ini: int, fila_fin: int, alto: float) -> None:
         ws.row_dimensions[fila].height = alto
 
 
+def fijar_ancho_por_textos(ws, col: str, textos, min_ancho: int = 8,
+                           extra: int = 2) -> None:
+    """Fija el ancho de la columna `col` segun los `textos` que se espera que
+    muestre. Para columnas de formulas: `autoajustar_columnas` las ignora (el
+    texto de la formula no es lo que se ve), asi que el ancho se calcula aqui a
+    partir de los valores posibles conocidos al generar."""
+    largo = max((len(str(t)) for t in textos), default=0)
+    ws.column_dimensions[col].width = max(min_ancho, largo + extra)
+
+
 def autoajustar_columnas(ws, min_ancho: int = 8, max_ancho: int = 45,
                          extra: int = 2) -> None:
     """Fija el ancho de cada columna al del texto mas largo que contiene.
