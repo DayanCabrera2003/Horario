@@ -1,6 +1,6 @@
 # Generadores de Excel
 
-Este repositorio contiene **dos** generadores de libros de Excel (`.xlsx`) que
+Este repositorio contiene **tres** generadores de libros de Excel (`.xlsx`) que
 comparten la misma arquitectura (paquete `comun/` con formato, leyenda y estilos
 base) y el mismo enfoque: a partir de archivos YAML producen una hoja de cálculo
 lista para llenar o revisar, con validaciones, desplegables y colores que ayudan
@@ -9,9 +9,11 @@ a detectar problemas a simple vista.
 1. **Generador de horarios de clases** (`generar.py`, paquete `horarios/`).
 2. **Generador de tribunales de tesis** (`generar_tribunales.py`, paquete
    `tribunales/`).
+3. **Generador de gestión del departamento** (`generar_departamento.py`,
+   paquete `departamento/`).
 
-Ambos son independientes: cada uno tiene su propia configuración, su propia CLI
-y sus propias hojas.
+Los tres son independientes: cada uno tiene su propia configuración, su propia
+CLI y sus propias hojas.
 
 ## Requisitos
 
@@ -158,6 +160,47 @@ Opciones de `generar_tribunales.py`:
 - `--salida` — ruta del `.xlsx` a generar (por defecto `tesis.xlsx`).
 
 Detalle paso a paso en [`guia_de_uso_tribunales.md`](guia_de_uso_tribunales.md).
+
+---
+
+## Generador de gestión del departamento
+
+Reparte la carga docente de un semestre: qué profesor imparte cada conferencia
+y cada grupo de clase práctica. A diferencia de los otros dos generadores, aquí
+la decisión se toma **dentro del Excel** y los reportes se recalculan solos.
+El `.xlsx` generado contiene:
+
+- Una hoja **Asignación** (la única editable): cada asignatura expandida a sus
+  *filas de carga* (la conferencia + una fila por grupo de CP), con un
+  desplegable de profesor por fila. Amarillo = fila sin profesor; ámbar = id
+  fuera de la lista.
+- Una hoja **Profesores**: por profesor, qué imparte (asignatura, tipo, grupo,
+  horas) y su total de horas, todo por fórmulas. Rojo cuando supera su tope
+  (global del departamento o propio del profesor).
+- Una hoja **Asignaturas**: por asignatura, quién cubre cada fila de carga.
+  Título verde si está completa, naranja si falta alguien.
+- Una hoja **Datos** (oculta) con las listas y la tabla auxiliar de las
+  fórmulas.
+
+### Configuración
+
+Un único YAML (ejemplo en `config/departamento.yaml`): el departamento (nombre,
+semestre, tope de horas opcional), los profesores (id, nombre, grado, tope
+propio opcional) y las asignaturas del semestre (nombre, carrera, horas de
+conferencia, horas de CP **por grupo** y cantidad de grupos de CP).
+
+### Uso
+
+```bash
+python generar_departamento.py --config config/departamento.yaml --salida gestion.xlsx
+```
+
+Opciones de `generar_departamento.py`:
+
+- `--config` — ruta del YAML del departamento (por defecto `config/departamento.yaml`).
+- `--salida` — ruta del `.xlsx` a generar (por defecto `departamento.xlsx`).
+
+Detalle paso a paso en [`guia_de_uso_departamento.md`](guia_de_uso_departamento.md).
 
 ---
 

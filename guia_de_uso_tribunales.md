@@ -6,7 +6,8 @@ escribir para ver funcionar cada cosa, y qué se puede y qué no se puede hacer.
 
 > Esta guía es para la persona que planifica las defensas: cómo generar el Excel
 > y cómo llenar los YAML. Para el generador de horarios de clases, ver
-> [`guia_de_uso.md`](guia_de_uso.md).
+> [`guia_de_uso.md`](guia_de_uso.md); para el de gestión del departamento,
+> [`guia_de_uso_departamento.md`](guia_de_uso_departamento.md).
 
 ---
 
