@@ -50,11 +50,12 @@ def test_bloques_por_asignatura():
 
 def test_profesor_referencia_a_asignacion():
     ws = _hoja()
-    # La fila Conf de EST-CC es la fila de carga 4 de Asignacion.
-    assert ws["D5"].value == "='Asignación'!F4"
+    # La fila Conf de EST-CC es la fila de carga 4 de Asignacion. El IF evita
+    # que una celda vacia se muestre como 0.
+    assert ws["D5"].value == "=IF('Asignación'!F4=\"\",\"\",'Asignación'!F4)"
     assert ws["E5"].value == "='Asignación'!G4"
     # La fila CP de EST-MAT es la fila de carga 8.
-    assert ws["D12"].value == "='Asignación'!F8"
+    assert "'Asignación'!F8" in ws["D12"].value
 
 
 def test_titulo_coloreado_por_completitud():

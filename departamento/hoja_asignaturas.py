@@ -58,7 +58,10 @@ def _construir_bloque(ws, asignatura, alturas: int, idx_carga: int, n: int) -> N
         ws[f"A{fila}"] = f.tipo
         ws[f"B{fila}"] = f.grupo if f.grupo is not None else "-"
         ws[f"C{fila}"] = f.horas
-        ws[f"D{fila}"] = f"={hoja}!{L.COL_PROFESOR}{r_asig}"
+        # La celda de profesor puede estar vacia y una referencia directa a una
+        # celda vacia se muestra como 0; el IF la deja en blanco en ese caso.
+        celda_prof = f"{hoja}!{L.COL_PROFESOR}{r_asig}"
+        ws[f"D{fila}"] = f'=IF({celda_prof}="","",{celda_prof})'
         ws[f"E{fila}"] = f"={hoja}!{L.COL_NOMBRE}{r_asig}"
 
     # Titulo verde si ninguna fila de la asignatura esta sin profesor, naranja
