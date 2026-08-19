@@ -88,12 +88,24 @@ def _aplicar_formato(ws, depto: Departamento, n_filas: int) -> None:
     # Padding aproximado para Calc: sangria + centrado vertical + filas mas altas.
     formato.aplicar_alineacion(ws, rango, estilos.alineacion_padding())
     formato.aplicar_alto_filas(ws, L.FILA_PRIMERA_CARGA, fila_fin, estilos.ALTO_FILA)
+    _separar_asignaturas(ws, depto.filas())
     formato.autoajustar_columnas(ws, extra=4)
     # La columna Nombre muestra el resultado de una formula (autoajustar la
     # ignora): su ancho se fija con los nombres que puede llegar a mostrar.
     formato.fijar_ancho_por_textos(
         ws, L.COL_NOMBRE,
         [p.nombre for p in depto.profesores] + ["(desconocido)"], extra=4)
+
+
+def _separar_asignaturas(ws, filas) -> None:
+    """Traza una linea gruesa bajo la ultima fila de carga de cada asignatura,
+    como la que separa los turnos en la rejilla del horario: las filas de una
+    misma asignatura (Conf + sus grupos de CP) se leen como un bloque."""
+    for i in range(len(filas) - 1):
+        if filas[i].asignatura.id != filas[i + 1].asignatura.id:
+            fila = L.fila_carga(i)
+            formato.aplicar_borde_inferior(
+                ws, f"A{fila}:{L.COL_ULTIMA}{fila}", estilos.lado_grueso())
 
 
 def _escribir_leyenda(ws, n_filas: int) -> None:

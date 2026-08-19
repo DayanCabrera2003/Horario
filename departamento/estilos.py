@@ -2,7 +2,7 @@
 de estilo genericas se reexportan desde `comun.estilos_base`. La paleta coincide
 con la de los otros generadores para que las alertas se lean igual en todos."""
 from comun.estilos_base import (  # noqa: F401
-    fill, regla_formula, lado_fino, lado_medio, borde_fino,
+    fill, regla_formula, lado_fino, lado_medio, lado_grueso, borde_fino,
     alineacion_ajuste, alineacion_padding, fuente_encabezado,
 )
 

@@ -88,6 +88,17 @@ def test_formato_condicional_fila_completa():
     assert "COUNTIF(ProfesoresValidos,$F4)=0" in f_ambar
 
 
+def test_linea_gruesa_entre_asignaturas():
+    ws = _hoja()
+    # EST-CC termina en la fila 6: linea gruesa debajo, en toda la fila.
+    assert ws["A6"].border.bottom.style == "thick"
+    assert ws["G6"].border.bottom.style == "thick"
+    # Dentro de una asignatura el enrejado sigue fino, y el final de la tabla
+    # conserva el perimetro medio.
+    assert ws["A5"].border.bottom.style == "thin"
+    assert ws["A8"].border.bottom.style == "medium"
+
+
 def test_leyenda_y_paneles():
     ws = _hoja()
     assert ws.freeze_panes == "A4"
