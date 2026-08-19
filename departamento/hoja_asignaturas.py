@@ -34,6 +34,9 @@ def construir_hoja_asignaturas(wb, depto: Departamento) -> None:
         idx_carga += n
 
     # La ultima fila ocupada es la anterior al blanco del ultimo bloque.
+    # Padding aproximado para Calc: filas mas altas en toda la zona de bloques.
+    formato.aplicar_alto_filas(ws, L.ASIG_FILA_PRIMER_BLOQUE,
+                               L.asig_fila_titulo(alturas) - 1, estilos.ALTO_FILA)
     _escribir_leyenda(ws, L.asig_fila_titulo(alturas) + 1)
     ws.freeze_panes = f"A{L.ASIG_FILA_PRIMER_BLOQUE}"
     formato.autoajustar_columnas(ws, extra=4)

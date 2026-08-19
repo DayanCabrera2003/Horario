@@ -74,6 +74,13 @@ def test_total_con_sumif():
                  "'Asignación'!$E$4:$E$6)")
 
 
+def test_alto_de_filas_para_padding():
+    ws = _hoja()
+    # Bloques de la fila 3 a la ultima fila TOTAL (19): filas mas altas.
+    assert ws.row_dimensions[3].height == estilos.ALTO_FILA
+    assert ws.row_dimensions[19].height == estilos.ALTO_FILA
+
+
 def test_alerta_sobrecarga_solo_con_tope():
     ws = _hoja()
     rangos = {str(r.sqref) for r in ws.conditional_formatting._cf_rules}

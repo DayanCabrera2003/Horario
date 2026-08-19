@@ -14,8 +14,6 @@ from departamento.modelo import Departamento
 
 NOMBRE_HOJA = "Asignación"
 
-ALTO_FILA_CARGA = 22  # puntos: parte del padding aproximado para Calc
-
 
 def construir_hoja_asignacion(wb, depto: Departamento) -> None:
     ws = wb.create_sheet(NOMBRE_HOJA)
@@ -89,7 +87,7 @@ def _aplicar_formato(ws, depto: Departamento, n_filas: int) -> None:
                                 externo=estilos.lado_medio())
     # Padding aproximado para Calc: sangria + centrado vertical + filas mas altas.
     formato.aplicar_alineacion(ws, rango, estilos.alineacion_padding())
-    formato.aplicar_alto_filas(ws, L.FILA_PRIMERA_CARGA, fila_fin, ALTO_FILA_CARGA)
+    formato.aplicar_alto_filas(ws, L.FILA_PRIMERA_CARGA, fila_fin, estilos.ALTO_FILA)
     formato.autoajustar_columnas(ws, extra=4)
     # La columna Nombre muestra el resultado de una formula (autoajustar la
     # ignora): su ancho se fija con los nombres que puede llegar a mostrar.

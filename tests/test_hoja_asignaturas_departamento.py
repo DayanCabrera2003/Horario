@@ -75,6 +75,13 @@ def test_titulo_coloreado_por_completitud():
             estilos.COLOR_COMPLETA) in reglas
 
 
+def test_alto_de_filas_para_padding():
+    ws = _hoja()
+    # Bloques de la fila 3 a la 12 (ultima fila de carga): filas mas altas.
+    assert ws.row_dimensions[3].height == estilos.ALTO_FILA
+    assert ws.row_dimensions[12].height == estilos.ALTO_FILA
+
+
 def test_leyenda():
     ws = _hoja()
     # Ultimo bloque termina en la fila 12; leyenda dos filas despues.

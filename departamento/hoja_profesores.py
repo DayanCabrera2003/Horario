@@ -33,6 +33,9 @@ def construir_hoja_profesores(wb, depto: Departamento) -> None:
         _construir_bloque(ws, depto, i, p)
 
     ultimo_total = L.prof_fila_total(len(depto.profesores) - 1, fpp)
+    # Padding aproximado para Calc: filas mas altas en toda la zona de bloques.
+    formato.aplicar_alto_filas(ws, L.PROF_FILA_PRIMER_BLOQUE, ultimo_total,
+                               estilos.ALTO_FILA)
     _escribir_leyenda(ws, ultimo_total + 2)
     ws.freeze_panes = f"A{L.PROF_FILA_PRIMER_BLOQUE}"
     formato.autoajustar_columnas(ws, extra=4)
