@@ -181,6 +181,10 @@ def _aplicar_formato_condicional(ws, grupo: Grupo, facultad: Facultad) -> None:
     # Asignatura desconocida (naranja) en filas de asignatura
     sq_asig = L.rangos_filas_asig(n_dias, n_turnos)
     primera = L.celda_asig(0, 1)
+    # celda_aula(0, 1) es la aula del primer turno, una fila bajo 'primera': la
+    # reutilizan tanto la regla de aula-sin-asignatura (mas abajo) como la de
+    # aula invalida, asi que se calcula una sola vez aqui.
+    primera_aula = L.celda_aula(0, 1)
     ws.conditional_formatting.add(
         sq_asig,
         estilos.regla_formula(
@@ -190,16 +194,14 @@ def _aplicar_formato_condicional(ws, grupo: Grupo, facultad: Facultad) -> None:
     # Aula puesta y asignatura vacia: el turno esta a medias. La formula se ancla
     # en la primera celda de asignatura y su aula (una fila mas abajo); como los
     # turnos van de dos en dos, se desplaza sola al resto.
-    primera_aula_del_turno = L.celda_aula(0, 1)
     ws.conditional_formatting.add(
         sq_asig,
         estilos.regla_formula(
-            f'AND({primera}="",{primera_aula_del_turno}<>"")',
+            f'AND({primera}="",{primera_aula}<>"")',
             estilos.COLOR_AULA_SIN_ASIG),
     )
     # Aula inválida (amarillo) en filas de aula
     sq_aula = L.rangos_filas_aula(n_dias, n_turnos)
-    primera_aula = L.celda_aula(0, 1)
     ws.conditional_formatting.add(
         sq_aula,
         estilos.regla_formula(
