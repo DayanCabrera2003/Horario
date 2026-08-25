@@ -45,12 +45,8 @@ def construir_hoja_dia(ws, dia: Dia, facultad: Facultad, asignaciones=()) -> Non
     _aplicar_presentacion(ws, dia, facultad)
 
     # Solo la columna Estudiante se elige a mano; C..G son BUSCARV del tribunal.
-    editables = [
-        f"{L.COL_ESTUDIANTE}{L.fila_momento(li, mi, n_mom)}"
-        f":{L.COL_ESTUDIANTE}{L.fila_momento(li, mi, n_mom)}"
-        for li in range(len(facultad.locales))
-        for mi in range(n_mom)
-    ]
+    editables = [proteccion.celda_unica(c)
+                 for c in L.celdas_estudiante(len(facultad.locales), n_mom)]
     proteccion.proteger_hoja(ws, editables=editables)
 
 
@@ -110,7 +106,4 @@ def _aplicar_dropdown_estudiantes(ws, dia: Dia, facultad: Facultad) -> None:
     dv = DataValidation(type="list", formula1="EstudiantesValidos", allow_blank=True,
                         showErrorMessage=True, errorStyle="information")
     ws.add_data_validation(dv)
-    celdas = [f"{L.COL_ESTUDIANTE}{L.fila_momento(li, mi, n_mom)}"
-              for li in range(len(facultad.locales))
-              for mi in range(n_mom)]
-    dv.sqref = " ".join(celdas)
+    dv.sqref = " ".join(L.celdas_estudiante(len(facultad.locales), n_mom))

@@ -28,3 +28,10 @@ def test_bloques_localizar_apilan_por_altura():
     # tabla 0 empieza en fila 3; con n_momentos=2 su altura es 1+2+1=4 -> tabla 1 en fila 7
     assert L.localizar_fila_titulo(0, alturas_previas=0) == 3
     assert L.localizar_fila_titulo(1, alturas_previas=4) == 7
+
+
+def test_celdas_estudiante_enumera_todas_las_filas_de_momento():
+    # 2 locales, 1 momento: local 0 en B3, local 1 en B7 (bloque de 4 filas).
+    assert L.celdas_estudiante(n_locales=2, n_momentos=1) == ["B3", "B7"]
+    # 1 local, 2 momentos: B3 y B4 (filas consecutivas del mismo bloque).
+    assert L.celdas_estudiante(n_locales=1, n_momentos=2) == ["B3", "B4"]

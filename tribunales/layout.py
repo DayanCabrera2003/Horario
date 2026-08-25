@@ -37,6 +37,15 @@ def rango_profesores_momento(local_idx: int, momento_idx: int, n_momentos: int) 
     return f"{COLS_PROFESOR[0]}{fila}:{COL_ULTIMA}{fila}"
 
 
+def celdas_estudiante(n_locales: int, n_momentos: int) -> list[str]:
+    """Celdas de la columna Estudiante (B), una por cada fila de momento de
+    cada local. El desplegable de estudiantes y la proteccion de hoja parten
+    de la misma enumeracion: ambos necesitan exactamente estas celdas."""
+    return [f"{COL_ESTUDIANTE}{fila_momento(li, mi, n_momentos)}"
+            for li in range(n_locales)
+            for mi in range(n_momentos)]
+
+
 # --- Hoja de localizacion: una tabla de una columna por cada (dia, local) ---
 LOCALIZAR_CELDA_ENTRADA = "B1"
 LOCALIZAR_FILA_PRIMERA_TABLA = 3
