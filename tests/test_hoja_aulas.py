@@ -151,3 +151,13 @@ def test_reglas_color_solo_para_anios_presentes():
         if '"M1"' in f or '"M2"' in f or '"D1"' in f or '"D2"' in f
     ]
     assert len(year_codes_in_rules) == 0, "Se emitieron reglas para años no presentes en la facultad"
+
+
+def test_la_hoja_de_aulas_queda_protegida_y_ordenable():
+    fac = _fac()
+    wb = Workbook()
+    firmas = construir_hoja_datos(wb, fac)
+    construir_hoja_aulas(wb, fac, firmas)
+    ws = wb[NOMBRE_HOJA]
+    assert ws.protection.sheet is True
+    assert ws.protection.sort is False

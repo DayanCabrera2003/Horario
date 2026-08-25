@@ -3,6 +3,7 @@ from horarios import layout as L
 from horarios import estilos
 from comun import formato
 from comun import leyenda
+from comun import proteccion
 from horarios.modelo import Facultad
 
 NOMBRE_HOJA = "Aulas"
@@ -87,3 +88,5 @@ def construir_hoja_aulas(wb, facultad: Facultad, firmas: dict[tuple[str, int, st
     # Inmoviliza la columna A (etiquetas de turno); no hay una unica fila de
     # encabezado porque los bloques-dia se apilan en vertical.
     ws.freeze_panes = "B1"
+    # Hoja de consulta: nada editable, pero se deja ordenar y filtrar.
+    proteccion.proteger_hoja(ws, permitir_orden=True)

@@ -67,3 +67,11 @@ def test_mapa_cubre_todas_las_combinaciones():
     assert len(celdas) == len(fac.dias) * fac.turnos * len(fac.aulas)
     # y todas las direcciones son únicas
     assert len(set(celdas.values())) == len(celdas)
+
+
+def test_la_hoja_de_datos_queda_protegida():
+    # Nada es editable a mano en esta hoja oculta: todo son formulas de apoyo.
+    fac = _fac(); wb = Workbook()
+    construir_hoja_datos(wb, fac)
+    ws = wb[NOMBRE_HOJA]
+    assert ws.protection.sheet is True

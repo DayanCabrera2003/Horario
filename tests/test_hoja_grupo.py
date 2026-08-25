@@ -213,3 +213,30 @@ def test_regla_asig_desconocida_usa_rango_absoluto():
                 for r in ws.conditional_formatting[rng]]
     desconocida = [f for f in formulas if "COUNTIF($I$" in f]
     assert desconocida, f"esperaba un COUNTIF con rango absoluto, vi: {formulas}"
+
+
+def test_la_hoja_de_grupo_queda_protegida():
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    assert ws.protection.sheet is True
+
+
+def test_la_rejilla_queda_editable():
+    # B4 = asignatura del turno 1 del primer dia; B5 = su aula.
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    assert ws["B4"].protection.locked is False
+    assert ws["B5"].protection.locked is False
+
+
+def test_la_tabla_de_asignaturas_queda_bloqueada():
+    # L4 = "Asignadas", una formula: es justo lo que el tutor borro sin querer.
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    assert ws["L4"].protection.locked is True

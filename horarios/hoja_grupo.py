@@ -3,6 +3,7 @@ from horarios import layout as L
 from horarios import estilos
 from comun import formato
 from comun import leyenda
+from comun import proteccion
 from horarios.modelo import Grupo, Facultad, Horario
 
 # Alto de fila (en puntos) de la rejilla y la tabla: da aire vertical, parte del
@@ -63,6 +64,12 @@ def construir_hoja_grupo(ws, grupo: Grupo, facultad: Facultad,
     _aplicar_leyenda(ws, grupo, facultad)
     # Inmoviliza la fila de dias y la columna de etiquetas de turno.
     ws.freeze_panes = L.celda_asig(0, 1)
+    # Toda la hoja se calcula sola salvo la rejilla: es lo unico que se llena a
+    # mano, asi que es lo unico que queda desbloqueado.
+    proteccion.proteger_hoja(ws, editables=[
+        L.rangos_filas_asig(len(facultad.dias), facultad.turnos),
+        L.rangos_filas_aula(len(facultad.dias), facultad.turnos),
+    ])
 
 
 def _aplicar_padding(ws, grupo: Grupo, facultad: Facultad) -> None:
