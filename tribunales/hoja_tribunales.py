@@ -40,6 +40,8 @@ def construir_hoja_tribunales(wb, facultad: Facultad) -> None:
         ws[f"G{i}"] = nombre_prof.get(tesis.vocal, tesis.vocal) if tesis.vocal else ""
 
     _aplicar_presentacion(ws, len(facultad.tesis))
+    # Hoja de solo lectura: nada editable, pero se deja ordenar y filtrar.
+    proteccion.proteger_hoja(ws, permitir_orden=True)
 
 
 def _nombre_profesor(profesor) -> str:
@@ -61,5 +63,3 @@ def _aplicar_presentacion(ws, n_tesis: int) -> None:
     formato.autoajustar_columnas(ws)
     # Inmoviliza la fila de encabezado para que quede visible al hacer scroll.
     ws.freeze_panes = "A2"
-    # Hoja de solo lectura: nada editable, pero se deja ordenar y filtrar.
-    proteccion.proteger_hoja(ws, permitir_orden=True)
