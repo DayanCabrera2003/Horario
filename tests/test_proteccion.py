@@ -45,6 +45,15 @@ def test_desbloquear_no_pisa_los_demas_estilos():
     assert ws["B2"].protection.locked is False
 
 
+def test_desbloquear_no_protege_la_hoja_por_si_solo():
+    # `desbloquear` es parte de la interfaz publica del modulo y se usa por
+    # separado de `proteger_hoja`; su contrato se fija aqui.
+    ws = _hoja()
+    proteccion.desbloquear(ws, ["B2:C3"])
+    assert ws["B2"].protection.locked is False
+    assert ws.protection.sheet is False
+
+
 def test_permitir_orden_deja_ordenar_y_autofiltrar():
     # En OOXML cada atributo significa "esta operacion queda prohibida":
     # ponerlos en False es lo que las habilita.
