@@ -48,7 +48,7 @@ def construir_hoja_profesores(wb, depto: Departamento) -> None:
     # El tope de cada profesor se edita a mano y la alerta de sobrecarga lo lee.
     # Una fase posterior separara los datos del reporte: el tope pasara a una
     # hoja de listado propia y esta quedara de solo lectura.
-    topes = [f"D{L.prof_fila_valores(i, fpp)}:D{L.prof_fila_valores(i, fpp)}"
+    topes = [proteccion.celda_unica(f"D{L.prof_fila_valores(i, fpp)}")
              for i in range(len(depto.profesores))]
     proteccion.proteger_hoja(ws, editables=topes)
 

@@ -57,8 +57,8 @@ def construir_hoja_localizar(wb, facultad: Facultad) -> None:
     _aplicar_presentacion(ws, titulos, alturas)
 
     # La unica entrada de la hoja es la celda de busqueda global.
-    proteccion.proteger_hoja(ws, editables=[
-        f"{L.LOCALIZAR_CELDA_ENTRADA}:{L.LOCALIZAR_CELDA_ENTRADA}"])
+    proteccion.proteger_hoja(
+        ws, editables=[proteccion.celda_unica(L.LOCALIZAR_CELDA_ENTRADA)])
 
 
 def _formula_rol(entrada: str, hoja_dia: str, fila: int) -> str:
