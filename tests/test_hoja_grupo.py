@@ -215,6 +215,41 @@ def test_regla_asig_desconocida_usa_rango_absoluto():
     assert desconocida, f"esperaba un COUNTIF con rango absoluto, vi: {formulas}"
 
 
+def test_hay_regla_de_aula_sin_asignatura():
+    # Turno con aula puesta pero asignatura vacia: la formula se ancla en B4
+    # (asignatura) y B5 (su aula, una fila mas abajo) y se desplaza sola al
+    # resto de turnos gracias al sqref multi-rango.
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    formulas = [r.formula[0]
+                for rng in ws.conditional_formatting
+                for r in ws.conditional_formatting[rng]]
+    assert 'AND(B4="",B5<>"")' in formulas
+
+
+def test_la_regla_usa_el_color_reservado():
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    reglas = [r for rng in ws.conditional_formatting
+              for r in ws.conditional_formatting[rng]]
+    (regla,) = [r for r in reglas if r.formula[0] == 'AND(B4="",B5<>"")']
+    color = regla.dxf.fill.bgColor.rgb
+    assert color.endswith(estilos.COLOR_AULA_SIN_ASIG)
+
+
+def test_la_leyenda_menciona_el_caso():
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    textos = [c.value for row in ws.iter_rows() for c in row if isinstance(c.value, str)]
+    assert any("sin asignatura" in t for t in textos)
+
+
 def test_la_hoja_de_grupo_queda_protegida():
     fac, g = _facultad()
     wb = Workbook()

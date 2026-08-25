@@ -138,6 +138,7 @@ def _aplicar_leyenda(ws, grupo: Grupo, facultad: Facultad) -> None:
     items = [
         (estilos.COLOR_AULA_INVALIDA, "Aula fuera del listado de la facultad"),
         (estilos.COLOR_ASIG_DESCONOCIDA, "Asignatura fuera de la tabla del grupo"),
+        (estilos.COLOR_AULA_SIN_ASIG, "Aula puesta, sin asignatura"),
         (estilos.COLOR_SOBRE_PLANIFICADA, "Sobre-planificada (asignadas > frecuencia)"),
         (estilos.COLOR_FREC_EXACTA, "Frecuencia exacta cumplida"),
     ]
@@ -185,6 +186,16 @@ def _aplicar_formato_condicional(ws, grupo: Grupo, facultad: Facultad) -> None:
         estilos.regla_formula(
             f'AND({primera}<>"",COUNTIF({rango_ids},{primera})=0)',
             estilos.COLOR_ASIG_DESCONOCIDA),
+    )
+    # Aula puesta y asignatura vacia: el turno esta a medias. La formula se ancla
+    # en la primera celda de asignatura y su aula (una fila mas abajo); como los
+    # turnos van de dos en dos, se desplaza sola al resto.
+    primera_aula_del_turno = L.celda_aula(0, 1)
+    ws.conditional_formatting.add(
+        sq_asig,
+        estilos.regla_formula(
+            f'AND({primera}="",{primera_aula_del_turno}<>"")',
+            estilos.COLOR_AULA_SIN_ASIG),
     )
     # Aula inválida (amarillo) en filas de aula
     sq_aula = L.rangos_filas_aula(n_dias, n_turnos)

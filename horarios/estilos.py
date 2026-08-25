@@ -17,5 +17,9 @@ COLOR_AULA_INVALIDA = "FFF176"   # amarillo
 COLOR_ASIG_DESCONOCIDA = "FFB74D"  # naranja
 COLOR_SOBRE_PLANIFICADA = "EF9A9A"  # rojo
 COLOR_FREC_EXACTA = "A5D6A7"       # verde
+# Rojo intermedio: turno con aula puesta pero sin asignatura. Elegido para no
+# confundirse con COLOR_SOBRE_PLANIFICADA (rosado) ni con COLOR_CONFLICTO
+# (rojo oscuro), que son los otros dos rojos de la paleta.
+COLOR_AULA_SIN_ASIG = "EF5350"
 COLOR_ENCABEZADO = "D9D9D9"        # gris claro neutro para cabeceras
 COLOR_FONDO_AULA = "ECEFF1"        # gris azulado muy claro: marca donde van las aulas
