@@ -15,6 +15,12 @@ def test_filas_asignacion():
     assert L.fila_carga(4) == 8
 
 
+def test_rango_profesor_editable():
+    # 5 filas de carga -> F4:F8. Lo comparten el desplegable de profesores y
+    # la proteccion de hoja: es el unico rango editable de Asignacion.
+    assert L.rango_profesor_editable(5) == "F4:F8"
+
+
 def test_bloque_profesor():
     # cabecera + valores + subcabecera + filas reservadas + TOTAL + blanco.
     assert L.altura_bloque_profesor(10) == 15

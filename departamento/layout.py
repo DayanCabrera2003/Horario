@@ -25,6 +25,13 @@ def fila_carga(idx: int) -> int:
     return FILA_PRIMERA_CARGA + idx
 
 
+def rango_profesor_editable(n_filas: int) -> str:
+    """Rango de la columna Profesor (F) que cubre todas las filas de carga: el
+    unico rango editable de la hoja Asignacion, y la fuente del desplegable de
+    profesores. Comparten esta expresion ambos consumidores."""
+    return f"{COL_PROFESOR}{FILA_PRIMERA_CARGA}:{COL_PROFESOR}{fila_carga(n_filas - 1)}"
+
+
 # --- Hoja Profesores: un bloque por profesor a partir de la fila 3. Cada
 # bloque: cabecera (etiquetas), valores, subcabecera del detalle, N filas
 # reservadas de detalle, fila TOTAL y una fila en blanco de separacion. ---

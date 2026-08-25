@@ -35,9 +35,8 @@ def construir_hoja_asignacion(wb, depto: Departamento) -> None:
 
     # La columna F es la unica decision del libro; todo lo demas viene del YAML
     # o se calcula.
-    proteccion.proteger_hoja(ws, editables=[
-        f"{L.COL_PROFESOR}{L.FILA_PRIMERA_CARGA}"
-        f":{L.COL_PROFESOR}{L.fila_carga(len(filas) - 1)}"])
+    proteccion.proteger_hoja(
+        ws, editables=[L.rango_profesor_editable(len(filas))])
 
 
 def _escribir_encabezados(ws) -> None:
@@ -69,8 +68,7 @@ def _aplicar_dropdown(ws, n_filas: int) -> None:
     dv = DataValidation(type="list", formula1="ProfesoresValidos", allow_blank=True,
                         showErrorMessage=True, errorStyle="information")
     ws.add_data_validation(dv)
-    dv.sqref = (f"{L.COL_PROFESOR}{L.FILA_PRIMERA_CARGA}"
-                f":{L.COL_PROFESOR}{L.fila_carga(n_filas - 1)}")
+    dv.sqref = L.rango_profesor_editable(n_filas)
 
 
 def _aplicar_formato_condicional(ws, n_filas: int) -> None:
