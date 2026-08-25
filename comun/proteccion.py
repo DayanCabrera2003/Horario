@@ -14,6 +14,16 @@ from openpyxl.styles import Protection
 _DESBLOQUEADA = Protection(locked=False)
 
 
+def celda_unica(ref: str) -> str:
+    """Convierte una referencia de celda suelta en un rango de una celda.
+
+    `ws["F4"]` devuelve una Cell y no una tupla de filas, asi que desbloquear
+    una celda concreta exige pasarla como "F4:F4". Este helper evita que cada
+    consumidor repita esa duplicacion a mano.
+    """
+    return f"{ref}:{ref}"
+
+
 def desbloquear(ws, rangos) -> None:
     """Marca como editables las celdas de `rangos`.
 

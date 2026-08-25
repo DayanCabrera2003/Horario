@@ -68,3 +68,9 @@ def test_sin_permitir_orden_quedan_prohibidas():
     proteccion.proteger_hoja(ws)
     assert ws.protection.sort is True
     assert ws.protection.autoFilter is True
+
+
+def test_celda_unica_duplica_la_referencia():
+    # ws["F4"] devuelve una Cell, no una tupla de filas; el rango duplicado
+    # es lo que espera `desbloquear`.
+    assert proteccion.celda_unica("F4") == "F4:F4"
