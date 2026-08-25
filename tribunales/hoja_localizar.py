@@ -1,6 +1,7 @@
 from openpyxl.utils import quote_sheetname, absolute_coordinate
 from comun import formato
 from comun import leyenda
+from comun import proteccion
 from tribunales import layout as L
 from tribunales import estilos
 from tribunales.modelo import Facultad
@@ -54,6 +55,10 @@ def construir_hoja_localizar(wb, facultad: Facultad) -> None:
             alturas += L.localizar_altura_tabla(n_mom)
 
     _aplicar_presentacion(ws, titulos, alturas)
+
+    # La unica entrada de la hoja es la celda de busqueda global.
+    proteccion.proteger_hoja(ws, editables=[
+        f"{L.LOCALIZAR_CELDA_ENTRADA}:{L.LOCALIZAR_CELDA_ENTRADA}"])
 
 
 def _formula_rol(entrada: str, hoja_dia: str, fila: int) -> str:

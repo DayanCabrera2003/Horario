@@ -61,3 +61,18 @@ def test_localizar_tiene_leyenda():
     ws = wb[NOMBRE_HOJA]
     textos = [c.value for row in ws.iter_rows() for c in row if isinstance(c.value, str)]
     assert any("Leyenda" in t for t in textos)
+
+
+def test_la_hoja_localizar_queda_protegida():
+    wb = Workbook(); wb.remove(wb.active)
+    construir_hoja_localizar(wb, _fac())
+    ws = wb[NOMBRE_HOJA]
+    assert ws.protection.sheet is True
+
+
+def test_solo_la_celda_de_entrada_queda_editable():
+    wb = Workbook(); wb.remove(wb.active)
+    construir_hoja_localizar(wb, _fac())
+    ws = wb[NOMBRE_HOJA]
+    assert ws["B1"].protection.locked is False
+    assert ws["B4"].protection.locked is True          # columna Rol: formula

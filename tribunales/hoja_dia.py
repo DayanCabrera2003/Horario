@@ -1,6 +1,7 @@
 from openpyxl.worksheet.datavalidation import DataValidation
 from comun import formato
 from comun import leyenda
+from comun import proteccion
 from tribunales import layout as L
 from tribunales import estilos
 from tribunales.modelo import Dia, Facultad
@@ -42,6 +43,15 @@ def construir_hoja_dia(ws, dia: Dia, facultad: Facultad, asignaciones=()) -> Non
     _aplicar_dropdown_estudiantes(ws, dia, facultad)
     _aplicar_formato_colision(ws, dia, facultad)
     _aplicar_presentacion(ws, dia, facultad)
+
+    # Solo la columna Estudiante se elige a mano; C..G son BUSCARV del tribunal.
+    editables = [
+        f"{L.COL_ESTUDIANTE}{L.fila_momento(li, mi, n_mom)}"
+        f":{L.COL_ESTUDIANTE}{L.fila_momento(li, mi, n_mom)}"
+        for li in range(len(facultad.locales))
+        for mi in range(n_mom)
+    ]
+    proteccion.proteger_hoja(ws, editables=editables)
 
 
 def _aplicar_presentacion(ws, dia: Dia, facultad: Facultad) -> None:

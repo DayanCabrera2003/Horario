@@ -1,5 +1,6 @@
 from openpyxl.workbook.defined_name import DefinedName
 from openpyxl.utils import quote_sheetname, absolute_coordinate
+from comun import proteccion
 from tribunales.modelo import Facultad
 
 NOMBRE_HOJA = "Datos"
@@ -43,3 +44,5 @@ def construir_hoja_datos(wb, facultad: Facultad) -> None:
     n_est = len(facultad.estudiantes)
     if n_est:
         wb.defined_names.add(_rango_nombrado("EstudiantesValidos", "H1", f"H{n_est}"))
+
+    proteccion.proteger_hoja(ws)

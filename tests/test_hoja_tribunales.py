@@ -83,3 +83,9 @@ def test_conjunta_y_cotutoria_unen_nombres_y_vocal():
 def test_inmoviliza_encabezado():
     ws = _construir()
     assert ws.freeze_panes == "A2"
+
+
+def test_la_hoja_tribunales_es_de_solo_lectura_pero_ordenable():
+    ws = _construir()
+    assert ws.protection.sheet is True
+    assert ws.protection.sort is False

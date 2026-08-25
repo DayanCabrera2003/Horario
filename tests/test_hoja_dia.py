@@ -78,3 +78,16 @@ def test_hoja_dia_tiene_leyenda_de_colision():
     textos = [c.value for row in ws.iter_rows() for c in row if isinstance(c.value, str)]
     assert any("Leyenda" in t for t in textos)
     assert any("olisi" in t for t in textos)  # "colision"/"Colision"
+
+
+def test_la_hoja_de_dia_queda_protegida():
+    ws = _hoja(_fac())
+    assert ws.protection.sheet is True
+
+
+def test_solo_la_columna_de_estudiante_queda_editable():
+    from tribunales import layout as L
+    fila = L.fila_momento(0, 0, 2)   # primer local, primer momento; fixture tiene 2 momentos
+    ws = _hoja(_fac())
+    assert ws[f"B{fila}"].protection.locked is False   # estudiante: se elige
+    assert ws[f"C{fila}"].protection.locked is True    # tutor: es formula

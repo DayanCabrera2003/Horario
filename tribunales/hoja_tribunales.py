@@ -2,6 +2,7 @@
 tesis (nombres, no ids). Sirve para leer el tribunal de un vistazo sin tener que
 descifrar los identificadores que usan el resto de hojas y los desplegables."""
 from comun import formato
+from comun import proteccion
 from tribunales import estilos
 from tribunales.modelo import Facultad
 
@@ -60,3 +61,5 @@ def _aplicar_presentacion(ws, n_tesis: int) -> None:
     formato.autoajustar_columnas(ws)
     # Inmoviliza la fila de encabezado para que quede visible al hacer scroll.
     ws.freeze_panes = "A2"
+    # Hoja de solo lectura: nada editable, pero se deja ordenar y filtrar.
+    proteccion.proteger_hoja(ws, permitir_orden=True)

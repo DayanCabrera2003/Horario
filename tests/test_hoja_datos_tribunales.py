@@ -49,3 +49,12 @@ def test_rangos_nombrados_definidos():
     construir_hoja_datos(wb, _fac())
     assert "TesisTribunal" in wb.defined_names
     assert "EstudiantesValidos" in wb.defined_names
+
+
+def test_la_hoja_de_datos_queda_protegida():
+    # Nada es editable a mano en esta hoja oculta: todo son tablas de apoyo.
+    wb = Workbook()
+    wb.remove(wb.active)
+    construir_hoja_datos(wb, _fac())
+    ws = wb[NOMBRE_HOJA]
+    assert ws.protection.sheet is True
