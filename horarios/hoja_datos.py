@@ -60,5 +60,6 @@ def construir_hoja_datos(wb, facultad: Facultad) -> dict[tuple[str, int, str], s
                 ws[dir_firma] = _formula_firma_anio(anios_por_codigo, dia_idx, turno, aula)
                 celdas[(dia, turno, aula)] = f"{NOMBRE_HOJA}!{dir_firma}"
                 fila += 1
+    # Hoja de apoyo oculta: nada se edita a mano aqui.
     proteccion.proteger_hoja(ws)
     return celdas

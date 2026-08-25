@@ -45,4 +45,5 @@ def construir_hoja_datos(wb, facultad: Facultad) -> None:
     if n_est:
         wb.defined_names.add(_rango_nombrado("EstudiantesValidos", "H1", f"H{n_est}"))
 
+    # Hoja de apoyo oculta: nada se edita a mano aqui.
     proteccion.proteger_hoja(ws)

@@ -48,6 +48,7 @@ def construir_hoja_asignaturas(wb, depto: Departamento) -> None:
     formato.fijar_ancho_por_textos(
         ws, "E", [p.nombre for p in depto.profesores] + ["(desconocido)"],
         extra=4)
+    # Hoja de solo lectura: todo son referencias a Asignacion, nada se edita aqui.
     proteccion.proteger_hoja(ws)
 
 

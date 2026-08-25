@@ -67,4 +67,5 @@ def construir_hoja_datos(wb, depto: Departamento) -> None:
     if filas:
         wb.defined_names.add(_rango_nombrado("CargaPorProfesor", "F1", f"J{len(filas)}"))
 
+    # Hoja de apoyo oculta: nada se edita a mano aqui.
     proteccion.proteger_hoja(ws)
