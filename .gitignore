@@ -28,3 +28,6 @@ htmlcov/
 
 # LibreOffice lock files
 .~lock.*#
+
+# Worktrees de trabajo aislado: nunca se versionan
+.worktrees/
