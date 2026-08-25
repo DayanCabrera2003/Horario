@@ -5,6 +5,7 @@ from departamento.hoja_datos import construir_hoja_datos
 from departamento.hoja_asignacion import construir_hoja_asignacion
 from departamento.hoja_profesores import construir_hoja_profesores
 from departamento import estilos
+from departamento import layout as L
 
 
 def _departamento(tope_global=160):
@@ -94,3 +95,21 @@ def test_alerta_sobrecarga_solo_con_tope():
                             "profesores": (Profesor(id="PIAD", nombre="P", grado="Dr."),)})
     ws2 = _hoja(depto)
     assert not list(ws2.conditional_formatting._cf_rules)
+
+
+def test_la_hoja_de_profesores_queda_protegida():
+    ws = _hoja()
+    assert ws.protection.sheet is True
+
+
+def test_la_celda_de_tope_sigue_siendo_editable():
+    # fixture: filas_por_profesor=4 (ver _departamento arriba).
+    ws = _hoja()
+    fila_val = L.prof_fila_valores(0, 4)
+    assert ws[f"D{fila_val}"].protection.locked is False
+
+
+def test_el_total_de_horas_queda_bloqueado():
+    ws = _hoja()
+    fila_total = L.prof_fila_total(0, 4)
+    assert ws[f"D{fila_total}"].protection.locked is True

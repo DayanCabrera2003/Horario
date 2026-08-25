@@ -104,3 +104,15 @@ def test_leyenda_y_paneles():
     assert ws.freeze_panes == "A4"
     textos = [ws[f"B{r}"].value for r in range(10, 13)]
     assert any("profesor" in (t or "").lower() for t in textos)
+
+
+def test_la_hoja_de_asignacion_queda_protegida():
+    ws = _hoja()
+    assert ws.protection.sheet is True
+
+
+def test_solo_la_columna_profesor_queda_editable():
+    ws = _hoja()
+    assert ws["F4"].protection.locked is False   # profesor: se elige
+    assert ws["G4"].protection.locked is True    # nombre: es BUSCARV
+    assert ws["A4"].protection.locked is True    # asignatura: viene del YAML

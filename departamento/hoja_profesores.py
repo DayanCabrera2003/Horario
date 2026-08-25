@@ -11,6 +11,7 @@ si el profesor imparte mas cosas de las que caben en el bloque.
 from openpyxl.utils import quote_sheetname
 
 from comun import formato, leyenda
+from comun import proteccion
 from departamento import estilos
 from departamento import layout as L
 from departamento.hoja_asignacion import NOMBRE_HOJA as HOJA_ASIGNACION
@@ -43,6 +44,12 @@ def construir_hoja_profesores(wb, depto: Departamento) -> None:
     # (autoajustar la ignora): el ancho se fija con los nombres posibles.
     formato.fijar_ancho_por_textos(
         ws, "A", [a.nombre for a in depto.asignaturas] + ["Asignatura"], extra=4)
+
+    # El tope de cada profesor se edita a mano y la alerta de sobrecarga lo lee.
+    # Una fase posterior lo mudara a la hoja Profesores y esta linea desaparecera.
+    topes = [f"D{L.prof_fila_valores(i, fpp)}:D{L.prof_fila_valores(i, fpp)}"
+             for i in range(len(depto.profesores))]
+    proteccion.proteger_hoja(ws, editables=topes)
 
 
 def _rango_asignacion(col: str, n_filas: int) -> str:

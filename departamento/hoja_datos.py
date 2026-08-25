@@ -14,6 +14,7 @@ Contiene las tablas de apoyo de las demas hojas:
 from openpyxl.workbook.defined_name import DefinedName
 from openpyxl.utils import quote_sheetname, absolute_coordinate
 
+from comun import proteccion
 from departamento import layout as L
 from departamento.modelo import Departamento
 
@@ -65,3 +66,5 @@ def construir_hoja_datos(wb, depto: Departamento) -> None:
         ws[f"J{r}"] = f.horas
     if filas:
         wb.defined_names.add(_rango_nombrado("CargaPorProfesor", "F1", f"J{len(filas)}"))
+
+    proteccion.proteger_hoja(ws)

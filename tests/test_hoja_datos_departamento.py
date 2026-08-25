@@ -71,3 +71,9 @@ def test_tabla_auxiliar_clave_y_datos():
     assert ws["J1"].value == 32
     assert ws["H2"].value == "CP"
     assert ws["I2"].value == 1
+
+
+def test_la_hoja_de_datos_queda_protegida():
+    # Nada es editable a mano en esta hoja oculta: todo son tablas de apoyo.
+    _, ws = _hoja()
+    assert ws.protection.sheet is True

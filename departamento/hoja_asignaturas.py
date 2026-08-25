@@ -9,6 +9,7 @@ falte alguna.
 from openpyxl.utils import quote_sheetname
 
 from comun import formato, leyenda
+from comun import proteccion
 from departamento import estilos
 from departamento import layout as L
 from departamento.hoja_asignacion import NOMBRE_HOJA as HOJA_ASIGNACION
@@ -47,6 +48,7 @@ def construir_hoja_asignaturas(wb, depto: Departamento) -> None:
     formato.fijar_ancho_por_textos(
         ws, "E", [p.nombre for p in depto.profesores] + ["(desconocido)"],
         extra=4)
+    proteccion.proteger_hoja(ws)
 
 
 def _construir_bloque(ws, asignatura, alturas: int, idx_carga: int, n: int) -> None:

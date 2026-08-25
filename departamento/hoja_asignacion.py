@@ -8,6 +8,7 @@ aparece al lado por formula. Los colores avisan de filas sin profesor
 from openpyxl.worksheet.datavalidation import DataValidation
 
 from comun import formato, leyenda
+from comun import proteccion
 from departamento import estilos
 from departamento import layout as L
 from departamento.modelo import Departamento
@@ -31,6 +32,12 @@ def construir_hoja_asignacion(wb, depto: Departamento) -> None:
 
     # Encabezados fijos al hacer scroll: todo lo anterior a la primera carga.
     ws.freeze_panes = f"A{L.FILA_PRIMERA_CARGA}"
+
+    # La columna F es la unica decision del libro; todo lo demas viene del YAML
+    # o se calcula.
+    proteccion.proteger_hoja(ws, editables=[
+        f"{L.COL_PROFESOR}{L.FILA_PRIMERA_CARGA}"
+        f":{L.COL_PROFESOR}{L.fila_carga(len(filas) - 1)}"])
 
 
 def _escribir_encabezados(ws) -> None:

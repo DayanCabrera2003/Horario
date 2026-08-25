@@ -87,3 +87,9 @@ def test_leyenda():
     # Ultimo bloque termina en la fila 12; leyenda dos filas despues.
     textos = [(ws[f"B{r}"].value or "") for r in (14, 15)]
     assert any("completa" in t.lower() for t in textos)
+
+
+def test_la_hoja_de_asignaturas_queda_protegida():
+    # Nada es editable a mano en esta hoja: todo son referencias a Asignacion.
+    ws = _hoja()
+    assert ws.protection.sheet is True
