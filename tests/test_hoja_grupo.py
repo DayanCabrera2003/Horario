@@ -235,8 +235,13 @@ def test_la_rejilla_queda_editable():
 
 def test_la_tabla_de_asignaturas_queda_bloqueada():
     # L4 = "Asignadas", una formula: es justo lo que el tutor borro sin querer.
+    # Toda celda de openpyxl nace bloqueada (aunque la hoja no se proteja), asi
+    # que B4 (la rejilla, editable) sirve de control: si tambien saliera
+    # bloqueada, no probaria que proteger_hoja corrio ni que L4 quedo fuera de
+    # lo editable.
     fac, g = _facultad()
     wb = Workbook()
     ws = wb.active
     construir_hoja_grupo(ws, g, fac, horario=None)
     assert ws["L4"].protection.locked is True
+    assert ws["B4"].protection.locked is False

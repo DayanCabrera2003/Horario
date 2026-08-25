@@ -110,6 +110,12 @@ def test_la_celda_de_tope_sigue_siendo_editable():
 
 
 def test_el_total_de_horas_queda_bloqueado():
+    # Control en la misma celda del bloque: D{fila_val} (el tope) sale
+    # desbloqueada porque esta en editables. Sin este control, la aserción de
+    # abajo pasaria igual aunque proteger_hoja nunca se hubiera llamado, pues
+    # toda celda de openpyxl nace bloqueada por defecto.
     ws = _hoja()
     fila_total = L.prof_fila_total(0, 4)
+    fila_val = L.prof_fila_valores(0, 4)
     assert ws[f"D{fila_total}"].protection.locked is True
+    assert ws[f"D{fila_val}"].protection.locked is False
