@@ -74,6 +74,13 @@ def test_aplicar_estilo_encabezado_pone_negrita_y_relleno():
     assert ws["A1"].fill.fgColor.rgb.endswith(estilos.COLOR_ENCABEZADO)
 
 
+def test_aplicar_nota_adjunta_el_texto_a_la_celda():
+    wb = Workbook()
+    ws = wb.active
+    formato.aplicar_nota(ws, "M3", "Faltan = Frec menos Asignadas")
+    assert "Faltan" in ws["M3"].comment.text
+
+
 def test_autoajustar_columnas_ignora_formulas():
     # El texto de una formula ("=...") no refleja el valor mostrado; no debe inflar el ancho.
     wb = Workbook()

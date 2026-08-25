@@ -1,6 +1,7 @@
 """Utilidades para aplicar formato de presentacion (bordes, ancho de columnas)
 sobre una worksheet ya construida. Separado de `estilos`, que solo define objetos
 de estilo puros, y de `layout`, que solo calcula posiciones."""
+from openpyxl.comments import Comment
 from openpyxl.styles import Border, Side
 
 
@@ -77,6 +78,13 @@ def aplicar_ajuste_texto(ws, rango: str, alineacion) -> None:
     """Aplica `alineacion` (con wrap_text) a cada celda del `rango`, para que
     el contenido largo salte de linea en vez de desbordarse."""
     aplicar_alineacion(ws, rango, alineacion)
+
+
+def aplicar_nota(ws, coord: str, texto: str) -> None:
+    """Adjunta una nota emergente a la celda `coord`, para explicar en el propio
+    libro que significa una columna (p. ej. de donde sale "Faltan"). Es una
+    decoracion de celda, de la misma familia que el relleno y la alineacion."""
+    ws[coord].comment = Comment(texto, "Generador")
 
 
 def aplicar_alto_filas(ws, fila_ini: int, fila_fin: int, alto: float) -> None:
