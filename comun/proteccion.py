@@ -22,6 +22,10 @@ def desbloquear(ws, rangos) -> None:
     `layout` para el formato condicional. `ws[...]` no acepta el segundo, asi
     que se parte aqui.
 
+    Una celda suelta hay que pasarla con el rango duplicado ("F4:F4"): "F4"
+    sin dos puntos devuelve una `Cell` en vez de una tupla de filas, y el
+    bucle revienta con `TypeError: 'Cell' object is not iterable`.
+
     Se aplica celda a celda porque en openpyxl la proteccion es un atributo de
     estilo por celda, no de rango. Asignarla no toca fuente, relleno ni borde:
     cada atributo de estilo es independiente.
