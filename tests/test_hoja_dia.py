@@ -20,7 +20,7 @@ def _hoja(fac, asigs=()):
     wb = Workbook(); wb.remove(wb.active)
     construir_hoja_datos(wb, fac)
     dia = fac.dias[0]
-    ws = wb.create_sheet(dia.fecha)
+    ws = wb.create_sheet(dia.nombre_hoja)
     construir_hoja_dia(ws, dia, fac, asignaciones=asigs)
     return ws
 

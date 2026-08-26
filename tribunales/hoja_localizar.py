@@ -31,10 +31,10 @@ def construir_hoja_localizar(wb, facultad: Facultad) -> None:
     alturas = 0
     for dia in facultad.dias:
         n_mom = len(dia.momentos)
-        hoja_dia = quote_sheetname(dia.fecha)
+        hoja_dia = quote_sheetname(dia.nombre_hoja)
         for li, local in enumerate(facultad.locales):
             f_tit = L.localizar_fila_titulo(0, alturas)
-            ws[f"{L.LOCALIZAR_COL}{f_tit}"] = f"{dia.fecha} · {local.nombre}"
+            ws[f"{L.LOCALIZAR_COL}{f_tit}"] = f"{dia.nombre_hoja} · {local.nombre}"
             ws[f"{COL_ROL}{f_tit}"] = "Rol"
             titulos.append((f_tit, n_mom))
             for mi, momento in enumerate(dia.momentos):

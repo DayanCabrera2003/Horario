@@ -1,3 +1,5 @@
+import datetime
+
 from dataclasses import dataclass
 
 
@@ -31,10 +33,29 @@ class Momento:
         return f"{self.inicio}-{self.fin}"
 
 
+# Abreviaturas para el nombre legible de la hoja de un dia. En espanol y cortas
+# para no acercarse al tope de 31 caracteres que Excel pone a los nombres de hoja.
+_MESES = ("ene", "feb", "mar", "abr", "may", "jun",
+          "jul", "ago", "sep", "oct", "nov", "dic")
+_DIAS_SEMANA = ("lun", "mar", "mié", "jue", "vie", "sáb", "dom")
+
+
 @dataclass(frozen=True)
 class Dia:
-    fecha: str
+    fecha: str       # ISO (AAAA-MM-DD): es la clave contra la que casan las asignaciones
     momentos: tuple  # tuple[Momento]
+
+    @property
+    def nombre_hoja(self) -> str:
+        """Nombre de la hoja de este dia, legible: '27 jul (lun)'.
+
+        Unico punto donde se decide como se llama la hoja de un dia: la hoja
+        Localizar la referencia por formula y tiene que coincidir exactamente.
+        `fecha` sigue siendo ISO porque es lo que casa con las asignaciones del
+        YAML; esto es solo como se muestra.
+        """
+        f = datetime.date.fromisoformat(self.fecha)
+        return f"{f.day} {_MESES[f.month - 1]} ({_DIAS_SEMANA[f.weekday()]})"
 
 
 @dataclass(frozen=True)

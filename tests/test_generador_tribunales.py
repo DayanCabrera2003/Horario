@@ -33,7 +33,7 @@ def test_genera_hojas_esperadas(tmp_path):
     generar(config_path=cfg, asignaciones_path=None, salida=salida)
     wb = load_workbook(salida)
     assert "Localizar" in wb.sheetnames
-    assert "2026-07-27" in wb.sheetnames
+    assert "27 jul (lun)" in wb.sheetnames
     assert "Datos" in wb.sheetnames
     assert "Tribunales" in wb.sheetnames
 
@@ -46,7 +46,7 @@ def test_genera_con_asignaciones(tmp_path):
     salida = tmp_path / "tesis.xlsx"
     generar(config_path=cfg, asignaciones_path=asig, salida=salida)
     wb = load_workbook(salida)
-    ws = wb["2026-07-27"]
+    ws = wb["27 jul (lun)"]
     assert ws["B3"].value == "JPER"   # columna Estudiante, primer momento, primer local
 
 
@@ -93,13 +93,13 @@ def test_la_portada_indexa_una_hoja_por_dia(tmp_path):
     # tarea F1.11 va a renombrar. Si se armara con una lista aparte, el
     # renombrado dejaria enlaces rotos sin que nadie se enterara.
     wb = _generar(tmp_path)
-    assert any("2026-07-27" in e for e in _enlaces(wb))
+    assert any("27 jul (lun)" in e for e in _enlaces(wb))
 
 
 def test_las_pestanas_distinguen_las_hojas_de_dia_de_las_de_consulta(tmp_path):
     wb = _generar(tmp_path)
     # En las hojas de dia se coloca a cada estudiante: ahi se escribe.
-    assert wb["2026-07-27"].sheet_properties.tabColor.rgb.endswith(
+    assert wb["27 jul (lun)"].sheet_properties.tabColor.rgb.endswith(
         estilos.COLOR_PESTANA_ENTRADA)
     # Tribunales es una vista de solo lectura del YAML.
     assert wb["Tribunales"].sheet_properties.tabColor.rgb.endswith(

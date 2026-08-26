@@ -54,7 +54,7 @@ def generar(config_path: Path, asignaciones_path, salida: Path,
     construir_hoja_tribunales(wb, facultad)
     nombres_dia = []
     for dia in facultad.dias:
-        ws = wb.create_sheet(dia.fecha)
+        ws = wb.create_sheet(dia.nombre_hoja)
         construir_hoja_dia(ws, dia, facultad, asignaciones=asignaciones)
         nombres_dia.append(ws.title)
     construir_hoja_localizar(wb, facultad)
