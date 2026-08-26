@@ -2,6 +2,7 @@ import datetime
 
 from openpyxl import load_workbook
 
+from departamento import estilos
 from departamento.generador import generar
 
 
@@ -76,3 +77,14 @@ def test_la_portada_dice_de_que_yaml_salio(tmp_path):
     textos = [c.value for fila in wb["Portada"].iter_rows() for c in fila
               if isinstance(c.value, str)]
     assert any("departamento.yaml" in t for t in textos)
+
+
+def test_las_pestanas_distinguen_la_hoja_de_entrada_de_las_de_calculo(tmp_path):
+    # El color de pestana repite en la barra la misma distincion que el indice
+    # de la portada: donde se escribe frente a lo que sale solo.
+    wb = _generar(tmp_path)
+    entrada = wb["Asignación"].sheet_properties.tabColor.rgb
+    assert entrada.endswith(estilos.COLOR_PESTANA_ENTRADA)
+    for hoja in ("Profesores", "Asignaturas"):
+        assert wb[hoja].sheet_properties.tabColor.rgb.endswith(
+            estilos.COLOR_PESTANA_CALCULO), f"{hoja} deberia ir de calculo"

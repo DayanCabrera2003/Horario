@@ -9,6 +9,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 
 from comun import formato, leyenda
 from comun import proteccion
+from comun import vista
 from departamento import estilos
 from departamento import layout as L
 from departamento.modelo import Departamento
@@ -37,6 +38,8 @@ def construir_hoja_asignacion(wb, depto: Departamento) -> None:
     # o se calcula.
     proteccion.proteger_hoja(
         ws, editables=[L.rango_profesor_editable(len(filas))])
+    # Pestana de navegacion: la unica hoja del libro donde se escribe a mano.
+    vista.colorear_pestana(ws, estilos.COLOR_PESTANA_ENTRADA)
 
 
 def _escribir_encabezados(ws) -> None:

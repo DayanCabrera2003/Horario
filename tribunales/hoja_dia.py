@@ -3,6 +3,7 @@ from comun import formato
 from comun import impresion
 from comun import leyenda
 from comun import proteccion
+from comun import vista
 from tribunales import layout as L
 from tribunales import estilos
 from tribunales.modelo import Dia, Facultad
@@ -53,6 +54,8 @@ def construir_hoja_dia(ws, dia: Dia, facultad: Facultad, asignaciones=()) -> Non
     editables = [proteccion.celda_unica(c)
                  for c in L.celdas_estudiante(len(facultad.locales), n_mom)]
     proteccion.proteger_hoja(ws, editables=editables)
+    # Pestana de navegacion: aqui se coloca a cada estudiante.
+    vista.colorear_pestana(ws, estilos.COLOR_PESTANA_ENTRADA)
 
 
 def _aplicar_presentacion(ws, dia: Dia, facultad: Facultad) -> None:

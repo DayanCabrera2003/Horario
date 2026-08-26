@@ -1,6 +1,7 @@
 import datetime
 
 from openpyxl import load_workbook
+from tribunales import estilos
 from tribunales.generador import generar
 
 
@@ -93,3 +94,13 @@ def test_la_portada_indexa_una_hoja_por_dia(tmp_path):
     # renombrado dejaria enlaces rotos sin que nadie se enterara.
     wb = _generar(tmp_path)
     assert any("2026-07-27" in e for e in _enlaces(wb))
+
+
+def test_las_pestanas_distinguen_las_hojas_de_dia_de_las_de_consulta(tmp_path):
+    wb = _generar(tmp_path)
+    # En las hojas de dia se coloca a cada estudiante: ahi se escribe.
+    assert wb["2026-07-27"].sheet_properties.tabColor.rgb.endswith(
+        estilos.COLOR_PESTANA_ENTRADA)
+    # Tribunales es una vista de solo lectura del YAML.
+    assert wb["Tribunales"].sheet_properties.tabColor.rgb.endswith(
+        estilos.COLOR_PESTANA_CALCULO)

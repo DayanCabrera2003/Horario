@@ -16,3 +16,11 @@ COLOR_PROFESOR_DESCONOCIDO = "FFB74D"  # ambar: id fuera de la lista de profesor
 COLOR_SOBRECARGA = "EF9A9A"            # rojo: profesor por encima de su tope
 COLOR_COMPLETA = "A5D6A7"              # verde: asignatura con todo asignado
 COLOR_INCOMPLETA = "FFCC80"            # naranja: asignatura con filas sin profesor
+
+# Colores de pestana, por tipo de hoja. Son de navegacion, no de aviso: se
+# eligen fuera de la gama de rojos, amarillos y verdes, que en este libro ya
+# significan sobrecarga, falta o cobertura completa. Distinguen la hoja donde se
+# escribe a mano de las que solo muestran resultados, igual que hace el indice
+# de la portada.
+COLOR_PESTANA_ENTRADA = "90CAF9"   # azul: aqui se escribe
+COLOR_PESTANA_CALCULO = "B0BEC5"   # gris azulado: esto se calcula solo

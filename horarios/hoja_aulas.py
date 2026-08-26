@@ -4,6 +4,7 @@ from horarios import estilos
 from comun import formato
 from comun import leyenda
 from comun import proteccion
+from comun import vista
 from horarios.modelo import Facultad
 
 NOMBRE_HOJA = "Aulas"
@@ -90,3 +91,5 @@ def construir_hoja_aulas(wb, facultad: Facultad, firmas: dict[tuple[str, int, st
     ws.freeze_panes = "B1"
     # Hoja de consulta: nada editable, pero se deja ordenar y filtrar.
     proteccion.proteger_hoja(ws, permitir_orden=True)
+    # Pestana de navegacion: no es de ningun ano y se calcula sola.
+    vista.colorear_pestana(ws, estilos.COLOR_PESTANA_CALCULO)

@@ -10,6 +10,7 @@ from openpyxl.utils import quote_sheetname
 
 from comun import formato, leyenda
 from comun import proteccion
+from comun import vista
 from departamento import estilos
 from departamento import layout as L
 from departamento.hoja_asignacion import NOMBRE_HOJA as HOJA_ASIGNACION
@@ -50,6 +51,7 @@ def construir_hoja_asignaturas(wb, depto: Departamento) -> None:
         extra=4)
     # Hoja de solo lectura: todo son referencias a Asignacion, nada se edita aqui.
     proteccion.proteger_hoja(ws)
+    vista.colorear_pestana(ws, estilos.COLOR_PESTANA_CALCULO)
 
 
 def _construir_bloque(ws, asignatura, alturas: int, idx_carga: int, n: int) -> None:

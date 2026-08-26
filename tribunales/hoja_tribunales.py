@@ -3,6 +3,7 @@ tesis (nombres, no ids). Sirve para leer el tribunal de un vistazo sin tener que
 descifrar los identificadores que usan el resto de hojas y los desplegables."""
 from comun import formato
 from comun import proteccion
+from comun import vista
 from tribunales import estilos
 from tribunales.modelo import Facultad
 
@@ -42,6 +43,7 @@ def construir_hoja_tribunales(wb, facultad: Facultad) -> None:
     _aplicar_presentacion(ws, len(facultad.tesis))
     # Hoja de solo lectura: nada editable, pero se deja ordenar y filtrar.
     proteccion.proteger_hoja(ws, permitir_orden=True)
+    vista.colorear_pestana(ws, estilos.COLOR_PESTANA_CALCULO)
 
 
 def _nombre_profesor(profesor) -> str:

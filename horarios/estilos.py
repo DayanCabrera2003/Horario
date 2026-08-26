@@ -38,6 +38,11 @@ COLORES_PESTANA_ANIO = (
 )
 
 
+# Las hojas que no son de ningun ano y no se escriben a mano (Aulas) se
+# distinguen con este gris azulado, el mismo criterio que usan los otros libros.
+COLOR_PESTANA_CALCULO = "B0BEC5"
+
+
 def color_pestana_anio(anio: int) -> str:
     """Color de pestana que le toca al ano `anio` (base 1)."""
     return COLORES_PESTANA_ANIO[(anio - 1) % len(COLORES_PESTANA_ANIO)]

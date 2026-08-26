@@ -2,6 +2,7 @@ from openpyxl import Workbook
 from horarios.modelo import Grupo, Anio, Facultad
 from horarios.hoja_datos import construir_hoja_datos
 from horarios.hoja_aulas import construir_hoja_aulas, NOMBRE_HOJA
+from horarios import estilos
 
 
 def _fac():
@@ -161,3 +162,14 @@ def test_la_hoja_de_aulas_queda_protegida_y_ordenable():
     ws = wb[NOMBRE_HOJA]
     assert ws.protection.sheet is True
     assert ws.protection.sort is False
+
+
+def test_la_pestana_marca_que_la_hoja_se_calcula_sola():
+    # Las hojas de grupo llevan el color de su ano; Aulas no es de ningun ano y
+    # no se escribe a mano, asi que se distingue con el color de calculo.
+    fac = _fac()
+    wb = Workbook()
+    firmas = construir_hoja_datos(wb, fac)
+    construir_hoja_aulas(wb, fac, firmas)
+    color = wb[NOMBRE_HOJA].sheet_properties.tabColor.rgb
+    assert color.endswith(estilos.COLOR_PESTANA_CALCULO)

@@ -12,6 +12,7 @@ from openpyxl.utils import quote_sheetname
 
 from comun import formato, leyenda
 from comun import proteccion
+from comun import vista
 from departamento import estilos
 from departamento import layout as L
 from departamento.hoja_asignacion import NOMBRE_HOJA as HOJA_ASIGNACION
@@ -51,6 +52,8 @@ def construir_hoja_profesores(wb, depto: Departamento) -> None:
     topes = [proteccion.celda_unica(f"D{L.prof_fila_valores(i, fpp)}")
              for i in range(len(depto.profesores))]
     proteccion.proteger_hoja(ws, editables=topes)
+    # Pestana de navegacion: salvo los topes, todo sale de Asignacion por formula.
+    vista.colorear_pestana(ws, estilos.COLOR_PESTANA_CALCULO)
 
 
 def _rango_asignacion(col: str, n_filas: int) -> str:
