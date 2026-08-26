@@ -293,3 +293,28 @@ def test_la_hoja_sale_lista_para_imprimir():
     assert ws.page_setup.fitToWidth == 1
     # openpyxl normaliza "1:3" a "$1:$3" al asignarlo.
     assert ws.print_title_rows == f"$1:${L.FILA_ENCABEZADO_DIAS}"
+
+
+def _grupo_de(anio: int):
+    """Facultad de un solo grupo del ano pedido, para comparar pestanas."""
+    a = Anio(carrera="C", numero=anio, asignaturas=(Asignatura("L-C", "Lógica", 1),))
+    g = Grupo("C", anio, 1, 1)
+    return Facultad(aulas=("Aula 1",), dias=("Lunes",), turnos=6, grupos=(g,),
+                    anios={f"C{anio}": a}), g
+
+
+def _pestana(anio: int) -> str:
+    fac, g = _grupo_de(anio)
+    ws = Workbook().active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    return ws.sheet_properties.tabColor.rgb
+
+
+def test_la_pestana_se_colorea_por_ano():
+    # Con 22 grupos la barra de pestanas es un muro de nombres; el color por ano
+    # los agrupa de un vistazo.
+    assert _pestana(1).endswith(estilos.COLORES_PESTANA_ANIO[0])
+
+
+def test_anos_distintos_llevan_pestanas_distintas():
+    assert _pestana(1) != _pestana(2)

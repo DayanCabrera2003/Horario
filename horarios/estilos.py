@@ -23,3 +23,21 @@ COLOR_FREC_EXACTA = "A5D6A7"       # verde
 COLOR_AULA_SIN_ASIG = "EF5350"
 COLOR_ENCABEZADO = "D9D9D9"        # gris claro neutro para cabeceras
 COLOR_FONDO_AULA = "ECEFF1"        # gris azulado muy claro: marca donde van las aulas
+
+# Colores de pestana, por ano. Son de navegacion, no de aviso: se eligen fuera
+# de la gama de rojos, amarillos y verdes, que en este libro ya significan
+# conflicto, falta o frecuencia exacta. Se recorren ciclicamente si hubiera mas
+# anos que colores.
+COLORES_PESTANA_ANIO = (
+    "90CAF9",   # azul
+    "B39DDB",   # morado
+    "80CBC4",   # verde azulado
+    "9FA8DA",   # indigo
+    "BCAAA4",   # marron grisaceo
+    "B0BEC5",   # gris azulado
+)
+
+
+def color_pestana_anio(anio: int) -> str:
+    """Color de pestana que le toca al ano `anio` (base 1)."""
+    return COLORES_PESTANA_ANIO[(anio - 1) % len(COLORES_PESTANA_ANIO)]

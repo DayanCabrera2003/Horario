@@ -4,6 +4,7 @@ from horarios import estilos
 from comun import formato
 from comun import impresion
 from comun import leyenda
+from comun import vista
 from comun import proteccion
 from horarios.modelo import Grupo, Facultad, Horario
 
@@ -68,6 +69,9 @@ def construir_hoja_grupo(ws, grupo: Grupo, facultad: Facultad,
     # Un horario acaba pegado en la pared: apaisado y con la cabecera de dias
     # repetida en cada pagina, que si no la segunda pagina no se sabe leer.
     impresion.preparar(ws, filas_encabezado=f"1:{L.FILA_ENCABEZADO_DIAS}")
+    # Pestana coloreada por ano: agrupa de un vistazo una barra con una hoja
+    # por grupo.
+    vista.colorear_pestana(ws, estilos.color_pestana_anio(grupo.anio))
     # Toda la hoja se calcula sola salvo la rejilla: es lo unico que se llena a
     # mano, asi que es lo unico que queda desbloqueado.
     proteccion.proteger_hoja(ws, editables=[
