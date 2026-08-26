@@ -91,3 +91,18 @@ def test_solo_la_columna_de_estudiante_queda_editable():
     ws = _hoja(_fac())
     assert ws[f"B{fila}"].protection.locked is False   # estudiante: se elige
     assert ws[f"C{fila}"].protection.locked is True    # tutor: es formula
+
+
+def test_la_hoja_sale_lista_para_imprimir():
+    ws = _hoja(_fac())
+    assert ws.page_setup.orientation == "landscape"
+    assert ws.sheet_properties.pageSetUpPr.fitToPage is True
+    assert ws.page_setup.fitToWidth == 1
+
+
+def test_no_repite_cabecera_porque_no_hay_una_sola():
+    # La hoja de dia apila un bloque por local, cada uno con su propio titulo y
+    # su encabezado. No existe una fila de cabecera global que repetir: fijar
+    # una repetiria la del primer local sobre los datos de los demas.
+    ws = _hoja(_fac())
+    assert ws.print_title_rows is None

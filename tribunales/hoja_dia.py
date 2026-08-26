@@ -1,5 +1,6 @@
 from openpyxl.worksheet.datavalidation import DataValidation
 from comun import formato
+from comun import impresion
 from comun import leyenda
 from comun import proteccion
 from tribunales import layout as L
@@ -43,6 +44,10 @@ def construir_hoja_dia(ws, dia: Dia, facultad: Facultad, asignaciones=()) -> Non
     _aplicar_dropdown_estudiantes(ws, dia, facultad)
     _aplicar_formato_colision(ws, dia, facultad)
     _aplicar_presentacion(ws, dia, facultad)
+    # Se imprime apaisada y ajustada al ancho. Sin `filas_encabezado`: la hoja
+    # apila un bloque por local, cada uno con su titulo y su encabezado, asi que
+    # no hay una cabecera global que repetir.
+    impresion.preparar(ws)
 
     # Solo la columna Estudiante se elige a mano; C..G son BUSCARV del tribunal.
     editables = [proteccion.celda_unica(c)

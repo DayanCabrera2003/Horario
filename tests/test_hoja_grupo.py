@@ -280,3 +280,16 @@ def test_la_tabla_de_asignaturas_queda_bloqueada():
     construir_hoja_grupo(ws, g, fac, horario=None)
     assert ws["L4"].protection.locked is True
     assert ws["B4"].protection.locked is False
+
+
+def test_la_hoja_sale_lista_para_imprimir():
+    # Un horario acaba pegado en la pared: apaisado, ajustado al ancho de una
+    # pagina y repitiendo la cabecera de dias en cada pagina impresa.
+    fac, g = _facultad()
+    ws = Workbook().active
+    construir_hoja_grupo(ws, g, fac, horario=None)
+    assert ws.page_setup.orientation == "landscape"
+    assert ws.sheet_properties.pageSetUpPr.fitToPage is True
+    assert ws.page_setup.fitToWidth == 1
+    # openpyxl normaliza "1:3" a "$1:$3" al asignarlo.
+    assert ws.print_title_rows == f"$1:${L.FILA_ENCABEZADO_DIAS}"

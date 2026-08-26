@@ -2,6 +2,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 from horarios import layout as L
 from horarios import estilos
 from comun import formato
+from comun import impresion
 from comun import leyenda
 from comun import proteccion
 from horarios.modelo import Grupo, Facultad, Horario
@@ -64,6 +65,9 @@ def construir_hoja_grupo(ws, grupo: Grupo, facultad: Facultad,
     _aplicar_leyenda(ws, grupo, facultad)
     # Inmoviliza la fila de dias y la columna de etiquetas de turno.
     ws.freeze_panes = L.celda_asig(0, 1)
+    # Un horario acaba pegado en la pared: apaisado y con la cabecera de dias
+    # repetida en cada pagina, que si no la segunda pagina no se sabe leer.
+    impresion.preparar(ws, filas_encabezado=f"1:{L.FILA_ENCABEZADO_DIAS}")
     # Toda la hoja se calcula sola salvo la rejilla: es lo unico que se llena a
     # mano, asi que es lo unico que queda desbloqueado.
     proteccion.proteger_hoja(ws, editables=[
