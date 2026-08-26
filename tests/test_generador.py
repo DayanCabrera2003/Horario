@@ -1,4 +1,6 @@
 """Tests de integración para horarios.generador."""
+import datetime
+
 from openpyxl import load_workbook
 from horarios.config import cargar_facultad
 from horarios.generador import generar
@@ -93,3 +95,51 @@ def test_formulas_presentes_en_modo_esqueleto(tmp_path):
     assert any("SUBSTITUTE" in f for f in formulas_aulas), (
         f"No se encontró SUBSTITUTE en Aulas; fórmulas vistas: {formulas_aulas[:10]}"
     )
+
+
+# --- Portada ---
+
+GENERADO = datetime.datetime(2026, 8, 25, 14, 30)
+
+
+def _generar(tmp_path, **kwargs):
+    """Genera el libro de horarios de ejemplo y devuelve su workbook releido."""
+    salida = tmp_path / "out.xlsx"
+    generar(config_path=_config(tmp_path), horarios_path=None, salida=salida,
+            **kwargs)
+    return load_workbook(salida)
+
+
+def _enlaces(wb):
+    return [c.hyperlink.location for fila in wb["Portada"].iter_rows()
+            for c in fila if c.hyperlink is not None]
+
+
+def test_el_libro_abre_por_la_portada(tmp_path):
+    wb = _generar(tmp_path)
+    assert wb.sheetnames[0] == "Portada"
+    assert wb.active.title == "Portada"
+
+
+def test_la_portada_muestra_la_fecha_inyectada(tmp_path):
+    wb = _generar(tmp_path, generado=GENERADO)
+    textos = [c.value for fila in wb["Portada"].iter_rows() for c in fila
+              if isinstance(c.value, str)]
+    assert any("25/08/2026 14:30" in t for t in textos)
+
+
+def test_la_portada_enlaza_las_hojas_visibles(tmp_path):
+    wb = _generar(tmp_path)
+    enlaces = _enlaces(wb)
+    assert any("Aulas" in e for e in enlaces)
+    # Datos es fontaneria de formulas y esta oculta: no se indexa.
+    assert not any("Datos" in e for e in enlaces)
+
+
+def test_la_portada_indexa_una_hoja_por_grupo(tmp_path):
+    # Igual que con las hojas de dia de tesis: el indice se arma con los
+    # nombres reales de las hojas creadas, no con una lista paralela.
+    wb = _generar(tmp_path)
+    enlaces = _enlaces(wb)
+    for grupo in ("C111", "C112"):
+        assert any(grupo in e for e in enlaces), f"falta el enlace a {grupo}"
