@@ -143,3 +143,17 @@ def test_la_portada_indexa_una_hoja_por_grupo(tmp_path):
     enlaces = _enlaces(wb)
     for grupo in ("C111", "C112"):
         assert any(grupo in e for e in enlaces), f"falta el enlace a {grupo}"
+
+
+def _fila_del_indice(ws, nombre: str):
+    for fila in ws.iter_rows():
+        if fila[0].value == nombre:
+            return fila
+    return None
+
+
+def test_el_indice_situa_cada_grupo_en_su_carrera_y_ano(tmp_path):
+    # Con 22 grupos, repetir la misma descripcion en cada fila no dice nada.
+    # La carrera y el ano son el eje por el que se navega el libro.
+    wb = _generar(tmp_path)
+    assert _fila_del_indice(wb["Portada"], "C111")[1].value == "Carrera C · año 1"

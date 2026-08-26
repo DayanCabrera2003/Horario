@@ -11,15 +11,17 @@ from horarios.hoja_grupo import construir_hoja_grupo
 from horarios.hoja_aulas import NOMBRE_HOJA as HOJA_AULAS, construir_hoja_aulas
 
 
-def _indice(nombres_grupo) -> tuple:
+def _indice(hojas_grupo) -> tuple:
     """Que hay en cada hoja y si se escribe a mano, para el indice de la portada.
 
-    Las hojas de grupo se listan con el nombre con el que se crearon, no con una
-    copia de los ids. `Datos` no aparece: esta oculta y solo es fontaneria.
+    `hojas_grupo` son pares (nombre_de_hoja, grupo) tomados de las hojas ya
+    creadas, no una copia de los ids. `Datos` no aparece: esta oculta y solo es
+    fontaneria de formulas.
     """
     return (
-        *((nombre, "Horario semanal del grupo", True) for nombre in nombres_grupo),
-        (HOJA_AULAS, "Qué aula esta ocupada en cada dia y turno", False),
+        *((nombre, f"Carrera {grupo.carrera} · año {grupo.anio}", True)
+          for nombre, grupo in hojas_grupo),
+        (HOJA_AULAS, "Qué aula está ocupada en cada día y turno", False),
     )
 
 
@@ -55,11 +57,11 @@ def generar(
     firmas = construir_hoja_datos(wb, facultad)
 
     # Una hoja por grupo.
-    nombres_grupo = []
+    hojas_grupo = []
     for grupo in facultad.grupos:
         ws = wb.create_sheet(grupo.id)
         construir_hoja_grupo(ws, grupo, facultad, horario=horarios.get(grupo.id))
-        nombres_grupo.append(ws.title)
+        hojas_grupo.append((ws.title, grupo))
 
     # Hoja Aulas (usa las firmas; se inserta en índice 0).
     construir_hoja_aulas(wb, facultad, firmas)
@@ -71,7 +73,7 @@ def generar(
         titulo="Horario de la facultad",
         subtitulo=_subtitulo(facultad),
         origen=str(config_path),
-        hojas=_indice(nombres_grupo),
+        hojas=_indice(hojas_grupo),
         generado=generado,
     )
     # El libro abre por la portada: si abriera por otra hoja nadie la leería.
