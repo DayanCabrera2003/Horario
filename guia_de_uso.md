@@ -153,6 +153,34 @@ carrera M, año 2, sesión 1, grupo 1   ->   M211
 
 No los escribes tú: salen de combinar `carreras × años × sesiones × grupos`.
 
+### Los profesores (opcional)
+
+Dos secciones más, las dos opcionales. Sin ellas el libro sale como siempre; con ellas gana las hojas
+`Profesores` y `Docencia`.
+
+```yaml
+profesores:
+  - { id: PIAD, nombre: "Pedro I. Alonso Díaz", grado: "Dr.", tope_horas: 160 }
+  - { id: MARA, nombre: "María Ramírez",        grado: "MSc." }   # sin tope
+
+docencia:
+  C111:                    # <- id de grupo
+    AMI-C:  PIAD           # <- asignatura: profesor
+    AMI-CP: MARA
+  C112:
+    AMI-CP: PIAD           # el mismo AMI-CP, otro grupo, otro profesor
+```
+
+- **`profesores`** — `id` y `nombre` obligatorios; `grado` y `tope_horas` opcionales. El id es lo que
+  se escribe en `docencia`, igual que con las asignaturas.
+- **`docencia`** — la jerarquía es **grupo → asignatura → profesor**. La clave es el par (grupo,
+  asignatura) y no la asignatura sola porque en el YAML las asignaturas cuelgan del **año**: el mismo
+  `AMI-CP` lo imparten profesores distintos en cada grupo del año.
+- No hay que declararlo todo: los pares que falten quedan sin profesor.
+
+El programa valida las tres referencias y **no genera** el Excel si alguna falla: un profesor que no
+existe, un grupo que no existe, o una asignatura que no es del año de ese grupo.
+
 ### Convenio de asignaturas (recomendado, no obligatorio)
 
 Por convención se distingue con sufijo:
@@ -424,6 +452,10 @@ Si algo está mal en los YAML, el programa **no genera** el Excel y te dice qué
 | `turno N fuera de rango` | Turno mayor que `turnos` (o < 1). | Ajusta el turno o sube `turnos`. |
 | `cada celda necesita 'asig' y 'aula'` | Una celda sin uno de los dos campos. | Completa `{asig: ..., aula: ...}`. |
 | `aula 'X' no existe` | Un aula del horario no está en `aulas`. | Corrige el nombre o añádela a `aulas`. |
+| `profesores: id duplicado 'X'` | Dos profesores con el mismo id. | Cambia uno de los dos. |
+| `docencia: grupo inexistente 'X'` | La docencia usa un grupo que no sale de `carreras`. | Corrige el id o créalo. |
+| `docencia G: asignatura 'X' no es de su año` | Le asignaste a un grupo algo que su año no imparte. | Míralo en la hoja `Asignaturas`. |
+| `docencia G/A: profesor inexistente 'X'` | La docencia usa un profesor que no está en `profesores`. | Corrige el id o decláralo. |
 
 > Nota: una **asignatura** desconocida NO da error (se resalta en naranja en el Excel). Un **aula**
 > desconocida SÍ da error. Es a propósito: el aula es más "dura" que la asignatura.
