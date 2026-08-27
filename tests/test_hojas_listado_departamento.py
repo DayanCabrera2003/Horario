@@ -45,18 +45,22 @@ def test_profesores_lista_grado_y_tope():
 
 def test_el_tope_heredado_se_distingue_del_propio():
     # Es la pregunta que se hace quien mira la columna: ese 160, ¿lo declaro el
-    # profesor o le viene del departamento?
+    # profesor o le viene del departamento? La respuesta va como formula porque
+    # el tope se edita en esta misma hoja.
     ws = _hoja(construir_hoja_profesores)
     assert ws["D2"].value == 160
-    assert ws["E2"].value == "Del departamento"
     assert ws["D3"].value == 80
-    assert ws["E3"].value == "Propio"
+    assert "Del departamento" in ws["E2"].value
+    assert "Propio" in ws["E2"].value
+    assert "160" in ws["E2"].value      # el tope global con el que compara
 
 
 def test_sin_ningun_tope_la_columna_lo_dice():
     ws = _hoja(construir_hoja_profesores, SIN_TOPE)
     assert ws["D2"].value == ""
-    assert ws["E2"].value == "Sin tope"
+    # Sin tope global no hay con que comparar: o hay tope propio o no hay tope.
+    assert "Sin tope" in ws["E2"].value
+    assert "Del departamento" not in ws["E2"].value
 
 
 def test_asignaturas_lista_las_horas_declaradas():

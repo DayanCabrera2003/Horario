@@ -24,7 +24,9 @@ def construir_hoja_estudiantes(wb, facultad: Facultad) -> None:
     ws = construir_hoja_listado(
         wb, NOMBRE_HOJA, ENCABEZADOS,
         [(e.id, e.nombre) for e in facultad.estudiantes],
-        color_encabezado=estilos.COLOR_ENCABEZADO, capacidad=capacidad)
+        color_encabezado=estilos.COLOR_ENCABEZADO, capacidad=capacidad,
+        # Es la fuente del desplegable de estudiante de las hojas de dia.
+        columnas_editables=("A", "B"))
     # El rango lo define esta hoja: la lista de estudiantes vive aqui desde la
     # fase 3a, y no como copia escondida en la auxiliar.
     wb.defined_names.add(DefinedName(

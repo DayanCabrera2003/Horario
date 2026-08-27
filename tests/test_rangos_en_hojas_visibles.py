@@ -82,8 +82,9 @@ def test_profesores_validos_y_tabla_apuntan_al_claustro():
         ref = _texto(wb, nombre)
         assert "'Profesores'!" in ref, nombre
         assert "OFFSET" in ref, nombre
-    # La tabla necesita dos columnas: el id que se busca y el nombre que devuelve.
-    assert _texto(wb, "ProfesoresTabla").endswith(",2)")
+    # La tabla llega hasta la columna del tope: el reporte de carga busca en
+    # ella el nombre (2) y el tope (4).
+    assert _texto(wb, "ProfesoresTabla").endswith(",4)")
 
 
 def test_la_auxiliar_del_departamento_solo_guarda_lo_derivado():

@@ -25,34 +25,48 @@ ENCABEZADOS = ("Id", "Nombre", "Grado", "Tope horas", "Origen del tope")
 RANGO_IDS = "ProfesoresValidos"
 RANGO_TABLA = "ProfesoresTabla"
 COL_ID = "A"
+COL_TOPE = "D"
 
 ORIGEN_PROPIO = "Propio"
 ORIGEN_HEREDADO = "Del departamento"
 ORIGEN_SIN_TOPE = "Sin tope"
 
 
-def _origen(depto: Departamento, profesor) -> str:
-    if profesor.tope_horas is not None:
-        return ORIGEN_PROPIO
-    return ORIGEN_HEREDADO if depto.tope_horas is not None else ORIGEN_SIN_TOPE
+def _formula_origen(depto: Departamento, fila: int) -> str:
+    """El origen del tope, calculado a partir de la celda de al lado.
+
+    Va como formula y no como texto escrito al generar porque el tope se edita
+    aqui: si fuera texto, cambiarlo dejaria la etiqueta mintiendo. Un tope igual
+    al global del departamento se lee como heredado, que es lo que significa.
+    """
+    celda = f"{COL_TOPE}{fila}"
+    if depto.tope_horas is None:
+        return f'=IF({celda}="","{ORIGEN_SIN_TOPE}","{ORIGEN_PROPIO}")'
+    return (f'=IF({celda}="","{ORIGEN_SIN_TOPE}",'
+            f'IF({celda}={depto.tope_horas},"{ORIGEN_HEREDADO}","{ORIGEN_PROPIO}"))')
 
 
 def construir_hoja_profesores(wb, depto: Departamento) -> None:
     filas = []
-    for p in depto.profesores:
+    for i, p in enumerate(depto.profesores):
         tope = depto.tope_efectivo(p)
         # Celda vacia y no un 0 cuando no hay tope: un 0 se leeria como "no
         # puede impartir nada", que es lo contrario de lo que significa.
         filas.append((p.id, p.nombre, p.grado,
-                      tope if tope is not None else "", _origen(depto, p)))
+                      tope if tope is not None else "",
+                      _formula_origen(depto, FILA_PRIMER_DATO + i)))
     capacidad = capacidad_para(len(depto.profesores))
     ws = construir_hoja_listado(wb, NOMBRE_HOJA, ENCABEZADOS, filas,
                                 color_encabezado=estilos.COLOR_ENCABEZADO,
-                                capacidad=capacidad)
+                                capacidad=capacidad,
+                                # Todo menos el origen del tope, que es una
+                                # formula: anadir un profesor es escribir su id,
+                                # su nombre, su grado y su tope en una fila libre.
+                                columnas_editables=("A", "B", "C", COL_TOPE))
     # Los dos rangos los define esta hoja, que es donde viven los datos. El de
-    # la tabla abarca dos columnas: el id que se busca y el nombre que devuelve
-    # el BUSCARV. Ni el grado ni el tope entran: ninguna formula los lee.
-    for nombre, columnas in ((RANGO_IDS, 1), (RANGO_TABLA, 2)):
+    # la tabla abarca cuatro columnas porque el reporte de carga busca en el dos
+    # cosas: el nombre (columna 2) y el tope (columna 4).
+    for nombre, columnas in ((RANGO_IDS, 1), (RANGO_TABLA, 4)):
         wb.defined_names.add(DefinedName(
             nombre, attr_text=rango_dinamico(NOMBRE_HOJA, COL_ID,
                                              FILA_PRIMER_DATO, capacidad,

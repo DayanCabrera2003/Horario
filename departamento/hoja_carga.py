@@ -48,12 +48,9 @@ def construir_hoja_carga(wb, depto: Departamento) -> None:
     formato.fijar_ancho_por_textos(
         ws, "A", [a.nombre for a in depto.asignaturas] + ["Asignatura"], extra=4)
 
-    # El tope de cada profesor se edita a mano y la alerta de sobrecarga lo lee.
-    # Una fase posterior separara los datos del reporte: el tope pasara a una
-    # hoja de listado propia y esta quedara de solo lectura.
-    topes = [proteccion.celda_unica(f"D{L.prof_fila_valores(i, fpp)}")
-             for i in range(len(depto.profesores))]
-    proteccion.proteger_hoja(ws, editables=topes)
+    # Hoja de solo lectura: el tope se edita en el claustro (hoja `Profesores`)
+    # y aqui llega por BUSCARV. Era la arruga declarada de la fase 1.
+    proteccion.proteger_hoja(ws)
     # Pestana de navegacion: salvo los topes, todo sale de Asignacion por formula.
     vista.colorear_pestana(ws, estilos.COLOR_PESTANA_CALCULO)
     # Hoja de reporte: las tablas ya van bordeadas y la cuadricula de fondo
@@ -78,9 +75,13 @@ def _construir_bloque(ws, depto: Departamento, idx: int, profesor) -> None:
     _fila_encabezado(ws, fila_cab, ("Id", "Nombre", "Grado", "Tope horas"))
     fila_val = L.prof_fila_valores(idx, fpp)
     tope = depto.tope_efectivo(profesor)
-    for col, valor in zip("ABCD", (profesor.id, profesor.nombre, profesor.grado,
-                                   tope if tope is not None else "")):
-        ws[f"{col}{fila_val}"] = valor
+    # El id es el dato; el nombre, el grado y el tope se leen del claustro. Desde
+    # la fase 3a esos tres se editan alli, y una copia escrita al generar se
+    # quedaria vieja en cuanto alguien los cambiara.
+    ws[f"A{fila_val}"] = profesor.id
+    for col, columna_tabla in (("B", 2), ("C", 3), ("D", 4)):
+        ws[f"{col}{fila_val}"] = (
+            f'=IFERROR(VLOOKUP("{profesor.id}",ProfesoresTabla,{columna_tabla},0),"")')
 
     # Subcabecera y detalle reservado.
     _fila_encabezado(ws, L.prof_fila_subcabecera(idx, fpp),
@@ -105,6 +106,8 @@ def _construir_bloque(ws, depto: Departamento, idx: int, profesor) -> None:
                             f"{_rango_asignacion(L.COL_HORAS, n_filas)})")
     if tope is not None:
         # Rojo en la fila TOTAL cuando el acumulado supera el tope del bloque.
+        # La celda del tope ya no es un numero escrito sino el que trae el
+        # claustro, asi que la alerta sigue al valor que se edite alli.
         ws.conditional_formatting.add(
             f"A{fila_total}:D{fila_total}",
             estilos.regla_formula(f"$D${fila_total}>$D${fila_val}",

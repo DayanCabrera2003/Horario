@@ -27,7 +27,10 @@ def construir_hoja_aulas(wb, facultad: Facultad) -> None:
     ws = construir_hoja_listado(wb, NOMBRE_HOJA, ENCABEZADOS,
                                 [(aula,) for aula in facultad.aulas],
                                 color_encabezado=estilos.COLOR_ENCABEZADO,
-                                capacidad=capacidad)
+                                capacidad=capacidad,
+                                # Es la fuente del desplegable de aula: anadir
+                                # una aqui la mete en la lista sin regenerar.
+                                columnas_editables=(COL_AULA,))
     # El rango lo define esta hoja y no la auxiliar: la lista vive aqui, y un
     # rango dinamico hace que anadir un aula la meta en el desplegable sin
     # regenerar el libro.

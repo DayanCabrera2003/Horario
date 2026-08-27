@@ -39,11 +39,12 @@ def test_bloque_cabecera():
     # filas_por_profesor=4 -> bloques de altura 9; PIAD en 3, MARA en 12.
     assert [c.value for c in ws["A3":"D3"][0]] == ["Id", "Nombre", "Grado", "Tope horas"]
     assert ws["A4"].value == "PIAD"
-    assert ws["B4"].value == "Pedro I. Alonso"
-    assert ws["D4"].value == 160     # tope efectivo (global)
+    # Nombre, grado y tope llegan del claustro por BUSCARV desde la fase 3a.
+    assert "ProfesoresTabla" in ws["B4"].value
+    assert "ProfesoresTabla,4" in ws["D4"].value   # el tope, tambien del claustro
     assert ws["A12"].value == "Id"
     assert ws["A13"].value == "MARA"
-    assert ws["D13"].value == 80     # tope propio
+    assert "ProfesoresTabla,4" in ws["D13"].value  # el suyo, del claustro
 
 
 def test_detalle_por_buscarv():
@@ -102,11 +103,13 @@ def test_la_hoja_de_profesores_queda_protegida():
     assert ws.protection.sheet is True
 
 
-def test_la_celda_de_tope_sigue_siendo_editable():
-    # fixture: filas_por_profesor=4 (ver _departamento arriba).
+def test_el_tope_ya_no_se_edita_en_el_reporte():
+    # Era la arruga declarada de la fase 1: el tope se editaba en el reporte.
+    # Su sitio es el claustro; aqui llega calculado y bloqueado.
     ws = _hoja()
     fila_val = L.prof_fila_valores(0, 4)
-    assert ws[f"D{fila_val}"].protection.locked is False
+    assert ws[f"D{fila_val}"].protection.locked is not False
+    assert "ProfesoresTabla" in ws[f"D{fila_val}"].value
 
 
 def test_el_total_de_horas_queda_bloqueado():
@@ -118,7 +121,6 @@ def test_el_total_de_horas_queda_bloqueado():
     fila_total = L.prof_fila_total(0, 4)
     fila_val = L.prof_fila_valores(0, 4)
     assert ws[f"D{fila_total}"].protection.locked is True
-    assert ws[f"D{fila_val}"].protection.locked is False
 
 
 def test_las_horas_llevan_formato_de_numero_entero():

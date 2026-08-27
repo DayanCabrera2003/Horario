@@ -27,7 +27,8 @@ ALTO_FILA = 22
 
 
 def construir_hoja_listado(wb, nombre: str, encabezados, filas,
-                           color_encabezado: str, capacidad: int | None = None):
+                           color_encabezado: str, capacidad: int | None = None,
+                           columnas_editables=()):
     """Crea la hoja `nombre` con `encabezados` y una fila por elemento de
     `filas`, y la devuelve.
 
@@ -38,6 +39,11 @@ def construir_hoja_listado(wb, nombre: str, encabezados, filas,
     sobran de los datos salen vacias pero ya bordeadas y con su alto, de modo
     que anadir un dato sea escribir en una fila que ya parece parte de la tabla.
     Por defecto la decide `rangos.capacidad_para`.
+
+    `columnas_editables` son las letras de columna que quedan desbloqueadas, en
+    los datos y en la reserva. Solo se desbloquea lo que de verdad manda sobre
+    alguna formula: un listado editable que no alimenta nada seria mentira,
+    porque se escribiria en el sin que cambiara nada.
     """
     ws = wb.create_sheet(nombre)
     filas = list(filas)
@@ -54,10 +60,10 @@ def construir_hoja_listado(wb, nombre: str, encabezados, filas,
 
     # Encabezados a la vista al bajar por una lista larga.
     ws.freeze_panes = f"A{FILA_PRIMER_DATO}"
-    # Un listado es de consulta: nada editable, pero se deja ordenar y filtrar
-    # para buscar dentro de el. En la fase 3a estas hojas pasan a ser la fuente
-    # de los desplegables y se desbloquean.
-    proteccion.proteger_hoja(ws, permitir_orden=True, permitir_filtro=True)
+    editables = [f"{col}{FILA_PRIMER_DATO}:{col}{FILA_ENCABEZADO + capacidad}"
+                 for col in columnas_editables]
+    proteccion.proteger_hoja(ws, editables=editables, permitir_orden=True,
+                             permitir_filtro=True)
     return ws
 
 
