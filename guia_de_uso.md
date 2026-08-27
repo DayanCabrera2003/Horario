@@ -36,7 +36,8 @@ python generar.py --horarios config/horarios.yaml --salida propuesta.xlsx
 
 Abres el `.xlsx` en Excel o LibreOffice y **se colorea solo**: verde donde una asignatura ya cumple
 su frecuencia, rojo donde te pasaste, naranja si escribiste una asignatura que no existe, amarillo si
-pusiste un aula que no existe, y la hoja `Aulas` te muestra qué grupos ocupan cada aula a cada hora
+pusiste un aula que no existe, y la hoja `Ocupación de aulas` te muestra qué grupos ocupan cada aula
+a cada hora
 (en rojo intenso si dos años distintos chocan en la misma aula).
 
 ---
@@ -267,7 +268,7 @@ asignatura, la casilla de **asignatura** (la de arriba del par) se pinta de rojo
 Es el caso típico de un horario a medio llenar: ya sabes dónde va la clase pero aún no cuál es. El
 resaltado está para que ese turno no se quede olvidado.
 
-### Conferencia compartida → varios grupos concatenados (hoja `Aulas`)
+### Conferencia compartida → varios grupos concatenados (hoja `Ocupación de aulas`)
 
 Pon **la misma aula, día y turno** a varios grupos del **mismo año**.
 
@@ -277,10 +278,10 @@ C112: { Lunes: { 1: {asig: AMI-C, aula: Aula 1} } }
 C113: { Lunes: { 1: {asig: AMI-C, aula: Aula 1} } }
 ```
 
-En `Aulas`, la celda `Aula 1 / Lunes T1` mostrará `C111,C112,C113`, pintada con el color del año C1
+En `Ocupación de aulas`, la celda `Aula 1 / Lunes T1` mostrará `C111,C112,C113`, pintada con el color del año C1
 (no es conflicto: es el mismo año compartiendo conferencia).
 
-### Conflicto entre años (MIX) → **rojo intenso** (hoja `Aulas`)
+### Conflicto entre años (MIX) → **rojo intenso** (hoja `Ocupación de aulas`)
 
 Pon **la misma aula/día/turno** a grupos de **años distintos** (distinta carrera o distinto año).
 
@@ -289,13 +290,14 @@ C111: { Lunes: { 2: {asig: AMI-CP, aula: Aula 2} } }   # año C1
 M111: { Lunes: { 2: {asig: AM1-CP, aula: Aula 2} } }   # año M1  -> ¡chocan!
 ```
 
-En `Aulas`, `Aula 2 / Lunes T2` mostrará `C111,M111` en **rojo intenso**: dos años distintos no pueden
+En `Ocupación de aulas`, `Aula 2 / Lunes T2` mostrará `C111,M111` en **rojo intenso**: dos años distintos no pueden
 ocupar la misma aula a la misma hora. Este es el detector de choques estrella de la herramienta.
 
-### Color por año → hoja `Aulas`
+### Color por año → hoja `Ocupación de aulas`
 
 No hay que hacer nada especial: cada año (C1, C2, …, M1…, D1…) tiene un color fijo. Al llenar aulas de
-distintos años, la hoja `Aulas` se pinta como un mapa de calor por año automáticamente.
+distintos años, la hoja `Ocupación de aulas` se pinta como un mapa de calor por año
+automáticamente.
 
 > **Ejemplo completo ya hecho:** en el repo están `config/facultad-completa.yaml` +
 > `config/horarios-completo.yaml`, que incluyen a propósito **todos** estos casos (verde, rojo,
@@ -317,7 +319,7 @@ El archivo tiene cuatro tipos de hoja:
 La hoja por la que abre el libro. Dice de qué YAML salió, cuándo se generó y cuántos grupos y aulas abarca, y
 lista las demás hojas con un enlace a cada una y la marca de si en ella *se escribe* o *se calcula*.
 
-### Hoja `Aulas`
+### Hoja `Ocupación de aulas`
 
 Un bloque por día. Filas = turnos, columnas = aulas. Cada celda dice **qué grupos** ocupan esa aula a
 esa hora. Colores:
@@ -363,12 +365,13 @@ borre una fórmula sin querer.
 - **Hojas de grupo** (`C111`, `M211`, …): se edita la **rejilla del horario**,
   es decir la asignatura y el aula de cada turno. La tabla de asignaturas de la
   derecha se calcula sola y está bloqueada.
-- **Hoja `Aulas`**: nada editable, se calcula entera. Sí se puede **ordenar y
+- **Hoja `Ocupación de aulas`**: nada editable, se calcula entera. Sí se puede **ordenar y
   filtrar** aun estando protegida.
 - **`Portada`** y **`Datos`**: nada editable.
 
 El **color de la pestaña** ayuda a moverse cuando la barra es un muro de nombres: cada año tiene el
-suyo (todos los grupos de `C1` comparten color, los de `C2` otro…) y `Aulas`, que se calcula sola, va
+suyo (todos los grupos de `C1` comparten color, los de `C2` otro…) y `Ocupación de aulas`, que se
+calcula sola, va
 en gris azulado.
 
 Si necesitas tocar una celda calculada, quita la protección: en Excel, pestaña
@@ -437,6 +440,6 @@ Si algo está mal en los YAML, el programa **no genera** el Excel y te dice qué
    - **En YAML** (`horarios.yaml`) si prefieres tenerlo versionado en texto, y regeneras con
      `--horarios`.
 4. **Revisa los colores:** rojo (te pasaste), naranja (errata de asignatura), y sobre todo la hoja
-   `Aulas` en rojo intenso (choques de aula entre años). Corrige y regenera.
+   `Ocupación de aulas` en rojo intenso (choques de aula entre años). Corrige y regenera.
 5. **Itera.** Cambia el YAML, regenera, vuelve a mirar. El `.xlsx` es desechable; los YAML son lo que
    guardas.

@@ -47,7 +47,7 @@ Qué se puede editar en cada libro:
 | Libro | Hoja | Celdas editables |
 |---|---|---|
 | Horarios | Una por grupo (`C111`, `M211`, …) | La rejilla del horario: asignatura y aula de cada turno |
-| Horarios | `Aulas`, `Portada`, `Datos` | Ninguna; se calculan solas |
+| Horarios | `Ocupación de aulas`, `Portada`, `Datos` | Ninguna; se calculan solas |
 | Tribunales | Una por día (`27 jul (lun)`, …) | La columna del estudiante; el resto del tribunal se autocompleta |
 | Tribunales | `Localizar` | Solo la casilla de búsqueda |
 | Tribunales | `Tribunales`, `Portada`, `Datos` | Ninguna; se calculan solas |
@@ -57,8 +57,8 @@ Qué se puede editar en cada libro:
 
 En los libros de tribunales y de departamento el color de la pestaña lo dice de
 un vistazo: **azul** = aquí se escribe, **gris azulado** = esto se calcula solo.
-En el de horarios las hojas de grupo van coloreadas por año, y solo `Aulas`
-lleva el gris azulado de "se calcula".
+En el de horarios las hojas de grupo van coloreadas por año, y solo
+`Ocupación de aulas` lleva el gris azulado de "se calcula".
 
 ### Cómo quitar la protección
 
@@ -72,7 +72,7 @@ se pierde, y la forma de recuperarla es volver a generar el libro.
 
 ### Ordenar y filtrar
 
-Las hojas de consulta `Aulas` y `Tribunales` se pueden **ordenar y filtrar** aun
+Las hojas de consulta `Ocupación de aulas` y `Tribunales` se pueden **ordenar y filtrar** aun
 estando protegidas, y `Tribunales` lleva autofiltro en los encabezados.
 
 `Asignación` lleva autofiltro pero **no** deja ordenar, y es a propósito: cada
@@ -92,7 +92,7 @@ Planifica los horarios de una facultad. El `.xlsx` generado contiene:
 - Una **hoja por grupo** con la rejilla de horario (días x turnos), una tabla
   de asignaturas con fórmulas de control (frecuencia, asignadas, faltan) y
   desplegables de aula y asignatura.
-- Una hoja **Aulas** que muestra, por día y turno, qué grupos ocupan cada aula,
+- Una hoja **Ocupación de aulas** que muestra, por día y turno, qué grupos ocupan cada aula,
   coloreada por año y con marca de conflicto cuando dos años distintos coinciden
   en la misma aula.
 - Una hoja **Datos** (oculta) con la lista maestra de aulas y las fórmulas
@@ -142,7 +142,7 @@ Opciones de `generar.py`:
     sobre-planificada (asignadas > frecuencia), verde = frecuencia exacta
     cumplida. Los dos últimos colorean la **fila completa** de la asignatura, no
     solo la casilla "Asignadas".
-  - Hoja Aulas: un color por año y rojo intenso para conflicto (dos años
+  - Hoja Ocupación de aulas: un color por año y rojo intenso para conflicto (dos años
     distintos en la misma aula y turno).
 - En la rejilla del horario:
   - La columna de **turnos** va pegada a la de los días (sin hueco).

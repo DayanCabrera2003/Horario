@@ -7,7 +7,9 @@ from comun import proteccion
 from comun import vista
 from horarios.modelo import Facultad
 
-NOMBRE_HOJA = "Aulas"
+# El nombre dice lo que la hoja muestra: la ocupacion resultante. El listado
+# de aulas de la facultad es otra hoja, "Aulas", con los datos del problema.
+NOMBRE_HOJA = "Ocupación de aulas"
 
 
 def _formula_ocupacion(facultad: Facultad, dia_idx: int, turno: int, aula: str) -> str:

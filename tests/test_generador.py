@@ -34,7 +34,7 @@ def test_genera_workbook_con_hojas(tmp_path):
     salida = tmp_path / "out.xlsx"
     generar(config_path=cfg, horarios_path=None, salida=salida)
     wb = load_workbook(salida)
-    assert "Aulas" in wb.sheetnames
+    assert "Ocupación de aulas" in wb.sheetnames
     assert "C111" in wb.sheetnames and "C112" in wb.sheetnames
     assert "Datos" in wb.sheetnames
     assert wb["Datos"].sheet_state == "hidden"
@@ -85,7 +85,7 @@ def test_formulas_presentes_en_modo_esqueleto(tmp_path):
     )
 
     # Hoja Aulas: debe contener al menos un =SUBSTITUTE(
-    ws_aulas = wb["Aulas"]
+    ws_aulas = wb["Ocupación de aulas"]
     formulas_aulas = [
         c.value
         for row in ws_aulas.iter_rows()
@@ -131,7 +131,7 @@ def test_la_portada_muestra_la_fecha_inyectada(tmp_path):
 def test_la_portada_enlaza_las_hojas_visibles(tmp_path):
     wb = _generar(tmp_path)
     enlaces = _enlaces(wb)
-    assert any("Aulas" in e for e in enlaces)
+    assert any("Ocupación de aulas" in e for e in enlaces)
     # Datos es fontaneria de formulas y esta oculta: no se indexa.
     assert not any("Datos" in e for e in enlaces)
 
