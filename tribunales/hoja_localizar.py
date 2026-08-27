@@ -68,7 +68,7 @@ def construir_hoja_localizar(wb, facultad: Facultad) -> None:
 
 
 def _formula_rol(entrada: str, hoja_dia: str, fila: int) -> str:
-    """IF anidados que devuelven la etiqueta de rol de la primera columna B..F de
+    """IF anidados que devuelven la etiqueta de rol de la primera columna B..G de
     `hoja_dia` cuya celda (en `fila`) coincide con la entrada; vacio si ninguna."""
     formula = '""'
     for col, etiqueta in reversed(_COLS_ROL):
