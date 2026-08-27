@@ -3,7 +3,10 @@ import datetime
 from pathlib import Path
 from openpyxl import Workbook
 
-from comun.portada import NOMBRE_HOJA as HOJA_PORTADA, construir_portada
+from comun.portada import (
+    NOMBRE_HOJA as HOJA_PORTADA, SE_ESCRIBE, SE_CALCULA, SON_DATOS,
+    construir_portada,
+)
 from tribunales.config import cargar_facultad, cargar_asignaciones
 from tribunales.hoja_datos import construir_hoja_datos
 from tribunales.hoja_profesores import construir_hoja_profesores
@@ -23,10 +26,14 @@ def _indice(nombres_dia) -> tuple:
     `Datos` no aparece: esta oculta y solo es fontaneria de formulas.
     """
     return (
-        ("Tribunales", "Quién forma el tribunal de cada tesis", False),
-        *((nombre, "Dónde y cuándo defiende cada estudiante", True)
+        ("Profesores", "Los profesores que pueden formar tribunal", SON_DATOS),
+        ("Estudiantes", "Los estudiantes, tengan tesis o no", SON_DATOS),
+        ("Locales", "Los locales donde se puede defender", SON_DATOS),
+        ("Días", "Qué días hay y con qué momentos", SON_DATOS),
+        ("Tribunales", "Quién forma el tribunal de cada tesis", SE_CALCULA),
+        *((nombre, "Dónde y cuándo defiende cada estudiante", SE_ESCRIBE)
           for nombre in nombres_dia),
-        ("Localizar", "Escribe un nombre y dice en qué momentos participa", True),
+        ("Localizar", "Escribe un nombre y dice en qué momentos participa", SE_ESCRIBE),
     )
 
 

@@ -4,14 +4,19 @@ from pathlib import Path
 
 from openpyxl import Workbook
 
-from comun.portada import NOMBRE_HOJA as HOJA_PORTADA, construir_portada
+from comun.portada import (
+    NOMBRE_HOJA as HOJA_PORTADA, SE_ESCRIBE, SE_CALCULA, SON_DATOS,
+    construir_portada,
+)
 from departamento.config import cargar_departamento
 from departamento.hoja_datos import (
     NOMBRE_HOJA as HOJA_AUXILIAR, construir_hoja_datos)
 from departamento.hoja_asignacion import (
     NOMBRE_HOJA as HOJA_ASIGNACION, construir_hoja_asignacion)
-from departamento.hoja_profesores import construir_hoja_profesores
-from departamento.hoja_asignaturas import construir_hoja_asignaturas
+from departamento.hoja_profesores import (
+    NOMBRE_HOJA as HOJA_CLAUSTRO, construir_hoja_profesores)
+from departamento.hoja_asignaturas import (
+    NOMBRE_HOJA as HOJA_PLAN, construir_hoja_asignaturas)
 from departamento.hoja_carga import (
     NOMBRE_HOJA as HOJA_CARGA, construir_hoja_carga)
 from departamento.hoja_cobertura import (
@@ -21,9 +26,11 @@ from departamento.hoja_cobertura import (
 # Que hay en cada hoja y si se escribe a mano, para el indice de la portada.
 # `Datos` no aparece: esta oculta y solo es fontaneria de formulas.
 _HOJAS_INDICE = (
-    (HOJA_ASIGNACION, "Quién imparte cada conferencia y cada grupo de CP", True),
-    (HOJA_CARGA, "Cuántas horas acumula cada uno y si pasa su tope", False),
-    (HOJA_COBERTURA, "Quién cubre cada fila de carga y qué falta", False),
+    (HOJA_CLAUSTRO, "Los profesores del departamento, con su grado y su tope", SON_DATOS),
+    (HOJA_PLAN, "Las asignaturas del semestre y sus horas", SON_DATOS),
+    (HOJA_ASIGNACION, "Quién imparte cada conferencia y cada grupo de CP", SE_ESCRIBE),
+    (HOJA_CARGA, "Cuántas horas acumula cada uno y si pasa su tope", SE_CALCULA),
+    (HOJA_COBERTURA, "Quién cubre cada fila de carga y qué falta", SE_CALCULA),
 )
 
 

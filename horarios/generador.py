@@ -4,7 +4,10 @@ from pathlib import Path
 
 from openpyxl import Workbook
 
-from comun.portada import NOMBRE_HOJA as HOJA_PORTADA, construir_portada
+from comun.portada import (
+    NOMBRE_HOJA as HOJA_PORTADA, SE_ESCRIBE, SE_CALCULA, SON_DATOS,
+    construir_portada,
+)
 from horarios.config import cargar_facultad, cargar_horarios
 from horarios.hoja_datos import construir_hoja_datos
 from horarios.hoja_grupo import construir_hoja_grupo
@@ -34,17 +37,17 @@ def _indice(hojas_grupo, con_profesores: bool) -> tuple:
     # Las dos hojas de profesorado solo estan si el YAML las declara, asi que
     # el indice tiene que preguntarlo en vez de darlas por hechas.
     profesorado = (
-        (HOJA_PROFESORES, "Los profesores de la facultad", False),
-        (HOJA_DOCENCIA, "Quién imparte cada asignatura en cada grupo", False),
+        (HOJA_PROFESORES, "Los profesores de la facultad", SON_DATOS),
+        (HOJA_DOCENCIA, "Quién imparte cada asignatura en cada grupo", SON_DATOS),
     ) if con_profesores else ()
     return (
-        (HOJA_LISTA_AULAS, "Las aulas de la facultad", False),
-        (HOJA_ASIGNATURAS, "Qué se imparte en cada año y con qué frecuencia", False),
-        (HOJA_GRUPOS, "Los grupos y de dónde sale el id de cada uno", False),
-        (HOJA_ESTRUCTURA, "Días, turnos y tamaño del libro", False),
+        (HOJA_LISTA_AULAS, "Las aulas de la facultad", SON_DATOS),
+        (HOJA_ASIGNATURAS, "Qué se imparte en cada año y con qué frecuencia", SON_DATOS),
+        (HOJA_GRUPOS, "Los grupos y de dónde sale el id de cada uno", SON_DATOS),
+        (HOJA_ESTRUCTURA, "Días, turnos y tamaño del libro", SON_DATOS),
         *profesorado,
-        (HOJA_AULAS, "Qué aula está ocupada en cada día y turno", False),
-        *((nombre, f"Carrera {grupo.carrera} · año {grupo.anio}", True)
+        (HOJA_AULAS, "Qué aula está ocupada en cada día y turno", SE_CALCULA),
+        *((nombre, f"Carrera {grupo.carrera} · año {grupo.anio}", SE_ESCRIBE)
           for nombre, grupo in hojas_grupo),
     )
 
