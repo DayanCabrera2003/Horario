@@ -83,6 +83,23 @@ def aplicar_ajuste_texto(ws, rango: str, alineacion) -> None:
     aplicar_alineacion(ws, rango, alineacion)
 
 
+FORMATO_ENTERO = "0"
+
+
+def aplicar_formato_numero(ws, rango: str, formato: str = FORMATO_ENTERO) -> None:
+    """Fija el formato de numero de cada celda del `rango` (una celda suelta
+    tambien vale).
+
+    Sin formato explicito, openpyxl deja "General" y cada Calc lo muestra segun
+    la configuracion regional de quien abra el libro: unas horas salen "32" y
+    otras "32,00". El formato viaja en el archivo, asi que se ve igual en todas
+    partes. A una celda de formula se le aplica igual: decora el resultado.
+    """
+    for fila in ws[rango] if ":" in rango else ((ws[rango],),):
+        for celda in fila:
+            celda.number_format = formato
+
+
 def aplicar_nota(ws, coord: str, texto: str) -> None:
     """Adjunta una nota emergente a la celda `coord`, para explicar en el propio
     libro que significa una columna (p. ej. de donde sale "Faltan")."""

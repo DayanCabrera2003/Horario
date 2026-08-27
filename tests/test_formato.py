@@ -90,3 +90,21 @@ def test_autoajustar_columnas_ignora_formulas():
     formato.autoajustar_columnas(ws, min_ancho=8, max_ancho=45)
     # La columna solo tiene una formula: su ancho no cambia (no se cuenta el texto de la formula).
     assert ws.column_dimensions["A"].width == ancho_antes
+
+
+def test_aplicar_formato_numero_alcanza_todo_el_rango():
+    ws = Workbook().active
+    ws["B2"] = 32
+    ws["B3"] = 8
+    formato.aplicar_formato_numero(ws, "B2:B3", "0")
+    assert ws["B2"].number_format == "0"
+    assert ws["B3"].number_format == "0"
+    # Una celda de fuera no se toca: "General" es el formato por defecto.
+    assert ws["C2"].number_format == "General"
+
+
+def test_aplicar_formato_numero_acepta_una_celda_suelta():
+    ws = Workbook().active
+    ws["D5"] = 160
+    formato.aplicar_formato_numero(ws, "D5", "0")
+    assert ws["D5"].number_format == "0"
