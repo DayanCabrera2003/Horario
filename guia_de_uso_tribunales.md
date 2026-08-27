@@ -158,8 +158,10 @@ tesis:
 - **`locales`** — lista de locales (aulas/salas), con `id` y `nombre`. El
   **nombre** es lo que titula cada tabla en la hoja de día.
 - **`dias`** — lista de días. Cada día tiene:
-  - **`fecha`** — la fecha (formato `AAAA-MM-DD`). Es también el **nombre de la
-    hoja** de ese día en el Excel.
+  - **`fecha`** — la fecha (formato `AAAA-MM-DD`). De ella sale el **nombre de
+    la hoja** de ese día, escrito para leerse: `2026-07-27` da la hoja
+    `27 jul (lun)`. En el YAML de asignaciones la fecha se sigue escribiendo en
+    ISO.
   - **`momentos`** — la lista de momentos (franjas) posibles **de ese día**. Cada
     momento tiene `inicio` y `fin` (`HH:MM`). Los momentos pueden ser distintos
     de un día a otro.
@@ -362,8 +364,8 @@ pasó (`Error de configuración: ...`). Los más frecuentes:
 - No se avisa si colocas la **misma tesis en dos celdas** distintas al editar a
   mano (es edición libre).
 - Todo se maneja por **id**: las tablas muestran ids, no nombres completos.
-- Los **nombres de hoja** son la fecha (`AAAA-MM-DD`). Fechas con caracteres
-  inválidos para Excel (`: \ / ? * [ ]`) darían problemas.
+- Los **nombres de hoja** salen de la fecha (`27 jul (lun)`) y no se pueden
+  elegir a mano.
 - La entrada es por **YAML**: no se carga desde Excel ni desde una interfaz
   gráfica.
 
