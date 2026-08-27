@@ -215,7 +215,7 @@ lo llenas a mano en Excel.
 ### Tribunal autocompletado (hoja de día)
 
 Coloca una tesis (o elige el estudiante en el desplegable dentro de Excel). Las
-columnas Tutor, Oponente, Presidente y Secretario se rellenan solas buscando el
+columnas Tutor, Oponente, Presidente, Secretario y Vocal se rellenan solas buscando el
 tribunal de esa tesis.
 
 ```yaml
@@ -285,9 +285,9 @@ Oponente | Presidente | Secretario | Vocal`. Filas = los momentos de ese día.
   columna **Rol** al lado.
 - **Amarillo:** el momento donde la persona escrita participa. La leyenda al pie
   lo recuerda.
-- La columna **Rol** dice en calidad de qué participa en ese momento (tutor,
-  oponente, presidente, secretario o estudiante); queda en blanco donde no
-  participa.
+- La columna **Rol** dice en calidad de qué participa en ese momento
+  (estudiante, tutor, oponente, presidente, secretario o vocal); queda en blanco
+  donde no participa.
 
 ### Hoja `Datos` (oculta)
 
@@ -306,7 +306,7 @@ Las hojas van **protegidas**, sin contraseña. No es seguridad: es para que no s
 borre una fórmula sin querer.
 
 - **Hojas de día** (`27 jul (lun)`, …): se edita **solo la columna del
-  estudiante**. El resto del tribunal (tutor, oponente, presidente, secretario)
+  estudiante**. El resto del tribunal (tutor, oponente, presidente, secretario, vocal)
   se autocompleta desde `Datos` y está bloqueado.
 - **Hoja `Localizar`**: solo la **casilla de búsqueda**. Los resultados se
   calculan.
