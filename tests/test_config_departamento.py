@@ -117,3 +117,32 @@ def test_asignatura_sin_carga(tmp_path):
     # Una asignatura sin Conf y sin CP no genera ninguna fila: config invalida.
     texto = MINIMO.replace("horas_conf: 32", "horas_conf: 0")
     _espera_error(tmp_path, texto, "A.*sin carga")
+
+
+@pytest.mark.parametrize("valor", ["0", "-3", '"ocho"', "2.5"])
+def test_filas_por_profesor_invalida_falla(tmp_path, valor):
+    # Reserva las lineas de detalle de cada bloque de la hoja Profesores: si no
+    # es un entero positivo no hay bloque que construir.
+    mal = BASE.replace("filas_por_profesor: 8", f"filas_por_profesor: {valor}")
+    with pytest.raises(ErrorConfig, match="filas_por_profesor"):
+        cargar_departamento(_yaml(tmp_path, mal))
+
+
+def test_filas_por_profesor_booleana_falla(tmp_path):
+    # En Python `True` es un int y pasaria la comprobacion de tipo por accidente;
+    # como valor es absurdo, se comprueba aparte.
+    mal = BASE.replace("filas_por_profesor: 8", "filas_por_profesor: true")
+    with pytest.raises(ErrorConfig, match="filas_por_profesor"):
+        cargar_departamento(_yaml(tmp_path, mal))
+
+
+def test_tope_horas_booleano_falla(tmp_path):
+    mal = BASE.replace("tope_horas: 160", "tope_horas: true")
+    with pytest.raises(ErrorConfig, match="tope_horas"):
+        cargar_departamento(_yaml(tmp_path, mal))
+
+
+def test_horas_de_asignatura_booleanas_falla(tmp_path):
+    mal = BASE.replace("horas_conf: 32", "horas_conf: true", 1)
+    with pytest.raises(ErrorConfig, match="horas_conf"):
+        cargar_departamento(_yaml(tmp_path, mal))

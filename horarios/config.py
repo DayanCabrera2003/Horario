@@ -1,5 +1,6 @@
 from pathlib import Path
 import yaml
+from comun.validacion import es_entero
 from horarios.modelo import Asignatura, Grupo, Anio, Asignacion, Horario, Facultad
 
 
@@ -13,7 +14,7 @@ def cargar_facultad(ruta) -> Facultad:
         raise ErrorConfig("El YAML raíz debe ser un diccionario")
 
     turnos = datos.get("turnos")
-    if not isinstance(turnos, int) or turnos < 1:
+    if not es_entero(turnos) or turnos < 1:
         raise ErrorConfig("'turnos' debe ser un entero >= 1")
 
     aulas = tuple(datos.get("aulas") or ())

@@ -46,6 +46,13 @@ def test_config_invalida_turnos_cero(tmp_path):
     with pytest.raises(ErrorConfig, match="turnos"):
         cargar_facultad(escribir(tmp_path, mal))
 
+def test_config_invalida_turnos_booleanos(tmp_path):
+    # En Python `True` es un int, asi que `turnos: true` pasaria la comprobacion
+    # de tipo por accidente y el libro saldria con un solo turno.
+    mal = BASE.replace("turnos: 6", "turnos: true")
+    with pytest.raises(ErrorConfig, match="turnos"):
+        cargar_facultad(escribir(tmp_path, mal))
+
 def test_config_invalida_asignaturas_faltan(tmp_path):
     mal = BASE.replace('        asignaturas:\n          - { id: L-C, nombre: "Lógica", frecuencia: 1 }\n', "")
     with pytest.raises(ErrorConfig, match="asignaturas"):

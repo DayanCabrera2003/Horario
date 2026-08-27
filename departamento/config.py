@@ -7,6 +7,7 @@ from pathlib import Path
 
 import yaml
 
+from comun.validacion import es_entero
 from departamento.modelo import Profesor, Asignatura, Departamento
 
 FILAS_POR_PROFESOR_DEFECTO = 10
@@ -34,7 +35,7 @@ def _tope(d, contexto):
     tope = d.get("tope_horas")
     if tope is None:
         return None
-    if not isinstance(tope, int) or tope <= 0:
+    if not es_entero(tope) or tope <= 0:
         raise ErrorConfig(f"{contexto}: 'tope_horas' debe ser un entero positivo")
     return tope
 
@@ -54,7 +55,7 @@ def _cargar_asignatura(a) -> Asignatura:
     grupos_cp = _campo(a, "grupos_cp", ctx)
     for clave, valor in (("horas_conf", horas_conf), ("horas_cp", horas_cp),
                          ("grupos_cp", grupos_cp)):
-        if not isinstance(valor, int) or valor < 0:
+        if not es_entero(valor) or valor < 0:
             raise ErrorConfig(f"{ctx}: '{clave}' no puede ser negativo")
     if grupos_cp and not horas_cp:
         raise ErrorConfig(f"{ctx}: hay grupos de CP pero 'horas_cp' es 0")
@@ -75,7 +76,7 @@ def cargar_departamento(ruta) -> Departamento:
     semestre = str(_campo(cabecera, "semestre", "departamento"))
     tope = _tope(cabecera, "departamento")
     filas_prof = cabecera.get("filas_por_profesor", FILAS_POR_PROFESOR_DEFECTO)
-    if not isinstance(filas_prof, int) or filas_prof <= 0:
+    if not es_entero(filas_prof) or filas_prof <= 0:
         raise ErrorConfig("departamento: 'filas_por_profesor' debe ser un entero positivo")
 
     profesores = tuple(
