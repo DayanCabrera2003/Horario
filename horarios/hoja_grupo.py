@@ -37,9 +37,12 @@ def construir_hoja_grupo(ws, grupo: Grupo, facultad: Facultad,
 
     # Tabla de asignaturas + fórmulas
     asignaturas = facultad.asignaturas_de(grupo)
-    # 'rango' cubre filas de asignatura Y de aula; COUNTIF sobre él es correcto porque
-    # los nombres de aula nunca coinciden con ids de asignatura.
-    rango = L.rango_horario(len(facultad.dias), facultad.turnos)
+    # Un COUNTIF por fila de asignatura, sumados. Contar sobre el rectángulo
+    # entero de la rejilla sería más corto pero cuenta de más: en él conviven los
+    # ids de asignatura con los nombres de aula (y, desde la fase 3b, con los ids
+    # de profesor), así que un aula o un profesor llamados como una asignatura se
+    # contarían como clases suyas.
+    filas_asig = L.filas_asig_por_turno(len(facultad.dias), facultad.turnos)
     ws["I3"] = "Asignatura"
     ws["J3"], ws["K3"], ws["L3"], ws["M3"] = "Nombre", "Frec", "Asignadas", "Faltan"
     for i, a in enumerate(asignaturas):
@@ -49,7 +52,8 @@ def construir_hoja_grupo(ws, grupo: Grupo, facultad: Facultad,
         frec_cell = L.celda_asig_tabla_frec(i)
         ws[frec_cell] = a.frecuencia
         asignadas_cell = L.celda_asig_tabla_asignadas(i)
-        ws[asignadas_cell] = f"=COUNTIF({rango},{id_cell})"
+        ws[asignadas_cell] = "=" + "+".join(
+            f"COUNTIF({r},{id_cell})" for r in filas_asig)
         ws[L.celda_asig_tabla_faltan(i)] = f"={frec_cell}-{asignadas_cell}"
 
     _aplicar_fondo_aulas(ws, facultad)

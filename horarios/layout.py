@@ -47,6 +47,18 @@ def rangos_filas_asig(n_dias: int, n_turnos: int) -> str:
                     for t in range(1, n_turnos + 1))
 
 
+def filas_asig_por_turno(n_dias: int, n_turnos: int) -> list[str]:
+    """Un rango por turno, cubriendo solo su fila de asignatura.
+
+    Devuelve una lista y no el sqref multi-rango de `rangos_filas_asig` porque
+    el consumidor es COUNTIF, que no acepta varios rangos en un solo argumento:
+    hay que sumar un COUNTIF por fila.
+    """
+    ini, fin = _col(COL_PRIMER_DIA), _col(COL_PRIMER_DIA + n_dias - 1)
+    return [f"{ini}{fila_asig(t)}:{fin}{fila_asig(t)}"
+            for t in range(1, n_turnos + 1)]
+
+
 def rangos_filas_aula(n_dias: int, n_turnos: int) -> str:
     ini, fin = COL_PRIMER_DIA, COL_PRIMER_DIA + n_dias - 1
     return " ".join(f"{_col(ini)}{fila_aula(t)}:{_col(fin)}{fila_aula(t)}"

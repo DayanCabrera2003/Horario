@@ -21,11 +21,14 @@ def test_escribe_id_y_formulas():
     ws = wb.active
     construir_hoja_grupo(ws, g, fac, horario=None)
     assert ws[L.CELDA_GRUPO_ID].value == "C111"
-    # Asignadas de la primera asignatura = COUNTIF sobre el rango del horario
+    # Asignadas = un COUNTIF por fila de asignatura, sumados (ver la regresion
+    # de test_asignadas_solo_cuenta_las_filas_de_asignatura).
     asignadas = ws[L.celda_asig_tabla_asignadas(0)].value
     assert asignadas.startswith("=COUNTIF(")
-    # fixture: 2 días, 6 turnos -> rango del horario B4:C15
-    assert "B4:C15" in asignadas
+    # fixture: 2 días, 6 turnos -> las filas de asignatura son 4, 6, 8, 10, 12, 14
+    assert "COUNTIF(B4:C4," in asignadas
+    assert "COUNTIF(B14:C14," in asignadas
+    assert asignadas.count("COUNTIF") == 6
     faltan = ws[L.celda_asig_tabla_faltan(0)].value
     assert faltan.startswith("=")
 
@@ -318,3 +321,32 @@ def test_la_pestana_se_colorea_por_ano():
 
 def test_anos_distintos_llevan_pestanas_distintas():
     assert _pestana(1) != _pestana(2)
+
+
+def test_asignadas_solo_cuenta_las_filas_de_asignatura():
+    """Regresion: 'Asignadas' contaba sobre el rectangulo entero de la rejilla.
+
+    El comentario que lo justificaba decia que los nombres de aula nunca
+    coinciden con ids de asignatura, y eso no es una garantia sino una
+    suposicion: nada impide un aula llamada 'EF' y una asignatura 'EF'. Al
+    anadir la fila de profesor el rectangulo gana un tercer espacio de nombres y
+    el choque deja de ser hipotetico.
+    """
+    facultad = Facultad(
+        aulas=("EF", "Aula 1"),          # un aula que se llama como la asignatura
+        dias=("Lunes",), turnos=2,
+        grupos=(Grupo("C", 1, 1, 1),),
+        anios={"C1": Anio("C", 1, (Asignatura(id="EF", nombre="Educación Física",
+                                              frecuencia=1),))},
+    )
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, facultad.grupos[0], facultad)
+    formula = ws[L.celda_asig_tabla_asignadas(0)].value
+    # Las filas de aula no entran en la cuenta.
+    filas_aula = {L.fila_aula(t) for t in range(1, facultad.turnos + 1)}
+    for fila in filas_aula:
+        assert f"B{fila}" not in formula, formula
+    # Las de asignatura, si.
+    for t in range(1, facultad.turnos + 1):
+        assert f"B{L.fila_asig(t)}" in formula, formula
