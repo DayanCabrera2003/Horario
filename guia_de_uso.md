@@ -310,9 +310,14 @@ distintos años, la hoja `Aulas` se pinta como un mapa de calor por año automá
 
 ## 7. Cómo leer el Excel generado
 
-El archivo tiene tres tipos de hoja:
+El archivo tiene cuatro tipos de hoja:
 
-### Hoja `Aulas` (la primera)
+### Hoja `Portada`
+
+La hoja por la que abre el libro. Dice de qué YAML salió, cuándo se generó y cuántos grupos y aulas abarca, y
+lista las demás hojas con un enlace a cada una y la marca de si en ella *se escribe* o *se calcula*.
+
+### Hoja `Aulas`
 
 Un bloque por día. Filas = turnos, columnas = aulas. Cada celda dice **qué grupos** ocupan esa aula a
 esa hora. Colores:
