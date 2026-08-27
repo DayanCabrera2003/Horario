@@ -40,13 +40,6 @@ def construir_hoja_datos(wb, facultad: Facultad) -> None:
     if fila:
         wb.defined_names.add(_rango_nombrado("TesisTribunal", "A1", f"F{fila}"))
 
-    # Lista de ids de estudiantes en columna H (G en blanco de separacion, porque
-    # TesisTribunal ahora llega hasta la columna F con el vocal).
-    for i, e in enumerate(facultad.estudiantes, start=1):
-        ws[f"H{i}"] = e.id
-    n_est = len(facultad.estudiantes)
-    if n_est:
-        wb.defined_names.add(_rango_nombrado("EstudiantesValidos", "H1", f"H{n_est}"))
 
     # Hoja de apoyo oculta: nada se edita a mano aqui.
     proteccion.proteger_hoja(ws)

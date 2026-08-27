@@ -48,7 +48,9 @@ def test_rangos_nombrados_definidos():
     wb.remove(wb.active)
     construir_hoja_datos(wb, _fac())
     assert "TesisTribunal" in wb.defined_names
-    assert "EstudiantesValidos" in wb.defined_names
+    # EstudiantesValidos lo declara la hoja visible `Estudiantes` desde la
+    # fase 3a: la auxiliar solo guarda lo derivado de las tesis.
+    assert "EstudiantesValidos" not in wb.defined_names
 
 
 def test_la_hoja_de_datos_queda_protegida():
@@ -69,7 +71,6 @@ def test_sin_tesis_no_se_declara_el_rango_de_tribunales():
     wb.remove(wb.active)
     construir_hoja_datos(wb, fac)
     assert "TesisTribunal" not in wb.defined_names
-    assert "EstudiantesValidos" in wb.defined_names   # los estudiantes si estan
 
 
 def test_sin_estudiantes_no_se_declara_el_rango_de_estudiantes():

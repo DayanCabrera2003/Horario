@@ -46,18 +46,6 @@ def construir_hoja_datos(wb, depto: Departamento) -> None:
     ws = wb.create_sheet(NOMBRE_HOJA)
     ws.sheet_state = "hidden"
 
-    # Tabla de profesores, sin encabezado (BUSCARV directo). El tope escrito es
-    # el efectivo (propio o global), para que las hojas no repitan la regla.
-    for i, p in enumerate(depto.profesores, start=1):
-        ws[f"A{i}"] = p.id
-        ws[f"B{i}"] = p.nombre
-        ws[f"C{i}"] = p.grado
-        tope = depto.tope_efectivo(p)
-        ws[f"D{i}"] = tope if tope is not None else ""
-    n_prof = len(depto.profesores)
-    wb.defined_names.add(_rango_nombrado("ProfesoresValidos", "A1", f"A{n_prof}"))
-    wb.defined_names.add(_rango_nombrado("ProfesoresTabla", "A1", f"D{n_prof}"))
-
     # Tabla auxiliar de carga: clave por formula, datos estaticos de cada fila.
     filas = depto.filas()
     for i, f in enumerate(filas):

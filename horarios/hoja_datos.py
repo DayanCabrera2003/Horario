@@ -1,5 +1,4 @@
-from openpyxl.workbook.defined_name import DefinedName
-from openpyxl.utils import quote_sheetname, absolute_coordinate
+from openpyxl.utils import quote_sheetname
 from horarios import layout as L
 from comun import proteccion
 from horarios.modelo import Facultad
@@ -27,25 +26,19 @@ def _formula_firma_anio(anios_por_codigo: dict, dia_idx: int, turno: int, aula: 
 
 
 def construir_hoja_datos(wb, facultad: Facultad) -> dict[tuple[str, int, str], str]:
-    """Crea la hoja oculta Datos con la lista maestra de aulas y firmas de año por celda.
+    """Crea la hoja auxiliar oculta con las firmas de año por celda.
 
-    Retorna un dict que mapea (dia, turno, aula) -> "Datos!<addr>" con la dirección
-    calificada de la fórmula de firma de año para esa combinación.
+    Retorna un dict que mapea (dia, turno, aula) -> "Auxiliar!<addr>" con la
+    dirección calificada de la fórmula de firma de año para esa combinación.
+
+    Ya no guarda la lista de aulas: desde la fase 3a esa lista vive en la hoja
+    visible `Aulas`, que es la que define el rango `AulasValidas`. Aquí solo
+    queda lo derivado, que es de lo que una hoja auxiliar debería estar hecha.
     """
     ws = wb.create_sheet(NOMBRE_HOJA)
     ws.sheet_state = "hidden"
 
-    # (a) Lista maestra de aulas en columna A, con rango nombrado
-    for i, aula in enumerate(facultad.aulas, start=1):
-        ws[f"A{i}"] = aula
-    ref = (
-        f"{quote_sheetname(NOMBRE_HOJA)}!"
-        f"{absolute_coordinate('A1')}:"
-        f"{absolute_coordinate(f'A{len(facultad.aulas)}')}"
-    )
-    wb.defined_names.add(DefinedName("AulasValidas", attr_text=ref))
-
-    # (b) Firmas de año, una por (dia, turno, aula).
+    # Firmas de año, una por (dia, turno, aula).
     # Para cada año, presencia = suma de COUNTIF sobre las celdas-aula de los grupos de ese año.
     anios_por_codigo: dict[str, list] = {}
     for g in facultad.grupos:

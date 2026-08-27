@@ -9,19 +9,20 @@ def _fac():
     return Facultad(aulas=("Aula 1", "Lab"), dias=("Lunes",), turnos=2, grupos=tuple(g), anios=anios)
 
 
-def test_crea_hoja_oculta_y_lista_aulas():
+def test_crea_la_hoja_oculta():
     fac = _fac(); wb = Workbook()
     construir_hoja_datos(wb, fac)
-    ws = wb[NOMBRE_HOJA]
-    assert ws.sheet_state == "hidden"
-    valores = [c.value for col in ws.iter_cols() for c in col]
-    assert "Aula 1" in valores and "Lab" in valores
+    assert wb[NOMBRE_HOJA].sheet_state == "hidden"
 
 
-def test_rango_nombrado_aulas_validas():
+def test_la_auxiliar_ya_no_copia_la_lista_de_aulas():
+    # Desde la fase 3a la lista vive en la hoja visible `Aulas`, que es quien
+    # define AulasValidas. Aqui solo queda lo derivado (las firmas de año).
     fac = _fac(); wb = Workbook()
     construir_hoja_datos(wb, fac)
-    assert "AulasValidas" in wb.defined_names
+    valores = [c.value for col in wb[NOMBRE_HOJA].iter_cols() for c in col]
+    assert "Aula 1" not in valores and "Lab" not in valores
+    assert "AulasValidas" not in wb.defined_names
 
 
 def test_firma_usa_countif():

@@ -31,14 +31,19 @@ def capacidad_para(n_filas: int) -> int:
 
 
 def rango_dinamico(hoja: str, columna: str, fila_inicial: int,
-                   capacidad: int) -> str:
+                   capacidad: int, columnas: int = 1) -> str:
     """Texto del rango nombrado que cubre las filas escritas de `columna`.
 
     `capacidad` es cuantas filas abarca la ventana en la que se cuenta, es decir
-    los datos mas la reserva. El resultado va tal cual a `DefinedName.attr_text`,
-    sin '=' delante: openpyxl lo escribe verbatim.
+    los datos mas la reserva. `columnas` ensancha el rango a la derecha, para los
+    que alimentan un BUSCARV y no solo un desplegable; la cuenta se hace siempre
+    sobre la primera columna, que es la que decide cuantas filas hay.
+
+    El resultado va tal cual a `DefinedName.attr_text`, sin '=' delante: openpyxl
+    lo escribe verbatim.
     """
     h = quote_sheetname(hoja)
     fila_final = fila_inicial + capacidad - 1
     return (f"OFFSET({h}!${columna}${fila_inicial},0,0,"
-            f"COUNTA({h}!${columna}${fila_inicial}:${columna}${fila_final}),1)")
+            f"COUNTA({h}!${columna}${fila_inicial}:${columna}${fila_final}),"
+            f"{columnas})")

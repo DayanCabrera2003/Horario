@@ -32,24 +32,22 @@ def test_hoja_oculta():
     assert ws.sheet_state == "hidden"
 
 
-def test_tabla_profesores_con_tope_efectivo():
+def test_la_auxiliar_ya_no_copia_la_tabla_de_profesores():
+    # Desde la fase 3a los profesores viven en la hoja visible `Profesores`, que
+    # es quien define ProfesoresValidos y ProfesoresTabla. Aqui solo queda lo
+    # derivado de la hoja Asignacion.
     _, ws = _hoja()
-    assert [ws[f"A{i}"].value for i in (1, 2)] == ["PIAD", "MARA"]
-    assert ws["B1"].value == "Pedro I. Alonso"
-    assert ws["C2"].value == "MSc."
-    # Tope efectivo: el global para PIAD, el propio para MARA.
-    assert ws["D1"].value == 160
-    assert ws["D2"].value == 80
+    assert ws["A1"].value is None
+    assert ws["B1"].value is None
 
 
 def test_rangos_nombrados():
     wb, _ = _hoja()
     nombres = wb.defined_names
-    assert "ProfesoresValidos" in nombres
-    assert "ProfesoresTabla" in nombres
     assert "CargaPorProfesor" in nombres
-    assert "$A$1:$A$2" in nombres["ProfesoresValidos"].attr_text
-    assert "$A$1:$D$2" in nombres["ProfesoresTabla"].attr_text
+    # Los de profesores los declara la hoja visible, no esta.
+    assert "ProfesoresValidos" not in nombres
+    assert "ProfesoresTabla" not in nombres
     # 3 filas de carga (Conf + 2 grupos de CP) -> F1:J3.
     assert "$F$1:$J$3" in nombres["CargaPorProfesor"].attr_text
 
@@ -90,5 +88,3 @@ def test_sin_asignaturas_no_se_declara_el_rango_de_carga():
     wb.remove(wb.active)
     construir_hoja_datos(wb, depto)
     assert "CargaPorProfesor" not in wb.defined_names
-    # Los profesores si se declaran: eso no depende de que haya carga.
-    assert "ProfesoresValidos" in wb.defined_names

@@ -33,3 +33,11 @@ def test_la_reserva_es_la_mitad_de_lo_declarado_con_un_minimo():
     assert capacidad_para(4) == 4 + CAPACIDAD_MINIMA
     assert capacidad_para(60) == 60 + 30
     assert capacidad_para(0) == CAPACIDAD_MINIMA
+
+
+def test_un_rango_puede_abarcar_varias_columnas():
+    # ProfesoresTabla necesita dos: la clave y el nombre que devuelve BUSCARV.
+    r = rango_dinamico("Profesores", "A", 2, 20, columnas=2)
+    assert r.endswith(",2)")
+    # La cuenta sigue siendo sobre la primera columna: es la que manda.
+    assert "COUNTA('Profesores'!$A$2:$A$21)" in r
