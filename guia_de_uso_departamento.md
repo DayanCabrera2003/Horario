@@ -107,11 +107,11 @@ Cada asignatura se expande a sus **filas de carga**: una para la conferencia y
 una por cada grupo de CP. Ese es el "átomo" que se asigna: una fila, un
 profesor.
 
-| Asignatura | Tipo | Grupo | Horas | Profesor | Nombre |
-|---|---|---|---|---|---|
-| Estadística (CC) | Conf | - | 32 | `PIAD` ▾ | Pedro I. Alonso Diaz |
-| Estadística (CC) | CP | 1 | 32 | `MARA` ▾ | Maria Ramirez |
-| Estadística (CC) | CP | 2 | 32 | | |
+| Asignatura | Carrera | Tipo | Grupo | Horas | Profesor | Nombre |
+|---|---|---|---|---|---|---|
+| Estadística (CC) | Ciencia de la Computación | Conf | - | 32 | `PIAD` ▾ | Pedro I. Alonso Diaz |
+| Estadística (CC) | Ciencia de la Computación | CP | 1 | 32 | `MARA` ▾ | Maria Ramirez |
+| Estadística (CC) | Ciencia de la Computación | CP | 2 | 32 | | |
 
 En la columna **Profesor** eliges el id en el desplegable. También puedes
 **escribir un id que no está en la lista** (por ejemplo, un profesor invitado):
