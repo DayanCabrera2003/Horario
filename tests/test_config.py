@@ -51,6 +51,37 @@ def test_config_invalida_asignaturas_faltan(tmp_path):
     with pytest.raises(ErrorConfig, match="asignaturas"):
         cargar_facultad(escribir(tmp_path, mal))
 
+def test_config_invalida_raiz_no_es_diccionario(tmp_path):
+    # Un YAML que es una lista, no un mapa: el error tiene que ser el de la raiz
+    # y no un AttributeError al buscar claves.
+    with pytest.raises(ErrorConfig, match="diccionario"):
+        cargar_facultad(escribir(tmp_path, "- Aula 1\n- Aula 2\n"))
+
+def test_config_invalida_raiz_vacia(tmp_path):
+    # Un archivo vacio deja `datos` en None, que tampoco es un diccionario.
+    with pytest.raises(ErrorConfig, match="diccionario"):
+        cargar_facultad(escribir(tmp_path, ""))
+
+def test_config_invalida_aulas_vacias(tmp_path):
+    mal = BASE.replace("aulas: [Aula 1, Lab]", "aulas: []")
+    with pytest.raises(ErrorConfig, match="aulas"):
+        cargar_facultad(escribir(tmp_path, mal))
+
+def test_config_invalida_dias_vacios(tmp_path):
+    mal = BASE.replace("dias: [Lunes, Martes]", "dias: []")
+    with pytest.raises(ErrorConfig, match="dias"):
+        cargar_facultad(escribir(tmp_path, mal))
+
+def test_config_invalida_sin_ningun_grupo(tmp_path):
+    # El año existe y tiene asignaturas, pero ninguna sesion declara grupos:
+    # no hay nada que generar y hay que decirlo en vez de producir un libro vacio.
+    mal = BASE.replace("""        sesiones:
+          1: { grupos: [1, 2] }
+          2: { grupos: [1] }
+""", "")
+    with pytest.raises(ErrorConfig, match="grupo"):
+        cargar_facultad(escribir(tmp_path, mal))
+
 
 def _fac(tmp_path):
     return cargar_facultad(escribir(tmp_path, BASE))
