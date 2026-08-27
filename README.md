@@ -48,6 +48,7 @@ Qué se puede editar en cada libro:
 |---|---|---|
 | Horarios | Una por grupo (`C111`, `M211`, …) | La rejilla del horario: asignatura y aula de cada turno |
 | Horarios | `Aulas` | La lista de aulas: añadir una la mete en los desplegables |
+| Horarios | `Docencia` | Quién imparte cada asignatura en cada grupo |
 | Horarios | `Ocupación de aulas`, `Portada`, `Auxiliar` | Ninguna; se calculan solas |
 | Tribunales | Una por día (`27 jul (lun)`, …) | La columna del estudiante; el resto del tribunal se autocompleta |
 | Tribunales | `Estudiantes` | La lista de estudiantes: añadir uno lo mete en los desplegables |
@@ -96,8 +97,10 @@ Planifica los horarios de una facultad. El `.xlsx` generado contiene:
   desplegables de aula y asignatura.
 - Hojas con los **datos del problema**, tal como los declara el YAML: `Aulas`, `Asignaturas`
   (por año, con su frecuencia), `Grupos` (de dónde sale cada id) y `Estructura` (días y turnos).
-- Si el YAML declara profesores, una hoja **Profesores** (id, nombre, grado, tope) y una hoja
-  **Docencia** con quién imparte cada asignatura en cada grupo.
+- Si el YAML declara profesores, una hoja **Profesores** (id, nombre, grado, tope de turnos y los
+  turnos semanales que suma, en rojo si pasa del tope) y una hoja **Docencia**, editable, con quién
+  imparte cada asignatura en cada grupo. La rejilla de cada grupo gana una tercera fila por turno con
+  el profesor, calculada desde `Docencia`, y se resalta al profesor citado en dos grupos a la vez.
 
   Se pueden ordenar y filtrar, pero no se editan.
 - Una hoja **Ocupación de aulas** que muestra, por día y turno, qué grupos ocupan cada aula,
@@ -153,7 +156,7 @@ Opciones de `generar.py`:
   - Hoja de grupo: amarillo = aula fuera del listado, naranja = asignatura fuera
     de la tabla del grupo, rojo vivo = aula puesta sin asignatura, rojo =
     sobre-planificada (asignadas > frecuencia), verde = frecuencia exacta
-    cumplida. Los dos últimos colorean la **fila completa** de la asignatura, no
+    cumplida, rojo intenso = profesor citado en dos grupos a la vez. Los dos últimos colorean la **fila completa** de la asignatura, no
     solo la casilla "Asignadas".
   - Hoja Ocupación de aulas: un color por año y rojo intenso para conflicto (dos años
     distintos en la misma aula y turno).
