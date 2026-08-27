@@ -16,7 +16,9 @@ from departamento import layout as L
 from departamento.hoja_asignacion import NOMBRE_HOJA as HOJA_ASIGNACION
 from departamento.modelo import Departamento, filas_de_carga
 
-NOMBRE_HOJA = "Asignaturas"
+# Reporte de cobertura, no el listado de asignaturas del semestre: ese es la
+# hoja "Asignaturas", con las horas declaradas.
+NOMBRE_HOJA = "Cobertura por asignatura"
 
 SUBCABECERA = ("Tipo", "Grupo", "Horas", "Profesor", "Nombre")
 COL_ULTIMA = "E"
@@ -24,7 +26,7 @@ COL_ULTIMA = "E"
 
 def construir_hoja_asignaturas(wb, depto: Departamento) -> None:
     ws = wb.create_sheet(NOMBRE_HOJA)
-    ws[f"A{L.FILA_TITULO}"] = f"Asignaturas — {depto.nombre} — {depto.semestre}"
+    ws[f"A{L.FILA_TITULO}"] = f"{NOMBRE_HOJA} — {depto.nombre} — {depto.semestre}"
     ws[f"A{L.FILA_TITULO}"].font = estilos.fuente_encabezado()
 
     alturas = 0      # acumulado de alturas de los bloques anteriores

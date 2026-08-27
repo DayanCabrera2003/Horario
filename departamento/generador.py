@@ -7,17 +7,20 @@ from openpyxl import Workbook
 from comun.portada import NOMBRE_HOJA as HOJA_PORTADA, construir_portada
 from departamento.config import cargar_departamento
 from departamento.hoja_datos import construir_hoja_datos
-from departamento.hoja_asignacion import construir_hoja_asignacion
-from departamento.hoja_profesores import construir_hoja_profesores
-from departamento.hoja_asignaturas import construir_hoja_asignaturas
+from departamento.hoja_asignacion import (
+    NOMBRE_HOJA as HOJA_ASIGNACION, construir_hoja_asignacion)
+from departamento.hoja_profesores import (
+    NOMBRE_HOJA as HOJA_CARGA, construir_hoja_profesores)
+from departamento.hoja_asignaturas import (
+    NOMBRE_HOJA as HOJA_COBERTURA, construir_hoja_asignaturas)
 
 
 # Que hay en cada hoja y si se escribe a mano, para el indice de la portada.
 # `Datos` no aparece: esta oculta y solo es fontaneria de formulas.
 _HOJAS_INDICE = (
-    ("Asignación", "Quién imparte cada conferencia y cada grupo de CP", True),
-    ("Profesores", "Cuántas horas acumula cada uno y si pasa su tope", False),
-    ("Asignaturas", "Quién cubre cada fila de carga y qué falta", False),
+    (HOJA_ASIGNACION, "Quién imparte cada conferencia y cada grupo de CP", True),
+    (HOJA_CARGA, "Cuántas horas acumula cada uno y si pasa su tope", False),
+    (HOJA_COBERTURA, "Quién cubre cada fila de carga y qué falta", False),
 )
 
 

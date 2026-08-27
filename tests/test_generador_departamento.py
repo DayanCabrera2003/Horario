@@ -29,8 +29,8 @@ def test_genera_libro_completo(tmp_path):
     assert ruta == salida and salida.exists()
     wb = load_workbook(salida)
     # Asignacion primera y activa; Datos oculta al final.
-    assert wb.sheetnames == ["Portada", "Asignación", "Profesores",
-                             "Asignaturas", "Datos"]
+    assert wb.sheetnames == ["Portada", "Asignación", "Carga por profesor",
+                             "Cobertura por asignatura", "Datos"]
     assert wb["Datos"].sheet_state == "hidden"
 
 
@@ -66,7 +66,7 @@ def test_la_portada_enlaza_las_hojas_visibles(tmp_path):
     enlaces = [c.hyperlink.location
                for fila in wb["Portada"].iter_rows() for c in fila
                if c.hyperlink is not None]
-    for hoja in ("Asignación", "Profesores", "Asignaturas"):
+    for hoja in ("Asignación", "Carga por profesor", "Cobertura por asignatura"):
         assert any(hoja in e for e in enlaces), f"falta el enlace a {hoja}"
     # Datos es fontaneria de formulas y esta oculta: no se indexa.
     assert not any("Datos" in e for e in enlaces)
@@ -85,6 +85,6 @@ def test_las_pestanas_distinguen_la_hoja_de_entrada_de_las_de_calculo(tmp_path):
     wb = _generar(tmp_path)
     entrada = wb["Asignación"].sheet_properties.tabColor.rgb
     assert entrada.endswith(estilos.COLOR_PESTANA_ENTRADA)
-    for hoja in ("Profesores", "Asignaturas"):
+    for hoja in ("Carga por profesor", "Cobertura por asignatura"):
         assert wb[hoja].sheet_properties.tabColor.rgb.endswith(
             estilos.COLOR_PESTANA_CALCULO), f"{hoja} deberia ir de calculo"

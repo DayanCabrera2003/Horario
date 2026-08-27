@@ -31,7 +31,7 @@ def _hoja(depto=None):
     construir_hoja_datos(wb, depto)
     construir_hoja_asignacion(wb, depto)
     construir_hoja_profesores(wb, depto)
-    return wb["Profesores"]
+    return wb["Carga por profesor"]
 
 
 def test_bloque_cabecera():

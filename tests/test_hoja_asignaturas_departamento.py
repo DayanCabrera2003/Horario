@@ -31,7 +31,7 @@ def _hoja():
     construir_hoja_datos(wb, depto)
     construir_hoja_asignacion(wb, depto)
     construir_hoja_asignaturas(wb, depto)
-    return wb["Asignaturas"]
+    return wb["Cobertura por asignatura"]
 
 
 def test_bloques_por_asignatura():

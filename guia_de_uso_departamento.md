@@ -32,8 +32,8 @@ python generar_departamento.py --config config/departamento.yaml --salida gestio
 
 Abres `gestion.xlsx` en Excel o LibreOffice. En la hoja **Asignación** eliges,
 fila por fila, qué profesor imparte cada conferencia y cada grupo de clase
-práctica (desplegable en la columna Profesor). Las hojas **Profesores** y
-**Asignaturas** se recalculan solas: cuántas horas acumula cada profesor, qué
+práctica (desplegable en la columna Profesor). Las hojas **Carga por profesor** y
+**Cobertura por asignatura** se recalculan solas: cuántas horas acumula cada profesor, qué
 imparte, y quién cubre cada asignatura. Los colores avisan de lo que falta y de
 quién está sobrecargado.
 
@@ -127,11 +127,11 @@ resuelve el id a su nombre completo, muestra en ese caso `(desconocido)`.
   se generó y qué hay en cada hoja, con un enlace a cada una y la marca de si en
   ella *se escribe* o *se calcula*.
 - **Asignación** — donde se reparte la carga. Todo lo demás se deriva de aquí.
-- **Profesores** — un bloque por profesor: id, nombre, grado y tope, el detalle
+- **Carga por profesor** — un bloque por profesor: id, nombre, grado y tope, el detalle
   de lo que imparte (asignatura, tipo, grupo, horas) y su **TOTAL** de horas.
   Se rellena solo al elegir profesores en Asignación; lo único que se escribe a
   mano es el **tope de horas**.
-- **Asignaturas** — un bloque por asignatura con sus filas de carga y quién
+- **Cobertura por asignatura** — un bloque por asignatura con sus filas de carga y quién
   cubre cada una. El título del bloque cambia de color según esté completa.
 - **Datos** — oculta; contiene las listas y tablas auxiliares de las fórmulas.
   No hay que tocarla.
@@ -144,16 +144,17 @@ borre una fórmula sin querer.
 | Hoja | Celdas editables |
 |---|---|
 | `Asignación` | Solo la columna **Profesor** |
-| `Profesores` | Solo el **tope de horas** de cada bloque |
-| `Asignaturas`, `Portada`, `Datos` | Ninguna; se calculan solas |
+| `Carga por profesor` | Solo el **tope de horas** de cada bloque |
+| `Cobertura por asignatura`, `Portada`, `Datos` | Ninguna; se calculan solas |
 
 El color de la pestaña lo resume: **azul** = aquí se escribe, **gris azulado** =
 esto se calcula solo.
 
 `Asignación` lleva **autofiltro** en los encabezados, útil para aislar una
 carrera o las filas que aún no tienen profesor. Deja filtrar pero **no ordenar**,
-y es a propósito: cada fila tiene una gemela, por posición, en `Asignaturas`.
-Filtrar solo esconde filas; ordenar las movería de sitio y `Asignaturas` pasaría
+y es a propósito: cada fila tiene una gemela, por posición, en
+`Cobertura por asignatura`. Filtrar solo esconde filas; ordenar las movería de
+sitio y esa hoja pasaría
 a leer la fila equivocada sin avisar.
 
 Las tres hojas visibles llevan los **encabezados fijos**: al bajar por la lista
@@ -176,9 +177,9 @@ Cada hoja lleva su leyenda. En resumen:
 |---|---|---|
 | Amarillo | Asignación | Fila de carga sin profesor todavía |
 | Ámbar | Asignación | El id escrito no está en la lista de profesores |
-| Rojo | Profesores (fila TOTAL) | El profesor supera su tope de horas |
-| Verde | Asignaturas (título) | Asignatura completa: todas sus filas asignadas |
-| Naranja | Asignaturas (título) | Asignatura incompleta: falta alguna fila |
+| Rojo | Carga por profesor (fila TOTAL) | El profesor supera su tope de horas |
+| Verde | Cobertura por asignatura (título) | Asignatura completa: todas sus filas asignadas |
+| Naranja | Cobertura por asignatura (título) | Asignatura incompleta: falta alguna fila |
 
 ---
 
@@ -197,7 +198,7 @@ Todos se informan al generar, con `Error de configuración: ...`:
   entero, o es negativo. Vale igual para `horas_conf` y `grupos_cp`. Ojo con el
   YAML: `no` se lee como el booleano `false`, así que `horas_cp: no` cae aquí.
 - `departamento: 'filas_por_profesor' debe ser un entero positivo` — cada bloque
-  de la hoja Profesores necesita al menos una línea de detalle.
+  de la hoja Carga por profesor necesita al menos una línea de detalle.
 - `profesor: falta 'nombre'` — a una entrada del YAML le falta un campo
   obligatorio o lo tiene vacío. En las asignaturas el mensaje lleva el id:
   `asignatura X: falta 'carrera'`.
@@ -210,7 +211,7 @@ Todos se informan al generar, con `Error de configuración: ...`:
 
 - Cada fila de carga la imparte **un solo profesor** (no hay co-impartición de
   una misma conferencia o grupo).
-- En la hoja Profesores cada bloque reserva `filas_por_profesor` líneas de
+- En la hoja Carga por profesor cada bloque reserva `filas_por_profesor` líneas de
   detalle. Si un profesor imparte más cosas de las que caben, la última línea
   muestra `(+N más)`: súbele el valor en el YAML y regenera.
 - El libro cubre **un semestre**. Para el otro semestre, otro YAML y otro

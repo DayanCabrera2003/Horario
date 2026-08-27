@@ -52,8 +52,8 @@ Qué se puede editar en cada libro:
 | Tribunales | `Localizar` | Solo la casilla de búsqueda |
 | Tribunales | `Tribunales`, `Portada`, `Datos` | Ninguna; se calculan solas |
 | Departamento | `Asignación` | Solo la columna **Profesor** |
-| Departamento | `Profesores` | Solo el **tope de horas** de cada profesor |
-| Departamento | `Asignaturas`, `Portada`, `Datos` | Ninguna; se calculan solas |
+| Departamento | `Carga por profesor` | Solo el **tope de horas** de cada profesor |
+| Departamento | `Cobertura por asignatura`, `Portada`, `Datos` | Ninguna; se calculan solas |
 
 En los libros de tribunales y de departamento el color de la pestaña lo dice de
 un vistazo: **azul** = aquí se escribe, **gris azulado** = esto se calcula solo.
@@ -76,9 +76,10 @@ Las hojas de consulta `Aulas` y `Tribunales` se pueden **ordenar y filtrar** aun
 estando protegidas, y `Tribunales` lleva autofiltro en los encabezados.
 
 `Asignación` lleva autofiltro pero **no** deja ordenar, y es a propósito: cada
-una de sus filas tiene una gemela, por posición, en la hoja `Asignaturas`.
+una de sus filas tiene una gemela, por posición, en la hoja
+`Cobertura por asignatura`.
 Filtrar solo esconde filas y es inocuo; ordenar las movería de sitio y
-`Asignaturas` pasaría a leer la fila equivocada sin avisar de nada.
+esa hoja pasaría a leer la fila equivocada sin avisar de nada.
 
 ---
 
@@ -229,10 +230,10 @@ El `.xlsx` generado contiene:
   *filas de carga* (la conferencia + una fila por grupo de CP), con un
   desplegable de profesor por fila. Amarillo = fila sin profesor; ámbar = id
   fuera de la lista.
-- Una hoja **Profesores**: por profesor, qué imparte (asignatura, tipo, grupo,
+- Una hoja **Carga por profesor**: por profesor, qué imparte (asignatura, tipo, grupo,
   horas) y su total de horas, todo por fórmulas. Rojo cuando supera su tope
   (global del departamento o propio del profesor).
-- Una hoja **Asignaturas**: por asignatura, quién cubre cada fila de carga.
+- Una hoja **Cobertura por asignatura**: por asignatura, quién cubre cada fila de carga.
   Título verde si está completa, naranja si falta alguien.
 - Una hoja **Datos** (oculta) con las listas y la tabla auxiliar de las
   fórmulas.

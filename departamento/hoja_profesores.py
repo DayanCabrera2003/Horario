@@ -18,7 +18,9 @@ from departamento import layout as L
 from departamento.hoja_asignacion import NOMBRE_HOJA as HOJA_ASIGNACION
 from departamento.modelo import Departamento
 
-NOMBRE_HOJA = "Profesores"
+# El nombre dice lo que la hoja es: un reporte de carga, no el listado del
+# claustro (ese es la hoja "Profesores", que si son los datos del problema).
+NOMBRE_HOJA = "Carga por profesor"
 
 # Columnas del detalle: BUSCARV sobre CargaPorProfesor (clave en la col. 1).
 # A=asignatura (col 2), B=tipo (3), C=grupo (4), D=horas (5).
@@ -27,7 +29,7 @@ _COLS_DETALLE = (("A", 2), ("B", 3), ("C", 4), ("D", 5))
 
 def construir_hoja_profesores(wb, depto: Departamento) -> None:
     ws = wb.create_sheet(NOMBRE_HOJA)
-    ws[f"A{L.FILA_TITULO}"] = f"Profesores — {depto.nombre} — {depto.semestre}"
+    ws[f"A{L.FILA_TITULO}"] = f"{NOMBRE_HOJA} — {depto.nombre} — {depto.semestre}"
     ws[f"A{L.FILA_TITULO}"].font = estilos.fuente_encabezado()
 
     fpp = depto.filas_por_profesor
