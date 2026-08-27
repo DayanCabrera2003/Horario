@@ -152,3 +152,12 @@ def test_escribir_incidencias_sin_ninguna(tmp_path):
     texto = ruta.read_text(encoding="utf-8")
     assert "Total: 0" in texto
     assert texto.endswith("\n")
+
+
+def test_un_grupo_sin_ninguna_celda_valida_no_entra_en_los_horarios():
+    # Si nada de la rejilla parsea, el grupo no tiene horario que escribir: no
+    # debe aparecer con un diccionario vacio, porque el generador lo tomaria por
+    # un grupo sin clases en vez de por una transcripcion que hay que revisar.
+    res = H.construir({"D111": {1: {"Lunes": "ZZZ Aula 8"}}}, _TABLAS)
+    assert res["horarios"] == {}
+    assert any("sin parsear" in i for i in res["incidencias"])

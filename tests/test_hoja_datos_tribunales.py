@@ -58,3 +58,24 @@ def test_la_hoja_de_datos_queda_protegida():
     construir_hoja_datos(wb, _fac())
     ws = wb[NOMBRE_HOJA]
     assert ws.protection.sheet is True
+
+
+def test_sin_tesis_no_se_declara_el_rango_de_tribunales():
+    # Al empezar el curso la lista de tesis esta vacia; el libro se genera igual
+    # y no debe declarar un rango nombrado sobre cero filas.
+    from dataclasses import replace
+    fac = replace(_fac(), tesis=())
+    wb = Workbook()
+    wb.remove(wb.active)
+    construir_hoja_datos(wb, fac)
+    assert "TesisTribunal" not in wb.defined_names
+    assert "EstudiantesValidos" in wb.defined_names   # los estudiantes si estan
+
+
+def test_sin_estudiantes_no_se_declara_el_rango_de_estudiantes():
+    from dataclasses import replace
+    fac = replace(_fac(), estudiantes=(), tesis=())
+    wb = Workbook()
+    wb.remove(wb.active)
+    construir_hoja_datos(wb, fac)
+    assert "EstudiantesValidos" not in wb.defined_names

@@ -170,3 +170,19 @@ def test_escribir_revision_sin_incidencias_lo_dice(tmp_path):
     texto = ruta.read_text(encoding="utf-8")
     assert "## Incidencias (0)" in texto
     assert "Ninguna." in texto
+
+
+def test_el_mismo_local_en_dos_filas_reutiliza_su_id(tmp_path):
+    # El id del local se genera la primera vez y se reutiliza despues; si no,
+    # el mismo salon saldria dos veces en la lista de locales.
+    fila = lambda est: [datetime.datetime(2026, 6, 8), datetime.time(9, 30), est,
+                        "Lic. Alejandra Monzón", "Lic. Amanda Noris",
+                        "Lic. Kevin Manzano", None, "Lic. Rodrigo García",
+                        "Posgrado", None]
+    datos = importar([_excel(tmp_path, [fila("Adrián Hernández"), fila("Claudia Pérez")])])
+    locales = datos["facultad"]["locales"]
+    assert len(locales) == 1
+    assert locales[0]["nombre"] == "Postgrado"
+    # Las dos tesis apuntan al mismo id de local.
+    ids = {a["local"] for a in datos["asignaciones"]}
+    assert ids == {locales[0]["id"]}

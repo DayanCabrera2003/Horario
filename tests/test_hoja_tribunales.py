@@ -117,3 +117,20 @@ def test_la_hoja_lleva_autofiltro_sobre_toda_la_tabla():
     assert ws.auto_filter.ref == "A1:G3"
     # Un autofiltro sobre una hoja protegida solo sirve si la proteccion lo deja.
     assert ws.protection.autoFilter is False
+
+
+def test_sin_tesis_la_hoja_sale_solo_con_el_encabezado():
+    # No se puede bordear una tabla de cero filas: la hoja se queda en el
+    # encabezado y tiene que seguir siendo un libro valido.
+    fac = replace(_fac(), tesis=(), estudiantes=())
+    wb = Workbook(); wb.remove(wb.active)
+    construir_hoja_tribunales(wb, fac)
+    ws = wb[NOMBRE_HOJA]
+    assert ws["A1"].value == "Estudiante (id)"
+    assert ws.max_row == 1
+    assert ws.auto_filter.ref == "A1:G1"
+    # Y el libro se puede guardar y volver a abrir sin que Excel lo repare.
+    import io
+    from openpyxl import load_workbook
+    buf = io.BytesIO(); wb.save(buf); buf.seek(0)
+    assert load_workbook(buf)[NOMBRE_HOJA]["A1"].value == "Estudiante (id)"

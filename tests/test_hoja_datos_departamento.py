@@ -77,3 +77,18 @@ def test_la_hoja_de_datos_queda_protegida():
     # Nada es editable a mano en esta hoja oculta: todo son tablas de apoyo.
     _, ws = _hoja()
     assert ws.protection.sheet is True
+
+
+def test_sin_asignaturas_no_se_declara_el_rango_de_carga():
+    # Un departamento recien creado, con profesores pero sin asignaturas, no
+    # tiene ninguna fila de carga. Declarar "CargaPorProfesor" sobre un rango
+    # vacio dejaria un nombre roto en el libro.
+    from dataclasses import replace
+    depto = replace(_departamento(), asignaturas=())
+    assert depto.filas() == ()
+    wb = Workbook()
+    wb.remove(wb.active)
+    construir_hoja_datos(wb, depto)
+    assert "CargaPorProfesor" not in wb.defined_names
+    # Los profesores si se declaran: eso no depende de que haya carga.
+    assert "ProfesoresValidos" in wb.defined_names
