@@ -137,9 +137,10 @@ Opciones de `generar.py`:
   la facultad): aparece un aviso no bloqueante y el valor se conserva al aceptar.
 - Los colores se explican en la **leyenda** incluida en cada hoja:
   - Hoja de grupo: amarillo = aula fuera del listado, naranja = asignatura fuera
-    de la tabla del grupo, rojo = sobre-planificada (asignadas > frecuencia),
-    verde = frecuencia exacta cumplida. El rojo y el verde colorean la **fila
-    completa** de la asignatura, no solo la casilla "Asignadas".
+    de la tabla del grupo, rojo vivo = aula puesta sin asignatura, rojo =
+    sobre-planificada (asignadas > frecuencia), verde = frecuencia exacta
+    cumplida. Los dos últimos colorean la **fila completa** de la asignatura, no
+    solo la casilla "Asignadas".
   - Hoja Aulas: un color por año y rojo intenso para conflicto (dos años
     distintos en la misma aula y turno).
 - En la rejilla del horario:
