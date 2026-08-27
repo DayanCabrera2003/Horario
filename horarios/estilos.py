@@ -42,6 +42,10 @@ COLORES_PESTANA_ANIO = (
 # distinguen con este gris azulado, el mismo criterio que usan los otros libros.
 COLOR_PESTANA_CALCULO = "B0BEC5"
 
+# Las hojas con los datos del problema (aulas, asignaturas, grupos, estructura)
+# se distinguen de las de ano y de las de calculo con su propio color.
+COLOR_PESTANA_DATOS = "B39DDB"
+
 
 def color_pestana_anio(anio: int) -> str:
     """Color de pestana que le toca al ano `anio` (base 1)."""
