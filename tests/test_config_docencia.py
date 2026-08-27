@@ -112,3 +112,15 @@ docencia:
 """
     with pytest.raises(ErrorConfig, match="asignatura"):
         _cargar(tmp_path, texto)
+
+
+def test_un_tope_de_turnos_invalido_da_error(tmp_path):
+    # Mismo criterio que en el generador del departamento: si se declara, tiene
+    # que ser un entero positivo. Cero significaria "no puede impartir nada",
+    # que no es lo que nadie quiere decir al escribirlo.
+    texto = BASE + """
+profesores:
+  - {id: PIAD, nombre: "Pedro", tope_turnos: 0}
+"""
+    with pytest.raises(ErrorConfig, match="tope_turnos"):
+        _cargar(tmp_path, texto)
