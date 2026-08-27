@@ -92,6 +92,12 @@ Planifica los horarios de una facultad. El `.xlsx` generado contiene:
 - Una **hoja por grupo** con la rejilla de horario (días x turnos), una tabla
   de asignaturas con fórmulas de control (frecuencia, asignadas, faltan) y
   desplegables de aula y asignatura.
+- Hojas con los **datos del problema**, tal como los declara el YAML: `Aulas`, `Asignaturas`
+  (por año, con su frecuencia), `Grupos` (de dónde sale cada id) y `Estructura` (días y turnos).
+- Si el YAML declara profesores, una hoja **Profesores** (id, nombre, grado, tope) y una hoja
+  **Docencia** con quién imparte cada asignatura en cada grupo.
+
+  Se pueden ordenar y filtrar, pero no se editan.
 - Una hoja **Ocupación de aulas** que muestra, por día y turno, qué grupos ocupan cada aula,
   coloreada por año y con marca de conflicto cuando dos años distintos coinciden
   en la misma aula.
@@ -107,6 +113,11 @@ El generador lee dos YAML (ejemplos en la carpeta `config/`):
 - **`horarios.yaml`** — las asignaciones concretas (qué asignatura y aula van en
   cada día y turno de cada grupo). Es opcional: sin él se genera un esqueleto
   vacío para llenar a mano.
+
+`facultad.yaml` admite además dos secciones opcionales, **`profesores`** (id,
+nombre, grado y tope de horas) y **`docencia`** (qué profesor imparte cada
+asignatura en cada grupo). Sin ellas el libro se genera igual, sin las hojas
+`Profesores` ni `Docencia`.
 
 Hay configuraciones más completas en `config/facultad-completa.yaml` y
 `config/horarios-completo.yaml`.
@@ -167,6 +178,11 @@ contiene:
 
 - Una hoja **Portada**: de qué YAML salió el libro, cuándo se generó y un
   índice enlazado a las demás hojas, marcando en cuáles se escribe a mano.
+- Hojas con los **datos del problema**, tal como los declara el YAML: `Profesores`, `Estudiantes`, `Locales` y `Días`.
+  Aparecen **todos**, participen o no en una tesis: el profesor sin tribunal y el estudiante sin
+  tesis asignada son justo los que quedan por planificar.
+
+  Se pueden ordenar y filtrar, pero no se editan.
 - Una hoja **Tribunales** con la información completa de
   cada tesis en **nombres**, no en ids: estudiante y los cinco roles del
   tribunal (tutor, oponente, presidente, secretario y vocal). Sirve para leer el
@@ -226,6 +242,10 @@ El `.xlsx` generado contiene:
 
 - Una hoja **Portada**: de qué YAML salió el libro, cuándo se generó y un
   índice enlazado a las demás hojas, marcando en cuáles se escribe a mano.
+- Hojas con los **datos del problema**, tal como los declara el YAML: `Profesores` (con el grado, el tope y si el tope
+  es propio o del departamento) y `Asignaturas` (las horas declaradas del semestre).
+
+  Se pueden ordenar y filtrar, pero no se editan.
 - Una hoja **Asignación** (la única editable): cada asignatura expandida a sus
   *filas de carga* (la conferencia + una fila por grupo de CP), con un
   desplegable de profesor por fila. Amarillo = fila sin profesor; ámbar = id
