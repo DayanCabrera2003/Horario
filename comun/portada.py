@@ -22,9 +22,9 @@ _FILA_INSTRUCCIONES = 7
 _FILA_INDICE = 11
 
 _INSTRUCCIONES = (
-    "Las casillas de fondo blanco se escriben a mano. Las demas se calculan "
-    "solas y estan bloqueadas: si necesitas tocarlas, quita la proteccion de "
-    "la hoja desde el menu de Excel o de Calc."
+    "Las casillas de fondo blanco se escriben a mano. Las demás se calculan "
+    "solas y están bloqueadas: si necesitas tocarlas, quita la protección de "
+    "la hoja desde el menú de Excel o de Calc."
 )
 
 
