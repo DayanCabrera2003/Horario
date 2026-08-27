@@ -126,6 +126,11 @@ resuelve el id a su nombre completo, muestra en ese caso `(desconocido)`.
 - **Portada** — la hoja por la que abre el libro. Dice de qué YAML salió, cuándo
   se generó y qué hay en cada hoja, con un enlace a cada una y la marca de si en
   ella *se escribe* o *se calcula*.
+- **Profesores** — el claustro: `Id | Nombre | Grado | Tope horas | Origen del tope`. La última
+  columna responde la pregunta que se hace quien mira un tope: ese 160, ¿lo declaró el profesor o le
+  viene del departamento?
+- **Asignaturas** — el plan del semestre: `Id | Nombre | Carrera | Horas Conf | Horas CP por grupo |
+  Grupos CP | Total`. El total se calcula solo (`Conf + CP × grupos`).
 - **Asignación** — donde se reparte la carga. Todo lo demás se deriva de aquí.
 - **Carga por profesor** — un bloque por profesor: id, nombre, grado y tope, el detalle
   de lo que imparte (asignatura, tipo, grupo, horas) y su **TOTAL** de horas.
@@ -146,6 +151,7 @@ borre una fórmula sin querer.
 | `Asignación` | Solo la columna **Profesor** |
 | `Carga por profesor` | Solo el **tope de horas** de cada bloque |
 | `Cobertura por asignatura`, `Portada`, `Auxiliar` | Ninguna; se calculan solas |
+| `Profesores`, `Asignaturas` | Ninguna por ahora; son los datos que vienen del YAML |
 
 El color de la pestaña lo resume: **azul** = aquí se escribe, **gris azulado** =
 esto se calcula solo.

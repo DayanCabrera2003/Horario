@@ -255,13 +255,31 @@ local.
 
 ## 7. Cómo leer el Excel generado
 
-El archivo tiene cinco tipos de hoja:
+El archivo tiene la **portada**, cuatro hojas con los **datos del problema** y las de **trabajo**.
 
 ### Hoja `Portada`
 
 La hoja por la que abre el libro. Dice de qué YAML salió, cuándo se generó,
 cuántas tesis y cuántos días abarca, y lista las demás hojas con un enlace a
 cada una y la marca de si en ella *se escribe* o *se calcula*.
+
+### Las hojas de datos: `Profesores`, `Estudiantes`, `Locales` y `Días`
+
+Quiénes y qué hay, tal como lo declara `tribunal.yaml`. Aparecen **todos**, participen o no en una
+tesis: un profesor al que aún no has puesto en ningún tribunal, o un estudiante que todavía no tiene
+tesis asignada, salen igual. Antes no estaban en ninguna parte del libro, y son justo los que quedan
+por planificar.
+
+- **`Profesores`** — `Id | Nombre | Grado`. Sin tope de horas: un tribunal de tesis no es carga
+  docente, y ese dato vive en el libro del departamento.
+- **`Estudiantes`** — `Id | Nombre`.
+- **`Locales`** — `Id | Nombre`. El id es lo que se escribe en `asignaciones.yaml`; el nombre es lo
+  que titula cada tabla en las hojas de día.
+- **`Días`** — `Fecha | Hoja | Momentos`. La columna del medio dice cómo se llama la hoja de ese día
+  (`2026-07-27` → `27 jul (lun)`), que es la primera pregunta al buscar un día en la barra de
+  pestañas.
+
+Se pueden ordenar y filtrar, pero no se editan: la fuente sigue siendo el YAML.
 
 ### Hoja `Tribunales`
 
@@ -324,7 +342,8 @@ borre una fórmula sin querer.
   estando protegida, y lleva **autofiltro** en los encabezados: despliega el
   botón de una columna para quedarte, por ejemplo, con las tesis de un tutor. La
   fila de encabezados queda fija al hacer scroll.
-- **`Portada`** y **`Auxiliar`**: nada editable.
+- **`Portada`**, **`Auxiliar`** y las cuatro hojas de datos (`Profesores`, `Estudiantes`,
+  `Locales`, `Días`): nada editable.
 
 El **color de la pestaña** lo resume de un vistazo: **azul** en las hojas donde se escribe (las de día
 y `Localizar`) y **gris azulado** en `Tribunales`, que se calcula sola.
