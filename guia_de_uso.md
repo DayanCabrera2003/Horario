@@ -326,6 +326,9 @@ esa hora. Colores:
 - **Rojo intenso:** conflicto — dos años distintos en la misma aula/turno.
 - **Vacía:** aula libre a esa hora.
 
+Debajo del último bloque hay una **leyenda** con el color de cada año presente y el del conflicto. La
+columna de turnos queda **fija** al desplazarte a la derecha.
+
 Es tu vista de "ocupación del edificio".
 
 ### Una hoja por grupo (`C111`, `C112`, …)
