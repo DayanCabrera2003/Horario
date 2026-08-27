@@ -332,6 +332,11 @@ Es tu vista de "ocupación del edificio".
   pasaste). Verde = exacto, rojo = pasado.
 - **Menús desplegables:** al hacer clic en una celda de asignatura sale la lista de asignaturas del
   grupo; en una celda de aula, la lista de aulas válidas. (Sirven al editar a mano.)
+- **Leyenda:** debajo de la tabla de asignaturas, con el significado de cada color. Incluye el rojo de
+  **aula puesta sin asignatura**, que marca los turnos a medio llenar.
+- **Encabezados fijos:** los días y los turnos no se van al hacer scroll.
+- **Lista para imprimir:** la hoja sale **apaisada** y ajustada a **una página de ancho**, con los
+  encabezados repetidos arriba de cada página. No hay que tocar la configuración de impresión.
 
 ### Hoja `Datos` (oculta)
 
