@@ -85,7 +85,7 @@ def _aplicar_presentacion(ws, dia: Dia, facultad: Facultad) -> None:
     ws[f"{L.COL_MOMENTO}{fila_leyenda}"] = "Leyenda"
     leyenda.escribir_leyenda(
         ws, f"{L.COL_MOMENTO}{fila_leyenda + 1}",
-        [(estilos.COLOR_COLISION, "Colision: profesor en dos locales a la vez")])
+        [(estilos.COLOR_COLISION, "Colisión: profesor en dos locales a la vez")])
 
 
 def _aplicar_formato_colision(ws, dia: Dia, facultad: Facultad) -> None:
