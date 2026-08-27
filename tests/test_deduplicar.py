@@ -55,6 +55,26 @@ def test_ids_unicos_y_legibles():
     assert all(i.isalnum() and i.isupper() for i in ids)
 
 
+def test_tres_personas_con_las_mismas_iniciales():
+    # El id sale de las iniciales, asi que tres personas distintas pueden pedir
+    # el mismo. La primera se lo queda y las siguientes van numerando.
+    d = Deduplicador()
+    d.agregar("Pedro Alonso Diaz")
+    d.agregar("Pablo Alvarez Duarte")
+    d.agregar("Patricia Aguirre Dominguez")
+    mapa = d.resolver()
+    ids = sorted(g["id"] for g in mapa.values())
+    assert ids == ["PAD", "PAD2", "PAD3"]
+
+
+def test_nombre_de_una_sola_palabra_rellena_el_id():
+    # Un id de una sola letra seria ilegible: se rellena hasta dos caracteres.
+    d = Deduplicador()
+    d.agregar("Carmen")
+    mapa = d.resolver()
+    assert [g["id"] for g in mapa.values()] == ["CX"]
+
+
 def test_nombre_canonico_es_el_mas_frecuente():
     d = Deduplicador()
     d.agregar("Fernando Raul Rodríguez Flores")
