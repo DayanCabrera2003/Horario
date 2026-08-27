@@ -283,6 +283,10 @@ Oponente | Presidente | Secretario | Vocal`. Filas = los momentos de ese día.
   de la tesis elegida. No se escriben a mano.
 - **Rojo:** colisión — ese profesor está en dos locales distintos en el mismo
   momento. La leyenda al pie lo recuerda.
+- **Columna de momentos fija:** al desplazarte a la derecha sigue a la vista la
+  hora de cada fila.
+- **Lista para imprimir:** la hoja sale **apaisada** y ajustada a **una página de
+  ancho**. No hay que tocar la configuración de impresión.
 
 ### Hoja `Localizar`
 
@@ -318,7 +322,8 @@ borre una fórmula sin querer.
   calculan.
 - **Hoja `Tribunales`**: nada editable. Sí se puede **ordenar y filtrar** aun
   estando protegida, y lleva **autofiltro** en los encabezados: despliega el
-  botón de una columna para quedarte, por ejemplo, con las tesis de un tutor.
+  botón de una columna para quedarte, por ejemplo, con las tesis de un tutor. La
+  fila de encabezados queda fija al hacer scroll.
 - **`Portada`** y **`Datos`**: nada editable.
 
 Si necesitas tocar una celda calculada, quita la protección: en Excel, pestaña
