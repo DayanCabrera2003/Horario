@@ -255,7 +255,13 @@ local.
 
 ## 7. Cómo leer el Excel generado
 
-El archivo tiene cuatro tipos de hoja:
+El archivo tiene cinco tipos de hoja:
+
+### Hoja `Portada`
+
+La hoja por la que abre el libro. Dice de qué YAML salió, cuándo se generó,
+cuántas tesis y cuántos días abarca, y lista las demás hojas con un enlace a
+cada una y la marca de si en ella *se escribe* o *se calcula*.
 
 ### Hoja `Tribunales`
 
