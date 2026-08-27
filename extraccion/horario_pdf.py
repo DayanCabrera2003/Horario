@@ -142,7 +142,7 @@ def construir(grupos: dict, tablas: dict) -> dict:
                 if len(parsed) > 1:
                     otras = ", ".join(f"{a}@{u}" for a, u in parsed[1:])
                     incidencias.append(
-                        f"{grupo_id} {dia} T{turno}: celda multiple, se toma la 1a "
+                        f"{grupo_id} {dia} T{turno}: celda múltiple, se toma la 1a "
                         f"({id_asig}@{aula}); se omiten: {otras}")
                 celdas[(dia, turno)] = {"asig": id_asig, "aula": aula}
                 aulas.add(aula)
@@ -234,7 +234,7 @@ def escribir_incidencias(datos: dict, ruta) -> None:
     """Escribe el informe de incidencias (celdas no parseadas, celdas multiples)
     para revisar la transcripcion a mano."""
     incidencias = datos["incidencias"]
-    lineas = ["# Incidencias de la importacion del horario (PDF)", "",
+    lineas = ["# Incidencias de la importación del horario (PDF)", "",
               f"Total: {len(incidencias)}", ""]
     lineas.extend(f"- {inc}" for inc in incidencias)
     lineas.append("")

@@ -14,7 +14,7 @@ from extraccion.datos_horario_2024 import GRUPOS, TABLAS
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Genera el YAML del horario desde la transcripcion.")
+    parser = argparse.ArgumentParser(description="Genera el YAML del horario desde la transcripción.")
     parser.add_argument("--facultad", default="facultad.yaml")
     parser.add_argument("--horarios", default="horarios.yaml")
     parser.add_argument("--incidencias", default="incidencias-horario.md")

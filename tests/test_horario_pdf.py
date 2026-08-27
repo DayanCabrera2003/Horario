@@ -80,7 +80,7 @@ def test_construir_frecuencias_y_horarios():
 
 def test_construir_reporta_celda_multiple():
     res = H.construir({"D111": _D111}, _TABLAS)
-    assert any("celda multiple" in i for i in res["incidencias"])
+    assert any("celda múltiple" in i for i in res["incidencias"])
 
 
 def test_parsear_celda_descarta_los_trozos_que_no_son_clase():

@@ -94,7 +94,7 @@ class _Importador:
         if inicio:
             self.momentos.setdefault(fecha, set()).add(inicio)
         else:
-            self.incidencias.append(f"Sin hora valida ({fila['hora']!r}): {fila['estudiante']!r}")
+            self.incidencias.append(f"Sin hora válida ({fila['hora']!r}): {fila['estudiante']!r}")
         if not local:
             self.incidencias.append(f"Sin local reconocible ({fila['local']!r}): {fila['estudiante']!r}")
 
@@ -201,7 +201,7 @@ def escribir_revision(datos: dict, ruta) -> None:
     """Escribe un informe Markdown con el mapa id -> nombre (y las variantes que se
     fusionaron) y la lista de incidencias, para revisar la importacion a mano."""
     rev = datos["revision"]
-    lineas = ["# Revision de la importacion de tribunales", ""]
+    lineas = ["# Revisión de la importación de tribunales", ""]
 
     def tabla_personas(titulo, mapa, con_grado):
         lineas.append(f"## {titulo} ({len(mapa)})")

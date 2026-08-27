@@ -20,7 +20,7 @@ def main() -> None:
     parser.add_argument("--asignaciones", default="asignaciones.yaml",
                         help="ruta del asignaciones.yaml a generar")
     parser.add_argument("--revision", default="revision-tribunales.md",
-                        help="ruta del informe de revision a generar")
+                        help="ruta del informe de revisión a generar")
     args = parser.parse_args()
 
     datos = importar(args.excel)

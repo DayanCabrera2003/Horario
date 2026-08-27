@@ -61,7 +61,7 @@ def test_las_incidencias_conocidas_no_crecen(construido):
     incidencias = construido["incidencias"]
     assert len(incidencias) == 15
     assert len([i for i in incidencias if "sin parsear" in i]) == 13
-    assert len([i for i in incidencias if "celda multiple" in i]) == 2
+    assert len([i for i in incidencias if "celda múltiple" in i]) == 2
 
 
 def test_el_horario_transcrito_lo_acepta_el_generador(tmp_path, construido):

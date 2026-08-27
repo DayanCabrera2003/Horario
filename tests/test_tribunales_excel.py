@@ -118,7 +118,7 @@ def test_incidencia_por_hora_no_valida(tmp_path):
               "Lic. Daniel Abad", "Lic. Rodrigo García", "Posgrado", None]]
     datos = importar([_excel(tmp_path, filas)])
     incidencias = datos["revision"]["incidencias"]
-    assert any("Sin hora valida" in i and "Adrián Hernández" in i for i in incidencias)
+    assert any("Sin hora válida" in i and "Adrián Hernández" in i for i in incidencias)
     assert not any("Sin local" in i for i in incidencias)
 
 
@@ -131,7 +131,7 @@ def test_incidencia_por_local_no_reconocible(tmp_path):
     datos = importar([_excel(tmp_path, filas)])
     incidencias = datos["revision"]["incidencias"]
     assert any("Sin local reconocible" in i for i in incidencias)
-    assert not any("Sin hora valida" in i for i in incidencias)
+    assert not any("Sin hora válida" in i for i in incidencias)
 
 
 def test_escribir_revision_lista_personas_locales_e_incidencias(tmp_path):
