@@ -265,7 +265,7 @@ cada una y la marca de si en ella *se escribe* o *se calcula*.
 
 ### Hoja `Tribunales`
 
-La primera hoja visible. Una fila por tesis con la información completa en
+Una fila por tesis con la información completa en
 **nombres**, no en ids: `Estudiante (id) | Estudiante | Tutor | Oponente |
 Presidente | Secretario | Vocal`. Los profesores salen con su grado (p. ej.
 `Dr. Pedro`). En tesis conjuntas y co-tutorías los nombres van unidos con ` / `.
