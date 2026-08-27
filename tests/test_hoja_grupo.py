@@ -350,3 +350,61 @@ def test_asignadas_solo_cuenta_las_filas_de_asignatura():
     # Las de asignatura, si.
     for t in range(1, facultad.turnos + 1):
         assert f"B{L.fila_asig(t)}" in formula, formula
+
+
+# --- Fila de profesor (fase 3b) ----------------------------------------------
+
+def _facultad_con_profesores():
+    from horarios.modelo import Profesor, Docencia
+    anio = Anio(carrera="C", numero=1, asignaturas=(
+        Asignatura("L-C", "Lógica", 1), Asignatura("Pro-C", "Programación", 2)))
+    g = Grupo("C", 1, 1, 1)
+    return Facultad(
+        aulas=("Aula 1",), dias=("Lunes", "Martes"), turnos=2, grupos=(g,),
+        anios={"C1": anio},
+        profesores=(Profesor(id="PIAD", nombre="Pedro", grado="Dr."),),
+        docencia=(Docencia(grupo="C111", asignatura="L-C", profesor="PIAD"),),
+    ), g
+
+
+def test_la_fila_de_profesor_se_calcula_desde_la_docencia():
+    fac, g = _facultad_con_profesores()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac)
+    celda = ws[L.celda_profesor(0, 1)]
+    assert str(celda.value).startswith("=")
+    # La clave es el grupo (fijo en la hoja) mas la asignatura de la celda de
+    # arriba: al cambiar la asignatura, el profesor la sigue.
+    assert "C111" in celda.value
+    assert L.celda_asig(0, 1) in celda.value
+
+
+def test_la_celda_de_profesor_queda_bloqueada():
+    # Es una formula, no una entrada: se decide en la hoja Docencia.
+    fac, g = _facultad_con_profesores()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac)
+    assert ws[L.celda_profesor(0, 1)].protection.locked is not False
+
+
+def test_sin_asignatura_la_celda_de_profesor_queda_en_blanco():
+    # Un turno vacio no debe mostrar 0 ni #N/D.
+    fac, g = _facultad_con_profesores()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac)
+    formula = ws[L.celda_profesor(0, 1)].value
+    assert f'IF({L.celda_asig(0, 1)}=""' in formula
+    assert 'IFERROR' in formula
+
+
+def test_sin_profesores_las_filas_de_profesor_van_ocultas():
+    # Un libro que no declara profesores no debe ganar una fila vacia por turno.
+    fac, g = _facultad()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac)
+    assert ws.row_dimensions[L.fila_profesor(1)].hidden is True
+    assert ws[L.celda_profesor(0, 1)].value is None

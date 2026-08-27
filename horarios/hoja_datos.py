@@ -1,4 +1,9 @@
 from openpyxl.utils import quote_sheetname
+from openpyxl.workbook.defined_name import DefinedName
+
+from comun.hoja_listado import FILA_PRIMER_DATO
+from comun.rangos import rango_dinamico
+from horarios import hoja_docencia
 from horarios import layout as L
 from comun import proteccion
 from horarios.modelo import Facultad
@@ -38,6 +43,8 @@ def construir_hoja_datos(wb, facultad: Facultad) -> dict[tuple[str, int, str], s
     ws = wb.create_sheet(NOMBRE_HOJA)
     ws.sheet_state = "hidden"
 
+    _tabla_docencia(wb, ws, facultad)
+
     # Firmas de año, una por (dia, turno, aula).
     # Para cada año, presencia = suma de COUNTIF sobre las celdas-aula de los grupos de ese año.
     anios_por_codigo: dict[str, list] = {}
@@ -59,3 +66,40 @@ def construir_hoja_datos(wb, facultad: Facultad) -> dict[tuple[str, int, str], s
     # Hoja de apoyo oculta: nada se edita a mano aqui.
     proteccion.proteger_hoja(ws)
     return celdas
+
+
+# Columnas de la tabla derivada de docencia, a la derecha de las firmas para no
+# pisarlas. X = clave "<grupo>#<asignatura>", Y = profesor.
+COL_CLAVE_DOCENCIA = "X"
+COL_PROFESOR_DOCENCIA = "Y"
+RANGO_DOCENCIA = "DocenciaPorGrupo"
+
+
+def _tabla_docencia(wb, ws, facultad: Facultad) -> None:
+    """Tabla auxiliar clave -> profesor, derivada de la hoja Docencia.
+
+    La rejilla de cada grupo necesita buscar por (grupo, asignatura) y BUSCARV
+    solo mira la primera columna, asi que la clave se compone aqui. Se compone
+    con formulas que leen la hoja Docencia -y no con los valores del YAML- para
+    que cambiar alli quien imparte algo se refleje en las rejillas sin regenerar.
+
+    Abarca tambien las filas de reserva de la hoja Docencia: una fila vacia
+    produce una clave vacia, inofensiva para el BUSCARV.
+    """
+    if not facultad.profesores:
+        return
+    hoja = quote_sheetname(hoja_docencia.NOMBRE_HOJA)
+    capacidad = hoja_docencia.capacidad(facultad)
+    for i in range(capacidad):
+        fila_origen = FILA_PRIMER_DATO + i
+        fila = FILA_PRIMER_DATO + i
+        grupo = f"{hoja}!${hoja_docencia.COL_GRUPO}${fila_origen}"
+        asig = f"{hoja}!${hoja_docencia.COL_ASIGNATURA}${fila_origen}"
+        ws[f"{COL_CLAVE_DOCENCIA}{fila}"] = (
+            f'=IF({grupo}="","",{grupo}&"#"&{asig})')
+        ws[f"{COL_PROFESOR_DOCENCIA}{fila}"] = (
+            f"={hoja}!${hoja_docencia.COL_PROFESOR}${fila_origen}")
+    wb.defined_names.add(DefinedName(
+        RANGO_DOCENCIA,
+        attr_text=rango_dinamico(NOMBRE_HOJA, COL_CLAVE_DOCENCIA,
+                                 FILA_PRIMER_DATO, capacidad, columnas=2)))

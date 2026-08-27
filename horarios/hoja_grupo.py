@@ -1,5 +1,6 @@
 from openpyxl.worksheet.datavalidation import DataValidation
 from horarios import layout as L
+from horarios import hoja_datos as HOJA_DATOS
 from horarios import estilos
 from comun import formato
 from comun import impresion
@@ -56,6 +57,7 @@ def construir_hoja_grupo(ws, grupo: Grupo, facultad: Facultad,
             f"COUNTIF({r},{id_cell})" for r in filas_asig)
         ws[L.celda_asig_tabla_faltan(i)] = f"={frec_cell}-{asignadas_cell}"
 
+    _escribir_profesores(ws, grupo, facultad)
     _aplicar_fondo_aulas(ws, facultad)
     _aplicar_dropdown_aulas(ws, facultad)
     _aplicar_dropdown_asignaturas(ws, grupo, facultad)
@@ -234,3 +236,29 @@ def _aplicar_formato_condicional(ws, grupo: Grupo, facultad: Facultad) -> None:
         rango_filas,
         estilos.regla_formula(f"$L{fila_ini}=$K{fila_ini}", estilos.COLOR_FREC_EXACTA),
     )
+
+
+def _escribir_profesores(ws, grupo: Grupo, facultad: Facultad) -> None:
+    """Tercera fila de cada turno: quien imparte la asignatura de arriba.
+
+    No se escribe a mano. Se busca en la tabla derivada de la hoja Docencia con
+    la clave "<grupo>#<asignatura>": el grupo es fijo en esta hoja, asi que va
+    escrito en la formula, y la asignatura sale de la celda de arriba. Al cambiar
+    la asignatura de un turno, el profesor la sigue.
+
+    Si la facultad no declara profesores no hay nada que mostrar: las filas se
+    ocultan para que la rejilla se vea como antes de la fase 3b, sin una linea
+    vacia por turno.
+    """
+    filas = [L.fila_profesor(t) for t in range(1, facultad.turnos + 1)]
+    if not facultad.profesores:
+        for fila in filas:
+            ws.row_dimensions[fila].hidden = True
+        return
+    for dia_idx in range(len(facultad.dias)):
+        for turno in range(1, facultad.turnos + 1):
+            celda_asig = L.celda_asig(dia_idx, turno)
+            ws[L.celda_profesor(dia_idx, turno)] = (
+                f'=IF({celda_asig}="","",'
+                f'IFERROR(VLOOKUP("{grupo.id}#"&{celda_asig},'
+                f'{HOJA_DATOS.RANGO_DOCENCIA},2,0),""))')
