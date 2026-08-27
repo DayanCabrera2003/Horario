@@ -41,6 +41,9 @@ def construir_hoja_tribunales(wb, facultad: Facultad) -> None:
         ws[f"G{i}"] = nombre_prof.get(tesis.vocal, tesis.vocal) if tesis.vocal else ""
 
     _aplicar_presentacion(ws, len(facultad.tesis))
+    # Autofiltro sobre la tabla entera: es una tabla plana de una fila por
+    # tesis, y filtrar por tutor o por presidente es la consulta habitual.
+    ws.auto_filter.ref = f"A1:G{len(facultad.tesis) + 1}"
     # Hoja de solo lectura: nada editable, pero se deja ordenar y filtrar.
     proteccion.proteger_hoja(ws, permitir_orden=True, permitir_filtro=True)
     vista.colorear_pestana(ws, estilos.COLOR_PESTANA_CALCULO)

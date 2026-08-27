@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from openpyxl import Workbook
 from tribunales.modelo import (Profesor, Estudiante, Local, Momento, Dia, Tesis,
                                Facultad)
@@ -95,3 +97,23 @@ def test_la_hoja_no_muestra_cuadricula():
     wb = Workbook(); wb.remove(wb.active)
     construir_hoja_tribunales(wb, _fac())
     assert wb[NOMBRE_HOJA].sheet_view.showGridLines is False
+
+
+def test_la_hoja_lleva_autofiltro_sobre_toda_la_tabla():
+    # El rango va del encabezado a la ultima tesis: con dos tesis llega a la
+    # fila 3. Se comprueba con dos para que no valga una referencia fija.
+    fac = replace(
+        _fac(),
+        estudiantes=(Estudiante("JPER", "Juan Perez"),
+                     Estudiante("LFDZ", "Lia Fernandez")),
+        tesis=(Tesis(estudiantes=("JPER",), tutores=("PIAD",), oponente="MARA",
+                     presidente="LGOM", secretario="ANSU"),
+               Tesis(estudiantes=("LFDZ",), tutores=("MARA",), oponente="PIAD",
+                     presidente="ANSU", secretario="LGOM")),
+    )
+    wb = Workbook(); wb.remove(wb.active)
+    construir_hoja_tribunales(wb, fac)
+    ws = wb[NOMBRE_HOJA]
+    assert ws.auto_filter.ref == "A1:G3"
+    # Un autofiltro sobre una hoja protegida solo sirve si la proteccion lo deja.
+    assert ws.protection.autoFilter is False
