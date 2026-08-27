@@ -30,7 +30,7 @@ carreras:
 
 PROFESORES = """
 profesores:
-  - {id: PIAD, nombre: "Pedro I. Alonso Diaz", grado: "Dr.", tope_horas: 160}
+  - {id: PIAD, nombre: "Pedro I. Alonso Diaz", grado: "Dr.", tope_turnos: 160}
   - {id: MARA, nombre: "Maria Ramirez", grado: "MSc."}
 """
 
@@ -51,9 +51,9 @@ def test_sin_profesores_la_facultad_carga_igual(tmp_path):
 def test_los_profesores_se_cargan_con_grado_y_tope(tmp_path):
     facultad = _cargar(tmp_path, BASE + PROFESORES)
     assert [p.id for p in facultad.profesores] == ["PIAD", "MARA"]
-    assert facultad.profesores[0].tope_horas == 160
+    assert facultad.profesores[0].tope_turnos == 160
     # El tope es opcional, como en el generador del departamento.
-    assert facultad.profesores[1].tope_horas is None
+    assert facultad.profesores[1].tope_turnos is None
     assert facultad.profesores[1].grado == "MSc."
 
 

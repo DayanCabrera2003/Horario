@@ -153,11 +153,11 @@ carreras:
 # Las dos secciones que siguen son opcionales. Sin ellas el libro sale como
 # antes; con ellas gana las hojas Profesores y Docencia.
 profesores:
-  - { id: PIAD, nombre: "Pedro I. Alonso Díaz", grado: "Dr.",  tope_horas: 160 }
-  - { id: MARA, nombre: "María Ramírez",        grado: "MSc.", tope_horas: 120 }
+  - { id: PIAD, nombre: "Pedro I. Alonso Díaz", grado: "Dr.",  tope_turnos: 12 }
+  - { id: MARA, nombre: "María Ramírez",        grado: "MSc.", tope_turnos: 10 }
   - { id: LGOM, nombre: "Luis Gómez",           grado: "Dr." }
   - { id: ANSU, nombre: "Ana Suárez",           grado: "MSc." }
-  - { id: RTOR, nombre: "Raquel Torres",        grado: "Dra.", tope_horas: 80 }
+  - { id: RTOR, nombre: "Raquel Torres",        grado: "Dra.", tope_turnos: 3 }
   - { id: JMEN, nombre: "Jorge Méndez",         grado: "Lic." }
   # Declarado y sin docencia asignada todavia: aparece igual en el listado, que
   # es justo lo que antes no ocurria.

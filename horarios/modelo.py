@@ -8,13 +8,14 @@ class Aula:
 
 @dataclass(frozen=True)
 class Profesor:
-    # Mismo trio de datos que en el generador del departamento: el tutor pidio
-    # "solamente el grado y la cantidad de horas maxima".
+    # Lo que el tutor pidio: "solamente el grado y la cantidad de horas maxima".
     id: str
     nombre: str
     grado: str = ""
-    # Tope de horas propio; None = sin tope declarado.
-    tope_horas: int | None = None
+    # Tope de carga, en turnos por semana. En este libro no hay horas de reloj:
+    # la unidad es el turno, asi que un tope en horas no se podria comparar con
+    # nada. En el libro del departamento, donde si hay horas, el tope va en horas.
+    tope_turnos: int | None = None
 
 
 @dataclass(frozen=True)

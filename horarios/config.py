@@ -71,12 +71,12 @@ def _cargar_profesores(datos) -> tuple:
         if pid in vistos:
             raise ErrorConfig(f"profesores: id duplicado '{pid}'")
         vistos.add(pid)
-        tope = p.get("tope_horas")
+        tope = p.get("tope_turnos")
         if tope is not None and (not es_entero(tope) or tope <= 0):
             raise ErrorConfig(
-                f"profesor {pid}: 'tope_horas' debe ser un entero positivo")
+                f"profesor {pid}: 'tope_turnos' debe ser un entero positivo")
         profesores.append(Profesor(id=pid, nombre=p["nombre"],
-                                   grado=p.get("grado", ""), tope_horas=tope))
+                                   grado=p.get("grado", ""), tope_turnos=tope))
     return tuple(profesores)
 
 

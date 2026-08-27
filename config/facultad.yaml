@@ -25,10 +25,11 @@ carreras:
 
 # Los profesores de la facultad. La seccion es opcional: sin ella el libro se
 # genera igual, solo que sin las hojas Profesores ni Docencia.
+# El tope va en turnos por semana: en este libro la unidad es el turno.
 profesores:
-  - { id: PIAD, nombre: "Pedro I. Alonso Díaz", grado: "Dr.",  tope_horas: 160 }
+  - { id: PIAD, nombre: "Pedro I. Alonso Díaz", grado: "Dr.",  tope_turnos: 12 }
   - { id: MARA, nombre: "María Ramírez",        grado: "MSc." }
-  - { id: LGOM, nombre: "Luis Gómez",           grado: "Dr.",  tope_horas: 120 }
+  - { id: LGOM, nombre: "Luis Gómez",           grado: "Dr.",  tope_turnos: 10 }
   - { id: ANSU, nombre: "Ana Suárez",           grado: "MSc." }
 
 # Quien imparte cada asignatura en cada grupo. La clave es el par: el mismo

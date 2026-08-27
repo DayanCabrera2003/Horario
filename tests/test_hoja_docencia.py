@@ -21,7 +21,7 @@ FACULTAD = Facultad(
             Grupo(carrera="C", anio=1, sesion=1, numero=2)),
     anios=ANIOS,
     profesores=(Profesor(id="PIAD", nombre="Pedro I. Alonso Diaz", grado="Dr.",
-                         tope_horas=160),
+                         tope_turnos=160),
                 Profesor(id="MARA", nombre="Maria Ramirez", grado="MSc.")),
     docencia=(Docencia(grupo="C111", asignatura="AMI-C", profesor="PIAD"),
               Docencia(grupo="C112", asignatura="AMI-CP", profesor="MARA")),
@@ -38,7 +38,7 @@ def _hoja(constructor, facultad=FACULTAD):
 def test_profesores_lista_el_claustro_con_grado_y_tope():
     ws = _hoja(construir_hoja_profesores)
     assert ws.title == "Profesores"
-    assert [c.value for c in ws[1][:4]] == ["Id", "Nombre", "Grado", "Tope horas"]
+    assert [c.value for c in ws[1][:4]] == ["Id", "Nombre", "Grado", "Tope de turnos"]
     assert ws["A2"].value == "PIAD"
     assert ws["D2"].value == 160
     # Sin tope declarado la casilla queda en blanco, no en cero: un 0 se leeria
@@ -73,3 +73,20 @@ def test_las_dos_hojas_quedan_protegidas():
     for constructor in (construir_hoja_profesores, construir_hoja_docencia):
         ws = _hoja(constructor)
         assert ws.protection.sheet is True, ws.title
+
+
+def test_el_claustro_cuenta_los_turnos_semanales_de_cada_profesor():
+    ws = _hoja(construir_hoja_profesores)
+    assert [c.value for c in ws[1][:5]] == ["Id", "Nombre", "Grado",
+                                            "Tope de turnos", "Turnos semanales"]
+    # Va como formula: si se cambia quien imparte algo en la hoja Docencia, el
+    # total tiene que seguirlo sin regenerar el libro.
+    assert str(ws["E2"].value).startswith("=")
+    assert "SUMIF" in ws["E2"].value
+
+
+def test_hay_alerta_cuando_los_turnos_pasan_del_tope():
+    ws = _hoja(construir_hoja_profesores)
+    formulas = [r.formula[0] for reglas in ws.conditional_formatting._cf_rules.values()
+                for r in reglas if r.formula]
+    assert any("$D" in f and "$E" in f and ">" in f for f in formulas), formulas

@@ -72,7 +72,10 @@ def construir_hoja_datos(wb, facultad: Facultad) -> dict[tuple[str, int, str], s
 # pisarlas. X = clave "<grupo>#<asignatura>", Y = profesor.
 COL_CLAVE_DOCENCIA = "X"
 COL_PROFESOR_DOCENCIA = "Y"
+COL_FRECUENCIA_DOCENCIA = "Z"
 RANGO_DOCENCIA = "DocenciaPorGrupo"
+RANGO_DOCENCIA_PROFESOR = "DocenciaProfesor"
+RANGO_DOCENCIA_FRECUENCIA = "DocenciaFrecuencia"
 
 
 def _tabla_docencia(wb, ws, facultad: Facultad) -> None:
@@ -99,7 +102,28 @@ def _tabla_docencia(wb, ws, facultad: Facultad) -> None:
             f'=IF({grupo}="","",{grupo}&"#"&{asig})')
         ws[f"{COL_PROFESOR_DOCENCIA}{fila}"] = (
             f"={hoja}!${hoja_docencia.COL_PROFESOR}${fila_origen}")
+        # Turnos semanales que supone esa fila: la frecuencia de la asignatura
+        # en el año del grupo. Se busca por los tres criterios porque el mismo
+        # id existe en varios años (EF esta en casi todos) y el año sale del
+        # propio id de grupo: "C111" -> carrera C, año 1.
+        ws[f"{COL_FRECUENCIA_DOCENCIA}{fila}"] = (
+            f'=IF({grupo}="",0,IFERROR(SUMIFS(AsigFrecuencia,'
+            f'AsigCarrera,LEFT({grupo},1),'
+            f'AsigAnio,VALUE(MID({grupo},2,1)),'
+            f'AsigId,{asig}),0))')
     wb.defined_names.add(DefinedName(
         RANGO_DOCENCIA,
         attr_text=rango_dinamico(NOMBRE_HOJA, COL_CLAVE_DOCENCIA,
                                  FILA_PRIMER_DATO, capacidad, columnas=2)))
+    # Las dos columnas que suma el claustro para saber la carga de cada uno. Se
+    # dimensionan con la columna de la clave, que es la que dice cuantas filas
+    # de docencia hay de verdad.
+    ref_base = rango_dinamico(NOMBRE_HOJA, COL_CLAVE_DOCENCIA, FILA_PRIMER_DATO,
+                              capacidad)
+    for nombre, columna in ((RANGO_DOCENCIA_PROFESOR, COL_PROFESOR_DOCENCIA),
+                            (RANGO_DOCENCIA_FRECUENCIA, COL_FRECUENCIA_DOCENCIA)):
+        wb.defined_names.add(DefinedName(
+            nombre,
+            attr_text=ref_base.replace(
+                f"!${COL_CLAVE_DOCENCIA}${FILA_PRIMER_DATO},0,0",
+                f"!${columna}${FILA_PRIMER_DATO},0,0")))
