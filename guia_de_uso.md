@@ -413,6 +413,26 @@ verla: clic derecho en una pestaña → *Mostrar hoja oculta*.
 > es quien **recalcula las fórmulas**. Recién generado, algunas celdas pueden verse vacías hasta que el
 > programa recalcula al abrir (normalmente automático).
 
+
+### Añadir datos sin regenerar el libro
+
+Las hojas de datos que **mandan** sobre algo se pueden editar: en este libro, la hoja **`Aulas`**.
+
+Debajo de los datos hay **filas libres ya preparadas** (unas 20, o la mitad de lo
+que haya si son muchos). Escribe en la primera libre y el dato entra en el desplegable en cuanto
+Calc o Excel recalculan. No hace falta Python ni regenerar nada.
+
+Dos límites que conviene tener claros:
+
+- **No dejes filas en blanco en medio de una lista.** La lista se corta ahí y todo lo que quede
+  debajo desaparece del desplegable, sin ningún aviso. Si borras una fila del medio, sube las de
+  abajo.
+- **Cuando se acaben las filas libres hay que regenerar** el libro desde el YAML, y eso sí necesita
+  Python. Es un límite conocido: el Excel absorbe el crecimiento normal, no un cambio de tamaño.
+
+Las demás hojas de datos son de **solo lectura** a propósito: nada del libro las lee, así que
+escribir en ellas no cambiaría nada. Para tocarlas, se edita el YAML y se regenera.
+
 ### Qué se puede editar y qué está bloqueado
 
 Las hojas van **protegidas**, sin contraseña. No es seguridad: es para que no se
