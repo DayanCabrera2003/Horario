@@ -116,7 +116,8 @@ profesor.
 En la columna **Profesor** eliges el id en el desplegable. También puedes
 **escribir un id que no está en la lista** (por ejemplo, un profesor invitado):
 aparece un aviso no bloqueante, el valor se conserva y la fila se pinta de
-ámbar para que no pase inadvertido.
+ámbar para que no pase inadvertido. La columna **Nombre**, que normalmente
+resuelve el id a su nombre completo, muestra en ese caso `(desconocido)`.
 
 ---
 
