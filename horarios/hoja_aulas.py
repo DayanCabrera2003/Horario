@@ -90,7 +90,7 @@ def construir_hoja_aulas(wb, facultad: Facultad, firmas: dict[tuple[str, int, st
     # encabezado porque los bloques-dia se apilan en vertical.
     ws.freeze_panes = "B1"
     # Hoja de consulta: nada editable, pero se deja ordenar y filtrar.
-    proteccion.proteger_hoja(ws, permitir_orden=True)
+    proteccion.proteger_hoja(ws, permitir_orden=True, permitir_filtro=True)
     # Pestana de navegacion: no es de ningun ano y se calcula sola.
     vista.colorear_pestana(ws, estilos.COLOR_PESTANA_CALCULO)
     # Hoja de reporte: las tablas ya van bordeadas y la cuadricula de fondo

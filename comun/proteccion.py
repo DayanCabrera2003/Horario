@@ -47,16 +47,24 @@ def desbloquear(ws, rangos) -> None:
                     celda.protection = _DESBLOQUEADA
 
 
-def proteger_hoja(ws, editables=(), permitir_orden: bool = False) -> None:
+def proteger_hoja(ws, editables=(), permitir_orden: bool = False,
+                  permitir_filtro: bool = False) -> None:
     """Protege `ws` dejando editables los rangos de `editables`.
 
-    `permitir_orden` habilita ordenar y autofiltrar. Al proteger, OOXML los
-    prohibe por defecto, y en las hojas de consulta eso estorba mas de lo que
-    ayuda. Cada atributo de `SheetProtection` significa "esta operacion queda
-    prohibida", de ahi que habilitarlas sea ponerlas en False.
+    `permitir_orden` habilita ordenar y `permitir_filtro` habilita autofiltrar.
+    Al proteger, OOXML prohibe las dos por defecto, y en las hojas de consulta
+    eso estorba mas de lo que ayuda. Cada atributo de `SheetProtection`
+    significa "esta operacion queda prohibida", de ahi que habilitarlas sea
+    ponerlas en False.
+
+    Son dos permisos separados a proposito: filtrar solo esconde filas, pero
+    ordenar las mueve de sitio. En una hoja cuyas filas tienen una gemela por
+    posicion en otra hoja, ordenar descuadraria la gemela sin avisar, asi que
+    ahi se concede el filtro y se niega el orden.
     """
     desbloquear(ws, editables)
     ws.protection.sheet = True
     if permitir_orden:
         ws.protection.sort = False
+    if permitir_filtro:
         ws.protection.autoFilter = False

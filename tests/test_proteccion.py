@@ -54,16 +54,34 @@ def test_desbloquear_no_protege_la_hoja_por_si_solo():
     assert ws.protection.sheet is False
 
 
-def test_permitir_orden_deja_ordenar_y_autofiltrar():
+def test_permitir_orden_deja_ordenar():
     # En OOXML cada atributo significa "esta operacion queda prohibida":
     # ponerlos en False es lo que las habilita.
     ws = _hoja()
     proteccion.proteger_hoja(ws, permitir_orden=True)
     assert ws.protection.sort is False
+
+
+def test_permitir_filtro_deja_autofiltrar():
+    ws = _hoja()
+    proteccion.proteger_hoja(ws, permitir_filtro=True)
     assert ws.protection.autoFilter is False
 
 
-def test_sin_permitir_orden_quedan_prohibidas():
+def test_ordenar_y_filtrar_se_conceden_por_separado():
+    # Filtrar solo esconde filas; ordenar las mueve de sitio. En una hoja cuyas
+    # filas tienen gemela por posicion en otra hoja, filtrar es inocuo pero
+    # ordenar descuadra la gemela en silencio, asi que no van juntas.
+    ws = _hoja()
+    proteccion.proteger_hoja(ws, permitir_filtro=True)
+    assert ws.protection.sort is True
+
+    otra = _hoja()
+    proteccion.proteger_hoja(otra, permitir_orden=True)
+    assert otra.protection.autoFilter is True
+
+
+def test_sin_permisos_ordenar_y_filtrar_quedan_prohibidas():
     ws = _hoja()
     proteccion.proteger_hoja(ws)
     assert ws.protection.sort is True
