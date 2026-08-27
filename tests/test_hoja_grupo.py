@@ -449,3 +449,44 @@ def test_la_leyenda_y_las_reglas_hablan_de_los_mismos_colores():
                   for c in fila
                   if c.fill and c.fill.start_color.rgb not in (None, "00000000")}
     assert de_reglas == de_leyenda, (sorted(de_reglas), sorted(de_leyenda))
+
+
+def test_las_reglas_siguen_al_turno_al_desplazarse():
+    """Las reglas se escriben una vez, ancladas en el primer turno, y Excel y
+    Calc las desplazan al resto del sqref. Con turnos de tres filas ese
+    desplazamiento tiene que saltar de tres en tres: una regla anclada mal
+    evaluaria la celda del turno de al lado y nadie lo notaria mirando el libro.
+    """
+    from openpyxl.formula.translate import Translator
+    fac, g = _facultad_con_profesores()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac)
+
+    def formulas_de(celda):
+        """Lo que evalua esa celda, traducido desde el ancla de su regla."""
+        fuera = []
+        for cf, reglas in ws.conditional_formatting._cf_rules.items():
+            partes = str(cf.sqref).split()
+            if not any(celda in ws[parte][0][0].coordinate or
+                       celda == ws[parte][0][0].coordinate for parte in partes):
+                pass
+            for parte in partes:
+                if ws[parte][0][0].coordinate != celda:
+                    continue
+                ancla = ws[partes[0]][0][0].coordinate
+                for r in reglas:
+                    if r.formula:
+                        fuera.append(Translator(f"={r.formula[0]}", origin=ancla)
+                                     .translate_formula(celda)[1:])
+        return fuera
+
+    # Turno 2: la regla de "aula puesta sin asignatura" tiene que mirar la
+    # asignatura y el aula DE ESE turno (filas 7 y 8), no las del turno 1.
+    asig2, aula2 = L.celda_asig(0, 2), L.celda_aula(0, 2)
+    regla = [f for f in formulas_de(asig2) if f'{asig2}=""' in f]
+    assert regla, formulas_de(asig2)
+    assert f'{aula2}<>""' in regla[0], regla[0]
+    # Y la de aula invalida, el aula de su turno.
+    assert any(f'{aula2}<>""' in f and "AulasValidas" in f
+               for f in formulas_de(aula2)), formulas_de(aula2)
