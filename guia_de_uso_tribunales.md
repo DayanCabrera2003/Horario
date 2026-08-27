@@ -374,7 +374,8 @@ pasó (`Error de configuracion: ...`). Los más frecuentes:
   sola tesis).
 - No se avisa si colocas la **misma tesis en dos celdas** distintas al editar a
   mano (es edición libre).
-- Todo se maneja por **id**: las tablas muestran ids, no nombres completos.
+- Las hojas de día y `Localizar` trabajan con **ids**, no con nombres
+  completos. Para verlos resueltos está la hoja `Tribunales`.
 - Los **nombres de hoja** salen de la fecha (`27 jul (lun)`) y no se pueden
   elegir a mano.
 - La entrada es por **YAML**: no se carga desde Excel ni desde una interfaz
