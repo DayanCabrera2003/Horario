@@ -1,7 +1,9 @@
 from pathlib import Path
 import yaml
 from comun.validacion import es_entero
-from horarios.modelo import Asignatura, Grupo, Anio, Asignacion, Horario, Facultad
+from horarios.modelo import (
+    Asignatura, Grupo, Anio, Asignacion, Horario, Facultad, Profesor, Docencia,
+)
 
 
 class ErrorConfig(Exception):
@@ -49,10 +51,59 @@ def cargar_facultad(ruta) -> Facultad:
     if not grupos:
         raise ErrorConfig("No se derivó ningún grupo de la configuración")
 
+    profesores = _cargar_profesores(datos)
+    docencia = _cargar_docencia(datos, grupos, anios, profesores)
+
     return Facultad(
         aulas=aulas, dias=dias, turnos=turnos,
         grupos=tuple(grupos), anios=anios,
+        profesores=profesores, docencia=docencia,
     )
+
+
+def _cargar_profesores(datos) -> tuple:
+    """Lee la seccion 'profesores'. Es opcional: sin ella la facultad se
+    describe igual, que es como estaban todos los YAML antes de la fase 2."""
+    profesores = []
+    vistos = set()
+    for p in datos.get("profesores") or ():
+        pid = p["id"]
+        if pid in vistos:
+            raise ErrorConfig(f"profesores: id duplicado '{pid}'")
+        vistos.add(pid)
+        tope = p.get("tope_horas")
+        if tope is not None and (not es_entero(tope) or tope <= 0):
+            raise ErrorConfig(
+                f"profesor {pid}: 'tope_horas' debe ser un entero positivo")
+        profesores.append(Profesor(id=pid, nombre=p["nombre"],
+                                   grado=p.get("grado", ""), tope_horas=tope))
+    return tuple(profesores)
+
+
+def _cargar_docencia(datos, grupos, anios, profesores) -> tuple:
+    """Lee la seccion 'docencia': {grupo: {asignatura: profesor}}.
+
+    Valida las tres referencias. La de la asignatura se comprueba contra las del
+    **ano del grupo**, no contra todas: asignarle a un grupo de primero algo que
+    solo existe en cuarto es el error que esta validacion existe para cazar.
+    """
+    ids_prof = {p.id for p in profesores}
+    grupo_por_id = {g.id: g for g in grupos}
+    docencia = []
+    for grupo_id, asignaturas in (datos.get("docencia") or {}).items():
+        if grupo_id not in grupo_por_id:
+            raise ErrorConfig(f"docencia: grupo inexistente '{grupo_id}'")
+        del_anio = {a.id for a in anios[grupo_por_id[grupo_id].anio_codigo].asignaturas}
+        for asig_id, profesor_id in (asignaturas or {}).items():
+            if asig_id not in del_anio:
+                raise ErrorConfig(
+                    f"docencia {grupo_id}: asignatura '{asig_id}' no es de su año")
+            if profesor_id not in ids_prof:
+                raise ErrorConfig(
+                    f"docencia {grupo_id}/{asig_id}: profesor inexistente '{profesor_id}'")
+            docencia.append(Docencia(grupo=grupo_id, asignatura=asig_id,
+                                     profesor=profesor_id))
+    return tuple(docencia)
 
 
 def cargar_horarios(ruta, facultad: Facultad) -> dict:
