@@ -258,6 +258,15 @@ línea.)
 Este resaltado solo aparece **editando a mano** una celda de aula en el Excel y escribiendo un aula
 inexistente. Es una red de seguridad para la edición manual, no para el YAML.
 
+### Aula puesta sin asignatura → **rojo** (celda del horario)
+
+Tampoco se puede disparar desde el YAML: el generador exige `asig` **y** `aula` en cada celda, y sin
+uno de los dos da error. Aparece al **editar a mano**: si escribes el aula de un turno y te dejas la
+asignatura, la casilla de **asignatura** (la de arriba del par) se pinta de rojo.
+
+Es el caso tipico de un horario a medio llenar: ya sabes donde va la clase pero aun no cual es. El
+resaltado esta para que ese turno no se quede olvidado.
+
 ### Conferencia compartida → varios grupos concatenados (hoja `Aulas`)
 
 Pon **la misma aula, día y turno** a varios grupos del **mismo año**.
