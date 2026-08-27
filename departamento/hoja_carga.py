@@ -27,7 +27,7 @@ NOMBRE_HOJA = "Carga por profesor"
 _COLS_DETALLE = (("A", 2), ("B", 3), ("C", 4), ("D", 5))
 
 
-def construir_hoja_profesores(wb, depto: Departamento) -> None:
+def construir_hoja_carga(wb, depto: Departamento) -> None:
     ws = wb.create_sheet(NOMBRE_HOJA)
     ws[f"A{L.FILA_TITULO}"] = f"{NOMBRE_HOJA} — {depto.nombre} — {depto.semestre}"
     ws[f"A{L.FILA_TITULO}"].font = estilos.fuente_encabezado()

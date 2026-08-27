@@ -10,10 +10,10 @@ from departamento.hoja_datos import (
     NOMBRE_HOJA as HOJA_AUXILIAR, construir_hoja_datos)
 from departamento.hoja_asignacion import (
     NOMBRE_HOJA as HOJA_ASIGNACION, construir_hoja_asignacion)
-from departamento.hoja_profesores import (
-    NOMBRE_HOJA as HOJA_CARGA, construir_hoja_profesores)
-from departamento.hoja_asignaturas import (
-    NOMBRE_HOJA as HOJA_COBERTURA, construir_hoja_asignaturas)
+from departamento.hoja_carga import (
+    NOMBRE_HOJA as HOJA_CARGA, construir_hoja_carga)
+from departamento.hoja_cobertura import (
+    NOMBRE_HOJA as HOJA_COBERTURA, construir_hoja_cobertura)
 
 
 # Que hay en cada hoja y si se escribe a mano, para el indice de la portada.
@@ -43,8 +43,8 @@ def generar(config_path: Path, salida: Path,
     # Datos primero: define los rangos nombrados que usan las demas hojas.
     construir_hoja_datos(wb, depto)
     construir_hoja_asignacion(wb, depto)
-    construir_hoja_profesores(wb, depto)
-    construir_hoja_asignaturas(wb, depto)
+    construir_hoja_carga(wb, depto)
+    construir_hoja_cobertura(wb, depto)
 
     # La hoja auxiliar, al final del todo.
     wb.move_sheet(HOJA_AUXILIAR, offset=len(wb.sheetnames) - 1)

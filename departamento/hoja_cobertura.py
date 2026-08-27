@@ -24,7 +24,7 @@ SUBCABECERA = ("Tipo", "Grupo", "Horas", "Profesor", "Nombre")
 COL_ULTIMA = "E"
 
 
-def construir_hoja_asignaturas(wb, depto: Departamento) -> None:
+def construir_hoja_cobertura(wb, depto: Departamento) -> None:
     ws = wb.create_sheet(NOMBRE_HOJA)
     ws[f"A{L.FILA_TITULO}"] = f"{NOMBRE_HOJA} — {depto.nombre} — {depto.semestre}"
     ws[f"A{L.FILA_TITULO}"].font = estilos.fuente_encabezado()

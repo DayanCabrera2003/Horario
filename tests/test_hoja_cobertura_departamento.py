@@ -3,7 +3,7 @@ from openpyxl import Workbook
 from departamento.modelo import Profesor, Asignatura, Departamento
 from departamento.hoja_datos import construir_hoja_datos
 from departamento.hoja_asignacion import construir_hoja_asignacion
-from departamento.hoja_asignaturas import construir_hoja_asignaturas
+from departamento.hoja_cobertura import construir_hoja_cobertura
 from departamento import estilos
 from departamento import layout as L
 
@@ -30,7 +30,7 @@ def _hoja():
     depto = _departamento()
     construir_hoja_datos(wb, depto)
     construir_hoja_asignacion(wb, depto)
-    construir_hoja_asignaturas(wb, depto)
+    construir_hoja_cobertura(wb, depto)
     return wb["Cobertura por asignatura"]
 
 
