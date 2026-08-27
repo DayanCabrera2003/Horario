@@ -156,6 +156,11 @@ y es a propósito: cada fila tiene una gemela, por posición, en `Asignaturas`.
 Filtrar solo esconde filas; ordenar las movería de sitio y `Asignaturas` pasaría
 a leer la fila equivocada sin avisar.
 
+Las tres hojas visibles llevan los **encabezados fijos**: al bajar por la lista
+siguen a la vista el título y la fila de encabezados. En `Asignación`, además,
+una **línea gruesa** separa las filas de carga de una asignatura de las de la
+siguiente, para que la conferencia y sus grupos de CP se lean como un bloque.
+
 Si necesitas tocar una celda calculada, quita la protección: en Excel, pestaña
 *Revisar* → *Desproteger hoja*; en LibreOffice Calc, *Herramientas* → *Proteger
 hoja* (se desmarca). No pide contraseña. Ojo: si sobrescribes la fórmula, la
