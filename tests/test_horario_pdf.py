@@ -81,3 +81,74 @@ def test_construir_frecuencias_y_horarios():
 def test_construir_reporta_celda_multiple():
     res = H.construir({"D111": _D111}, _TABLAS)
     assert any("celda multiple" in i for i in res["incidencias"])
+
+
+def test_parsear_celda_descarta_los_trozos_que_no_son_clase():
+    # Las tres razones por las que un trozo de celda se descarta, cada una por su
+    # lado, para que el "no sale nada" no pase por el motivo equivocado.
+    abrevs = {"IP"}
+    # El trozo entero era una anotacion: se va y el resto de la celda sobrevive.
+    assert H.quitar_anotaciones("(solo notas)") == ""
+    assert H.parsear_celda("IP Aula 8 / (solo notas)", abrevs) == [("IP", "Aula 8")]
+    # La abreviatura no esta en la tabla del año.
+    assert H.parsear_celda("XYZ Aula 8", abrevs) == []
+    # La abreviatura si esta, pero lo que sigue no es un aula.
+    assert H.parsear_celda("IP 4:45pm a 5:35pm", abrevs) == []
+
+
+def test_construir_reporta_las_celdas_que_no_pudo_parsear():
+    # Una celda con texto que no produce ninguna clase tiene que aparecer en el
+    # informe: es transcripcion que alguien debe revisar a mano, no un hueco.
+    rejilla = {1: {"Lunes": "IP Aula 8*", "Martes": "ZZZ Aula 7"}}
+    res = H.construir({"D111": rejilla}, _TABLAS)
+    sin_parsear = [i for i in res["incidencias"] if "sin parsear" in i]
+    assert len(sin_parsear) == 1
+    assert "ZZZ Aula 7" in sin_parsear[0]
+    assert "D111" in sin_parsear[0] and "Martes" in sin_parsear[0]
+
+
+def test_construir_no_reporta_las_celdas_vacias():
+    # El contrapunto: una casilla vacia no es una incidencia, es un turno libre.
+    rejilla = {1: {"Lunes": "IP Aula 8*", "Martes": "", "Miércoles": "   "}}
+    res = H.construir({"D111": rejilla}, _TABLAS)
+    assert not [i for i in res["incidencias"] if "sin parsear" in i]
+
+
+def test_nombre_de_id_desconocido_cae_en_el_propio_id():
+    # Salvaguarda: si un id no casa con ninguna abreviatura de la tabla, se
+    # muestra el id en vez de dejar la casilla vacia.
+    assert H._nombre_de_id("ZZZ", {"IP": "Introducción a la Programación"}) == "ZZZ"
+    # Y con tabla vacia, lo mismo.
+    assert H._nombre_de_id("IP", {}) == "IP"
+
+
+def test_escribir_yaml_deja_los_dos_archivos_releibles(tmp_path):
+    import yaml
+    res = H.construir({"D111": _D111}, _TABLAS)
+    fac, hor = tmp_path / "facultad.yaml", tmp_path / "horarios.yaml"
+    H.escribir_yaml(res, fac, hor)
+    # Se releen: lo escrito tiene que volver igual, con los acentos intactos.
+    datos_fac = yaml.safe_load(fac.read_text(encoding="utf-8"))
+    datos_hor = yaml.safe_load(hor.read_text(encoding="utf-8"))
+    assert datos_fac == res["facultad"]
+    assert datos_hor == res["horarios"]
+    assert "Análisis Matemático I" in fac.read_text(encoding="utf-8")
+
+
+def test_escribir_incidencias_lista_todas_y_cuenta(tmp_path):
+    res = H.construir({"D111": _D111}, _TABLAS)
+    ruta = tmp_path / "incidencias.md"
+    H.escribir_incidencias(res, ruta)
+    texto = ruta.read_text(encoding="utf-8")
+    assert f"Total: {len(res['incidencias'])}" in texto
+    for inc in res["incidencias"]:
+        assert f"- {inc}" in texto
+
+
+def test_escribir_incidencias_sin_ninguna(tmp_path):
+    # Un horario limpio deja el informe en cero, no un archivo a medias.
+    ruta = tmp_path / "incidencias.md"
+    H.escribir_incidencias({"incidencias": []}, ruta)
+    texto = ruta.read_text(encoding="utf-8")
+    assert "Total: 0" in texto
+    assert texto.endswith("\n")
