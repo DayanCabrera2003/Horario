@@ -13,6 +13,7 @@ from openpyxl.utils import get_column_letter
 
 from comun import formato, proteccion, vista
 from comun import estilos_base as estilos
+from comun.rangos import capacidad_para
 
 # Los encabezados van en la primera fila, sin fila de titulo: asi el congelado
 # es "A2" y la tabla empieza donde la vista espera. Las hojas de reporte si
@@ -26,15 +27,22 @@ ALTO_FILA = 22
 
 
 def construir_hoja_listado(wb, nombre: str, encabezados, filas,
-                           color_encabezado: str):
+                           color_encabezado: str, capacidad: int | None = None):
     """Crea la hoja `nombre` con `encabezados` y una fila por elemento de
     `filas`, y la devuelve.
 
     `filas` es un iterable de secuencias con tantos valores como encabezados.
     Puede venir vacio: la hoja sale igual, solo con los encabezados.
+
+    `capacidad` es cuantas filas abarca la tabla contando la reserva: las que
+    sobran de los datos salen vacias pero ya bordeadas y con su alto, de modo
+    que anadir un dato sea escribir en una fila que ya parece parte de la tabla.
+    Por defecto la decide `rangos.capacidad_para`.
     """
     ws = wb.create_sheet(nombre)
     filas = list(filas)
+    if capacidad is None:
+        capacidad = capacidad_para(len(filas))
 
     for i, texto in enumerate(encabezados):
         ws.cell(row=FILA_ENCABEZADO, column=i + 1, value=texto)
@@ -42,7 +50,7 @@ def construir_hoja_listado(wb, nombre: str, encabezados, filas,
         for c, valor in enumerate(valores):
             ws.cell(row=FILA_PRIMER_DATO + f, column=c + 1, value=valor)
 
-    _aplicar_presentacion(ws, len(encabezados), len(filas), color_encabezado)
+    _aplicar_presentacion(ws, len(encabezados), capacidad, color_encabezado)
 
     # Encabezados a la vista al bajar por una lista larga.
     ws.freeze_panes = f"A{FILA_PRIMER_DATO}"
@@ -53,10 +61,13 @@ def construir_hoja_listado(wb, nombre: str, encabezados, filas,
     return ws
 
 
-def _aplicar_presentacion(ws, n_cols: int, n_filas: int,
+def _aplicar_presentacion(ws, n_cols: int, capacidad: int,
                           color_encabezado: str) -> None:
+    """Da formato a la tabla entera, datos y reserva. La reserva se formatea a
+    proposito: una fila vacia pero bordeada invita a escribir en ella, y una
+    fila sin formato parece el final de la tabla."""
     columnas = [get_column_letter(i + 1) for i in range(n_cols)]
-    ultima_fila = FILA_ENCABEZADO + n_filas
+    ultima_fila = FILA_ENCABEZADO + capacidad
     rango = f"A{FILA_ENCABEZADO}:{columnas[-1]}{ultima_fila}"
 
     formato.aplicar_estilo_encabezado(

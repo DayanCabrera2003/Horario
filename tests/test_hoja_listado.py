@@ -93,3 +93,38 @@ def test_un_listado_sin_filas_deja_solo_los_encabezados():
     ws = _hoja(filas=[])
     assert [c.value for c in ws[1][:3]] == list(ENCABEZADOS)
     assert ws["A2"].value is None
+
+
+# --- Reserva de capacidad (fase 3a) ------------------------------------------
+#
+# El listado se emite con filas de reserva ya formateadas y dentro del rango
+# nombrado, para poder anadir datos sin regenerar el libro.
+
+
+def test_debajo_de_los_datos_quedan_filas_de_reserva_formateadas():
+    ws = _hoja()          # dos filas de datos
+    # 2 datos + 20 de reserva minima: la tabla llega hasta la fila 23.
+    assert ws["A23"].value is None
+    assert ws["A23"].border.left.style == "medium"
+    assert ws["B23"].border.top.style == "thin"
+    assert ws.row_dimensions[23].height is not None
+    # Y ni una mas.
+    assert ws.row_dimensions[24].height is None
+
+
+def test_la_reserva_crece_con_los_datos():
+    filas = [(f"P{i}", f"Profesor {i}", "Dr.") for i in range(60)]
+    ws = _hoja(filas=filas)
+    # 60 datos + 30 de reserva (el 50%): la tabla llega hasta la fila 91.
+    assert ws.row_dimensions[91].height is not None
+    assert ws.row_dimensions[92].height is None
+
+
+def test_la_capacidad_se_puede_fijar_desde_fuera():
+    wb = Workbook()
+    wb.remove(wb.active)
+    ws = construir_hoja_listado(wb, "Profesores", ENCABEZADOS, FILAS,
+                                color_encabezado="D9D9D9", capacidad=5)
+    # 5 filas de capacidad: encabezado + 5, hasta la fila 6.
+    assert ws.row_dimensions[6].height is not None
+    assert ws.row_dimensions[7].height is None
