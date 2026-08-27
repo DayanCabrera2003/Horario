@@ -1,6 +1,5 @@
-"""Ajustes de como se ve y se navega una hoja: cuadricula, zoom y color de
-pestana. No tocan el contenido ni el formato de las celdas; eso es de
-`formato.py`."""
+"""Ajustes de como se ve y se navega una hoja: cuadricula y color de pestana.
+No tocan el contenido ni el formato de las celdas; eso es de `formato.py`."""
 
 
 def ocultar_cuadricula(ws) -> None:
@@ -14,8 +13,3 @@ def colorear_pestana(ws, color: str) -> None:
     por grupo o por dia, la barra de pestanas es un muro de nombres; el color
     agrupa de un vistazo."""
     ws.sheet_properties.tabColor = color
-
-
-def fijar_zoom(ws, porcentaje: int) -> None:
-    """Fija el zoom con el que se abre la hoja."""
-    ws.sheet_view.zoomScale = porcentaje
