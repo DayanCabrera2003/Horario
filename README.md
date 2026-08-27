@@ -86,6 +86,8 @@ Filtrar solo esconde filas y es inocuo; ordenar las movería de sitio y
 
 Planifica los horarios de una facultad. El `.xlsx` generado contiene:
 
+- Una hoja **Portada**: de qué YAML salió el libro, cuándo se generó y un
+  índice enlazado a las demás hojas, marcando en cuáles se escribe a mano.
 - Una **hoja por grupo** con la rejilla de horario (días x turnos), una tabla
   de asignaturas con fórmulas de control (frecuencia, asignadas, faltan) y
   desplegables de aula y asignatura.
@@ -161,6 +163,8 @@ Planifica las defensas de tesis: qué tribunal (estudiante, tutor, oponente,
 presidente, secretario y vocal) va en cada local, día y momento. El `.xlsx` generado
 contiene:
 
+- Una hoja **Portada**: de qué YAML salió el libro, cuándo se generó y un
+  índice enlazado a las demás hojas, marcando en cuáles se escribe a mano.
 - Una hoja **Tribunales** (la primera visible) con la información completa de
   cada tesis en **nombres**, no en ids: estudiante y los cinco roles del
   tribunal (tutor, oponente, presidente, secretario y vocal). Sirve para leer el
@@ -218,6 +222,8 @@ y cada grupo de clase práctica. A diferencia de los otros dos generadores, aqu�
 la decisión se toma **dentro del Excel** y los reportes se recalculan solos.
 El `.xlsx` generado contiene:
 
+- Una hoja **Portada**: de qué YAML salió el libro, cuándo se generó y un
+  índice enlazado a las demás hojas, marcando en cuáles se escribe a mano.
 - Una hoja **Asignación** (la única editable): cada asignatura expandida a sus
   *filas de carga* (la conferencia + una fila por grupo de CP), con un
   desplegable de profesor por fila. Amarillo = fila sin profesor; ámbar = id
