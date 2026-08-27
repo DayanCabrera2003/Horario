@@ -34,10 +34,17 @@ def construir_hoja_asignacion(wb, depto: Departamento) -> None:
     # Encabezados fijos al hacer scroll: todo lo anterior a la primera carga.
     ws.freeze_panes = f"A{L.FILA_PRIMERA_CARGA}"
 
+    # Autofiltro sobre la tabla entera, para aislar una carrera o las filas sin
+    # profesor mientras se reparte la carga.
+    ws.auto_filter.ref = (f"{L.COL_ASIGNATURA}{L.FILA_ENCABEZADO_ASIGNACION}"
+                          f":{L.COL_ULTIMA}{L.fila_carga(len(filas) - 1)}")
+
     # La columna F es la unica decision del libro; todo lo demas viene del YAML
-    # o se calcula.
+    # o se calcula. Se deja filtrar pero no ordenar: cada fila tiene una gemela
+    # por posicion en la hoja Asignaturas, y ordenar aqui la descuadraria.
     proteccion.proteger_hoja(
-        ws, editables=[L.rango_profesor_editable(len(filas))])
+        ws, editables=[L.rango_profesor_editable(len(filas))],
+        permitir_filtro=True)
     # Pestana de navegacion: la unica hoja del libro donde se escribe a mano.
     vista.colorear_pestana(ws, estilos.COLOR_PESTANA_ENTRADA)
 

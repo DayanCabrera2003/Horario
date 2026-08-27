@@ -124,3 +124,21 @@ def test_las_horas_llevan_formato_de_numero_entero():
     # Calc segun la configuracion regional de quien abra el libro.
     ws = _hoja()
     assert ws[f"{L.COL_HORAS}{L.FILA_PRIMERA_CARGA}"].number_format == "0"
+
+
+def test_la_hoja_lleva_autofiltro_sobre_toda_la_tabla():
+    # Del encabezado a la ultima fila de carga; el fixture tiene 5.
+    ws = _hoja()
+    fin = L.fila_carga(len(_departamento().filas()) - 1)
+    assert ws.auto_filter.ref == (
+        f"{L.COL_ASIGNATURA}{L.FILA_ENCABEZADO_ASIGNACION}:{L.COL_ULTIMA}{fin}")
+    assert ws.auto_filter.ref == "A3:G8"
+
+
+def test_la_hoja_deja_filtrar_pero_no_ordenar():
+    # Cada fila de Asignacion tiene una gemela por posicion en Asignaturas.
+    # Filtrar solo esconde filas, pero ordenar las moveria y la gemela pasaria
+    # a leer la fila equivocada sin avisar.
+    ws = _hoja()
+    assert ws.protection.autoFilter is False   # filtrar: permitido
+    assert ws.protection.sort is True          # ordenar: prohibido
