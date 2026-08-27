@@ -165,7 +165,7 @@ contiene:
 
 - Una hoja **Portada**: de qué YAML salió el libro, cuándo se generó y un
   índice enlazado a las demás hojas, marcando en cuáles se escribe a mano.
-- Una hoja **Tribunales** (la primera visible) con la información completa de
+- Una hoja **Tribunales** con la información completa de
   cada tesis en **nombres**, no en ids: estudiante y los cinco roles del
   tribunal (tutor, oponente, presidente, secretario y vocal). Sirve para leer el
   tribunal de un vistazo sin descifrar los identificadores.
