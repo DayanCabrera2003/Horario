@@ -1,7 +1,7 @@
 from openpyxl import Workbook
 from horarios.modelo import Grupo, Anio, Facultad
 from horarios.hoja_datos import construir_hoja_datos
-from horarios.hoja_aulas import construir_hoja_aulas, NOMBRE_HOJA
+from horarios.hoja_ocupacion import construir_hoja_ocupacion, NOMBRE_HOJA
 from horarios import estilos
 
 
@@ -15,7 +15,7 @@ def test_celda_ocupacion_es_formula_de_grupos():
     fac = _fac()
     wb = Workbook()
     firmas = construir_hoja_datos(wb, fac)
-    construir_hoja_aulas(wb, fac, firmas)
+    construir_hoja_ocupacion(wb, fac, firmas)
     ws = wb[NOMBRE_HOJA]
     # alguna celda del bloque debe referenciar una hoja de grupo y concatenar
     formulas = [c.value for row in ws.iter_rows() for c in row if isinstance(c.value, str) and c.value.startswith("=")]
@@ -26,7 +26,7 @@ def test_tiene_un_bloque_por_dia():
     fac = _fac()
     wb = Workbook()
     firmas = construir_hoja_datos(wb, fac)
-    construir_hoja_aulas(wb, fac, firmas)
+    construir_hoja_ocupacion(wb, fac, firmas)
     ws = wb[NOMBRE_HOJA]
     textos = [c.value for row in ws.iter_rows() for c in row]
     assert "Lunes" in textos and "Martes" in textos
@@ -37,7 +37,7 @@ def test_formula_usa_substitute_trim_y_refs_entrecomilladas():
     fac = _fac()
     wb = Workbook()
     firmas = construir_hoja_datos(wb, fac)
-    construir_hoja_aulas(wb, fac, firmas)
+    construir_hoja_ocupacion(wb, fac, firmas)
     ws = wb[NOMBRE_HOJA]
     formulas = [
         c.value
@@ -54,7 +54,7 @@ def test_bloques_tienen_bordes():
     fac = _fac()
     wb = Workbook()
     firmas = construir_hoja_datos(wb, fac)
-    construir_hoja_aulas(wb, fac, firmas)
+    construir_hoja_ocupacion(wb, fac, firmas)
     ws = wb[NOMBRE_HOJA]
     # Esquina superior izquierda del primer bloque: perimetro medium
     assert ws["A1"].border.left.style == "medium"
@@ -67,7 +67,7 @@ def test_columnas_ajustadas_al_contenido():
     fac = _fac()
     wb = Workbook()
     firmas = construir_hoja_datos(wb, fac)
-    construir_hoja_aulas(wb, fac, firmas)
+    construir_hoja_ocupacion(wb, fac, firmas)
     ws = wb[NOMBRE_HOJA]
     # La columna B se ajusta a "Aula 1" (las celdas de ocupacion son formulas y se ignoran).
     # El valor exacto (8) prueba que el autoajuste corrio: difiere del ancho por defecto (13).
@@ -78,7 +78,7 @@ def test_celdas_de_ocupacion_tienen_ajuste_de_texto():
     fac = _fac()
     wb = Workbook()
     firmas = construir_hoja_datos(wb, fac)
-    construir_hoja_aulas(wb, fac, firmas)
+    construir_hoja_ocupacion(wb, fac, firmas)
     ws = wb[NOMBRE_HOJA]
     # B2 = primera aula, turno 1 del primer bloque: celda de ocupacion (formula)
     assert ws["B2"].alignment.wrap_text is True
@@ -88,7 +88,7 @@ def test_inmoviliza_columna_de_turnos():
     fac = _fac()
     wb = Workbook()
     firmas = construir_hoja_datos(wb, fac)
-    construir_hoja_aulas(wb, fac, firmas)
+    construir_hoja_ocupacion(wb, fac, firmas)
     ws = wb[NOMBRE_HOJA]
     # Solo se congela la columna A (etiquetas); los bloques se apilan en vertical
     assert ws.freeze_panes == "B1"
@@ -98,7 +98,7 @@ def test_encabezados_de_bloque_con_estilo():
     fac = _fac()
     wb = Workbook()
     firmas = construir_hoja_datos(wb, fac)
-    construir_hoja_aulas(wb, fac, firmas)
+    construir_hoja_ocupacion(wb, fac, firmas)
     ws = wb[NOMBRE_HOJA]
     # Nombre de dia (A1) y nombre de aula (B1) del primer bloque en negrita
     assert ws["A1"].font.bold is True
@@ -111,7 +111,7 @@ def test_hoja_aulas_tiene_leyenda_de_anios_y_conflicto():
     fac = _fac()   # facultad con año C1
     wb = Workbook()
     firmas = construir_hoja_datos(wb, fac)
-    construir_hoja_aulas(wb, fac, firmas)
+    construir_hoja_ocupacion(wb, fac, firmas)
     ws = wb[NOMBRE_HOJA]
     textos = [c.value for row in ws.iter_rows() for c in row if isinstance(c.value, str)]
     assert any("Leyenda" in t for t in textos)
@@ -124,7 +124,7 @@ def test_regla_mix_emitida_para_celda():
     fac = _fac()
     wb = Workbook()
     firmas = construir_hoja_datos(wb, fac)
-    construir_hoja_aulas(wb, fac, firmas)
+    construir_hoja_ocupacion(wb, fac, firmas)
     ws = wb[NOMBRE_HOJA]
     all_formulas = []
     for sqref, rules in ws.conditional_formatting._cf_rules.items():
@@ -139,7 +139,7 @@ def test_reglas_color_solo_para_anios_presentes():
     fac = _fac()
     wb = Workbook()
     firmas = construir_hoja_datos(wb, fac)
-    construir_hoja_aulas(wb, fac, firmas)
+    construir_hoja_ocupacion(wb, fac, firmas)
     ws = wb[NOMBRE_HOJA]
     all_formulas = []
     for sqref, rules in ws.conditional_formatting._cf_rules.items():
@@ -158,7 +158,7 @@ def test_la_hoja_de_aulas_queda_protegida_y_ordenable():
     fac = _fac()
     wb = Workbook()
     firmas = construir_hoja_datos(wb, fac)
-    construir_hoja_aulas(wb, fac, firmas)
+    construir_hoja_ocupacion(wb, fac, firmas)
     ws = wb[NOMBRE_HOJA]
     assert ws.protection.sheet is True
     assert ws.protection.sort is False
@@ -170,7 +170,7 @@ def test_la_pestana_marca_que_la_hoja_se_calcula_sola():
     fac = _fac()
     wb = Workbook()
     firmas = construir_hoja_datos(wb, fac)
-    construir_hoja_aulas(wb, fac, firmas)
+    construir_hoja_ocupacion(wb, fac, firmas)
     color = wb[NOMBRE_HOJA].sheet_properties.tabColor.rgb
     assert color.endswith(estilos.COLOR_PESTANA_CALCULO)
 
@@ -181,7 +181,7 @@ def test_la_hoja_no_muestra_cuadricula():
     fac = _fac()
     wb = Workbook()
     firmas = construir_hoja_datos(wb, fac)
-    construir_hoja_aulas(wb, fac, firmas)
+    construir_hoja_ocupacion(wb, fac, firmas)
     assert wb[NOMBRE_HOJA].sheet_view.showGridLines is False
 
 
@@ -197,7 +197,7 @@ def test_un_anio_fuera_de_la_paleta_no_rompe_la_hoja():
     assert "C5" not in estilos.ANIO_COLOR
     wb = Workbook()
     firmas = construir_hoja_datos(wb, fac)
-    construir_hoja_aulas(wb, fac, firmas)
+    construir_hoja_ocupacion(wb, fac, firmas)
     ws = wb[NOMBRE_HOJA]
 
     formulas = [r.formula[0] for _, reglas in ws.conditional_formatting._cf_rules.items()
@@ -213,7 +213,7 @@ def test_cada_anio_de_la_paleta_recibe_su_regla():
     fac = _fac()
     wb = Workbook()
     firmas = construir_hoja_datos(wb, fac)
-    construir_hoja_aulas(wb, fac, firmas)
+    construir_hoja_ocupacion(wb, fac, firmas)
     ws = wb[NOMBRE_HOJA]
     formulas = [r.formula[0] for _, reglas in ws.conditional_formatting._cf_rules.items()
                 for r in reglas if r.formula]

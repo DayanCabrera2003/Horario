@@ -8,7 +8,7 @@ from comun.portada import NOMBRE_HOJA as HOJA_PORTADA, construir_portada
 from horarios.config import cargar_facultad, cargar_horarios
 from horarios.hoja_datos import construir_hoja_datos
 from horarios.hoja_grupo import construir_hoja_grupo
-from horarios.hoja_aulas import NOMBRE_HOJA as HOJA_AULAS, construir_hoja_aulas
+from horarios.hoja_ocupacion import NOMBRE_HOJA as HOJA_AULAS, construir_hoja_ocupacion
 
 
 def _indice(hojas_grupo) -> tuple:
@@ -64,7 +64,7 @@ def generar(
         hojas_grupo.append((ws.title, grupo))
 
     # Hoja Aulas (usa las firmas; se inserta en índice 0).
-    construir_hoja_aulas(wb, facultad, firmas)
+    construir_hoja_ocupacion(wb, facultad, firmas)
 
     # La portada va la última porque se inserta en el índice 0: así ya sabe qué
     # hojas existen y queda delante de todas.
