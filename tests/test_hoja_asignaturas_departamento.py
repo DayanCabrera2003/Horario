@@ -93,3 +93,7 @@ def test_la_hoja_de_asignaturas_queda_protegida():
     # Nada es editable a mano en esta hoja: todo son referencias a Asignacion.
     ws = _hoja()
     assert ws.protection.sheet is True
+
+
+def test_la_hoja_no_muestra_cuadricula():
+    assert _hoja().sheet_view.showGridLines is False

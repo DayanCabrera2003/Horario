@@ -52,6 +52,9 @@ def construir_hoja_asignaturas(wb, depto: Departamento) -> None:
     # Hoja de solo lectura: todo son referencias a Asignacion, nada se edita aqui.
     proteccion.proteger_hoja(ws)
     vista.colorear_pestana(ws, estilos.COLOR_PESTANA_CALCULO)
+    # Hoja de reporte: las tablas ya van bordeadas y la cuadricula de fondo
+    # compite con esos bordes.
+    vista.ocultar_cuadricula(ws)
 
 
 def _construir_bloque(ws, asignatura, alturas: int, idx_carga: int, n: int) -> None:

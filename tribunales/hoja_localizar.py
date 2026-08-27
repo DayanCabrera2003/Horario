@@ -62,6 +62,9 @@ def construir_hoja_localizar(wb, facultad: Facultad) -> None:
         ws, editables=[proteccion.celda_unica(L.LOCALIZAR_CELDA_ENTRADA)])
     # Pestana de navegacion: se escribe el nombre que se busca.
     vista.colorear_pestana(ws, estilos.COLOR_PESTANA_ENTRADA)
+    # Hoja de reporte: las tablas ya van bordeadas y la cuadricula de fondo
+    # compite con esos bordes.
+    vista.ocultar_cuadricula(ws)
 
 
 def _formula_rol(entrada: str, hoja_dia: str, fila: int) -> str:

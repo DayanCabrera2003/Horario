@@ -88,3 +88,8 @@ def test_localizar_apunta_al_nombre_de_hoja_nuevo():
                 if isinstance(c.value, str) and c.value.startswith("=")]
     assert any("27 jul (lun)" in f for f in formulas)
 
+
+def test_la_hoja_no_muestra_cuadricula():
+    wb = Workbook(); wb.remove(wb.active)
+    construir_hoja_localizar(wb, _fac())
+    assert wb[NOMBRE_HOJA].sheet_view.showGridLines is False

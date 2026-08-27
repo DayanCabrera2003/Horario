@@ -89,3 +89,9 @@ def test_la_hoja_tribunales_es_de_solo_lectura_pero_ordenable():
     ws = _construir()
     assert ws.protection.sheet is True
     assert ws.protection.sort is False
+
+
+def test_la_hoja_no_muestra_cuadricula():
+    wb = Workbook(); wb.remove(wb.active)
+    construir_hoja_tribunales(wb, _fac())
+    assert wb[NOMBRE_HOJA].sheet_view.showGridLines is False

@@ -119,3 +119,7 @@ def test_el_total_de_horas_queda_bloqueado():
     fila_val = L.prof_fila_valores(0, 4)
     assert ws[f"D{fila_total}"].protection.locked is True
     assert ws[f"D{fila_val}"].protection.locked is False
+
+
+def test_la_hoja_no_muestra_cuadricula():
+    assert _hoja().sheet_view.showGridLines is False

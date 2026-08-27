@@ -93,3 +93,6 @@ def construir_hoja_aulas(wb, facultad: Facultad, firmas: dict[tuple[str, int, st
     proteccion.proteger_hoja(ws, permitir_orden=True)
     # Pestana de navegacion: no es de ningun ano y se calcula sola.
     vista.colorear_pestana(ws, estilos.COLOR_PESTANA_CALCULO)
+    # Hoja de reporte: las tablas ya van bordeadas y la cuadricula de fondo
+    # compite con esos bordes.
+    vista.ocultar_cuadricula(ws)

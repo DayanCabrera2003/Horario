@@ -54,6 +54,9 @@ def construir_hoja_profesores(wb, depto: Departamento) -> None:
     proteccion.proteger_hoja(ws, editables=topes)
     # Pestana de navegacion: salvo los topes, todo sale de Asignacion por formula.
     vista.colorear_pestana(ws, estilos.COLOR_PESTANA_CALCULO)
+    # Hoja de reporte: las tablas ya van bordeadas y la cuadricula de fondo
+    # compite con esos bordes.
+    vista.ocultar_cuadricula(ws)
 
 
 def _rango_asignacion(col: str, n_filas: int) -> str:

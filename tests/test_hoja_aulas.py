@@ -173,3 +173,13 @@ def test_la_pestana_marca_que_la_hoja_se_calcula_sola():
     construir_hoja_aulas(wb, fac, firmas)
     color = wb[NOMBRE_HOJA].sheet_properties.tabColor.rgb
     assert color.endswith(estilos.COLOR_PESTANA_CALCULO)
+
+
+def test_la_hoja_no_muestra_cuadricula():
+    # Hoja de reporte: todo va bordeado, y la cuadricula de fondo compite con
+    # los bordes de las tablas.
+    fac = _fac()
+    wb = Workbook()
+    firmas = construir_hoja_datos(wb, fac)
+    construir_hoja_aulas(wb, fac, firmas)
+    assert wb[NOMBRE_HOJA].sheet_view.showGridLines is False

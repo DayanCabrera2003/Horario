@@ -44,6 +44,9 @@ def construir_hoja_tribunales(wb, facultad: Facultad) -> None:
     # Hoja de solo lectura: nada editable, pero se deja ordenar y filtrar.
     proteccion.proteger_hoja(ws, permitir_orden=True)
     vista.colorear_pestana(ws, estilos.COLOR_PESTANA_CALCULO)
+    # Hoja de reporte: las tablas ya van bordeadas y la cuadricula de fondo
+    # compite con esos bordes.
+    vista.ocultar_cuadricula(ws)
 
 
 def _nombre_profesor(profesor) -> str:
