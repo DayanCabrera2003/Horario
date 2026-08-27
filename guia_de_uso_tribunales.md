@@ -326,6 +326,9 @@ borre una fórmula sin querer.
   fila de encabezados queda fija al hacer scroll.
 - **`Portada`** y **`Datos`**: nada editable.
 
+El **color de la pestaña** lo resume de un vistazo: **azul** en las hojas donde se escribe (las de día
+y `Localizar`) y **gris azulado** en `Tribunales`, que se calcula sola.
+
 Si necesitas tocar una celda calculada, quita la protección: en Excel, pestaña
 *Revisar* → *Desproteger hoja*; en LibreOffice Calc, *Herramientas* → *Proteger
 hoja* (se desmarca). No pide contraseña. Ojo: si sobrescribes la fórmula, la

@@ -364,6 +364,10 @@ borre una fórmula sin querer.
   filtrar** aun estando protegida.
 - **`Portada`** y **`Datos`**: nada editable.
 
+El **color de la pestaña** ayuda a moverse cuando la barra es un muro de nombres: cada año tiene el
+suyo (todos los grupos de `C1` comparten color, los de `C2` otro…) y `Aulas`, que se calcula sola, va
+en gris azulado.
+
 Si necesitas tocar una celda calculada, quita la protección: en Excel, pestaña
 *Revisar* → *Desproteger hoja*; en LibreOffice Calc, *Herramientas* → *Proteger
 hoja* (se desmarca). No pide contraseña. Ojo: si sobrescribes la fórmula, la
