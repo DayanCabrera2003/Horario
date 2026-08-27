@@ -96,6 +96,10 @@ def _aplicar_formato(ws, depto: Departamento, n_filas: int) -> None:
     # Padding aproximado para Calc: sangria + centrado vertical + filas mas altas.
     formato.aplicar_alineacion(ws, rango, estilos.alineacion_padding())
     formato.aplicar_alto_filas(ws, L.FILA_PRIMERA_CARGA, fila_fin, estilos.ALTO_FILA)
+    # Las horas son enteras: sin formato explicito, Calc las muestra segun la
+    # configuracion regional de quien abra el libro ("32" o "32,00").
+    formato.aplicar_formato_numero(
+        ws, f"{L.COL_HORAS}{L.FILA_PRIMERA_CARGA}:{L.COL_HORAS}{fila_fin}")
     _separar_asignaturas(ws, depto.filas())
     formato.autoajustar_columnas(ws, extra=4)
     # La columna Nombre muestra el resultado de una formula (autoajustar la

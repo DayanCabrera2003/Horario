@@ -108,6 +108,14 @@ def _construir_bloque(ws, depto: Departamento, idx: int, profesor) -> None:
             estilos.regla_formula(f"$D${fila_total}>$D${fila_val}",
                                   estilos.COLOR_SOBRECARGA))
 
+    # Todas las horas del bloque son enteras: el tope, las lineas de detalle y
+    # el TOTAL. Sin formato explicito, Calc las mostraria segun la configuracion
+    # regional de quien abra el libro. El tope va suelto porque entre el y el
+    # detalle quedan las dos filas de encabezado, que son texto.
+    formato.aplicar_formato_numero(ws, f"D{fila_val}")
+    formato.aplicar_formato_numero(
+        ws, f"D{L.prof_fila_detalle(idx, 0, fpp)}:D{fila_total}")
+
     rango = f"A{fila_cab}:D{fila_total}"
     formato.aplicar_borde_tabla(ws, rango, interno=estilos.lado_fino(),
                                 externo=estilos.lado_medio())

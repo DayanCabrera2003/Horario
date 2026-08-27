@@ -4,6 +4,7 @@ from departamento.modelo import Profesor, Asignatura, Departamento
 from departamento.hoja_datos import construir_hoja_datos
 from departamento.hoja_asignacion import construir_hoja_asignacion
 from departamento import estilos
+from departamento import layout as L
 
 
 def _departamento():
@@ -116,3 +117,10 @@ def test_solo_la_columna_profesor_queda_editable():
     assert ws["F4"].protection.locked is False   # profesor: se elige
     assert ws["G4"].protection.locked is True    # nombre: es BUSCARV
     assert ws["A4"].protection.locked is True    # asignatura: viene del YAML
+
+
+def test_las_horas_llevan_formato_de_numero_entero():
+    # Sin formato explicito, una hora puede acabar mostrandose como "32,00" en
+    # Calc segun la configuracion regional de quien abra el libro.
+    ws = _hoja()
+    assert ws[f"{L.COL_HORAS}{L.FILA_PRIMERA_CARGA}"].number_format == "0"

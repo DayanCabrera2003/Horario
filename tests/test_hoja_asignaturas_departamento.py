@@ -5,6 +5,7 @@ from departamento.hoja_datos import construir_hoja_datos
 from departamento.hoja_asignacion import construir_hoja_asignacion
 from departamento.hoja_asignaturas import construir_hoja_asignaturas
 from departamento import estilos
+from departamento import layout as L
 
 
 def _departamento():
@@ -93,6 +94,12 @@ def test_la_hoja_de_asignaturas_queda_protegida():
     # Nada es editable a mano en esta hoja: todo son referencias a Asignacion.
     ws = _hoja()
     assert ws.protection.sheet is True
+
+
+def test_las_horas_llevan_formato_de_numero_entero():
+    ws = _hoja()
+    fila = L.asig_fila_carga(0, 0)
+    assert ws[f"C{fila}"].number_format == "0"
 
 
 def test_la_hoja_no_muestra_cuadricula():

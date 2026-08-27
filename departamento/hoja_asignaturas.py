@@ -94,6 +94,11 @@ def _construir_bloque(ws, asignatura, alturas: int, idx_carga: int, n: int) -> N
         rango_titulo,
         estilos.regla_formula(f"COUNTBLANK({rango_prof})>0", estilos.COLOR_INCOMPLETA))
 
+    # Las horas son enteras; sin formato explicito Calc las mostraria segun la
+    # configuracion regional de quien abra el libro.
+    formato.aplicar_formato_numero(
+        ws, f"C{L.asig_fila_carga(alturas, 0)}:C{L.asig_fila_carga(alturas, n - 1)}")
+
     rango = f"A{fila_titulo}:{COL_ULTIMA}{L.asig_fila_carga(alturas, n - 1)}"
     formato.aplicar_borde_tabla(ws, rango, interno=estilos.lado_fino(),
                                 externo=estilos.lado_medio())

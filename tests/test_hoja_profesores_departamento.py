@@ -121,5 +121,15 @@ def test_el_total_de_horas_queda_bloqueado():
     assert ws[f"D{fila_val}"].protection.locked is False
 
 
+def test_las_horas_llevan_formato_de_numero_entero():
+    # Las tres celdas de horas del bloque: el tope que se escribe a mano, una
+    # linea de detalle y el TOTAL que las suma.
+    ws = _hoja()
+    fpp = 4
+    assert ws[f"D{L.prof_fila_valores(0, fpp)}"].number_format == "0"
+    assert ws[f"D{L.prof_fila_detalle(0, 0, fpp)}"].number_format == "0"
+    assert ws[f"D{L.prof_fila_total(0, fpp)}"].number_format == "0"
+
+
 def test_la_hoja_no_muestra_cuadricula():
     assert _hoja().sheet_view.showGridLines is False
