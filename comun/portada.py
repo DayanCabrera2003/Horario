@@ -35,6 +35,15 @@ _INSTRUCCIONES = (
     "la hoja desde el menú de Excel o de Calc."
 )
 
+# Aviso de las hojas de datos. Va en la portada y no solo en la guia porque el
+# efecto de dejar un hueco es silencioso: la lista se corta ahi y lo que queda
+# debajo desaparece de los desplegables sin ningun mensaje. Comprobado en Calc.
+_AVISO_LISTAS = (
+    "En las hojas de datos puedes añadir filas al final de la lista, en las "
+    "líneas libres que ya vienen preparadas. No dejes filas en blanco en medio: "
+    "la lista se corta ahí y lo que quede debajo desaparece de los desplegables."
+)
+
 
 def _enlazar_a_hoja(celda, nombre: str) -> None:
     """Convierte `celda` en un salto a la celda A1 de la hoja `nombre`.
@@ -69,6 +78,7 @@ def construir_portada(wb, titulo: str, subtitulo: str, origen: str,
 
     ws[f"A{_FILA_INSTRUCCIONES}"] = "Donde se cambian los datos"
     ws[f"A{_FILA_INSTRUCCIONES + 1}"] = instrucciones
+    ws[f"A{_FILA_INSTRUCCIONES + 2}"] = _AVISO_LISTAS
 
     ws[f"A{_FILA_INDICE}"] = "Las hojas de este libro"
     for i, (nombre, descripcion, etiqueta) in enumerate(hojas):

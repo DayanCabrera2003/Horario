@@ -101,3 +101,13 @@ def test_el_indice_describe_cada_hoja():
 def test_la_portada_queda_protegida():
     ws = _construir(_wb())
     assert ws.protection.sheet is True
+
+
+def test_la_portada_avisa_de_no_dejar_huecos_en_las_listas():
+    # Comprobado en Calc: COUNTA cuenta celdas no vacias, asi que un hueco en
+    # medio de un listado deja fuera del rango a lo que queda debajo, y ese
+    # dato desaparece del desplegable sin avisar de nada.
+    ws = _construir(_wb())
+    texto = " ".join(_textos(ws))
+    assert "en blanco" in texto
+    assert "desplegable" in texto
