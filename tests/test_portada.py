@@ -10,12 +10,14 @@ def _wb():
     wb.remove(wb.active)
     wb.create_sheet("Asignación")
     wb.create_sheet("Profesores")
+    wb.create_sheet("Aulas")
     return wb
 
 
 HOJAS = (
-    ("Asignación", "Quién imparte cada conferencia", True),
-    ("Profesores", "Cuántas horas acumula cada uno", False),
+    ("Asignación", "Quién imparte cada conferencia", portada.SE_ESCRIBE),
+    ("Profesores", "Cuántas horas acumula cada uno", portada.SE_CALCULA),
+    ("Aulas", "Las aulas de la facultad", portada.SON_DATOS),
 )
 
 GENERADO = datetime.datetime(2026, 8, 25, 14, 30)
@@ -82,6 +84,13 @@ def test_el_indice_marca_que_hojas_se_escriben_a_mano():
     ws = _construir(_wb())
     assert _fila_del_indice(ws, "Asignación")[2].value == "se escribe"
     assert _fila_del_indice(ws, "Profesores")[2].value == "se calcula"
+
+
+def test_el_indice_distingue_las_hojas_de_datos():
+    # Un listado no es ninguna de las dos cosas: ni se calcula solo ni es donde
+    # se planifica. Es la respuesta a "¿dónde están los datos?".
+    ws = _construir(_wb())
+    assert _fila_del_indice(ws, "Aulas")[2].value == "datos del problema"
 
 
 def test_el_indice_describe_cada_hoja():
