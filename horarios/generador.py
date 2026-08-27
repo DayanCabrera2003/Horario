@@ -9,6 +9,15 @@ from horarios.config import cargar_facultad, cargar_horarios
 from horarios.hoja_datos import construir_hoja_datos
 from horarios.hoja_grupo import construir_hoja_grupo
 from horarios.hoja_ocupacion import NOMBRE_HOJA as HOJA_AULAS, construir_hoja_ocupacion
+from horarios.hoja_datos import NOMBRE_HOJA as HOJA_AUXILIAR
+from horarios.hoja_aulas import (
+    NOMBRE_HOJA as HOJA_LISTA_AULAS, construir_hoja_aulas)
+from horarios.hoja_asignaturas import (
+    NOMBRE_HOJA as HOJA_ASIGNATURAS, construir_hoja_asignaturas)
+from horarios.hoja_listado_grupos import (
+    NOMBRE_HOJA as HOJA_GRUPOS, construir_hoja_grupos)
+from horarios.hoja_estructura import (
+    NOMBRE_HOJA as HOJA_ESTRUCTURA, construir_hoja_estructura)
 
 
 def _indice(hojas_grupo) -> tuple:
@@ -19,9 +28,13 @@ def _indice(hojas_grupo) -> tuple:
     fontaneria de formulas.
     """
     return (
+        (HOJA_LISTA_AULAS, "Las aulas de la facultad", False),
+        (HOJA_ASIGNATURAS, "Qué se imparte en cada año y con qué frecuencia", False),
+        (HOJA_GRUPOS, "Los grupos y de dónde sale el id de cada uno", False),
+        (HOJA_ESTRUCTURA, "Días, turnos y tamaño del libro", False),
+        (HOJA_AULAS, "Qué aula está ocupada en cada día y turno", False),
         *((nombre, f"Carrera {grupo.carrera} · año {grupo.anio}", True)
           for nombre, grupo in hojas_grupo),
-        (HOJA_AULAS, "Qué aula está ocupada en cada día y turno", False),
     )
 
 
@@ -53,8 +66,17 @@ def generar(
     # Elimina la hoja por defecto; se crearán las nuestras.
     wb.remove(wb.active)
 
-    # Hoja Datos primero (define AulasValidas y firmas que otras hojas usan).
+    # Hoja auxiliar primero (define AulasValidas y firmas que otras hojas usan).
     firmas = construir_hoja_datos(wb, facultad)
+
+    # Los datos del problema, delante de todo lo que se deriva de ellos.
+    construir_hoja_aulas(wb, facultad)
+    construir_hoja_asignaturas(wb, facultad)
+    construir_hoja_grupos(wb, facultad)
+    construir_hoja_estructura(wb, facultad)
+
+    # La ocupacion, antes de las hojas de grupo: es la vista de conjunto.
+    construir_hoja_ocupacion(wb, facultad, firmas)
 
     # Una hoja por grupo.
     hojas_grupo = []
@@ -63,8 +85,8 @@ def generar(
         construir_hoja_grupo(ws, grupo, facultad, horario=horarios.get(grupo.id))
         hojas_grupo.append((ws.title, grupo))
 
-    # Hoja Aulas (usa las firmas; se inserta en índice 0).
-    construir_hoja_ocupacion(wb, facultad, firmas)
+    # La hoja auxiliar, al final del todo: es fontanería y va oculta.
+    wb.move_sheet(HOJA_AUXILIAR, offset=len(wb.sheetnames) - 1)
 
     # La portada va la última porque se inserta en el índice 0: así ya sabe qué
     # hojas existen y queda delante de todas.

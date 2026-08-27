@@ -44,7 +44,7 @@ def construir_hoja_ocupacion(wb, facultad: Facultad, firmas: dict[tuple[str, int
     esa aula/turno/día, y recibe formato condicional por año (según la firma de Datos)
     más una regla de conflicto para el caso MIX.
     """
-    ws = wb.create_sheet(NOMBRE_HOJA, index=0)
+    ws = wb.create_sheet(NOMBRE_HOJA)
     col_fin = get_column_letter(1 + len(facultad.aulas))
     fila = 1
     for dia_idx, dia in enumerate(facultad.dias):

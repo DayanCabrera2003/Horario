@@ -35,6 +35,8 @@ def test_genera_workbook_con_hojas(tmp_path):
     generar(config_path=cfg, horarios_path=None, salida=salida)
     wb = load_workbook(salida)
     assert "Ocupación de aulas" in wb.sheetnames
+    for hoja in ("Aulas", "Asignaturas", "Grupos", "Estructura"):
+        assert hoja in wb.sheetnames
     assert "C111" in wb.sheetnames and "C112" in wb.sheetnames
     assert "Auxiliar" in wb.sheetnames
     assert wb["Auxiliar"].sheet_state == "hidden"
@@ -63,6 +65,17 @@ def test_horarios_yaml_rellena_celdas(tmp_path):
 
 
 # --- Test extra 2: humo de fórmulas en modo esqueleto ---
+
+def test_las_hojas_de_datos_van_delante_y_la_auxiliar_al_final(tmp_path):
+    # Se leen primero los datos del problema; la hoja auxiliar es fontaneria y
+    # se va al fondo, donde no estorba.
+    wb = _generar(tmp_path)
+    nombres = wb.sheetnames
+    assert nombres[0] == "Portada"
+    assert nombres[1:5] == ["Aulas", "Asignaturas", "Grupos", "Estructura"]
+    assert nombres.index("Ocupación de aulas") < nombres.index("C111")
+    assert nombres[-1] == "Auxiliar"
+
 
 def test_formulas_presentes_en_modo_esqueleto(tmp_path):
     """En modo esqueleto las hojas de grupo contienen COUNTIF y Aulas tiene SUBSTITUTE."""
