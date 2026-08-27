@@ -56,7 +56,9 @@ def _cargar_asignatura(a) -> Asignatura:
     for clave, valor in (("horas_conf", horas_conf), ("horas_cp", horas_cp),
                          ("grupos_cp", grupos_cp)):
         if not es_entero(valor) or valor < 0:
-            raise ErrorConfig(f"{ctx}: '{clave}' no puede ser negativo")
+            # El mensaje cubre las tres formas de fallar (negativo, texto y
+            # booleano), no solo el signo: en YAML 'no' se lee como False.
+            raise ErrorConfig(f"{ctx}: '{clave}' debe ser un entero no negativo")
     if grupos_cp and not horas_cp:
         raise ErrorConfig(f"{ctx}: hay grupos de CP pero 'horas_cp' es 0")
     if not horas_conf and not grupos_cp:

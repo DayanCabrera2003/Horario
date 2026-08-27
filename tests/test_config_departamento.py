@@ -146,3 +146,20 @@ def test_horas_de_asignatura_booleanas_falla(tmp_path):
     mal = BASE.replace("horas_conf: 32", "horas_conf: true", 1)
     with pytest.raises(ErrorConfig, match="horas_conf"):
         cargar_departamento(_yaml(tmp_path, mal))
+
+
+@pytest.mark.parametrize("valor,motivo", [
+    ("-1", "un entero negativo"),
+    ("no", "un booleano (en YAML 'no' es False)"),
+    ('"mucho"', "texto"),
+    ("2.5", "un decimal"),
+])
+def test_horas_invalidas_dicen_que_hace_falta_un_entero(tmp_path, valor, motivo):
+    # Las cuatro formas de equivocarse dan el mismo error, asi que el mensaje
+    # tiene que servir para las cuatro: decir "no puede ser negativo" ante un
+    # texto o un booleano manda a buscar el signo menos que no existe.
+    mal = BASE.replace("horas_conf: 32", f"horas_conf: {valor}", 1)
+    with pytest.raises(ErrorConfig,
+                       match=r"'horas_conf' debe ser un entero no negativo") as e:
+        cargar_departamento(_yaml(tmp_path, mal))
+    assert "EST-CC" in str(e.value), motivo
