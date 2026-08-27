@@ -29,8 +29,9 @@ def test_genera_libro_completo(tmp_path):
     assert ruta == salida and salida.exists()
     wb = load_workbook(salida)
     # Asignacion primera y activa; Datos oculta al final.
-    assert wb.sheetnames == ["Portada", "Asignación", "Carga por profesor",
-                             "Cobertura por asignatura", "Auxiliar"]
+    assert wb.sheetnames == ["Portada", "Profesores", "Asignaturas", "Asignación",
+                             "Carga por profesor", "Cobertura por asignatura",
+                             "Auxiliar"]
     assert wb["Auxiliar"].sheet_state == "hidden"
 
 

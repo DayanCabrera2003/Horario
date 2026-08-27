@@ -10,6 +10,8 @@ from departamento.hoja_datos import (
     NOMBRE_HOJA as HOJA_AUXILIAR, construir_hoja_datos)
 from departamento.hoja_asignacion import (
     NOMBRE_HOJA as HOJA_ASIGNACION, construir_hoja_asignacion)
+from departamento.hoja_profesores import construir_hoja_profesores
+from departamento.hoja_asignaturas import construir_hoja_asignaturas
 from departamento.hoja_carga import (
     NOMBRE_HOJA as HOJA_CARGA, construir_hoja_carga)
 from departamento.hoja_cobertura import (
@@ -40,8 +42,12 @@ def generar(config_path: Path, salida: Path,
     wb = Workbook()
     wb.remove(wb.active)
 
-    # Datos primero: define los rangos nombrados que usan las demas hojas.
+    # La auxiliar primero: define los rangos nombrados que usan las demas hojas.
     construir_hoja_datos(wb, depto)
+    # Los datos del problema (quienes son y que se imparte), antes que la hoja
+    # donde se decide y que los reportes que se derivan de esa decision.
+    construir_hoja_profesores(wb, depto)
+    construir_hoja_asignaturas(wb, depto)
     construir_hoja_asignacion(wb, depto)
     construir_hoja_carga(wb, depto)
     construir_hoja_cobertura(wb, depto)
