@@ -38,6 +38,29 @@ def test_genera_hojas_esperadas(tmp_path):
     assert "Tribunales" in wb.sheetnames
 
 
+def test_el_libro_lleva_las_hojas_de_datos_del_problema(tmp_path):
+    # Pedido 5 del tutor: una hoja con los datos del problema. Antes solo estaba
+    # la de tribunales, que es la que el mismo dijo que ya teniamos.
+    cfg = _escribir(tmp_path)
+    salida = tmp_path / "tesis.xlsx"
+    generar(config_path=cfg, asignaciones_path=None, salida=salida)
+    wb = load_workbook(salida)
+    for hoja in ("Profesores", "Estudiantes", "Locales", "Días"):
+        assert hoja in wb.sheetnames
+
+
+def test_las_hojas_de_datos_van_antes_de_las_de_trabajo(tmp_path):
+    # Se leen primero: dicen de que esta hecho el problema antes de mostrar la
+    # planificacion. La portada sigue siendo la primera de todas.
+    cfg = _escribir(tmp_path)
+    salida = tmp_path / "tesis.xlsx"
+    generar(config_path=cfg, asignaciones_path=None, salida=salida)
+    nombres = load_workbook(salida).sheetnames
+    assert nombres[0] == "Portada"
+    assert nombres.index("Profesores") < nombres.index("Tribunales")
+    assert nombres.index("Días") < nombres.index("27 jul (lun)")
+
+
 def test_genera_con_asignaciones(tmp_path):
     cfg = _escribir(tmp_path)
     asig = tmp_path / "asig.yaml"

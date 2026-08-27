@@ -6,6 +6,10 @@ from openpyxl import Workbook
 from comun.portada import NOMBRE_HOJA as HOJA_PORTADA, construir_portada
 from tribunales.config import cargar_facultad, cargar_asignaciones
 from tribunales.hoja_datos import construir_hoja_datos
+from tribunales.hoja_profesores import construir_hoja_profesores
+from tribunales.hoja_estudiantes import construir_hoja_estudiantes
+from tribunales.hoja_locales import construir_hoja_locales
+from tribunales.hoja_dias import construir_hoja_dias
 from tribunales.hoja_tribunales import construir_hoja_tribunales
 from tribunales.hoja_dia import construir_hoja_dia
 from tribunales.hoja_localizar import construir_hoja_localizar
@@ -50,7 +54,13 @@ def generar(config_path: Path, asignaciones_path, salida: Path,
 
     # Datos primero: define rangos nombrados que usan las hojas de dia.
     construir_hoja_datos(wb, facultad)
-    # Tribunales: vista legible (nombres) y primera hoja visible del libro.
+    # Los datos del problema, antes que nada de lo que se deriva de ellos: de
+    # que esta hecho el problema se lee primero.
+    construir_hoja_profesores(wb, facultad)
+    construir_hoja_estudiantes(wb, facultad)
+    construir_hoja_locales(wb, facultad)
+    construir_hoja_dias(wb, facultad)
+    # Tribunales: vista legible (nombres) de quien forma cada tribunal.
     construir_hoja_tribunales(wb, facultad)
     nombres_dia = []
     for dia in facultad.dias:
