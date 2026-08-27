@@ -264,8 +264,8 @@ Tampoco se puede disparar desde el YAML: el generador exige `asig` **y** `aula` 
 uno de los dos da error. Aparece al **editar a mano**: si escribes el aula de un turno y te dejas la
 asignatura, la casilla de **asignatura** (la de arriba del par) se pinta de rojo.
 
-Es el caso tipico de un horario a medio llenar: ya sabes donde va la clase pero aun no cual es. El
-resaltado esta para que ese turno no se quede olvidado.
+Es el caso típico de un horario a medio llenar: ya sabes dónde va la clase pero aún no cuál es. El
+resaltado está para que ese turno no se quede olvidado.
 
 ### Conferencia compartida → varios grupos concatenados (hoja `Aulas`)
 
