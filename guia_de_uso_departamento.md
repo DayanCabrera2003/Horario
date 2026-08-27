@@ -193,6 +193,16 @@ Todos se informan al generar, con `Error de configuracion: ...`:
   ninguna fila; sobra o le faltan horas.
 - `'tope_horas' debe ser un entero positivo` — el tope no puede ser 0 ni
   negativo (si no quieres tope, omítelo).
+- `asignatura X: 'horas_cp' debe ser un entero no negativo` — el valor no es un
+  entero, o es negativo. Vale igual para `horas_conf` y `grupos_cp`. Ojo con el
+  YAML: `no` se lee como el booleano `false`, así que `horas_cp: no` cae aquí.
+- `departamento: 'filas_por_profesor' debe ser un entero positivo` — cada bloque
+  de la hoja Profesores necesita al menos una línea de detalle.
+- `profesor: falta 'nombre'` — a una entrada del YAML le falta un campo
+  obligatorio o lo tiene vacío. En las asignaturas el mensaje lleva el id:
+  `asignatura X: falta 'carrera'`.
+- `'profesores' no puede estar vacio` — la lista no existe o quedó vacía; lo
+  mismo para `'asignaturas'`.
 
 ---
 
