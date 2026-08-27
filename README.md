@@ -35,6 +35,53 @@ pip install -r requirements-dev.txt
 
 ---
 
+## Celdas protegidas
+
+Los tres generadores entregan el libro con las hojas **protegidas**. No es un
+candado de seguridad: no lleva contraseña y su único objetivo es evitar que se
+borre una fórmula sin querer. Lo que se escribe a mano queda desbloqueado; lo
+que se calcula, bloqueado.
+
+Qué se puede editar en cada libro:
+
+| Libro | Hoja | Celdas editables |
+|---|---|---|
+| Horarios | Una por grupo (`C111`, `M211`, …) | La rejilla del horario: asignatura y aula de cada turno |
+| Horarios | `Aulas`, `Portada`, `Datos` | Ninguna; se calculan solas |
+| Tribunales | Una por día (`27 jul (lun)`, …) | La columna del estudiante; el resto del tribunal se autocompleta |
+| Tribunales | `Localizar` | Solo la casilla de búsqueda |
+| Tribunales | `Tribunales`, `Portada`, `Datos` | Ninguna; se calculan solas |
+| Departamento | `Asignación` | Solo la columna **Profesor** |
+| Departamento | `Profesores` | Solo el **tope de horas** de cada profesor |
+| Departamento | `Asignaturas`, `Portada`, `Datos` | Ninguna; se calculan solas |
+
+En los libros de tribunales y de departamento el color de la pestaña lo dice de
+un vistazo: **azul** = aquí se escribe, **gris azulado** = esto se calcula solo.
+En el de horarios las hojas de grupo van coloreadas por año, y solo `Aulas`
+lleva el gris azulado de "se calcula".
+
+### Cómo quitar la protección
+
+Si hace falta tocar una celda calculada:
+
+- **Excel**: pestaña *Revisar* → *Desproteger hoja*.
+- **LibreOffice Calc**: menú *Herramientas* → *Proteger hoja* (se desmarca).
+
+No pide contraseña. Al desproteger, la fórmula queda editable: si se sobrescribe
+se pierde, y la forma de recuperarla es volver a generar el libro.
+
+### Ordenar y filtrar
+
+Las hojas de consulta `Aulas` y `Tribunales` se pueden **ordenar y filtrar** aun
+estando protegidas, y `Tribunales` lleva autofiltro en los encabezados.
+
+`Asignación` lleva autofiltro pero **no** deja ordenar, y es a propósito: cada
+una de sus filas tiene una gemela, por posición, en la hoja `Asignaturas`.
+Filtrar solo esconde filas y es inocuo; ordenar las movería de sitio y
+`Asignaturas` pasaría a leer la fila equivocada sin avisar de nada.
+
+---
+
 ## Generador de horarios de clases
 
 Planifica los horarios de una facultad. El `.xlsx` generado contiene:

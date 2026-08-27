@@ -298,6 +298,26 @@ pestaña → *Mostrar hoja oculta*.
 > las columnas de profesor pueden verse vacías hasta que el programa recalcula al
 > abrir (normalmente automático).
 
+### Qué se puede editar y qué está bloqueado
+
+Las hojas van **protegidas**, sin contraseña. No es seguridad: es para que no se
+borre una fórmula sin querer.
+
+- **Hojas de día** (`27 jul (lun)`, …): se edita **solo la columna del
+  estudiante**. El resto del tribunal (tutor, oponente, presidente, secretario)
+  se autocompleta desde `Datos` y está bloqueado.
+- **Hoja `Localizar`**: solo la **casilla de búsqueda**. Los resultados se
+  calculan.
+- **Hoja `Tribunales`**: nada editable. Sí se puede **ordenar y filtrar** aun
+  estando protegida, y lleva **autofiltro** en los encabezados: despliega el
+  botón de una columna para quedarte, por ejemplo, con las tesis de un tutor.
+- **`Portada`** y **`Datos`**: nada editable.
+
+Si necesitas tocar una celda calculada, quita la protección: en Excel, pestaña
+*Revisar* → *Desproteger hoja*; en LibreOffice Calc, *Herramientas* → *Proteger
+hoja* (se desmarca). No pide contraseña. Ojo: si sobrescribes la fórmula, la
+pierdes, y la única forma de recuperarla es volver a generar el libro.
+
 ---
 
 ## 8. Errores comunes y qué significan

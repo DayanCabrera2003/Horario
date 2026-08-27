@@ -122,14 +122,40 @@ aparece un aviso no bloqueante, el valor se conserva y la fila se pinta de
 
 ## 6. Cómo leer cada hoja
 
-- **Asignación** — la única que se edita. Todo lo demás se deriva de aquí.
+- **Asignación** — donde se reparte la carga. Todo lo demás se deriva de aquí.
 - **Profesores** — un bloque por profesor: id, nombre, grado y tope, el detalle
   de lo que imparte (asignatura, tipo, grupo, horas) y su **TOTAL** de horas.
-  Se rellena solo al elegir profesores en Asignación.
+  Se rellena solo al elegir profesores en Asignación; lo único que se escribe a
+  mano es el **tope de horas**.
 - **Asignaturas** — un bloque por asignatura con sus filas de carga y quién
   cubre cada una. El título del bloque cambia de color según esté completa.
 - **Datos** — oculta; contiene las listas y tablas auxiliares de las fórmulas.
   No hay que tocarla.
+
+### Qué se puede editar y qué está bloqueado
+
+Las hojas van **protegidas**, sin contraseña. No es seguridad: es para que no se
+borre una fórmula sin querer.
+
+| Hoja | Celdas editables |
+|---|---|
+| `Asignación` | Solo la columna **Profesor** |
+| `Profesores` | Solo el **tope de horas** de cada bloque |
+| `Asignaturas`, `Portada`, `Datos` | Ninguna; se calculan solas |
+
+El color de la pestaña lo resume: **azul** = aquí se escribe, **gris azulado** =
+esto se calcula solo.
+
+`Asignación` lleva **autofiltro** en los encabezados, útil para aislar una
+carrera o las filas que aún no tienen profesor. Deja filtrar pero **no ordenar**,
+y es a propósito: cada fila tiene una gemela, por posición, en `Asignaturas`.
+Filtrar solo esconde filas; ordenar las movería de sitio y `Asignaturas` pasaría
+a leer la fila equivocada sin avisar.
+
+Si necesitas tocar una celda calculada, quita la protección: en Excel, pestaña
+*Revisar* → *Desproteger hoja*; en LibreOffice Calc, *Herramientas* → *Proteger
+hoja* (se desmarca). No pide contraseña. Ojo: si sobrescribes la fórmula, la
+pierdes, y la única forma de recuperarla es volver a generar el libro.
 
 ---
 

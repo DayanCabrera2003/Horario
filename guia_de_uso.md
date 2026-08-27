@@ -333,6 +333,23 @@ verla: clic derecho en una pestaña → *Mostrar hoja oculta*.
 > es quien **recalcula las fórmulas**. Recién generado, algunas celdas pueden verse vacías hasta que el
 > programa recalcula al abrir (normalmente automático).
 
+### Qué se puede editar y qué está bloqueado
+
+Las hojas van **protegidas**, sin contraseña. No es seguridad: es para que no se
+borre una fórmula sin querer.
+
+- **Hojas de grupo** (`C111`, `M211`, …): se edita la **rejilla del horario**,
+  es decir la asignatura y el aula de cada turno. La tabla de asignaturas de la
+  derecha se calcula sola y está bloqueada.
+- **Hoja `Aulas`**: nada editable, se calcula entera. Sí se puede **ordenar y
+  filtrar** aun estando protegida.
+- **`Portada`** y **`Datos`**: nada editable.
+
+Si necesitas tocar una celda calculada, quita la protección: en Excel, pestaña
+*Revisar* → *Desproteger hoja*; en LibreOffice Calc, *Herramientas* → *Proteger
+hoja* (se desmarca). No pide contraseña. Ojo: si sobrescribes la fórmula, la
+pierdes, y la única forma de recuperarla es volver a generar el libro.
+
 ---
 
 ## 8. Errores comunes y qué significan
