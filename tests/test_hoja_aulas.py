@@ -183,3 +183,38 @@ def test_la_hoja_no_muestra_cuadricula():
     firmas = construir_hoja_datos(wb, fac)
     construir_hoja_aulas(wb, fac, firmas)
     assert wb[NOMBRE_HOJA].sheet_view.showGridLines is False
+
+
+def test_un_anio_fuera_de_la_paleta_no_rompe_la_hoja():
+    # ANIO_COLOR solo cubre C1..C4, M1..M4 y D1..D4. Un quinto año, o una carrera
+    # con otra letra, se queda sin color: la hoja tiene que construirse igual y
+    # simplemente no pintar ese año, en vez de reventar o pintarlo de cualquier cosa.
+    fac = Facultad(
+        aulas=("Aula 1",), dias=("Lunes",), turnos=1,
+        grupos=(Grupo("C", 5, 1, 1),),
+        anios={"C5": Anio("C", 5, ())},
+    )
+    assert "C5" not in estilos.ANIO_COLOR
+    wb = Workbook()
+    firmas = construir_hoja_datos(wb, fac)
+    construir_hoja_aulas(wb, fac, firmas)
+    ws = wb[NOMBRE_HOJA]
+
+    formulas = [r.formula[0] for _, reglas in ws.conditional_formatting._cf_rules.items()
+                for r in reglas if r.formula]
+    # Ninguna regla menciona el año sin color, pero la de conflicto sigue puesta.
+    assert not any('"C5"' in f for f in formulas)
+    assert any('"MIX"' in f for f in formulas)
+
+
+def test_cada_anio_de_la_paleta_recibe_su_regla():
+    # El contrapunto del test anterior: un año que si esta en la paleta genera
+    # su regla, para que "no aparece C5" no pase por casualidad.
+    fac = _fac()
+    wb = Workbook()
+    firmas = construir_hoja_datos(wb, fac)
+    construir_hoja_aulas(wb, fac, firmas)
+    ws = wb[NOMBRE_HOJA]
+    formulas = [r.formula[0] for _, reglas in ws.conditional_formatting._cf_rules.items()
+                for r in reglas if r.formula]
+    assert any('"C1"' in f for f in formulas)
