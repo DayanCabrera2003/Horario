@@ -296,6 +296,29 @@ asignatura, la casilla de **asignatura** (la de arriba del par) se pinta de rojo
 Es el caso típico de un horario a medio llenar: ya sabes dónde va la clase pero aún no cuál es. El
 resaltado está para que ese turno no se quede olvidado.
 
+### Profesor en dos grupos a la vez → **rojo intenso** (fila de profesor)
+
+Haz que el mismo profesor imparta, en dos grupos distintos, asignaturas que caen en el **mismo día y
+turno**.
+
+```yaml
+# En facultad.yaml: PIAD da AMI-C en C111 y también en C112.
+docencia:
+  C111: { AMI-C: PIAD }
+  C112: { AMI-C: PIAD }
+```
+
+```yaml
+# En horarios.yaml: las dos a la misma hora.
+C111: { Lunes: { 1: {asig: AMI-C, aula: Aula 1} } }
+C112: { Lunes: { 1: {asig: AMI-C, aula: Aula 2} } }
+```
+
+En las hojas `C111` y `C112`, la casilla de profesor del Lunes turno 1 se pinta de rojo intenso: no
+puede estar en dos aulas a la vez. (Si los dos grupos comparten **la misma aula** es una conferencia
+conjunta y no hay choque de aula, pero el profesor sigue siendo uno solo, así que el resaltado
+aparece igual.)
+
 ### Conferencia compartida → varios grupos concatenados (hoja `Ocupación de aulas`)
 
 Pon **la misma aula, día y turno** a varios grupos del **mismo año**.
@@ -368,9 +391,15 @@ Se pueden ordenar y filtrar, pero **no se editan**: por ahora la fuente sigue si
 
 ### Hojas `Profesores` y `Docencia` (solo si el YAML declara profesores)
 
-- **`Profesores`** — el claustro: `Id | Nombre | Grado | Tope horas`.
+- **`Profesores`** — el claustro: `Id | Nombre | Grado | Tope de turnos | Turnos semanales`. La
+  última columna la calcula el libro sumando las frecuencias de todo lo que imparte según `Docencia`,
+  y se pinta de rojo si pasa de su tope. **El tope va en turnos por semana**, no en horas de reloj: en
+  este libro la unidad es el turno. (En el del departamento, donde sí hay horas, el tope va en horas.)
 - **`Docencia`** — quién imparte qué: `Grupo | Asignatura | Profesor | Nombre`. Una fila por par
   (grupo, asignatura), porque el mismo `AMI-CP` lo puede dar un profesor distinto en cada grupo.
+
+`Docencia` **se edita**: cambiar ahí quién imparte una asignatura se refleja en la rejilla de ese
+grupo y en los turnos semanales del profesor, sin regenerar el libro.
 
 Si `facultad.yaml` no trae la sección `profesores`, estas dos hojas no se crean y el libro sale como
 antes.
@@ -391,15 +420,18 @@ Es tu vista de "ocupación del edificio".
 
 ### Una hoja por grupo (`C111`, `C112`, …)
 
-- **Izquierda:** la rejilla del horario. Columnas = días, filas = turnos. Cada turno usa **dos filas**:
-  arriba la asignatura, abajo el aula.
+- **Izquierda:** la rejilla del horario. Columnas = días, filas = turnos. Cada turno usa **tres
+  filas**: la asignatura, el aula y el **profesor**. La del profesor no se escribe: sale de la hoja
+  `Docencia` según la asignatura que pongas arriba, y está bloqueada. Si el YAML no declara
+  profesores, esa fila va oculta y la rejilla se ve como siempre.
 - **Derecha:** la tabla de asignaturas (`id | Nombre | Frec | Asignadas | Faltan`). `Asignadas` cuenta
   sola cuántas veces pusiste esa asignatura; `Faltan` = lo que te falta (0 = completo, negativo = te
   pasaste). Verde = exacto, rojo = pasado.
 - **Menús desplegables:** al hacer clic en una celda de asignatura sale la lista de asignaturas del
   grupo; en una celda de aula, la lista de aulas válidas. (Sirven al editar a mano.)
 - **Leyenda:** debajo de la tabla de asignaturas, con el significado de cada color. Incluye el rojo de
-  **aula puesta sin asignatura**, que marca los turnos a medio llenar.
+  **aula puesta sin asignatura**, que marca los turnos a medio llenar, y el **rojo intenso** del
+  profesor citado en dos grupos a la vez.
 - **Encabezados fijos:** los días y los turnos no se van al hacer scroll.
 - **Lista para imprimir:** la hoja sale **apaisada** y ajustada a **una página de ancho**, con los
   encabezados repetidos arriba de cada página. No hay que tocar la configuración de impresión.
