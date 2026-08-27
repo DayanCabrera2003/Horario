@@ -21,10 +21,38 @@ carreras:
 """
 
 
-def _config(tmp_path):
+CON_PROFESORES = BASE + """
+profesores:
+  - {id: PIAD, nombre: "Pedro I. Alonso Diaz", grado: "Dr."}
+docencia:
+  C111: {L-C: PIAD}
+"""
+
+
+def _config(tmp_path, texto=BASE):
     cfg = tmp_path / "facultad.yaml"
-    cfg.write_text(BASE, encoding="utf-8")
+    cfg.write_text(texto, encoding="utf-8")
     return cfg
+
+
+def test_sin_profesores_el_libro_no_gana_pestanas_vacias(tmp_path):
+    # La seccion es opcional y todos los YAML anteriores a la fase 2 son asi.
+    wb = _generar(tmp_path)
+    assert "Profesores" not in wb.sheetnames
+    assert "Docencia" not in wb.sheetnames
+
+
+def test_con_profesores_el_libro_lleva_claustro_y_docencia(tmp_path):
+    salida = tmp_path / "out.xlsx"
+    generar(config_path=_config(tmp_path, CON_PROFESORES),
+            horarios_path=None, salida=salida)
+    wb = load_workbook(salida)
+    assert wb["Profesores"]["A2"].value == "PIAD"
+    assert wb["Docencia"]["C2"].value == "PIAD"
+    enlaces = [c.hyperlink.location for fila in wb["Portada"].iter_rows()
+               for c in fila if c.hyperlink is not None]
+    assert any("Profesores" in e for e in enlaces)
+    assert any("Docencia" in e for e in enlaces)
 
 
 # --- Test dado en la especificación ---

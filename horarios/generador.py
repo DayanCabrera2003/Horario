@@ -18,20 +18,31 @@ from horarios.hoja_listado_grupos import (
     NOMBRE_HOJA as HOJA_GRUPOS, construir_hoja_grupos)
 from horarios.hoja_estructura import (
     NOMBRE_HOJA as HOJA_ESTRUCTURA, construir_hoja_estructura)
+from horarios.hoja_profesores import (
+    NOMBRE_HOJA as HOJA_PROFESORES, construir_hoja_profesores)
+from horarios.hoja_docencia import (
+    NOMBRE_HOJA as HOJA_DOCENCIA, construir_hoja_docencia)
 
 
-def _indice(hojas_grupo) -> tuple:
+def _indice(hojas_grupo, con_profesores: bool) -> tuple:
     """Que hay en cada hoja y si se escribe a mano, para el indice de la portada.
 
     `hojas_grupo` son pares (nombre_de_hoja, grupo) tomados de las hojas ya
     creadas, no una copia de los ids. `Datos` no aparece: esta oculta y solo es
     fontaneria de formulas.
     """
+    # Las dos hojas de profesorado solo estan si el YAML las declara, asi que
+    # el indice tiene que preguntarlo en vez de darlas por hechas.
+    profesorado = (
+        (HOJA_PROFESORES, "Los profesores de la facultad", False),
+        (HOJA_DOCENCIA, "Quién imparte cada asignatura en cada grupo", False),
+    ) if con_profesores else ()
     return (
         (HOJA_LISTA_AULAS, "Las aulas de la facultad", False),
         (HOJA_ASIGNATURAS, "Qué se imparte en cada año y con qué frecuencia", False),
         (HOJA_GRUPOS, "Los grupos y de dónde sale el id de cada uno", False),
         (HOJA_ESTRUCTURA, "Días, turnos y tamaño del libro", False),
+        *profesorado,
         (HOJA_AULAS, "Qué aula está ocupada en cada día y turno", False),
         *((nombre, f"Carrera {grupo.carrera} · año {grupo.anio}", True)
           for nombre, grupo in hojas_grupo),
@@ -74,6 +85,9 @@ def generar(
     construir_hoja_asignaturas(wb, facultad)
     construir_hoja_grupos(wb, facultad)
     construir_hoja_estructura(wb, facultad)
+    # Solo si el YAML declara profesores: las dos secciones son opcionales.
+    construir_hoja_profesores(wb, facultad)
+    construir_hoja_docencia(wb, facultad)
 
     # La ocupacion, antes de las hojas de grupo: es la vista de conjunto.
     construir_hoja_ocupacion(wb, facultad, firmas)
@@ -95,7 +109,7 @@ def generar(
         titulo="Horario de la facultad",
         subtitulo=_subtitulo(facultad),
         origen=str(config_path),
-        hojas=_indice(hojas_grupo),
+        hojas=_indice(hojas_grupo, bool(facultad.profesores)),
         generado=generado,
     )
     # El libro abre por la portada: si abriera por otra hoja nadie la leería.
