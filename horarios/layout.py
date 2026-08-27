@@ -102,10 +102,6 @@ def celda_asig_tabla_faltan(fila_datos: int) -> str:
     return f"M{_fila_tabla(fila_datos)}"
 
 
-def rango_ids_asignaturas(n_asig: int) -> str:
-    return f"I{FILA_PRIMERA_ASIG}:I{FILA_PRIMERA_ASIG + n_asig - 1}"
-
-
 def rango_tabla_asignaturas(n_asig: int) -> str:
     """Tabla de asignaturas I..M: fila de encabezado (3) mas n_asig filas de datos (para bordear)."""
     return f"I3:M{FILA_PRIMERA_ASIG + n_asig - 1}"
@@ -118,6 +114,7 @@ def rango_datos_tabla_asignaturas(n_asig: int) -> str:
 
 
 def rango_ids_asignaturas_abs(n_asig: int) -> str:
-    """Igual que rango_ids_asignaturas pero absoluto ($I$), para usos que no deben
-    desplazarse (dropdowns, lookups de formato condicional sobre sqref multi-rango)."""
+    """Columna de ids de la tabla de asignaturas, en absoluto ($I$), para usos
+    que no deben desplazarse (dropdowns, lookups de formato condicional sobre
+    sqref multi-rango)."""
     return f"$I${FILA_PRIMERA_ASIG}:$I${FILA_PRIMERA_ASIG + n_asig - 1}"
