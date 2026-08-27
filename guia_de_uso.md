@@ -312,12 +312,40 @@ automáticamente.
 
 ## 7. Cómo leer el Excel generado
 
-El archivo tiene cuatro tipos de hoja:
+El archivo tiene tres clases de hoja: la **portada**, las de **datos del problema** (de dónde sale
+todo) y las de **trabajo** (donde se planifica y se consulta).
 
 ### Hoja `Portada`
 
 La hoja por la que abre el libro. Dice de qué YAML salió, cuándo se generó y cuántos grupos y aulas abarca, y
-lista las demás hojas con un enlace a cada una y la marca de si en ella *se escribe* o *se calcula*.
+lista las demás hojas con un enlace a cada una y la marca de qué es cada una: *datos del problema*,
+*se escribe* o *se calcula*.
+
+### Las hojas de datos: `Aulas`, `Asignaturas`, `Grupos` y `Estructura`
+
+Son la estructura de la facultad, tal como la declara `facultad.yaml`, escrita en el propio libro.
+Hasta ahora había que abrir el YAML para verla.
+
+- **`Aulas`** — la lista de aulas válidas. Es la misma que alimenta los desplegables.
+- **`Asignaturas`** — una fila por asignatura de cada año (`Carrera | Año | Id | Nombre |
+  Frecuencia`). En el YAML las asignaturas cuelgan del año, así que aquí se ven aplanadas.
+- **`Grupos`** — los ids de grupo con sus piezas (`Grupo | Carrera | Año | Sesión | Número`). El id
+  `C112` no se declara en ninguna parte: sale de combinar carreras × años × sesiones × grupos, y esta
+  hoja lo escribe.
+- **`Estructura`** — los días, cuántos turnos tiene cada uno y el tamaño del libro. Los días importan
+  más de lo que parece: el texto tiene que coincidir **exactamente** con el del `horarios.yaml`,
+  tildes incluidas.
+
+Se pueden ordenar y filtrar, pero **no se editan**: por ahora la fuente sigue siendo el YAML.
+
+### Hojas `Profesores` y `Docencia` (solo si el YAML declara profesores)
+
+- **`Profesores`** — el claustro: `Id | Nombre | Grado | Tope horas`.
+- **`Docencia`** — quién imparte qué: `Grupo | Asignatura | Profesor | Nombre`. Una fila por par
+  (grupo, asignatura), porque el mismo `AMI-CP` lo puede dar un profesor distinto en cada grupo.
+
+Si `facultad.yaml` no trae la sección `profesores`, estas dos hojas no se crean y el libro sale como
+antes.
 
 ### Hoja `Ocupación de aulas`
 
