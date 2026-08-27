@@ -16,3 +16,4 @@ COLOR_LOCALIZADO = "FFF176"       # amarillo: momento donde participa la persona
 # de la portada.
 COLOR_PESTANA_ENTRADA = "90CAF9"   # azul: aqui se escribe
 COLOR_PESTANA_CALCULO = "B0BEC5"   # gris azulado: esto se calcula solo
+COLOR_PESTANA_DATOS = "B39DDB"     # morado: los datos del problema
