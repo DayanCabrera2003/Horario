@@ -20,7 +20,7 @@ class ErrorConfig(Exception):
 def _lista(datos, clave):
     valor = datos.get(clave)
     if not valor:
-        raise ErrorConfig(f"'{clave}' no puede estar vacio")
+        raise ErrorConfig(f"'{clave}' no puede estar vacío")
     return valor
 
 
@@ -71,7 +71,7 @@ def _cargar_asignatura(a) -> Asignatura:
 def cargar_departamento(ruta) -> Departamento:
     datos = yaml.safe_load(Path(ruta).read_text(encoding="utf-8"))
     if not isinstance(datos, dict):
-        raise ErrorConfig("El YAML raiz debe ser un diccionario")
+        raise ErrorConfig("El YAML raíz debe ser un diccionario")
 
     cabecera = datos.get("departamento") or {}
     nombre = _campo(cabecera, "nombre", "departamento")

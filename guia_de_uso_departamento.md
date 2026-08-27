@@ -184,7 +184,7 @@ Cada hoja lleva su leyenda. En resumen:
 
 ## 8. Errores comunes y qué significan
 
-Todos se informan al generar, con `Error de configuracion: ...`:
+Todos se informan al generar, con `Error de configuración: ...`:
 
 - `id duplicado 'X'` — dos profesores (o dos asignaturas) con el mismo id.
 - `asignatura X: hay grupos de CP pero 'horas_cp' es 0` — declara las horas por
@@ -201,7 +201,7 @@ Todos se informan al generar, con `Error de configuracion: ...`:
 - `profesor: falta 'nombre'` — a una entrada del YAML le falta un campo
   obligatorio o lo tiene vacío. En las asignaturas el mensaje lleva el id:
   `asignatura X: falta 'carrera'`.
-- `'profesores' no puede estar vacio` — la lista no existe o quedó vacía; lo
+- `'profesores' no puede estar vacío` — la lista no existe o quedó vacía; lo
   mismo para `'asignaturas'`.
 
 ---

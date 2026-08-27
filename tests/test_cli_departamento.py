@@ -35,5 +35,5 @@ def test_cli_genera_archivo(tmp_path):
 def test_cli_error_de_config(tmp_path):
     r, salida = _correr(tmp_path, CONFIG.replace("profesores:", "profesores: []\nx:"))
     assert r.returncode == 1
-    assert "Error de configuracion" in r.stderr
+    assert "Error de configuración" in r.stderr
     assert not salida.exists()

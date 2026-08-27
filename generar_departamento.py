@@ -9,7 +9,7 @@ from departamento.generador import generar
 
 def main() -> None:
     p = argparse.ArgumentParser(
-        description="Genera el workbook de gestion del departamento.")
+        description="Genera el workbook de gestión del departamento.")
     p.add_argument("--config", default="config/departamento.yaml", type=Path)
     p.add_argument("--salida", default="departamento.xlsx", type=Path)
     args = p.parse_args()
@@ -17,7 +17,7 @@ def main() -> None:
     try:
         ruta = generar(config_path=args.config, salida=args.salida)
     except ErrorConfig as e:
-        print(f"Error de configuracion: {e}", file=sys.stderr)
+        print(f"Error de configuración: {e}", file=sys.stderr)
         raise SystemExit(1)
 
     print(f"Generado: {ruta}")
