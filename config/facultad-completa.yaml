@@ -148,3 +148,37 @@ carreras:
           - { id: NLP-CP,  nombre: "Procesamiento de Lenguaje (C.P.)", frecuencia: 2 }
           - { id: TesisD,  nombre: "Trabajo de Diploma",           frecuencia: 1 }
           - { id: SemD,    nombre: "Seminario",                    frecuencia: 1 }
+
+# --- Profesorado -------------------------------------------------------------
+# Las dos secciones que siguen son opcionales. Sin ellas el libro sale como
+# antes; con ellas gana las hojas Profesores y Docencia.
+profesores:
+  - { id: PIAD, nombre: "Pedro I. Alonso Díaz", grado: "Dr.",  tope_horas: 160 }
+  - { id: MARA, nombre: "María Ramírez",        grado: "MSc.", tope_horas: 120 }
+  - { id: LGOM, nombre: "Luis Gómez",           grado: "Dr." }
+  - { id: ANSU, nombre: "Ana Suárez",           grado: "MSc." }
+  - { id: RTOR, nombre: "Raquel Torres",        grado: "Dra.", tope_horas: 80 }
+  - { id: JMEN, nombre: "Jorge Méndez",         grado: "Lic." }
+  # Declarado y sin docencia asignada todavia: aparece igual en el listado, que
+  # es justo lo que antes no ocurria.
+  - { id: SVEG, nombre: "Sonia Vega",           grado: "Dra." }
+
+# Quien imparte cada asignatura en cada grupo. Solo se declaran algunos grupos:
+# la seccion no tiene por que estar completa.
+docencia:
+  C111:
+    AMI-C:  PIAD
+    AMI-CP: MARA
+    Pro-C:  LGOM
+    Pro-CP: ANSU
+  C112:
+    AMI-C:  PIAD
+    # El mismo AMI-CP que en C111, otro profesor: por eso la clave es el par.
+    AMI-CP: RTOR
+  C211:
+    AMII-C:  PIAD
+    EDA-C:   LGOM
+    EDA-CP:  JMEN
+  M111:
+    AM1-C:  RTOR
+    GA-C:   SVEG

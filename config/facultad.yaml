@@ -22,3 +22,25 @@ carreras:
           - { id: L-C,    nombre: "Lógica (Conf)",                frecuencia: 1 }
           - { id: L-CP,   nombre: "Lógica (C.P.)",               frecuencia: 1 }
           - { id: EF,     nombre: "Educación Física",             frecuencia: 1 }
+
+# Los profesores de la facultad. La seccion es opcional: sin ella el libro se
+# genera igual, solo que sin las hojas Profesores ni Docencia.
+profesores:
+  - { id: PIAD, nombre: "Pedro I. Alonso Díaz", grado: "Dr.",  tope_horas: 160 }
+  - { id: MARA, nombre: "María Ramírez",        grado: "MSc." }
+  - { id: LGOM, nombre: "Luis Gómez",           grado: "Dr.",  tope_horas: 120 }
+  - { id: ANSU, nombre: "Ana Suárez",           grado: "MSc." }
+
+# Quien imparte cada asignatura en cada grupo. La clave es el par: el mismo
+# AMI-CP lo puede dar un profesor distinto en cada grupo del año.
+docencia:
+  C111:
+    AMI-C:  PIAD
+    AMI-CP: MARA
+    Pro-C:  LGOM
+    Pro-CP: ANSU
+  C112:
+    AMI-C:  PIAD
+    AMI-CP: LGOM
+  C113:
+    AMI-C:  PIAD
