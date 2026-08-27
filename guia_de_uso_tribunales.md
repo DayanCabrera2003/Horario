@@ -339,20 +339,20 @@ pierdes, y la única forma de recuperarla es volver a generar el libro.
 ## 8. Errores comunes y qué significan
 
 Si algo está mal en los YAML, el programa **no genera** el Excel y te dice qué
-pasó (`Error de configuracion: ...`). Los más frecuentes:
+pasó (`Error de configuración: ...`). Los más frecuentes:
 
 | Mensaje | Causa | Solución |
 |---------|-------|----------|
-| `'profesores' no puede estar vacio` | Falta la lista de profesores. | Añade `profesores: [...]`. |
-| `'estudiantes' no puede estar vacio` | Falta la lista de estudiantes. | Añade `estudiantes: [...]`. |
-| `'locales' no puede estar vacio` | Falta la lista de locales. | Añade `locales: [...]`. |
-| `dia <fecha>: faltan 'momentos'` | Un día sin momentos. | Añade su lista `momentos:`. |
+| `'profesores' no puede estar vacío` | Falta la lista de profesores. | Añade `profesores: [...]`. |
+| `'estudiantes' no puede estar vacío` | Falta la lista de estudiantes. | Añade `estudiantes: [...]`. |
+| `'locales' no puede estar vacío` | Falta la lista de locales. | Añade `locales: [...]`. |
+| `día <fecha>: faltan 'momentos'` | Un día sin momentos. | Añade su lista `momentos:`. |
 | `tesis: estudiante inexistente '<id>'` | Una tesis referencia un estudiante que no existe. | Créalo en `estudiantes` o corrige el id. |
 | `tesis <est>: <rol> inexistente '<id>'` | Un rol (tutor/oponente/…) referencia un profesor que no existe. | Créalo en `profesores` o corrige el id. |
-| `asignacion: estudiante inexistente '<id>'` | La asignación usa un estudiante que no existe. | Corrige el id o añade la tesis. |
-| `asignacion: local inexistente '<id>'` | La asignación usa un local que no existe. | Corrige el id o añade el local. |
-| `asignacion: fecha inexistente '<fecha>'` | La fecha no está en `dias`. | Escríbela igual que en `dias`. |
-| `asignacion <fecha>: momento inexistente '<id>'` | El momento no está entre los de esa fecha. | Usa un `inicio-fin` que exista ese día. |
+| `asignación: estudiante inexistente '<id>'` | La asignación usa un estudiante que no existe. | Corrige el id o añade la tesis. |
+| `asignación: local inexistente '<id>'` | La asignación usa un local que no existe. | Corrige el id o añade el local. |
+| `asignación: fecha inexistente '<fecha>'` | La fecha no está en `dias`. | Escríbela igual que en `dias`. |
+| `asignación <fecha>: momento inexistente '<id>'` | El momento no está entre los de esa fecha. | Usa un `inicio-fin` que exista ese día. |
 
 ---
 

@@ -12,7 +12,7 @@ class ErrorConfig(Exception):
 def _lista(datos, clave):
     valor = datos.get(clave)
     if not valor:
-        raise ErrorConfig(f"'{clave}' no puede estar vacio")
+        raise ErrorConfig(f"'{clave}' no puede estar vacío")
     return valor
 
 
@@ -28,7 +28,7 @@ def _como_lista(datos, clave_plural, clave_singular):
     else:
         raise ErrorConfig(f"tesis: falta '{clave_plural}' (o '{clave_singular}')")
     if not valor:
-        raise ErrorConfig(f"tesis: '{clave_plural}' no puede estar vacio")
+        raise ErrorConfig(f"tesis: '{clave_plural}' no puede estar vacío")
     return valor
 
 
@@ -61,7 +61,7 @@ def _cargar_tesis(t, ids_est, ids_prof) -> Tesis:
 def cargar_facultad(ruta) -> Facultad:
     datos = yaml.safe_load(Path(ruta).read_text(encoding="utf-8"))
     if not isinstance(datos, dict):
-        raise ErrorConfig("El YAML raiz debe ser un diccionario")
+        raise ErrorConfig("El YAML raíz debe ser un diccionario")
 
     profesores = tuple(
         Profesor(id=p["id"], nombre=p["nombre"], grado=p.get("grado", ""))
@@ -82,7 +82,7 @@ def cargar_facultad(ruta) -> Facultad:
             for m in (d.get("momentos") or [])
         )
         if not momentos:
-            raise ErrorConfig(f"dia {d.get('fecha')}: faltan 'momentos'")
+            raise ErrorConfig(f"día {d.get('fecha')}: faltan 'momentos'")
         dias.append(Dia(fecha=str(d["fecha"]), momentos=momentos))
     dias = tuple(dias)
 
@@ -111,12 +111,12 @@ def cargar_asignaciones(ruta, facultad: Facultad) -> tuple:
         est, local = a["estudiante"], a["local"]
         fecha, momento = str(a["fecha"]), str(a["momento"])
         if est not in ids_est:
-            raise ErrorConfig(f"asignacion: estudiante inexistente '{est}'")
+            raise ErrorConfig(f"asignación: estudiante inexistente '{est}'")
         if local not in ids_local:
-            raise ErrorConfig(f"asignacion: local inexistente '{local}'")
+            raise ErrorConfig(f"asignación: local inexistente '{local}'")
         if fecha not in momentos_por_fecha:
-            raise ErrorConfig(f"asignacion: fecha inexistente '{fecha}'")
+            raise ErrorConfig(f"asignación: fecha inexistente '{fecha}'")
         if momento not in momentos_por_fecha[fecha]:
-            raise ErrorConfig(f"asignacion {fecha}: momento inexistente '{momento}'")
+            raise ErrorConfig(f"asignación {fecha}: momento inexistente '{momento}'")
         asignaciones.append(Asignacion(estudiante=est, local=local, fecha=fecha, momento=momento))
     return tuple(asignaciones)
