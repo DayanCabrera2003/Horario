@@ -336,7 +336,7 @@ pierdes, y la única forma de recuperarla es volver a generar el libro.
 ## 8. Errores comunes y qué significan
 
 Si algo está mal en los YAML, el programa **no genera** el Excel y te dice qué
-pasó (`Error de configuración: ...`). Los más frecuentes:
+pasó (`Error de configuracion: ...`). Los más frecuentes:
 
 | Mensaje | Causa | Solución |
 |---------|-------|----------|
