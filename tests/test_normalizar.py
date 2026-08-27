@@ -26,6 +26,12 @@ def test_quitar_anotaciones():
     assert N.quitar_anotaciones("Gabriel Fundora (dermatógolo)") == "Gabriel Fundora"
 
 
+def test_separar_personas_celda_vacia():
+    # Una casilla vacia del Excel no es una persona sin nombre: es ninguna.
+    assert N.separar_personas("") == []
+    assert N.separar_personas(None) == []
+
+
 def test_separar_personas_por_coma_y_conjuncion():
     assert N.separar_personas("Lic. Alejandra Monzón, MSc. Fernando Rodríguez") == [
         "Lic. Alejandra Monzón", "MSc. Fernando Rodríguez"]
@@ -68,6 +74,21 @@ def test_normalizar_local_variantes():
     assert N.normalizar_local("VIRTUAL (Tutor coordinará la exposición)") == "Virtual"
 
 
+def test_normalizar_local_virtual_con_cola():
+    # "VIRTUAL (...)" cae en la tabla de canonicos porque la anotacion entre
+    # parentesis se quita antes. Estos no: la cola sobrevive y hace falta la
+    # regla de prefijo.
+    assert N.normalizar_local("Virtual Meet") == "Virtual"
+    assert N.normalizar_local("virtual por Zoom") == "Virtual"
+
+
+def test_normalizar_local_desconocido_pero_corto_se_conserva():
+    # No esta en la tabla y no es una frase larga: puede ser un local real que
+    # nadie ha catalogado, asi que se deja tal cual con los espacios limpios.
+    assert N.normalizar_local("Aula 12") == "Aula 12"
+    assert N.normalizar_local("  Laboratorio   3 ") == "Laboratorio 3"
+
+
 def test_normalizar_local_frase_larga_no_es_local():
     assert N.normalizar_local(
         "Carmen coordina para la entrega de portafolio y acta correspondiente") == ""
@@ -80,6 +101,15 @@ def test_parsear_hora_manana_y_tarde():
     assert N.parsear_hora(datetime.time(1, 30)) == "13:30"    # tarde
     assert N.parsear_hora(datetime.time(2, 0)) == "14:00"
     assert N.parsear_hora("1 30 ") == "13:30"
+
+
+def test_parsear_hora_acepta_un_datetime_completo():
+    # Excel devuelve unas celdas como `time` y otras como `datetime`; las dos
+    # tienen que dar lo mismo, incluida la regla de la tarde.
+    assert N.parsear_hora(datetime.datetime(2026, 7, 27, 9, 30)) == "09:30"
+    assert N.parsear_hora(datetime.datetime(2026, 7, 27, 2, 0)) == "14:00"
+    # Un datetime no es un `time`: si lo fuera, esta rama nunca correria.
+    assert isinstance(datetime.datetime(2026, 7, 27, 9, 30), datetime.time) is False
 
 
 def test_parsear_hora_no_reconocible():
