@@ -123,6 +123,9 @@ resuelve el id a su nombre completo, muestra en ese caso `(desconocido)`.
 
 ## 6. Cómo leer cada hoja
 
+- **Portada** — la hoja por la que abre el libro. Dice de qué YAML salió, cuándo
+  se generó y qué hay en cada hoja, con un enlace a cada una y la marca de si en
+  ella *se escribe* o *se calcula*.
 - **Asignación** — donde se reparte la carga. Todo lo demás se deriva de aquí.
 - **Profesores** — un bloque por profesor: id, nombre, grado y tope, el detalle
   de lo que imparte (asignatura, tipo, grupo, horas) y su **TOTAL** de horas.
