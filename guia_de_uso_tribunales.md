@@ -220,7 +220,7 @@ tribunal de esa tesis.
 - {estudiante: JPER, local: POST, fecha: 2026-07-27, momento: "09:00-10:00"}
 ```
 
-En la hoja `2026-07-27`, tabla `Postgrado`, fila `09:00-10:00`: aparece `JPER` y
+En la hoja `27 jul (lun)`, tabla `Postgrado`, fila `09:00-10:00`: aparece `JPER` y
 su tribunal completo.
 
 ### Colisión de profesor → **rojo** (hoja de día)
@@ -235,7 +235,7 @@ momento** del día.
 - {estudiante: LFDZ, local: DECA, fecha: 2026-07-27, momento: "09:00-10:00"}
 ```
 
-En la hoja `2026-07-27`, las celdas donde aparece `PIAD` (en `Postgrado` y en
+En la hoja `27 jul (lun)`, las celdas donde aparece `PIAD` (en `Postgrado` y en
 `Decanato`, a las 09:00) se pintan de rojo. Que un mismo profesor tenga dos
 roles en **una misma** tesis (un solo local) **no** es colisión.
 
@@ -264,7 +264,7 @@ Presidente | Secretario | Vocal`. Los profesores salen con su grado (p. ej.
 Es de solo lectura: se regenera desde el YAML en cada ejecución y sirve para
 consultar de un vistazo quién forma cada tribunal.
 
-### Una hoja por día (`2026-07-27`, `2026-07-28`, …)
+### Una hoja por día (`27 jul (lun)`, `28 jul (mar)`, …)
 
 Una tabla apilada por cada local. Columnas: `Momento | Estudiante | Tutor |
 Oponente | Presidente | Secretario | Vocal`. Filas = los momentos de ese día.
