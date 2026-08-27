@@ -18,12 +18,21 @@ def col_dia(dia_idx: int) -> str:
     return _col(COL_PRIMER_DIA + dia_idx)
 
 
+# Filas por turno: asignatura, aula y profesor. Eran dos hasta la fase 3b; el
+# profesor no se escribe a mano sino que se calcula desde la hoja Docencia.
+FILAS_POR_TURNO = 3
+
+
 def fila_asig(turno: int) -> int:
-    return 2 + 2 * turno            # turno 1 -> 4
+    return 1 + FILAS_POR_TURNO * turno      # turno 1 -> 4
 
 
 def fila_aula(turno: int) -> int:
     return fila_asig(turno) + 1
+
+
+def fila_profesor(turno: int) -> int:
+    return fila_asig(turno) + 2
 
 
 def celda_asig(dia_idx: int, turno: int) -> str:
@@ -34,9 +43,13 @@ def celda_aula(dia_idx: int, turno: int) -> str:
     return f"{col_dia(dia_idx)}{fila_aula(turno)}"
 
 
+def celda_profesor(dia_idx: int, turno: int) -> str:
+    return f"{col_dia(dia_idx)}{fila_profesor(turno)}"
+
+
 def rango_horario(n_dias: int, n_turnos: int) -> str:
     c1 = celda_asig(0, 1)
-    c2 = f"{col_dia(n_dias - 1)}{fila_aula(n_turnos)}"
+    c2 = f"{col_dia(n_dias - 1)}{fila_profesor(n_turnos)}"
     return f"{c1}:{c2}"
 
 
@@ -65,10 +78,17 @@ def rangos_filas_aula(n_dias: int, n_turnos: int) -> str:
                     for t in range(1, n_turnos + 1))
 
 
+def rangos_filas_profesor(n_dias: int, n_turnos: int) -> str:
+    """sqref multi-rango con solo las filas de profesor (formato condicional)."""
+    ini, fin = COL_PRIMER_DIA, COL_PRIMER_DIA + n_dias - 1
+    return " ".join(f"{_col(ini)}{fila_profesor(t)}:{_col(fin)}{fila_profesor(t)}"
+                    for t in range(1, n_turnos + 1))
+
+
 def rango_bloque_horario(n_dias: int, n_turnos: int) -> str:
     """Rectangulo de la rejilla: encabezado de dias mas las filas asig/aula (para bordear)."""
     c1 = f"{col_dia(0)}{FILA_ENCABEZADO_DIAS}"
-    c2 = f"{col_dia(n_dias - 1)}{fila_aula(n_turnos)}"
+    c2 = f"{col_dia(n_dias - 1)}{fila_profesor(n_turnos)}"
     return f"{c1}:{c2}"
 
 
@@ -76,17 +96,19 @@ def filas_separadoras_turno(n_dias: int, n_turnos: int) -> list[str]:
     """Rangos de fila (columna A de turnos hasta el ultimo dia) sobre cuya cara
     inferior va la linea gruesa que separa un turno del siguiente.
 
-    Un turno ocupa dos filas (asignatura + aula). La separacion va bajo la fila
-    de aula de cada turno salvo el ultimo, cuyo borde inferior ya es el perimetro.
+    Un turno ocupa tres filas (asignatura + aula + profesor). La separacion va
+    bajo la ultima de cada turno salvo el ultimo, cuyo borde inferior ya es el
+    perimetro.
     """
     col_fin = col_dia(n_dias - 1)
-    return [f"A{fila_aula(t)}:{col_fin}{fila_aula(t)}"
+    return [f"A{fila_profesor(t)}:{col_fin}{fila_profesor(t)}"
             for t in range(1, n_turnos)]
 
 
 def rango_etiquetas_turno(n_turnos: int) -> str:
-    """Columna A con las etiquetas 'Turno t', de la primera fila de asignatura a la ultima de aula."""
-    return f"A{fila_asig(1)}:A{fila_aula(n_turnos)}"
+    """Columna A con las etiquetas 'Turno t', de la primera fila del primer turno
+    a la ultima del ultimo."""
+    return f"A{fila_asig(1)}:A{fila_profesor(n_turnos)}"
 
 
 # --- Tabla de asignaturas (I=id, J=nombre, K=frec, L=asignadas, M=faltan) ---

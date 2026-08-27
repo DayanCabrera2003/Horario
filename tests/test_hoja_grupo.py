@@ -25,9 +25,9 @@ def test_escribe_id_y_formulas():
     # de test_asignadas_solo_cuenta_las_filas_de_asignatura).
     asignadas = ws[L.celda_asig_tabla_asignadas(0)].value
     assert asignadas.startswith("=COUNTIF(")
-    # fixture: 2 días, 6 turnos -> las filas de asignatura son 4, 6, 8, 10, 12, 14
+    # fixture: 2 días, 6 turnos, 3 filas por turno -> asignatura en 4, 7, ... 19
     assert "COUNTIF(B4:C4," in asignadas
-    assert "COUNTIF(B14:C14," in asignadas
+    assert "COUNTIF(B19:C19," in asignadas
     assert asignadas.count("COUNTIF") == 6
     faltan = ws[L.celda_asig_tabla_faltan(0)].value
     assert faltan.startswith("=")
@@ -113,11 +113,11 @@ def test_linea_gruesa_separa_turnos():
     wb = Workbook()
     ws = wb.active
     construir_hoja_grupo(ws, g, fac, horario=None)
-    # Turno 1: bajo su fila de aula, borde grueso (tanto en dias como en la col A).
-    assert ws[L.celda_aula(0, 1)].border.bottom.style == "thick"
-    assert ws[f"A{L.fila_aula(1)}"].border.bottom.style == "thick"
+    # Turno 1: bajo su ultima fila (la del profesor), borde grueso.
+    assert ws[L.celda_profesor(0, 1)].border.bottom.style == "thick"
+    assert ws[f"A{L.fila_profesor(1)}"].border.bottom.style == "thick"
     # Ultimo turno (6): su borde inferior es el perimetro medio, no el separador.
-    assert ws[L.celda_aula(0, fac.turnos)].border.bottom.style == "medium"
+    assert ws[L.celda_profesor(0, fac.turnos)].border.bottom.style == "medium"
 
 
 def test_frecuencia_exacta_colorea_fila_completa():
