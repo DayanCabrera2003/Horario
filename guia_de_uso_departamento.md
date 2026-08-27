@@ -134,8 +134,8 @@ resuelve el id a su nombre completo, muestra en ese caso `(desconocido)`.
 - **Asignación** — donde se reparte la carga. Todo lo demás se deriva de aquí.
 - **Carga por profesor** — un bloque por profesor: id, nombre, grado y tope, el detalle
   de lo que imparte (asignatura, tipo, grupo, horas) y su **TOTAL** de horas.
-  Se rellena solo al elegir profesores en Asignación; lo único que se escribe a
-  mano es el **tope de horas**.
+  Se rellena solo: el detalle sale de Asignación y el nombre, el grado y el tope
+  los trae de la hoja `Profesores`. Aquí no se escribe nada.
 - **Cobertura por asignatura** — un bloque por asignatura con sus filas de carga y quién
   cubre cada una. El título del bloque cambia de color según esté completa.
 - **Auxiliar** — oculta; contiene las tablas auxiliares de las fórmulas.
@@ -169,10 +169,10 @@ borre una fórmula sin querer.
 
 | Hoja | Celdas editables |
 |---|---|
+| `Profesores` | Todo menos el **origen del tope**, que se calcula |
 | `Asignación` | Solo la columna **Profesor** |
-| `Carga por profesor` | Solo el **tope de horas** de cada bloque |
-| `Cobertura por asignatura`, `Portada`, `Auxiliar` | Ninguna; se calculan solas |
-| `Profesores`, `Asignaturas` | Ninguna por ahora; son los datos que vienen del YAML |
+| `Carga por profesor`, `Cobertura por asignatura`, `Portada`, `Auxiliar` | Ninguna; se calculan solas |
+| `Asignaturas` | Ninguna; nada del libro la lee todavía |
 
 El color de la pestaña lo resume: **azul** = aquí se escribe, **gris azulado** =
 esto se calcula solo.

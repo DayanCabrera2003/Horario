@@ -47,13 +47,15 @@ Qué se puede editar en cada libro:
 | Libro | Hoja | Celdas editables |
 |---|---|---|
 | Horarios | Una por grupo (`C111`, `M211`, …) | La rejilla del horario: asignatura y aula de cada turno |
+| Horarios | `Aulas` | La lista de aulas: añadir una la mete en los desplegables |
 | Horarios | `Ocupación de aulas`, `Portada`, `Auxiliar` | Ninguna; se calculan solas |
 | Tribunales | Una por día (`27 jul (lun)`, …) | La columna del estudiante; el resto del tribunal se autocompleta |
+| Tribunales | `Estudiantes` | La lista de estudiantes: añadir uno lo mete en los desplegables |
 | Tribunales | `Localizar` | Solo la casilla de búsqueda |
 | Tribunales | `Tribunales`, `Portada`, `Auxiliar` | Ninguna; se calculan solas |
 | Departamento | `Asignación` | Solo la columna **Profesor** |
-| Departamento | `Carga por profesor` | Solo el **tope de horas** de cada profesor |
-| Departamento | `Cobertura por asignatura`, `Portada`, `Auxiliar` | Ninguna; se calculan solas |
+| Departamento | `Profesores` | Todo menos el **origen del tope**: ahí se añade un profesor y se cambia su tope |
+| Departamento | `Carga por profesor`, `Cobertura por asignatura`, `Portada`, `Auxiliar` | Ninguna; se calculan solas |
 
 En los libros de tribunales y de departamento el color de la pestaña lo dice de
 un vistazo: **azul** = aquí se escribe, **gris azulado** = esto se calcula solo.
