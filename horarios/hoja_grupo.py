@@ -1,3 +1,4 @@
+from openpyxl.utils import quote_sheetname
 from openpyxl.worksheet.datavalidation import DataValidation
 from horarios import layout as L
 from horarios import hoja_datos as HOJA_DATOS
@@ -156,6 +157,11 @@ def _aplicar_leyenda(ws, grupo: Grupo, facultad: Facultad) -> None:
         (estilos.COLOR_SOBRE_PLANIFICADA, "Sobre-planificada (asignadas > frecuencia)"),
         (estilos.COLOR_FREC_EXACTA, "Frecuencia exacta cumplida"),
     ]
+    # El color de la colision solo se explica si la regla existe: sin profesores
+    # no hay regla, y una leyenda que nombra un color que no aparece confunde.
+    if facultad.profesores:
+        items.append(
+            (estilos.COLOR_CONFLICTO, "Profesor en dos grupos a la vez"))
     leyenda.escribir_leyenda(ws, f"I{fila + 1}", items)
 
 
@@ -206,8 +212,8 @@ def _aplicar_formato_condicional(ws, grupo: Grupo, facultad: Facultad) -> None:
             estilos.COLOR_ASIG_DESCONOCIDA),
     )
     # Aula puesta y asignatura vacia: el turno esta a medias. La formula se ancla
-    # en la primera celda de asignatura y su aula (una fila mas abajo); como los
-    # turnos van de dos en dos, se desplaza sola al resto.
+    # en la primera celda de asignatura y su aula (una fila mas abajo); la regla
+    # se desplaza sola al resto de turnos, esten cada dos filas o cada tres.
     ws.conditional_formatting.add(
         sq_asig,
         estilos.regla_formula(
@@ -222,6 +228,25 @@ def _aplicar_formato_condicional(ws, grupo: Grupo, facultad: Facultad) -> None:
             f'AND({primera_aula}<>"",COUNTIF(AulasValidas,{primera_aula})=0)',
             estilos.COLOR_AULA_INVALIDA),
     )
+    # Profesor en dos grupos a la vez (rojo intenso). Todas las hojas de grupo
+    # comparten geometria, asi que el mismo (dia, turno) cae en la misma
+    # direccion en todas: basta contar esa celda en cada hoja y ver si el
+    # profesor aparece mas de una vez. No hace falta la tabla de firmas que usan
+    # las aulas, cuya formula es mucho mas cara porque ademas decide QUE año
+    # ocupa cada celda.
+    if facultad.profesores:
+        sq_prof = L.rangos_filas_profesor(n_dias, n_turnos)
+        primera_prof = L.celda_profesor(0, 1)
+        conteos = "+".join(
+            f"COUNTIF({quote_sheetname(g.id)}!{primera_prof},{primera_prof})"
+            for g in facultad.grupos)
+        ws.conditional_formatting.add(
+            sq_prof,
+            estilos.regla_formula(
+                f'AND({primera_prof}<>"",({conteos})>1)',
+                estilos.COLOR_CONFLICTO),
+        )
+
     # Tabla de asignaturas: sobre-planificada (rojo) y frecuencia exacta (verde).
     # Se colorea la fila completa (I..M) de cada asignatura, no solo la celda
     # "Asignadas". Las columnas L (asignadas) y K (frec) van fijadas ($L/$K) y la

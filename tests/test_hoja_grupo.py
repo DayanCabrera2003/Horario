@@ -408,3 +408,44 @@ def test_sin_profesores_las_filas_de_profesor_van_ocultas():
     construir_hoja_grupo(ws, g, fac)
     assert ws.row_dimensions[L.fila_profesor(1)].hidden is True
     assert ws[L.celda_profesor(0, 1)].value is None
+
+
+def test_hay_regla_de_colision_de_profesor():
+    """El mismo profesor en dos grupos a la vez se resalta.
+
+    Todas las hojas de grupo comparten geometria, asi que el mismo (dia, turno)
+    es la misma direccion en todas: la regla puede contar esa celda en cada
+    hoja y ver si el profesor aparece mas de una vez.
+    """
+    fac, g = _facultad_con_profesores()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac)
+    formulas = [r.formula[0] for reglas in ws.conditional_formatting._cf_rules.values()
+                for r in reglas if r.formula]
+    colision = [f for f in formulas if ">1" in f and "COUNTIF" in f]
+    assert colision, formulas
+    # Cuenta en todas las hojas de grupo, incluida la propia.
+    assert "C111" in colision[0]
+
+
+def test_la_leyenda_y_las_reglas_hablan_de_los_mismos_colores():
+    """Hallazgo de la revision de la fase 1: la lista de reglas y la de la
+    leyenda describen lo mismo desde dos sitios sin ningun vinculo. Se podia
+    borrar una regla y olvidar su entrada de leyenda, o al reves, sin que ningun
+    test se enterara."""
+    fac, g = _facultad_con_profesores()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac)
+    de_reglas = {r.dxf.fill.bgColor.rgb[-6:]
+                 for reglas in ws.conditional_formatting._cf_rules.values()
+                 for r in reglas if r.dxf and r.dxf.fill}
+    # Solo el bloque de la leyenda: la cabecera de la tabla de asignaturas, que
+    # vive en la misma columna, tiene su propio relleno y no es un aviso.
+    fila_leyenda = L.FILA_PRIMERA_ASIG + len(fac.asignaturas_de(g)) - 1 + 2
+    de_leyenda = {c.fill.start_color.rgb[-6:]
+                  for fila in ws.iter_rows(min_row=fila_leyenda, min_col=9, max_col=9)
+                  for c in fila
+                  if c.fill and c.fill.start_color.rgb not in (None, "00000000")}
+    assert de_reglas == de_leyenda, (sorted(de_reglas), sorted(de_leyenda))
