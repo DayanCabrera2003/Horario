@@ -3,7 +3,10 @@ from openpyxl.utils import quote_sheetname, absolute_coordinate
 from comun import proteccion
 from tribunales.modelo import Facultad
 
-NOMBRE_HOJA = "Datos"
+# "Auxiliar" y no "Datos": desde que el libro tiene hojas de listado con los
+# datos del problema, "Datos" seria el nombre mas enganoso posible para la
+# hoja oculta, que solo guarda calculos intermedios de las formulas.
+NOMBRE_HOJA = "Auxiliar"
 
 
 def _rango_nombrado(nombre: str, celda_ini: str, celda_fin: str) -> DefinedName:

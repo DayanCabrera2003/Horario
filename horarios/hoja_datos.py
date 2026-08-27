@@ -4,7 +4,10 @@ from horarios import layout as L
 from comun import proteccion
 from horarios.modelo import Facultad
 
-NOMBRE_HOJA = "Datos"
+# "Auxiliar" y no "Datos": desde que el libro tiene hojas de listado con los
+# datos del problema, "Datos" seria el nombre mas enganoso posible para la
+# hoja oculta, que solo guarda calculos intermedios de las formulas.
+NOMBRE_HOJA = "Auxiliar"
 
 
 def _formula_firma_anio(anios_por_codigo: dict, dia_idx: int, turno: int, aula: str) -> str:

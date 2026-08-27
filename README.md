@@ -47,13 +47,13 @@ Qué se puede editar en cada libro:
 | Libro | Hoja | Celdas editables |
 |---|---|---|
 | Horarios | Una por grupo (`C111`, `M211`, …) | La rejilla del horario: asignatura y aula de cada turno |
-| Horarios | `Ocupación de aulas`, `Portada`, `Datos` | Ninguna; se calculan solas |
+| Horarios | `Ocupación de aulas`, `Portada`, `Auxiliar` | Ninguna; se calculan solas |
 | Tribunales | Una por día (`27 jul (lun)`, …) | La columna del estudiante; el resto del tribunal se autocompleta |
 | Tribunales | `Localizar` | Solo la casilla de búsqueda |
-| Tribunales | `Tribunales`, `Portada`, `Datos` | Ninguna; se calculan solas |
+| Tribunales | `Tribunales`, `Portada`, `Auxiliar` | Ninguna; se calculan solas |
 | Departamento | `Asignación` | Solo la columna **Profesor** |
 | Departamento | `Carga por profesor` | Solo el **tope de horas** de cada profesor |
-| Departamento | `Cobertura por asignatura`, `Portada`, `Datos` | Ninguna; se calculan solas |
+| Departamento | `Cobertura por asignatura`, `Portada`, `Auxiliar` | Ninguna; se calculan solas |
 
 En los libros de tribunales y de departamento el color de la pestaña lo dice de
 un vistazo: **azul** = aquí se escribe, **gris azulado** = esto se calcula solo.
@@ -95,7 +95,7 @@ Planifica los horarios de una facultad. El `.xlsx` generado contiene:
 - Una hoja **Ocupación de aulas** que muestra, por día y turno, qué grupos ocupan cada aula,
   coloreada por año y con marca de conflicto cuando dos años distintos coinciden
   en la misma aula.
-- Una hoja **Datos** (oculta) con la lista maestra de aulas y las fórmulas
+- Una hoja **Auxiliar** (oculta) con las firmas de año y las fórmulas
   auxiliares.
 
 ### Configuración
@@ -180,7 +180,7 @@ contiene:
   por día y local. Junto a cada momento, una columna **Rol** indica en calidad
   de qué participa (estudiante, tutor, oponente, presidente, secretario o
   vocal).
-- Una hoja **Datos** (oculta) con la tabla tesis-tribunal y la lista de
+- Una hoja **Auxiliar** (oculta) con la tabla tesis-tribunal y la lista de
   estudiantes que alimentan los desplegables y las fórmulas.
 
 ### Configuración
@@ -235,7 +235,7 @@ El `.xlsx` generado contiene:
   (global del departamento o propio del profesor).
 - Una hoja **Cobertura por asignatura**: por asignatura, quién cubre cada fila de carga.
   Título verde si está completa, naranja si falta alguien.
-- Una hoja **Datos** (oculta) con las listas y la tabla auxiliar de las
+- Una hoja **Auxiliar** (oculta) con las listas y la tabla auxiliar de las
   fórmulas.
 
 ### Configuración

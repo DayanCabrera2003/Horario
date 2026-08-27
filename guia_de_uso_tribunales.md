@@ -299,7 +299,7 @@ Oponente | Presidente | Secretario | Vocal`. Filas = los momentos de ese día.
   (estudiante, tutor, oponente, presidente, secretario o vocal); queda en blanco
   donde no participa.
 
-### Hoja `Datos` (oculta)
+### Hoja `Auxiliar` (oculta)
 
 Es interna (tabla tesis-tribunal + lista de estudiantes para los desplegables y
 las fórmulas). Normalmente no la tocas. Si quieres verla: clic derecho en una
@@ -317,14 +317,14 @@ borre una fórmula sin querer.
 
 - **Hojas de día** (`27 jul (lun)`, …): se edita **solo la columna del
   estudiante**. El resto del tribunal (tutor, oponente, presidente, secretario, vocal)
-  se autocompleta desde `Datos` y está bloqueado.
+  se autocompleta desde `Auxiliar` y está bloqueado.
 - **Hoja `Localizar`**: solo la **casilla de búsqueda**. Los resultados se
   calculan.
 - **Hoja `Tribunales`**: nada editable. Sí se puede **ordenar y filtrar** aun
   estando protegida, y lleva **autofiltro** en los encabezados: despliega el
   botón de una columna para quedarte, por ejemplo, con las tesis de un tutor. La
   fila de encabezados queda fija al hacer scroll.
-- **`Portada`** y **`Datos`**: nada editable.
+- **`Portada`** y **`Auxiliar`**: nada editable.
 
 El **color de la pestaña** lo resume de un vistazo: **azul** en las hojas donde se escribe (las de día
 y `Localizar`) y **gris azulado** en `Tribunales`, que se calcula sola.

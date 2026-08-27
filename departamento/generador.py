@@ -6,7 +6,8 @@ from openpyxl import Workbook
 
 from comun.portada import NOMBRE_HOJA as HOJA_PORTADA, construir_portada
 from departamento.config import cargar_departamento
-from departamento.hoja_datos import construir_hoja_datos
+from departamento.hoja_datos import (
+    NOMBRE_HOJA as HOJA_AUXILIAR, construir_hoja_datos)
 from departamento.hoja_asignacion import (
     NOMBRE_HOJA as HOJA_ASIGNACION, construir_hoja_asignacion)
 from departamento.hoja_profesores import (
@@ -45,8 +46,8 @@ def generar(config_path: Path, salida: Path,
     construir_hoja_profesores(wb, depto)
     construir_hoja_asignaturas(wb, depto)
 
-    # Datos al final del todo.
-    wb.move_sheet("Datos", offset=len(wb.sheetnames) - 1)
+    # La hoja auxiliar, al final del todo.
+    wb.move_sheet(HOJA_AUXILIAR, offset=len(wb.sheetnames) - 1)
 
     # La portada va la ultima porque se inserta en el indice 0: asi ya sabe que
     # hojas existen y queda delante de todas.

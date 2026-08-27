@@ -28,9 +28,9 @@ def test_firma_usa_countif():
     fac = _fac(); wb = Workbook()
     celdas = construir_hoja_datos(wb, fac)
     # celdas: {(dia, turno, aula): direccion_de_la_firma}
-    dir_firma = celdas[("Lunes", 1, "Aula 1")]   # p.ej. "Datos!C1" (referencia calificada)
+    dir_firma = celdas[("Lunes", 1, "Aula 1")]   # p.ej. "Auxiliar!C1" (referencia calificada)
     ws = wb[NOMBRE_HOJA]
-    coord_local = dir_firma.split("!")[1]         # indexar la hoja con la coord local, no "Datos!C1"
+    coord_local = dir_firma.split("!")[1]         # indexar la hoja con la coord local, no "Auxiliar!C1"
     assert ws[coord_local].value.startswith("=")
     assert "COUNTIF" in ws[coord_local].value
 

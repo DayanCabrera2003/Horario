@@ -30,8 +30,8 @@ def test_genera_libro_completo(tmp_path):
     wb = load_workbook(salida)
     # Asignacion primera y activa; Datos oculta al final.
     assert wb.sheetnames == ["Portada", "Asignación", "Carga por profesor",
-                             "Cobertura por asignatura", "Datos"]
-    assert wb["Datos"].sheet_state == "hidden"
+                             "Cobertura por asignatura", "Auxiliar"]
+    assert wb["Auxiliar"].sheet_state == "hidden"
 
 
 GENERADO = datetime.datetime(2026, 8, 25, 14, 30)
@@ -69,7 +69,7 @@ def test_la_portada_enlaza_las_hojas_visibles(tmp_path):
     for hoja in ("Asignación", "Carga por profesor", "Cobertura por asignatura"):
         assert any(hoja in e for e in enlaces), f"falta el enlace a {hoja}"
     # Datos es fontaneria de formulas y esta oculta: no se indexa.
-    assert not any("Datos" in e for e in enlaces)
+    assert not any("Auxiliar" in e for e in enlaces)
 
 
 def test_la_portada_dice_de_que_yaml_salio(tmp_path):

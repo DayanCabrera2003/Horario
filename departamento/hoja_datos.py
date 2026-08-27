@@ -18,7 +18,10 @@ from comun import proteccion
 from departamento import layout as L
 from departamento.modelo import Departamento
 
-NOMBRE_HOJA = "Datos"
+# "Auxiliar" y no "Datos": desde que el libro tiene hojas de listado con los
+# datos del problema, "Datos" seria el nombre mas enganoso posible para la
+# hoja oculta, que solo guarda calculos intermedios de las formulas.
+NOMBRE_HOJA = "Auxiliar"
 NOMBRE_HOJA_ASIGNACION = "Asignación"
 
 

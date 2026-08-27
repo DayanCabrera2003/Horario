@@ -36,8 +36,8 @@ def test_genera_workbook_con_hojas(tmp_path):
     wb = load_workbook(salida)
     assert "Ocupación de aulas" in wb.sheetnames
     assert "C111" in wb.sheetnames and "C112" in wb.sheetnames
-    assert "Datos" in wb.sheetnames
-    assert wb["Datos"].sheet_state == "hidden"
+    assert "Auxiliar" in wb.sheetnames
+    assert wb["Auxiliar"].sheet_state == "hidden"
 
 
 # --- Test extra 1: ruta con horarios (faithful-copy) ---
@@ -133,7 +133,7 @@ def test_la_portada_enlaza_las_hojas_visibles(tmp_path):
     enlaces = _enlaces(wb)
     assert any("Ocupación de aulas" in e for e in enlaces)
     # Datos es fontaneria de formulas y esta oculta: no se indexa.
-    assert not any("Datos" in e for e in enlaces)
+    assert not any("Auxiliar" in e for e in enlaces)
 
 
 def test_la_portada_indexa_una_hoja_por_grupo(tmp_path):

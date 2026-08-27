@@ -133,7 +133,7 @@ resuelve el id a su nombre completo, muestra en ese caso `(desconocido)`.
   mano es el **tope de horas**.
 - **Cobertura por asignatura** — un bloque por asignatura con sus filas de carga y quién
   cubre cada una. El título del bloque cambia de color según esté completa.
-- **Datos** — oculta; contiene las listas y tablas auxiliares de las fórmulas.
+- **Auxiliar** — oculta; contiene las tablas auxiliares de las fórmulas.
   No hay que tocarla.
 
 ### Qué se puede editar y qué está bloqueado
@@ -145,7 +145,7 @@ borre una fórmula sin querer.
 |---|---|
 | `Asignación` | Solo la columna **Profesor** |
 | `Carga por profesor` | Solo el **tope de horas** de cada bloque |
-| `Cobertura por asignatura`, `Portada`, `Datos` | Ninguna; se calculan solas |
+| `Cobertura por asignatura`, `Portada`, `Auxiliar` | Ninguna; se calculan solas |
 
 El color de la pestaña lo resume: **azul** = aquí se escribe, **gris azulado** =
 esto se calcula solo.

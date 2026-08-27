@@ -24,7 +24,7 @@ def _hoja():
     wb = Workbook()
     wb.remove(wb.active)
     construir_hoja_datos(wb, _departamento())
-    return wb, wb["Datos"]
+    return wb, wb["Auxiliar"]
 
 
 def test_hoja_oculta():

@@ -348,7 +348,7 @@ Es tu vista de "ocupación del edificio".
 - **Lista para imprimir:** la hoja sale **apaisada** y ajustada a **una página de ancho**, con los
   encabezados repetidos arriba de cada página. No hay que tocar la configuración de impresión.
 
-### Hoja `Datos` (oculta)
+### Hoja `Auxiliar` (oculta)
 
 Es interna (aulas válidas + cálculos de apoyo para los colores). Normalmente no la tocas. Si quieres
 verla: clic derecho en una pestaña → *Mostrar hoja oculta*.
@@ -367,7 +367,7 @@ borre una fórmula sin querer.
   derecha se calcula sola y está bloqueada.
 - **Hoja `Ocupación de aulas`**: nada editable, se calcula entera. Sí se puede **ordenar y
   filtrar** aun estando protegida.
-- **`Portada`** y **`Datos`**: nada editable.
+- **`Portada`** y **`Auxiliar`**: nada editable.
 
 El **color de la pestaña** ayuda a moverse cuando la barra es un muro de nombres: cada año tiene el
 suyo (todos los grupos de `C1` comparten color, los de `C2` otro…) y `Ocupación de aulas`, que se
