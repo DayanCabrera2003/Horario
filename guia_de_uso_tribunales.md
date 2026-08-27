@@ -359,7 +359,6 @@ pasó (`Error de configuración: ...`). Los más frecuentes:
   estructura, valida y resalta, pero **tú** decides las asignaciones.
 - La colisión se controla **solo entre profesores** (el estudiante aparece en una
   sola tesis).
-- El rol **`vocal`** no está incluido por ahora (se puede añadir después).
 - No se avisa si colocas la **misma tesis en dos celdas** distintas al editar a
   mano (es edición libre).
 - Todo se maneja por **id**: las tablas muestran ids, no nombres completos.
