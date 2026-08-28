@@ -3,9 +3,10 @@
 Una fila por asignatura, con las tres cifras que la definen (horas de Conf,
 horas de CP por grupo y cuantos grupos de CP) y el total que sale de ellas.
 
-El total va como formula y no como numero calculado al generar: en la fase 3a
-estas hojas pasan a ser editables, y un total congelado no se moveria al cambiar
-los grupos de CP, que es justo el error que la hoja deberia evitar.
+El total va como formula y no como numero calculado al generar. Hoy la hoja sale
+bloqueada -ninguna formula del libro la lee, asi que editarla no cambiaria nada-,
+pero el dia que se desbloquee un total congelado no se moveria al cambiar los
+grupos de CP, que es justo el error que la hoja deberia evitar.
 """
 from comun.hoja_listado import construir_hoja_listado, FILA_PRIMER_DATO
 from comun import formato, vista
