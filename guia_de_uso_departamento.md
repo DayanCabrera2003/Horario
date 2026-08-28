@@ -151,13 +151,16 @@ Debajo de los datos hay **filas libres ya preparadas** (unas 20, o la mitad de l
 que haya si son muchos). Escribe en la primera libre y el dato entra en el desplegable en cuanto
 Calc o Excel recalculan. No hace falta Python ni regenerar nada.
 
-Dos límites que conviene tener claros:
+Tres límites que conviene tener claros:
 
 - **No dejes filas en blanco en medio de una lista.** La lista se corta ahí y todo lo que quede
   debajo desaparece del desplegable, sin ningún aviso. Si borras una fila del medio, sube las de
   abajo.
 - **Cuando se acaben las filas libres hay que regenerar** el libro desde el YAML, y eso sí necesita
   Python. Es un límite conocido: el Excel absorbe el crecimiento normal, no un cambio de tamaño.
+- **Un profesor que añadas a mano no tiene bloque en `Carga por profesor`.** Entra en el
+  desplegable de `Asignación` y puedes darle carga, pero su total de horas y su alerta de tope no
+  existen hasta que regeneres el libro.
 
 Las demás hojas de datos son de **solo lectura** a propósito: nada del libro las lee, así que
 escribir en ellas no cambiaría nada. Para tocarlas, se edita el YAML y se regenera.
