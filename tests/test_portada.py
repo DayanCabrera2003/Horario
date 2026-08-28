@@ -111,3 +111,28 @@ def test_la_portada_avisa_de_no_dejar_huecos_en_las_listas():
     texto = " ".join(_textos(ws))
     assert "en blanco" in texto
     assert "desplegable" in texto
+
+
+def test_los_parrafos_de_instrucciones_caben_en_la_pagina():
+    """Se veian cortados al imprimir la portada.
+
+    Son dos parrafos de 180 y 220 caracteres en una columna de 45: sin combinar
+    ni ajustar el texto, lo que no cabe se pierde en el papel y empuja la hoja a
+    una segunda pagina con una sola columna suelta.
+    """
+    ws = _construir(_wb())
+    filas = [f for f in range(1, 15)
+             if isinstance(ws[f"A{f}"].value, str) and len(ws[f"A{f}"].value) > 100]
+    assert filas, "no se encontraron los parrafos"
+    combinadas = {str(r) for r in ws.merged_cells.ranges}
+    for fila in filas:
+        assert ws[f"A{fila}"].alignment.wrap_text is True, fila
+        assert any(str(fila) in c for c in combinadas), (fila, combinadas)
+        assert ws.row_dimensions[fila].height, fila
+
+
+def test_un_origen_largo_no_ensancha_la_columna_de_etiquetas():
+    # La ruta del YAML puede ser larguisima; la columna A es la de etiquetas y
+    # nombres de hoja, y no tiene por que crecer con ella.
+    ws = _construir(_wb(), origen="/una/ruta/absurdamente/larga/" + "x" * 80)
+    assert ws.column_dimensions["A"].width < 30

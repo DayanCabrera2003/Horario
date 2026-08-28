@@ -13,6 +13,7 @@ from openpyxl.utils import quote_sheetname
 from openpyxl.worksheet.hyperlink import Hyperlink
 
 from comun import formato, proteccion, vista
+from comun import estilos_base as estilos
 
 NOMBRE_HOJA = "Portada"
 
@@ -57,6 +58,26 @@ def _enlazar_a_hoja(celda, nombre: str) -> None:
                                 location=f"{quote_sheetname(nombre)}!A1")
 
 
+def _encajar_parrafos(ws, filas) -> None:
+    """Deja los parrafos largos dentro de la pagina.
+
+    Son frases de 200 caracteres en una celda suelta: sin combinar ni ajustar el
+    texto se salen de la hoja, y al imprimir (o al exportar a PDF) lo que no cabe
+    se pierde y la portada se parte en dos paginas. Se combinan las tres primeras
+    columnas y se activa el ajuste de linea, con el alto necesario para las
+    lineas que salgan.
+    """
+    ancho = sum(ws.column_dimensions[c].width or 10 for c in ("A", "B", "C"))
+    for fila in filas:
+        celda = ws[f"A{fila}"]
+        if not celda.value:
+            continue
+        ws.merge_cells(f"A{fila}:C{fila}")
+        celda.alignment = estilos.alineacion_ajuste()
+        lineas = max(1, -(-len(str(celda.value)) // max(20, int(ancho))))
+        ws.row_dimensions[fila].height = 15 * lineas
+
+
 def construir_portada(wb, titulo: str, subtitulo: str, origen: str,
                       hojas, generado: datetime.datetime,
                       instrucciones: str = _INSTRUCCIONES) -> None:
@@ -90,6 +111,14 @@ def construir_portada(wb, titulo: str, subtitulo: str, origen: str,
         ws[f"C{fila}"] = etiqueta
 
     formato.autoajustar_columnas(ws, extra=4)
+    # La columna A la fija el texto mas largo, y los dos parrafos de arriba son
+    # de 200 caracteres: sin esto se lleva el ancho maximo y empuja el indice
+    # fuera de la pagina. Se dimensiona con lo que de verdad vive en ella.
+    formato.fijar_ancho_por_textos(
+        ws, "A", [nombre for nombre, _, _ in hojas] + ["Generado desde",
+                                                      "Las hojas de este libro"],
+        extra=4)
+    _encajar_parrafos(ws, (_FILA_INSTRUCCIONES + 1, _FILA_INSTRUCCIONES + 2))
     vista.ocultar_cuadricula(ws)
     # La portada no tiene nada que editar.
     proteccion.proteger_hoja(ws)
