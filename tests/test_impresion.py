@@ -44,3 +44,13 @@ def test_funciona_aunque_la_hoja_no_traiga_ajustes_de_pagina():
     impresion.preparar(ws)
     assert ws.sheet_properties.pageSetUpPr is not None
     assert ws.sheet_properties.pageSetUpPr.fitToPage is True
+
+
+def test_se_puede_preparar_sin_girar_la_hoja():
+    # La portada se lee en vertical, pero necesita el ajuste al ancho igual: sin
+    # el, una ruta de origen larga la parte en dos paginas.
+    ws = Workbook().active
+    impresion.preparar(ws, apaisado=False)
+    assert ws.page_setup.orientation == "portrait"
+    assert ws.page_setup.fitToWidth == 1
+    assert ws.sheet_properties.pageSetUpPr.fitToPage is True

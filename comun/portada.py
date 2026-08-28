@@ -12,7 +12,7 @@ import datetime
 from openpyxl.utils import quote_sheetname
 from openpyxl.worksheet.hyperlink import Hyperlink
 
-from comun import formato, proteccion, vista
+from comun import formato, impresion, proteccion, vista
 from comun import estilos_base as estilos
 
 NOMBRE_HOJA = "Portada"
@@ -121,6 +121,9 @@ def construir_portada(wb, titulo: str, subtitulo: str, origen: str,
                                                       "Las hojas de este libro"],
         extra=4)
     _encajar_parrafos(ws, (_FILA_INSTRUCCIONES + 1, _FILA_INSTRUCCIONES + 2))
+    # En vertical, que es como se lee, pero ajustada al ancho: la ruta del YAML
+    # puede ser larguisima y sin esto la portada sale partida en dos paginas.
+    impresion.preparar(ws, apaisado=False)
     vista.ocultar_cuadricula(ws)
     # La portada no tiene nada que editar.
     proteccion.proteger_hoja(ws)
