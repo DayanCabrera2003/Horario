@@ -102,7 +102,7 @@ Planifica los horarios de una facultad. El `.xlsx` generado contiene:
   imparte cada asignatura en cada grupo. La rejilla de cada grupo gana una tercera fila por turno con
   el profesor, calculada desde `Docencia`, y se resalta al profesor citado en dos grupos a la vez.
 
-  Se pueden ordenar y filtrar, pero no se editan.
+  Se pueden ordenar y filtrar; de ellas solo `Aulas` se edita.
 - Una hoja **Ocupación de aulas** que muestra, por día y turno, qué grupos ocupan cada aula,
   coloreada por año y con marca de conflicto cuando dos años distintos coinciden
   en la misma aula.
@@ -187,7 +187,7 @@ contiene:
   Aparecen **todos**, participen o no en una tesis: el profesor sin tribunal y el estudiante sin
   tesis asignada son justo los que quedan por planificar.
 
-  Se pueden ordenar y filtrar, pero no se editan.
+  Se pueden ordenar y filtrar; de ellas solo `Estudiantes` se edita.
 - Una hoja **Tribunales** con la información completa de
   cada tesis en **nombres**, no en ids: estudiante y los cinco roles del
   tribunal (tutor, oponente, presidente, secretario y vocal). Sirve para leer el
@@ -250,7 +250,7 @@ El `.xlsx` generado contiene:
 - Hojas con los **datos del problema**, tal como los declara el YAML: `Profesores` (con el grado, el tope y si el tope
   es propio o del departamento) y `Asignaturas` (las horas declaradas del semestre).
 
-  Se pueden ordenar y filtrar, pero no se editan.
+  Se pueden ordenar y filtrar; de ellas solo `Profesores` se edita.
 - Una hoja **Asignación** (la única editable): cada asignatura expandida a sus
   *filas de carga* (la conferencia + una fila por grupo de CP), con un
   desplegable de profesor por fila. Amarillo = fila sin profesor; ámbar = id

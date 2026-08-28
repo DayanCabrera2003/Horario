@@ -279,7 +279,9 @@ por planificar.
   (`2026-07-27` → `27 jul (lun)`), que es la primera pregunta al buscar un día en la barra de
   pestañas.
 
-Se pueden ordenar y filtrar, pero no se editan: la fuente sigue siendo el YAML.
+Se pueden ordenar y filtrar. De las cuatro **solo `Estudiantes` se edita** (es la que alimenta el
+desplegable de las hojas de día); `Profesores`, `Locales` y `Días` son de solo lectura, porque
+ninguna fórmula del libro las lee.
 
 ### Hoja `Tribunales`
 
@@ -362,8 +364,9 @@ borre una fórmula sin querer.
   estando protegida, y lleva **autofiltro** en los encabezados: despliega el
   botón de una columna para quedarte, por ejemplo, con las tesis de un tutor. La
   fila de encabezados queda fija al hacer scroll.
-- **`Portada`**, **`Auxiliar`** y las cuatro hojas de datos (`Profesores`, `Estudiantes`,
-  `Locales`, `Días`): nada editable.
+- **Hoja `Estudiantes`**: se edita la lista (también las líneas libres del final).
+- **`Portada`**, **`Auxiliar`** y las otras tres hojas de datos (`Profesores`, `Locales`, `Días`):
+  nada editable.
 
 El **color de la pestaña** lo resume de un vistazo: **azul** en las hojas donde se escribe (las de día
 y `Localizar`) y **gris azulado** en `Tribunales`, que se calcula sola.

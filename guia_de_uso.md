@@ -160,7 +160,7 @@ Dos secciones más, las dos opcionales. Sin ellas el libro sale como siempre; co
 
 ```yaml
 profesores:
-  - { id: PIAD, nombre: "Pedro I. Alonso Díaz", grado: "Dr.", tope_horas: 160 }
+  - { id: PIAD, nombre: "Pedro I. Alonso Díaz", grado: "Dr.", tope_turnos: 12 }
   - { id: MARA, nombre: "María Ramírez",        grado: "MSc." }   # sin tope
 
 docencia:
@@ -171,7 +171,8 @@ docencia:
     AMI-CP: PIAD           # el mismo AMI-CP, otro grupo, otro profesor
 ```
 
-- **`profesores`** — `id` y `nombre` obligatorios; `grado` y `tope_horas` opcionales. El id es lo que
+- **`profesores`** — `id` y `nombre` obligatorios; `grado` y `tope_turnos` opcionales. **El tope
+  va en turnos por semana**, no en horas de reloj: en este libro la unidad es el turno. El id es lo que
   se escribe en `docencia`, igual que con las asignaturas.
 - **`docencia`** — la jerarquía es **grupo → asignatura → profesor**. La clave es el par (grupo,
   asignatura) y no la asignatura sola porque en el YAML las asignaturas cuelgan del **año**: el mismo
@@ -387,7 +388,10 @@ Hasta ahora había que abrir el YAML para verla.
   más de lo que parece: el texto tiene que coincidir **exactamente** con el del `horarios.yaml`,
   tildes incluidas.
 
-Se pueden ordenar y filtrar, pero **no se editan**: por ahora la fuente sigue siendo el YAML.
+Se pueden ordenar y filtrar. De estas cuatro **solo `Aulas` se edita** (es la que alimenta los
+desplegables de aula); `Asignaturas`, `Grupos` y `Estructura` son de solo lectura, porque ninguna
+fórmula del libro las lee y escribir en ellas no cambiaría nada. Para tocarlas, se edita el YAML y se
+regenera.
 
 ### Hojas `Profesores` y `Docencia` (solo si el YAML declara profesores)
 
@@ -473,6 +477,11 @@ borre una fórmula sin querer.
 - **Hojas de grupo** (`C111`, `M211`, …): se edita la **rejilla del horario**,
   es decir la asignatura y el aula de cada turno. La tabla de asignaturas de la
   derecha se calcula sola y está bloqueada.
+- **Hoja `Aulas`**: se edita la lista de aulas (también las líneas libres del final).
+- **Hoja `Docencia`**: se editan **Grupo**, **Asignatura** y **Profesor**; la columna *Nombre* la
+  resuelve una fórmula.
+- **Hojas `Asignaturas`, `Grupos`, `Estructura` y `Profesores`**: nada editable; son la copia de lo
+  que dice el YAML.
 - **Hoja `Ocupación de aulas`**: nada editable, se calcula entera. Sí se puede **ordenar y
   filtrar** aun estando protegida.
 - **`Portada`** y **`Auxiliar`**: nada editable.
