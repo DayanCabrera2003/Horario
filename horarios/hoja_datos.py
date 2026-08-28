@@ -4,6 +4,7 @@ from openpyxl.workbook.defined_name import DefinedName
 from comun.hoja_listado import FILA_PRIMER_DATO
 from comun.rangos import rango_dinamico
 from horarios import hoja_docencia
+from horarios import hoja_listado_grupos
 from horarios import layout as L
 from comun import proteccion
 from horarios.modelo import Facultad
@@ -104,12 +105,19 @@ def _tabla_docencia(wb, ws, facultad: Facultad) -> None:
             f"={hoja}!${hoja_docencia.COL_PROFESOR}${fila_origen}")
         # Turnos semanales que supone esa fila: la frecuencia de la asignatura
         # en el año del grupo. Se busca por los tres criterios porque el mismo
-        # id existe en varios años (EF esta en casi todos) y el año sale del
-        # propio id de grupo: "C111" -> carrera C, año 1.
+        # id existe en varios años (EF esta en casi todos).
+        #
+        # La carrera y el año se leen de la hoja Grupos y NO se deducen partiendo
+        # el id: con una carrera de dos letras ("CC111") el troceo por posicion
+        # devuelve basura, el SUMIFS cae al IFERROR y la carga de todos los
+        # profesores sale 0 sin que nada avise.
+        tabla = hoja_listado_grupos.RANGO_TABLA
+        carrera = f'VLOOKUP({grupo},{tabla},2,0)'
+        anio = f'VLOOKUP({grupo},{tabla},3,0)'
         ws[f"{COL_FRECUENCIA_DOCENCIA}{fila}"] = (
             f'=IF({grupo}="",0,IFERROR(SUMIFS(AsigFrecuencia,'
-            f'AsigCarrera,LEFT({grupo},1),'
-            f'AsigAnio,VALUE(MID({grupo},2,1)),'
+            f'AsigCarrera,{carrera},'
+            f'AsigAnio,{anio},'
             f'AsigId,{asig}),0))')
     wb.defined_names.add(DefinedName(
         RANGO_DOCENCIA,

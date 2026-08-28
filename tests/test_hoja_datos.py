@@ -76,3 +76,27 @@ def test_la_hoja_de_datos_queda_protegida():
     construir_hoja_datos(wb, fac)
     ws = wb[NOMBRE_HOJA]
     assert ws.protection.sheet is True
+
+
+def test_la_carga_no_deduce_la_carrera_del_id_de_grupo():
+    """Hallazgo de la revision, reproducido: con una carrera de dos letras el id
+    de grupo es 'CC111', y sacar la carrera con LEFT(...,1) daba 'C' y el año con
+    VALUE(MID(...,2,1)) daba error. Todo el SUMIFS caia al IFERROR y los turnos
+    semanales de todos los profesores salian 0, sin ningun aviso.
+
+    La carrera y el año se leen de la hoja Grupos, que ya los tiene en columnas.
+    """
+    from horarios.modelo import Profesor, Docencia
+    fac = Facultad(
+        aulas=("Aula 1",), dias=("Lunes",), turnos=2,
+        grupos=(Grupo("CC", 1, 1, 1),),
+        anios={"CC1": Anio("CC", 1, ())},
+        profesores=(Profesor(id="PIAD", nombre="Pedro"),),
+        docencia=(Docencia(grupo="CC111", asignatura="AMI-C", profesor="PIAD"),),
+    )
+    wb = Workbook()
+    construir_hoja_datos(wb, fac)
+    formula = wb[NOMBRE_HOJA]["Z2"].value
+    assert "LEFT(" not in formula, formula
+    assert "MID(" not in formula, formula
+    assert "GruposTabla" in formula, formula
