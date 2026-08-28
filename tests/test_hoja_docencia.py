@@ -55,8 +55,9 @@ def test_docencia_dice_quien_imparte_que_en_cada_grupo():
     assert ws["B2"].value == "AMI-C"
     assert ws["C2"].value == "PIAD"
     # El nombre completo al lado del id: el resto del libro trabaja con ids y
-    # esta es la hoja donde se comprueba a quien corresponden.
-    assert ws["D2"].value == "Pedro I. Alonso Diaz"
+    # esta es la hoja donde se comprueba a quien corresponden. Lo resuelve una
+    # formula, para que siga al profesor que se escriba (ver el test de abajo).
+    assert "VLOOKUP" in ws["D2"].value
 
 
 def test_sin_profesores_no_se_crea_ninguna_de_las_dos_hojas():
@@ -90,3 +91,28 @@ def test_hay_alerta_cuando_los_turnos_pasan_del_tope():
     formulas = [r.formula[0] for reglas in ws.conditional_formatting._cf_rules.values()
                 for r in reglas if r.formula]
     assert any("$D" in f and "$E" in f and ">" in f for f in formulas), formulas
+
+
+def test_el_nombre_de_la_docencia_sigue_al_profesor_que_se_escriba():
+    """Hallazgo de la revision: 'Nombre' era una copia escrita al generar, y
+    bloqueada, al lado de una columna 'Profesor' editable. Cambiar el profesor
+    dejaba el nombre del anterior, sin forma de corregirlo."""
+    ws = _hoja(construir_hoja_docencia)
+    assert str(ws["D2"].value).startswith("=")
+    assert "ProfesoresTabla" in ws["D2"].value
+
+
+def test_las_columnas_editables_de_docencia_tienen_desplegable():
+    """Hallazgo de la revision: se escribia a mano sin lista ni validacion, y un
+    id mal escrito dejaba la celda de profesor de la rejilla en blanco sin decir
+    por que."""
+    ws = _hoja(construir_hoja_docencia)
+    fuentes = {dv.formula1 for dv in ws.data_validations.dataValidation}
+    assert {"GruposValidos", "AsigId", "ProfesoresValidos"} <= fuentes, fuentes
+
+
+def test_un_profesor_fuera_de_la_lista_se_resalta_en_docencia():
+    ws = _hoja(construir_hoja_docencia)
+    formulas = [r.formula[0] for reglas in ws.conditional_formatting._cf_rules.values()
+                for r in reglas if r.formula]
+    assert any("ProfesoresValidos" in f and "COUNTIF" in f for f in formulas), formulas

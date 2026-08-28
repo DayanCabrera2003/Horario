@@ -22,6 +22,9 @@ ENCABEZADOS = ("Carrera", "Año", "Id", "Nombre", "Frecuencia")
 RANGOS = {"AsigCarrera": "A", "AsigAnio": "B", "AsigId": "C",
           "AsigFrecuencia": "E"}
 
+# El de los ids alimenta ademas el desplegable de la hoja Docencia.
+RANGO_IDS = "AsigId"
+
 
 def construir_hoja_asignaturas(wb, facultad: Facultad) -> None:
     filas = [(anio.carrera, anio.numero, a.id, a.nombre, a.frecuencia)

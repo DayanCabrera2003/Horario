@@ -24,6 +24,8 @@ ENCABEZADOS = ("Grupo", "Carrera", "Año", "Sesión", "Número")
 # su año. Existe para no tener que deducirlos partiendo el id: una carrera de dos
 # letras ("CC111") rompe cualquier troceo por posicion, y en silencio.
 RANGO_TABLA = "GruposTabla"
+# Solo la columna de ids: es lo que alimenta el desplegable de la hoja Docencia.
+RANGO_IDS = "GruposValidos"
 
 
 def construir_hoja_grupos(wb, facultad: Facultad) -> None:
@@ -33,8 +35,9 @@ def construir_hoja_grupos(wb, facultad: Facultad) -> None:
     ws = construir_hoja_listado(wb, NOMBRE_HOJA, ENCABEZADOS, filas,
                                 color_encabezado=estilos.COLOR_ENCABEZADO,
                                 capacidad=capacidad)
-    wb.defined_names.add(DefinedName(
-        RANGO_TABLA,
-        attr_text=rango_dinamico(NOMBRE_HOJA, "A", FILA_PRIMER_DATO, capacidad,
-                                 columnas=3)))
+    for nombre, columnas in ((RANGO_IDS, 1), (RANGO_TABLA, 3)):
+        wb.defined_names.add(DefinedName(
+            nombre,
+            attr_text=rango_dinamico(NOMBRE_HOJA, "A", FILA_PRIMER_DATO,
+                                     capacidad, columnas=columnas)))
     vista.colorear_pestana(ws, estilos.COLOR_PESTANA_DATOS)

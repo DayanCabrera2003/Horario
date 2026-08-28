@@ -7,8 +7,10 @@ la cantidad de horas maxima".
 La hoja solo existe si el YAML declara profesores. La seccion es opcional, y una
 facultad que no la declare no tiene por que ganar una pestana vacia.
 """
+from openpyxl.workbook.defined_name import DefinedName
+
 from comun.hoja_listado import construir_hoja_listado, FILA_PRIMER_DATO
-from comun.rangos import capacidad_para
+from comun.rangos import capacidad_para, rango_dinamico
 from comun import vista
 from horarios import estilos
 from horarios import hoja_datos as HOJA_DATOS
@@ -17,6 +19,11 @@ from horarios.modelo import Facultad
 NOMBRE_HOJA = "Profesores"
 ENCABEZADOS = ("Id", "Nombre", "Grado", "Tope de turnos", "Turnos semanales")
 COL_ID, COL_TOPE, COL_TURNOS = "A", "D", "E"
+
+# Rangos que consume la hoja Docencia: la lista de ids para su desplegable y la
+# tabla id -> nombre para resolver a quien corresponde cada id.
+RANGO_IDS = "ProfesoresValidos"
+RANGO_TABLA = "ProfesoresTabla"
 
 
 def _formula_turnos(fila: int) -> str:
@@ -38,6 +45,11 @@ def construir_hoja_profesores(wb, facultad: Facultad) -> None:
     ws = construir_hoja_listado(wb, NOMBRE_HOJA, ENCABEZADOS, filas,
                                 color_encabezado=estilos.COLOR_ENCABEZADO,
                                 capacidad=capacidad)
+    for nombre, columnas in ((RANGO_IDS, 1), (RANGO_TABLA, 2)):
+        wb.defined_names.add(DefinedName(
+            nombre, attr_text=rango_dinamico(NOMBRE_HOJA, COL_ID,
+                                             FILA_PRIMER_DATO, capacidad,
+                                             columnas=columnas)))
     _aplicar_alerta_de_tope(ws, capacidad)
     vista.colorear_pestana(ws, estilos.COLOR_PESTANA_DATOS)
 
