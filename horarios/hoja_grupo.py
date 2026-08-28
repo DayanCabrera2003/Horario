@@ -95,7 +95,7 @@ def _aplicar_padding(ws, grupo: Grupo, facultad: Facultad) -> None:
     n_asig = len(facultad.asignaturas_de(grupo))
     alin = estilos.alineacion_padding()
     col_fin_dias = L.col_dia(n_dias - 1)
-    fila_fin_grid = L.fila_aula(n_turnos)
+    fila_fin_grid = L.fila_fin_turno(n_turnos, bool(facultad.profesores))
     fila_fin_tabla = L.FILA_PRIMERA_ASIG + n_asig - 1
     # Rejilla (incluye la columna A de turnos) y tabla de asignaturas.
     formato.aplicar_alineacion(
@@ -122,13 +122,16 @@ def _aplicar_bordes(ws, grupo: Grupo, facultad: Facultad) -> None:
     n_dias, n_turnos = len(facultad.dias), facultad.turnos
     n_asig = len(facultad.asignaturas_de(grupo))
     interno, externo = estilos.lado_fino(), estilos.lado_medio()
-    formato.aplicar_borde_tabla(ws, L.rango_bloque_horario(n_dias, n_turnos), interno, externo)
-    formato.aplicar_borde_tabla(ws, L.rango_etiquetas_turno(n_turnos), interno, externo)
+    con_prof = bool(facultad.profesores)
+    formato.aplicar_borde_tabla(
+        ws, L.rango_bloque_horario(n_dias, n_turnos, con_prof), interno, externo)
+    formato.aplicar_borde_tabla(
+        ws, L.rango_etiquetas_turno(n_turnos, con_prof), interno, externo)
     formato.aplicar_borde_tabla(ws, L.rango_tabla_asignaturas(n_asig), interno, externo)
-    # Linea gruesa separando cada turno del siguiente (bajo su fila de aula), para
-    # distinguir de un vistazo los bloques de dos filas de cada turno.
+    # Linea gruesa separando cada turno del siguiente, bajo su ultima fila
+    # visible: la del profesor, o la del aula si no hay profesores declarados.
     grueso = estilos.lado_grueso()
-    for rango in L.filas_separadoras_turno(n_dias, n_turnos):
+    for rango in L.filas_separadoras_turno(n_dias, n_turnos, con_prof):
         formato.aplicar_borde_inferior(ws, rango, grueso)
 
 

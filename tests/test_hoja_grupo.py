@@ -109,14 +109,16 @@ def test_padding_en_celdas_del_horario():
 def test_linea_gruesa_separa_turnos():
     # Un turno ocupa 2 filas (asignatura + aula). La frontera inferior de la fila
     # de aula de cada turno (salvo el ultimo) lleva un borde grueso separador.
-    fac, g = _facultad()
+    # Con profesores, el turno acaba en su fila; el caso sin profesores lo cubre
+    # test_sin_profesores_los_separadores_van_en_filas_visibles.
+    fac, g = _facultad_con_profesores()
     wb = Workbook()
     ws = wb.active
     construir_hoja_grupo(ws, g, fac, horario=None)
     # Turno 1: bajo su ultima fila (la del profesor), borde grueso.
     assert ws[L.celda_profesor(0, 1)].border.bottom.style == "thick"
     assert ws[f"A{L.fila_profesor(1)}"].border.bottom.style == "thick"
-    # Ultimo turno (6): su borde inferior es el perimetro medio, no el separador.
+    # Ultimo turno: su borde inferior es el perimetro medio, no el separador.
     assert ws[L.celda_profesor(0, fac.turnos)].border.bottom.style == "medium"
 
 
@@ -490,3 +492,32 @@ def test_las_reglas_siguen_al_turno_al_desplazarse():
     # Y la de aula invalida, el aula de su turno.
     assert any(f'{aula2}<>""' in f and "AulasValidas" in f
                for f in formulas_de(aula2)), formulas_de(aula2)
+
+
+def test_la_fila_de_profesor_tambien_lleva_alto_y_padding():
+    """Hallazgo de la revision: el padding seguia terminando en la fila de aula,
+    asi que la fila de profesor del ultimo turno quedaba sin alto ni sangria
+    dentro de un bloque que si esta bordeado."""
+    fac, g = _facultad_con_profesores()
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac)
+    ultima = L.fila_profesor(fac.turnos)
+    assert ws.row_dimensions[ultima].height is not None
+    assert ws[L.celda_profesor(0, fac.turnos)].alignment.vertical == "center"
+
+
+def test_sin_profesores_los_separadores_van_en_filas_visibles():
+    """Hallazgo de la revision: al ocultar las filas de profesor se ocultaban
+    tambien la linea gruesa que separa los turnos y el borde inferior de la
+    rejilla, que desde la fase 3b viven en esa fila. La rejilla quedaba sin
+    separadores y sin cierre, que es lo contrario de 'se ve como antes'."""
+    fac, g = _facultad()          # sin profesores
+    wb = Workbook()
+    ws = wb.active
+    construir_hoja_grupo(ws, g, fac)
+    # El separador del turno 1 tiene que caer en su fila de aula, que se ve.
+    assert ws[L.celda_aula(0, 1)].border.bottom.style == "thick"
+    assert ws.row_dimensions[L.fila_aula(1)].hidden is not True
+    # Y el cierre de la rejilla, en la fila de aula del ultimo turno.
+    assert ws[L.celda_aula(0, fac.turnos)].border.bottom.style == "medium"

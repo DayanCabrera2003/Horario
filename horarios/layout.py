@@ -47,6 +47,16 @@ def celda_profesor(dia_idx: int, turno: int) -> str:
     return f"{col_dia(dia_idx)}{fila_profesor(turno)}"
 
 
+def fila_fin_turno(turno: int, con_profesor: bool = True) -> int:
+    """Ultima fila visible de un turno.
+
+    Sin profesores declarados la fila de profesor se oculta, y una fila oculta no
+    dibuja sus bordes: el separador de turnos y el cierre de la rejilla tienen que
+    bajar a la fila de aula o la rejilla se queda sin ellos.
+    """
+    return fila_profesor(turno) if con_profesor else fila_aula(turno)
+
+
 def rango_horario(n_dias: int, n_turnos: int) -> str:
     c1 = celda_asig(0, 1)
     c2 = f"{col_dia(n_dias - 1)}{fila_profesor(n_turnos)}"
@@ -85,14 +95,16 @@ def rangos_filas_profesor(n_dias: int, n_turnos: int) -> str:
                     for t in range(1, n_turnos + 1))
 
 
-def rango_bloque_horario(n_dias: int, n_turnos: int) -> str:
-    """Rectangulo de la rejilla: encabezado de dias mas las filas asig/aula (para bordear)."""
+def rango_bloque_horario(n_dias: int, n_turnos: int,
+                         con_profesor: bool = True) -> str:
+    """Rectangulo de la rejilla: encabezado de dias mas las filas de cada turno."""
     c1 = f"{col_dia(0)}{FILA_ENCABEZADO_DIAS}"
-    c2 = f"{col_dia(n_dias - 1)}{fila_profesor(n_turnos)}"
+    c2 = f"{col_dia(n_dias - 1)}{fila_fin_turno(n_turnos, con_profesor)}"
     return f"{c1}:{c2}"
 
 
-def filas_separadoras_turno(n_dias: int, n_turnos: int) -> list[str]:
+def filas_separadoras_turno(n_dias: int, n_turnos: int,
+                            con_profesor: bool = True) -> list[str]:
     """Rangos de fila (columna A de turnos hasta el ultimo dia) sobre cuya cara
     inferior va la linea gruesa que separa un turno del siguiente.
 
@@ -101,14 +113,14 @@ def filas_separadoras_turno(n_dias: int, n_turnos: int) -> list[str]:
     perimetro.
     """
     col_fin = col_dia(n_dias - 1)
-    return [f"A{fila_profesor(t)}:{col_fin}{fila_profesor(t)}"
+    return [f"A{fila_fin_turno(t, con_profesor)}:{col_fin}{fila_fin_turno(t, con_profesor)}"
             for t in range(1, n_turnos)]
 
 
-def rango_etiquetas_turno(n_turnos: int) -> str:
+def rango_etiquetas_turno(n_turnos: int, con_profesor: bool = True) -> str:
     """Columna A con las etiquetas 'Turno t', de la primera fila del primer turno
     a la ultima del ultimo."""
-    return f"A{fila_asig(1)}:A{fila_profesor(n_turnos)}"
+    return f"A{fila_asig(1)}:A{fila_fin_turno(n_turnos, con_profesor)}"
 
 
 # --- Tabla de asignaturas (I=id, J=nombre, K=frec, L=asignadas, M=faltan) ---
