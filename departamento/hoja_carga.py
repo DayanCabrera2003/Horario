@@ -104,14 +104,16 @@ def _construir_bloque(ws, depto: Departamento, idx: int, profesor) -> None:
     ws[f"A{fila_total}"].font = estilos.fuente_encabezado()
     ws[f"D{fila_total}"] = (f'=SUMIF({rango_prof},"{profesor.id}",'
                             f"{_rango_asignacion(L.COL_HORAS, n_filas)})")
-    if tope is not None:
-        # Rojo en la fila TOTAL cuando el acumulado supera el tope del bloque.
-        # La celda del tope ya no es un numero escrito sino el que trae el
-        # claustro, asi que la alerta sigue al valor que se edite alli.
-        ws.conditional_formatting.add(
-            f"A{fila_total}:D{fila_total}",
-            estilos.regla_formula(f"$D${fila_total}>$D${fila_val}",
-                                  estilos.COLOR_SOBRECARGA))
+    # Rojo en la fila TOTAL cuando el acumulado supera el tope del bloque. La
+    # regla se crea siempre, tenga tope o no al generar: el tope se edita en el
+    # claustro, asi que ponerla solo a quien ya lo traia dejaria sin alerta
+    # justo a quien se lo pongan despues. La guarda del <> "" evita que dispare
+    # con la casilla vacia, donde no hay nada con que comparar.
+    ws.conditional_formatting.add(
+        f"A{fila_total}:D{fila_total}",
+        estilos.regla_formula(
+            f'AND($D${fila_val}<>"",$D${fila_total}>$D${fila_val})',
+            estilos.COLOR_SOBRECARGA))
 
     # Todas las horas del bloque son enteras: el tope, las lineas de detalle y
     # el TOTAL. Sin formato explicito, Calc las mostraria segun la configuracion

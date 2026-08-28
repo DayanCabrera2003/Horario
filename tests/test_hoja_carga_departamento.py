@@ -83,19 +83,14 @@ def test_alto_de_filas_para_padding():
     assert ws.row_dimensions[19].height == estilos.ALTO_FILA
 
 
-def test_alerta_sobrecarga_solo_con_tope():
+def test_alerta_sobrecarga_en_la_fila_total_de_cada_bloque():
     ws = _hoja()
     rangos = {str(r.sqref) for r in ws.conditional_formatting._cf_rules}
     # Regla roja sobre la fila TOTAL de cada bloque.
     assert "A10:D10" in rangos
     assert "A19:D19" in rangos
-
-    # Sin tope global ni propio no se agrega la regla del bloque.
-    depto = _departamento(tope_global=None)
-    depto = Departamento(**{**depto.__dict__,
-                            "profesores": (Profesor(id="PIAD", nombre="P", grado="Dr."),)})
-    ws2 = _hoja(depto)
-    assert not list(ws2.conditional_formatting._cf_rules)
+    # La regla se crea siempre; el caso de quien no traia tope al generar lo
+    # cubre test_la_alerta_existe_aunque_el_profesor_no_tuviera_tope_al_generar.
 
 
 def test_la_hoja_de_profesores_queda_protegida():
@@ -135,3 +130,23 @@ def test_las_horas_llevan_formato_de_numero_entero():
 
 def test_la_hoja_no_muestra_cuadricula():
     assert _hoja().sheet_view.showGridLines is False
+
+
+def test_la_alerta_existe_aunque_el_profesor_no_tuviera_tope_al_generar():
+    """Hallazgo de la revision: la regla solo se creaba si el YAML declaraba un
+    tope. Desde que el tope se edita en el claustro, quien no lo traia se queda
+    sin alerta para siempre, y la guia dice que ahi se cambia el de cualquiera.
+    """
+    from dataclasses import replace
+    from departamento.modelo import Profesor
+    depto = replace(_departamento(), tope_horas=None,
+                    profesores=(Profesor(id="PIAD", nombre="Pedro", grado="Dr."),))
+    wb = Workbook()
+    wb.remove(wb.active)
+    construir_hoja_carga(wb, depto)
+    ws = wb["Carga por profesor"]
+    formulas = [r.formula[0] for reglas in ws.conditional_formatting._cf_rules.values()
+                for r in reglas if r.formula]
+    assert formulas, "sin tope declarado no se creo ninguna alerta"
+    # Y no dispara cuando la casilla del tope esta vacia.
+    assert any('<>""' in f for f in formulas), formulas
