@@ -30,18 +30,22 @@ def _formula_turnos(fila: int) -> str:
     """Turnos que le tocan a la semana: la suma de las frecuencias de todo lo
     que imparte, segun la hoja Docencia. Va como formula para que cambiar alli
     quien da que se refleje aqui sin regenerar."""
-    return (f"=SUMIF({HOJA_DATOS.RANGO_DOCENCIA_PROFESOR},{COL_ID}{fila},"
-            f"{HOJA_DATOS.RANGO_DOCENCIA_FRECUENCIA})")
+    return (f'=IF({COL_ID}{fila}="","",'
+            f"SUMIF({HOJA_DATOS.RANGO_DOCENCIA_PROFESOR},{COL_ID}{fila},"
+            f"{HOJA_DATOS.RANGO_DOCENCIA_FRECUENCIA}))")
 
 
 def construir_hoja_profesores(wb, facultad: Facultad) -> None:
     if not facultad.profesores:
         return
-    filas = [(p.id, p.nombre, p.grado,
-              p.tope_turnos if p.tope_turnos is not None else "",
-              _formula_turnos(FILA_PRIMER_DATO + i))
-             for i, p in enumerate(facultad.profesores)]
     capacidad = capacidad_para(len(facultad.profesores))
+    filas = []
+    for i in range(capacidad):
+        p = facultad.profesores[i] if i < len(facultad.profesores) else None
+        filas.append((p.id if p else None, p.nombre if p else None,
+                      p.grado if p else None,
+                      (p.tope_turnos if p and p.tope_turnos is not None else ""),
+                      _formula_turnos(FILA_PRIMER_DATO + i)))
     ws = construir_hoja_listado(wb, NOMBRE_HOJA, ENCABEZADOS, filas,
                                 color_encabezado=estilos.COLOR_ENCABEZADO,
                                 capacidad=capacidad)

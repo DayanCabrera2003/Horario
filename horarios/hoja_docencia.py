@@ -44,11 +44,19 @@ def _formula_nombre(fila: int) -> str:
 def construir_hoja_docencia(wb, facultad: Facultad) -> None:
     if not facultad.profesores:
         return
-    filas = [(d.grupo, d.asignatura, d.profesor, _formula_nombre(FILA_PRIMER_DATO + i))
-             for i, d in enumerate(facultad.docencia)]
+    total = capacidad(facultad)
+    # Las filas de reserva llevan su formula igual que las escritas: una linea
+    # libre sin ella esta preparada a medias, y al usarla la columna calculada
+    # se queda en blanco sin que nadie entienda por que.
+    filas = []
+    for i in range(total):
+        d = facultad.docencia[i] if i < len(facultad.docencia) else None
+        filas.append((d.grupo if d else None, d.asignatura if d else None,
+                      d.profesor if d else None,
+                      _formula_nombre(FILA_PRIMER_DATO + i)))
     ws = construir_hoja_listado(wb, NOMBRE_HOJA, ENCABEZADOS, filas,
                                 color_encabezado=estilos.COLOR_ENCABEZADO,
-                                capacidad=capacidad(facultad),
+                                capacidad=total,
                                 # Se edita: la rejilla de cada grupo lee de aqui
                                 # quien imparte cada asignatura.
                                 columnas_editables=(COL_GRUPO, COL_ASIGNATURA,

@@ -89,3 +89,12 @@ def test_los_listados_quedan_protegidos_y_ordenables():
         ws = _hoja(constructor)
         assert ws.protection.sheet is True, ws.title
         assert ws.protection.sort is False, ws.title
+
+
+def test_la_reserva_del_claustro_ya_trae_la_formula_del_origen():
+    ws = _hoja(construir_hoja_profesores)
+    fila_libre = next(f for f in range(2, ws.max_row + 1) if ws[f"A{f}"].value is None)
+    formula = str(ws[f"E{fila_libre}"].value)
+    assert formula.startswith("="), fila_libre
+    # Con la fila vacia no dice "Sin tope": no hay profesor del que hablar.
+    assert f'A{fila_libre}=""' in formula

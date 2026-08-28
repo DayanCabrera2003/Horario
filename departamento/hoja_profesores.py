@@ -40,22 +40,29 @@ def _formula_origen(depto: Departamento, fila: int) -> str:
     al global del departamento se lee como heredado, que es lo que significa.
     """
     celda = f"{COL_TOPE}{fila}"
+    # La guarda del id vacio es para las filas de reserva: sin ella una linea
+    # libre anunciaria "Sin tope" de un profesor que todavia no existe.
+    vacia = f'{COL_ID}{fila}=""'
     if depto.tope_horas is None:
-        return f'=IF({celda}="","{ORIGEN_SIN_TOPE}","{ORIGEN_PROPIO}")'
-    return (f'=IF({celda}="","{ORIGEN_SIN_TOPE}",'
-            f'IF({celda}={depto.tope_horas},"{ORIGEN_HEREDADO}","{ORIGEN_PROPIO}"))')
+        return (f'=IF({vacia},"",'
+                f'IF({celda}="","{ORIGEN_SIN_TOPE}","{ORIGEN_PROPIO}"))')
+    return (f'=IF({vacia},"",'
+            f'IF({celda}="","{ORIGEN_SIN_TOPE}",'
+            f'IF({celda}={depto.tope_horas},"{ORIGEN_HEREDADO}","{ORIGEN_PROPIO}")))')
 
 
 def construir_hoja_profesores(wb, depto: Departamento) -> None:
+    capacidad = capacidad_para(len(depto.profesores))
     filas = []
-    for i, p in enumerate(depto.profesores):
-        tope = depto.tope_efectivo(p)
+    for i in range(capacidad):
+        p = depto.profesores[i] if i < len(depto.profesores) else None
+        tope = depto.tope_efectivo(p) if p else None
         # Celda vacia y no un 0 cuando no hay tope: un 0 se leeria como "no
         # puede impartir nada", que es lo contrario de lo que significa.
-        filas.append((p.id, p.nombre, p.grado,
+        filas.append((p.id if p else None, p.nombre if p else None,
+                      p.grado if p else None,
                       tope if tope is not None else "",
                       _formula_origen(depto, FILA_PRIMER_DATO + i)))
-    capacidad = capacidad_para(len(depto.profesores))
     ws = construir_hoja_listado(wb, NOMBRE_HOJA, ENCABEZADOS, filas,
                                 color_encabezado=estilos.COLOR_ENCABEZADO,
                                 capacidad=capacidad,

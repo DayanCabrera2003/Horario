@@ -116,3 +116,20 @@ def test_un_profesor_fuera_de_la_lista_se_resalta_en_docencia():
     formulas = [r.formula[0] for reglas in ws.conditional_formatting._cf_rules.values()
                 for r in reglas if r.formula]
     assert any("ProfesoresValidos" in f and "COUNTIF" in f for f in formulas), formulas
+
+
+def test_las_filas_de_reserva_ya_traen_sus_formulas():
+    """Se vio al mirar el PDF: al escribir una fila nueva en la reserva, la
+    columna calculada se quedaba en blanco. Las lineas libres estaban preparadas
+    a medias: con borde y alto, pero sin la formula que las hace utiles."""
+    ws = _hoja(construir_hoja_docencia)
+    fila_libre = next(f for f in range(2, ws.max_row + 1) if ws[f"A{f}"].value is None)
+    assert str(ws[f"D{fila_libre}"].value).startswith("="), fila_libre
+
+
+def test_el_claustro_de_horarios_calcula_tambien_en_la_reserva():
+    ws = _hoja(construir_hoja_profesores)
+    fila_libre = next(f for f in range(2, ws.max_row + 1) if ws[f"A{f}"].value is None)
+    assert str(ws[f"E{fila_libre}"].value).startswith("="), fila_libre
+    # Y con la fila vacia no muestra un 0 suelto.
+    assert 'IF(' in ws[f"E{fila_libre}"].value
