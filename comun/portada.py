@@ -40,9 +40,11 @@ _INSTRUCCIONES = (
 # efecto de dejar un hueco es silencioso: la lista se corta ahi y lo que queda
 # debajo desaparece de los desplegables sin ningun mensaje. Comprobado en Calc.
 _AVISO_LISTAS = (
-    "En las hojas de datos puedes añadir filas al final de la lista, en las "
-    "líneas libres que ya vienen preparadas. No dejes filas en blanco en medio: "
-    "la lista se corta ahí y lo que quede debajo desaparece de los desplegables."
+    "Las listas que el índice marca «se escribe» admiten filas nuevas al final, "
+    "en las líneas libres que ya vienen preparadas. No dejes filas en blanco en "
+    "medio: la lista se corta ahí y lo que quede debajo desaparece de los "
+    "desplegables. Las demás hojas de datos son copia del YAML y están "
+    "bloqueadas."
 )
 
 

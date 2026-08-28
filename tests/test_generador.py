@@ -198,3 +198,26 @@ def test_el_indice_situa_cada_grupo_en_su_carrera_y_ano(tmp_path):
     # La carrera y el ano son el eje por el que se navega el libro.
     wb = _generar(tmp_path)
     assert _fila_del_indice(wb["Portada"], "C111")[1].value == "Carrera C · año 1"
+
+
+def test_lo_que_el_indice_marca_como_escribible_se_puede_escribir(tmp_path):
+    """Hallazgo de la revision: la portada invitaba a anadir filas "en las hojas
+    de datos", pero casi todas estan bloqueadas y el lector se topa con un aviso
+    de proteccion sin explicacion.
+
+    La invariante que cierra eso: si el indice dice "se escribe", la hoja tiene
+    que tener alguna celda desbloqueada, y al reves.
+    """
+    salida = tmp_path / "out.xlsx"
+    generar(config_path=_config(tmp_path, CON_PROFESORES),
+            horarios_path=None, salida=salida)
+    wb = load_workbook(salida)
+    portada = wb["Portada"]
+    for fila in portada.iter_rows(min_col=1, max_col=3):
+        nombre, _, etiqueta = (c.value for c in fila)
+        if not isinstance(nombre, str) or nombre not in wb.sheetnames:
+            continue
+        ws = wb[nombre]
+        editable = any(c.protection.locked is False
+                       for f in ws.iter_rows() for c in f)
+        assert editable == (etiqueta == "se escribe"), (nombre, etiqueta, editable)

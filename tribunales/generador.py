@@ -27,7 +27,7 @@ def _indice(nombres_dia) -> tuple:
     """
     return (
         ("Profesores", "Los profesores que pueden formar tribunal", SON_DATOS),
-        ("Estudiantes", "Los estudiantes, tengan tesis o no", SON_DATOS),
+        ("Estudiantes", "Los estudiantes, tengan tesis o no", SE_ESCRIBE),
         ("Locales", "Los locales donde se puede defender", SON_DATOS),
         ("Días", "Qué días hay y con qué momentos", SON_DATOS),
         ("Tribunales", "Quién forma el tribunal de cada tesis", SE_CALCULA),

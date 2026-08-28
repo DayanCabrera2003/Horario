@@ -26,7 +26,7 @@ from departamento.hoja_cobertura import (
 # Que hay en cada hoja y si se escribe a mano, para el indice de la portada.
 # `Datos` no aparece: esta oculta y solo es fontaneria de formulas.
 _HOJAS_INDICE = (
-    (HOJA_CLAUSTRO, "Los profesores del departamento, con su grado y su tope", SON_DATOS),
+    (HOJA_CLAUSTRO, "Los profesores del departamento, con su grado y su tope", SE_ESCRIBE),
     (HOJA_PLAN, "Las asignaturas del semestre y sus horas", SON_DATOS),
     (HOJA_ASIGNACION, "Quién imparte cada conferencia y cada grupo de CP", SE_ESCRIBE),
     (HOJA_CARGA, "Cuántas horas acumula cada uno y si pasa su tope", SE_CALCULA),

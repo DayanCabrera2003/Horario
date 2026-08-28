@@ -38,10 +38,10 @@ def _indice(hojas_grupo, con_profesores: bool) -> tuple:
     # el indice tiene que preguntarlo en vez de darlas por hechas.
     profesorado = (
         (HOJA_PROFESORES, "Los profesores de la facultad", SON_DATOS),
-        (HOJA_DOCENCIA, "Quién imparte cada asignatura en cada grupo", SON_DATOS),
+        (HOJA_DOCENCIA, "Quién imparte cada asignatura en cada grupo", SE_ESCRIBE),
     ) if con_profesores else ()
     return (
-        (HOJA_LISTA_AULAS, "Las aulas de la facultad", SON_DATOS),
+        (HOJA_LISTA_AULAS, "Las aulas de la facultad", SE_ESCRIBE),
         (HOJA_ASIGNATURAS, "Qué se imparte en cada año y con qué frecuencia", SON_DATOS),
         (HOJA_GRUPOS, "Los grupos y de dónde sale el id de cada uno", SON_DATOS),
         (HOJA_ESTRUCTURA, "Días, turnos y tamaño del libro", SON_DATOS),
