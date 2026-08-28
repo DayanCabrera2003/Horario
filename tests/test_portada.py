@@ -136,3 +136,10 @@ def test_un_origen_largo_no_ensancha_la_columna_de_etiquetas():
     # nombres de hoja, y no tiene por que crecer con ella.
     ws = _construir(_wb(), origen="/una/ruta/absurdamente/larga/" + "x" * 80)
     assert ws.column_dimensions["A"].width < 30
+
+
+def test_unas_instrucciones_vacias_no_dejan_una_fila_combinada_de_mas():
+    # `instrucciones` es un parametro: un generador puede no querer ninguna.
+    ws = _construir(_wb(), instrucciones="")
+    combinadas = {str(r) for r in ws.merged_cells.ranges}
+    assert not any(str(portada._FILA_INSTRUCCIONES + 1) in c for c in combinadas)
