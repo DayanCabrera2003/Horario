@@ -1,4 +1,4 @@
-"""Hoja Asignaturas: reporte de quien imparte cada asignatura.
+"""Hoja `Cobertura por asignatura`: reporte de quien imparte cada asignatura.
 
 Un bloque por asignatura con sus filas de carga (Conf y cada grupo de CP) y el
 profesor elegido en cada una, por referencia directa a la hoja Asignacion (las

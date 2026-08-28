@@ -1,15 +1,15 @@
-"""Hoja oculta Datos del generador del departamento.
+"""Hoja auxiliar oculta del generador del departamento.
 
-Contiene las tablas de apoyo de las demas hojas:
-- A:D  tabla de profesores (id, nombre, grado, tope efectivo), con los rangos
-       nombrados ProfesoresValidos (ids, para el desplegable) y ProfesoresTabla
-       (para BUSCARV de nombre y tope).
+Guarda solo lo derivado. Los datos del problema viven en las hojas visibles: el
+claustro esta en la hoja `Profesores`, que es quien declara ProfesoresValidos y
+ProfesoresTabla desde la fase 3a.
+
 - F:J  tabla auxiliar de carga por profesor: una fila por fila de carga de la
        hoja Asignacion. La columna F construye la clave '<prof>#<n>' con un
        CONTAR.SI de rango creciente (n = numero de aparicion del profesor hasta
        esa fila); G:J llevan asignatura, tipo, grupo y horas. El rango nombrado
-       CargaPorProfesor permite a la hoja Profesores rellenar su detalle con
-       BUSCARV planos, sin formulas matriciales.
+       CargaPorProfesor permite a la hoja `Carga por profesor` rellenar su
+       detalle con BUSCARV planos, sin formulas matriciales.
 """
 from openpyxl.workbook.defined_name import DefinedName
 from openpyxl.utils import quote_sheetname, absolute_coordinate

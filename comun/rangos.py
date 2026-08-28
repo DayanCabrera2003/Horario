@@ -9,6 +9,11 @@ Comprobado en LibreOffice Calc antes de usarlo (tarea 3a.1 del plan): el texto
 sobrevive al round-trip tal cual, `ROWS` del rango da las filas escritas y no la
 capacidad, y al escribir en la primera fila libre el rango crece.
 
+**Ojo con las columnas de formulas:** `COUNTA` cuenta celdas no vacias, y una
+formula que devuelve "" ocupa celda. Un rango anclado en una columna calculada
+abarca siempre toda su capacidad; da igual para BUSCARV y SUMAR.SI, pero no
+sirve para dimensionar nada.
+
 **La trampa, tambien comprobada:** `COUNTA` cuenta celdas no vacias, no filas
 ocupadas. Una fila en blanco en medio del listado no reduce la cuenta, pero
 desplaza el final del rango: con un hueco, la ultima entrada escrita queda fuera

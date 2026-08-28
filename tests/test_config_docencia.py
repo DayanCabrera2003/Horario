@@ -77,12 +77,13 @@ docencia:
     AMI-CP: PIAD
 """
     facultad = _cargar(tmp_path, texto)
+    declarado = {(d.grupo, d.asignatura): d.profesor for d in facultad.docencia}
     assert len(facultad.docencia) == 3
-    assert facultad.profesor_de("C111", "AMI-CP") == "MARA"
+    assert declarado[("C111", "AMI-CP")] == "MARA"
     # El mismo AMI-CP, otro grupo, otro profesor: es el caso que obliga a que
     # la clave sea el par y no solo la asignatura.
-    assert facultad.profesor_de("C112", "AMI-CP") == "PIAD"
-    assert facultad.profesor_de("C112", "AMI-C") == ""
+    assert declarado[("C112", "AMI-CP")] == "PIAD"
+    assert ("C112", "AMI-C") not in declarado
 
 
 def test_docencia_de_un_profesor_inexistente_da_error(tmp_path):

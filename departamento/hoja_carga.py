@@ -1,4 +1,4 @@
-"""Hoja Profesores: reporte de carga por profesor, calculado con formulas.
+"""Hoja `Carga por profesor`: reporte de carga por profesor, calculado con formulas.
 
 Un bloque por profesor: sus datos (id, nombre, grado, tope efectivo), el
 detalle de lo que imparte y una fila TOTAL. El detalle no se conoce al generar

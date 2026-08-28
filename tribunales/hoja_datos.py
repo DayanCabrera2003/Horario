@@ -16,8 +16,11 @@ def _rango_nombrado(nombre: str, celda_ini: str, celda_fin: str) -> DefinedName:
 
 
 def construir_hoja_datos(wb, facultad: Facultad) -> None:
-    """Crea la hoja oculta Datos: tabla tesis->tribunal (A..E) y lista de ids de
-    estudiantes (columna G), cada una con su rango nombrado."""
+    """Crea la hoja auxiliar oculta con la tabla tesis->tribunal (A..F).
+
+    La lista de estudiantes ya no vive aqui: desde la fase 3a esta en la hoja
+    visible `Estudiantes`, que es quien declara EstudiantesValidos.
+    """
     ws = wb.create_sheet(NOMBRE_HOJA)
     ws.sheet_state = "hidden"
 
@@ -39,7 +42,6 @@ def construir_hoja_datos(wb, facultad: Facultad) -> None:
             ws[f"F{fila}"] = t.vocal
     if fila:
         wb.defined_names.add(_rango_nombrado("TesisTribunal", "A1", f"F{fila}"))
-
 
     # Hoja de apoyo oculta: nada se edita a mano aqui.
     proteccion.proteger_hoja(ws)

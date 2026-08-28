@@ -38,7 +38,7 @@ def _formato_por_anio(ws, celda, dir_firma: str, facultad: Facultad) -> None:
 
 
 def construir_hoja_ocupacion(wb, facultad: Facultad, firmas: dict[tuple[str, int, str], str]) -> None:
-    """Crea la hoja Aulas con un bloque por día (columnas=aulas, filas=turnos).
+    """Crea la hoja `Ocupación de aulas` con un bloque por día (columnas=aulas, filas=turnos).
 
     Cada celda de datos contiene una fórmula que concatena los grupos que ocupan
     esa aula/turno/día, y recibe formato condicional por año (según la firma de Datos)

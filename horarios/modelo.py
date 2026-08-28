@@ -89,11 +89,3 @@ class Facultad:
     def asignaturas_de(self, grupo: Grupo) -> tuple:
         return self.anios[grupo.anio_codigo].asignaturas
 
-    def profesor_de(self, grupo_id: str, asignatura_id: str) -> str:
-        """Id del profesor que imparte esa asignatura en ese grupo, o "" si no
-        se ha declarado. Devuelve cadena vacia y no None porque el consumidor es
-        una celda de Excel, donde el hueco se escribe en blanco."""
-        for d in self.docencia:
-            if d.grupo == grupo_id and d.asignatura == asignatura_id:
-                return d.profesor
-        return ""
