@@ -73,6 +73,20 @@ def _formula_clave(idx: int) -> str:
     return f'=IF({celda}="","",{celda}&"#"&COUNTIF({rango},{celda}))'
 
 
+def _formula_detalle(col_origen: str, idx: int) -> str:
+    """Dato de la fila de carga `idx` que el reporte de carga recupera de aqui.
+
+    Va con guarda y no como referencia pelada: en Excel y en Calc una referencia
+    directa a una celda **vacia** se muestra como `0`, no en blanco. Las
+    columnas Tipo y Grupo de Asignacion se escriben a mano y pueden estar
+    vacias, asi que sin la guarda una linea del bloque de `Carga por profesor`
+    mostraria un 0 donde no hay nada. Es el mismo motivo por el que
+    `hoja_cobertura` llevaba esta guarda antes de volverse una tabla.
+    """
+    celda = _celda_asignacion(col_origen, idx, absoluta=False)
+    return f'=IF({celda}="","",{celda})'
+
+
 def _formula_par(idx: int) -> str:
     """Clave '<profesor>|<asignatura>' de la fila de carga `idx`.
 
@@ -113,7 +127,7 @@ def construir_hoja_datos(wb, depto: Departamento) -> None:
         r = i + 1
         ws[f"{COL_CLAVE}{r}"] = _formula_clave(i)
         for col, col_origen in _DETALLE:
-            ws[f"{col}{r}"] = f"={_celda_asignacion(col_origen, i, absoluta=False)}"
+            ws[f"{col}{r}"] = _formula_detalle(col_origen, i)
         ws[f"{COL_PAR}{r}"] = _formula_par(i)
         ws[f"{COL_PRIMERA_VEZ}{r}"] = _formula_primera_vez(r)
 

@@ -73,18 +73,18 @@ def test_el_detalle_referencia_a_asignacion_y_no_lo_copia():
     # una fila. El detalle del reporte de carga leeria entonces datos de otra
     # asignatura sin avisar.
     _, ws = _hoja()
-    assert ws["G1"].value == "='Asignación'!B4"    # nombre de la asignatura
-    assert ws["H1"].value == "='Asignación'!D4"    # tipo
-    assert ws["I1"].value == "='Asignación'!E4"    # grupo
-    assert ws["J1"].value == "='Asignación'!F4"    # horas
-    assert ws["G3"].value == "='Asignación'!B6"
+    assert "'Asignación'!B4" in ws["G1"].value     # nombre de la asignatura
+    assert "'Asignación'!D4" in ws["H1"].value     # tipo
+    assert "'Asignación'!E4" in ws["I1"].value     # grupo
+    assert "'Asignación'!F4" in ws["J1"].value     # horas
+    assert "'Asignación'!B6" in ws["G3"].value
 
 
 def test_la_auxiliar_cubre_la_reserva_de_asignacion():
     # 3 filas de carga + 2 de reserva: las filas 4 y 5 de la auxiliar existen.
     _, ws = _hoja()
     assert ws["F5"].value is not None
-    assert ws["G5"].value == "='Asignación'!B8"
+    assert "'Asignación'!B8" in ws["G5"].value
 
 
 def test_clave_del_par_profesor_asignatura():
@@ -123,6 +123,17 @@ def test_sin_asignaturas_no_se_declara_el_rango_de_carga():
     wb.remove(wb.active)
     construir_hoja_datos(wb, depto)
     assert "CargaPorProfesor" not in wb.defined_names
+
+
+def test_una_referencia_a_celda_vacia_no_muestra_un_cero():
+    # En Excel y en Calc, "=A1" sobre una celda vacia muestra 0, no un blanco.
+    # Las columnas Tipo y Grupo de Asignacion se escriben a mano y pueden estar
+    # vacias: sin la guarda, el bloque de `Carga por profesor` ensena un 0 donde
+    # no hay nada.
+    _, ws = _hoja()
+    for col in ("G", "H", "I", "J"):
+        assert ws[f"{col}1"].value.startswith("=IF("), col
+        assert '="","",' in ws[f"{col}1"].value, col
 
 
 def test_la_clave_del_par_exige_las_dos_mitades():
