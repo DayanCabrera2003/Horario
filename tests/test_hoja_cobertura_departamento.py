@@ -101,6 +101,13 @@ def test_el_estado_distingue_las_tres_formas_de_faltar():
         assert texto in formula, texto
 
 
+def test_el_estado_no_dice_faltan_1_profesores():
+    # Lo lee gente, no una maquina: el singular se distingue del plural.
+    formula = _hoja()["I3"].value
+    assert "Falta 1 profesor" in formula
+    assert "Falta 1 hora de carga" in formula
+
+
 def test_colores_por_estado():
     reglas = _hoja()
     verdes = [(sq, f) for sq, f, color in _reglas(reglas)

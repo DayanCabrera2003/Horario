@@ -116,14 +116,20 @@ def _formula_estado(f: int) -> str:
     que tiene no cubren las horas declaradas (falta crear alguna) y por ultimo
     si alguna se quedo sin profesor. Un color solo no distingue estos tres
     casos, y son tres trabajos distintos.
+
+    El singular se distingue del plural con un IF. Es una linea mas de formula
+    a cambio de que la hoja no diga "Faltan 1 profesores" a quien la lea.
     """
+    faltan = f"${COL_SIN_PROFESOR}{f}"
+    profesores = (f'IF({faltan}=1,"Falta 1 profesor",'
+                  f'"Faltan "&{faltan}&" profesores")')
+    horas = f"${COL_HORAS_PLAN}{f}-${COL_HORAS_FILAS}{f}"
+    carga = (f'IF({horas}=1,"Falta 1 hora de carga",'
+             f'"Faltan "&({horas})&" horas de carga")')
     return (f'=IF(${COL_ID}{f}="","",'
             f'IF(${COL_FILAS}{f}=0,"Sin filas de carga",'
-            f'IF(${COL_HORAS_FILAS}{f}<${COL_HORAS_PLAN}{f},'
-            f'"Faltan "&(${COL_HORAS_PLAN}{f}-${COL_HORAS_FILAS}{f})'
-            f'&" horas de carga",'
-            f'IF(${COL_SIN_PROFESOR}{f}>0,'
-            f'"Faltan "&${COL_SIN_PROFESOR}{f}&" profesores",'
+            f"IF(${COL_HORAS_FILAS}{f}<${COL_HORAS_PLAN}{f},{carga},"
+            f"IF({faltan}>0,{profesores},"
             f'"{ESTADO_COMPLETA}"))))')
 
 
