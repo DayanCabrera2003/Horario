@@ -24,6 +24,7 @@ from departamento import estilos
 from departamento import hoja_asignaturas as A
 from departamento import layout as L
 from departamento.modelo import Departamento
+from departamento.panel_profesores import construir_panel
 
 NOMBRE_HOJA = "Asignación"
 
@@ -47,6 +48,7 @@ def construir_hoja_asignacion(wb, depto: Departamento) -> None:
     _aplicar_dropdowns(ws, n)
     _aplicar_formato_condicional(ws, n)
     _aplicar_formato(ws, depto, n)
+    construir_panel(ws, depto, n)
     _escribir_leyenda(ws, n)
 
     # Encabezados fijos al hacer scroll: todo lo anterior a la primera carga.
