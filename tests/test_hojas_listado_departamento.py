@@ -146,3 +146,17 @@ def test_rangos_nombrados_de_asignaturas():
     texto = wb.defined_names["AsignaturasValidas"].attr_text
     assert "$A$2" in texto
     assert "Asignaturas" in texto
+
+
+def test_el_claustro_tiene_los_huecos_que_declara_el_departamento():
+    # Los mismos huecos son las filas del panel de `Asignacion` y los bloques de
+    # `Carga por profesor`. Si esta hoja tuviera mas, un profesor escrito en un
+    # hueco de mas entraria en el desplegable pero no tendria ni panel ni bloque.
+    depto = Departamento(
+        nombre="D", semestre="1", tope_horas=160, filas_por_profesor=10,
+        profesores=DEPTO.profesores, asignaturas=DEPTO.asignaturas,
+        profesores_reserva=1)
+    ws = _hoja(construir_hoja_profesores, depto)
+    assert ws["A4"].value is None            # 2 profesores + 1 hueco libre
+    assert ws["E4"].value is not None        # el hueco existe, con su formula
+    assert ws["E5"].value is None            # y no hay ninguno de mas
