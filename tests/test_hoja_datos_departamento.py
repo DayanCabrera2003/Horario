@@ -58,10 +58,10 @@ def test_tabla_auxiliar_clave_y_datos():
     # apariciones del profesor con un CONTAR.SI de rango creciente.
     clave = ws["F1"].value
     assert clave.startswith("=IF(")
-    assert "Asignación'!$F$4" in clave
-    assert "COUNTIF('Asignación'!$F$4:$F$4" in clave
+    assert "Asignación'!$G$4" in clave
+    assert "COUNTIF('Asignación'!$G$4:$G$4" in clave
     # La fila 3 cierra el rango creciente en $F$6.
-    assert "COUNTIF('Asignación'!$F$4:$F$6" in ws["F3"].value
+    assert "COUNTIF('Asignación'!$G$4:$G$6" in ws["F3"].value
     # Datos estaticos de la fila de carga: asignatura, tipo, grupo, horas.
     assert ws["G1"].value == "Estadística (CC)"
     assert ws["H1"].value == "Conf"

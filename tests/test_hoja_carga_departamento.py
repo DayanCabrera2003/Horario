@@ -71,9 +71,10 @@ def test_total_con_sumif():
     ws = _hoja()
     assert ws["A10"].value == "TOTAL"
     f = ws["D10"].value
-    # 3 filas de carga -> rango F4:F6 de Asignacion.
-    assert f == ('=SUMIF(\'Asignación\'!$F$4:$F$6,"PIAD",'
-                 "'Asignación'!$E$4:$E$6)")
+    # 3 filas de carga -> se filtra por la columna de profesor (G) y se suma
+    # la de horas (F).
+    assert f == ('=SUMIF(\'Asignación\'!$G$4:$G$6,"PIAD",'
+                 "'Asignación'!$F$4:$F$6)")
 
 
 def test_alto_de_filas_para_padding():

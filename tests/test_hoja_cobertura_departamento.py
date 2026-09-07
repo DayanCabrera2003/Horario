@@ -53,10 +53,10 @@ def test_profesor_referencia_a_asignacion():
     ws = _hoja()
     # La fila Conf de EST-CC es la fila de carga 4 de Asignacion. El IF evita
     # que una celda vacia se muestre como 0.
-    assert ws["D5"].value == "=IF('Asignación'!F4=\"\",\"\",'Asignación'!F4)"
-    assert ws["E5"].value == "='Asignación'!G4"
+    assert ws["D5"].value == "=IF('Asignación'!G4=\"\",\"\",'Asignación'!G4)"
+    assert ws["E5"].value == "='Asignación'!H4"
     # La fila CP de EST-MAT es la fila de carga 8.
-    assert "'Asignación'!F8" in ws["D12"].value
+    assert "'Asignación'!G8" in ws["D12"].value
 
 
 def test_titulo_coloreado_por_completitud():
@@ -67,12 +67,12 @@ def test_titulo_coloreado_por_completitud():
             reglas.append((str(rango.sqref), regla.formula[0],
                            regla.dxf.fill.start_color.rgb[-6:]))
     # Verde si ninguna fila de EST-CC (F4:F6 de Asignacion) esta en blanco.
-    assert ("A3:E3", "COUNTBLANK('Asignación'!$F$4:$F$6)=0",
+    assert ("A3:E3", "COUNTBLANK('Asignación'!$G$4:$G$6)=0",
             estilos.COLOR_COMPLETA) in reglas
-    assert ("A3:E3", "COUNTBLANK('Asignación'!$F$4:$F$6)>0",
+    assert ("A3:E3", "COUNTBLANK('Asignación'!$G$4:$G$6)>0",
             estilos.COLOR_INCOMPLETA) in reglas
     # EST-MAT evalua sus propias filas (F7:F8).
-    assert ("A9:E9", "COUNTBLANK('Asignación'!$F$7:$F$8)=0",
+    assert ("A9:E9", "COUNTBLANK('Asignación'!$G$7:$G$8)=0",
             estilos.COLOR_COMPLETA) in reglas
 
 
