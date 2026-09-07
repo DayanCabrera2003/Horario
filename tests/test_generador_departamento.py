@@ -89,3 +89,14 @@ def test_las_pestanas_distinguen_la_hoja_de_entrada_de_las_de_calculo(tmp_path):
     for hoja in ("Carga por profesor", "Cobertura por asignatura"):
         assert wb[hoja].sheet_properties.tabColor.rgb.endswith(
             estilos.COLOR_PESTANA_CALCULO), f"{hoja} deberia ir de calculo"
+
+
+def test_el_indice_marca_asignaturas_como_editable(tmp_path):
+    # Dejo de ser un listado de solo lectura: ahi se anaden las asignaturas
+    # nuevas. Si el indice sigue diciendo "datos del problema", el usuario no
+    # sabra que puede escribir en ella.
+    from comun.portada import SE_ESCRIBE
+    wb = _generar(tmp_path)
+    textos = [[c.value for c in fila] for fila in wb["Portada"].iter_rows()]
+    fila = next(f for f in textos if "Asignaturas" in f)
+    assert SE_ESCRIBE in fila

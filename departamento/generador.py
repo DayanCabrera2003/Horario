@@ -5,8 +5,7 @@ from pathlib import Path
 from openpyxl import Workbook
 
 from comun.portada import (
-    NOMBRE_HOJA as HOJA_PORTADA, SE_ESCRIBE, SE_CALCULA, SON_DATOS,
-    construir_portada,
+    NOMBRE_HOJA as HOJA_PORTADA, SE_ESCRIBE, SE_CALCULA, construir_portada,
 )
 from departamento.config import cargar_departamento
 from departamento.hoja_datos import (
@@ -27,10 +26,11 @@ from departamento.hoja_cobertura import (
 # `Datos` no aparece: esta oculta y solo es fontaneria de formulas.
 _HOJAS_INDICE = (
     (HOJA_CLAUSTRO, "Los profesores del departamento, con su grado y su tope", SE_ESCRIBE),
-    (HOJA_PLAN, "Las asignaturas del semestre y sus horas", SON_DATOS),
+    (HOJA_PLAN, "Las asignaturas del semestre y sus horas; aquí se añaden las nuevas",
+     SE_ESCRIBE),
     (HOJA_ASIGNACION, "Quién imparte cada conferencia y cada grupo de CP", SE_ESCRIBE),
     (HOJA_CARGA, "Cuántas horas acumula cada uno y si pasa su tope", SE_CALCULA),
-    (HOJA_COBERTURA, "Quién cubre cada fila de carga y qué falta", SE_CALCULA),
+    (HOJA_COBERTURA, "Qué asignaturas están cubiertas y qué les falta", SE_CALCULA),
 )
 
 

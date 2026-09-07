@@ -98,3 +98,65 @@ def test_la_reserva_del_claustro_ya_trae_la_formula_del_origen():
     assert formula.startswith("="), fila_libre
     # Con la fila vacia no dice "Sin tope": no hay profesor del que hablar.
     assert f'A{fila_libre}=""' in formula
+
+
+# --- La hoja Asignaturas, editable (2026-09-07) -------------------------------
+# Deja de ser un listado de solo lectura: es donde se anaden las asignaturas
+# nuevas sin volver al YAML, y de ella cuelgan las formulas de Asignacion y de
+# Cobertura.
+
+DEPTO_RESERVA = Departamento(
+    nombre="D", semestre="1", tope_horas=160, filas_por_profesor=10,
+    profesores=DEPTO.profesores, asignaturas=DEPTO.asignaturas,
+    asignaturas_reserva=1,
+)
+
+
+def _libro(depto=DEPTO_RESERVA):
+    wb = Workbook()
+    wb.remove(wb.active)
+    construir_hoja_asignaturas(wb, depto)
+    return wb
+
+
+def test_asignaturas_tiene_reserva_y_es_editable():
+    ws = _libro()["Asignaturas"]
+    # 1 asignatura declarada + 1 de reserva: la fila 3 esta vacia pero ya trae
+    # su formula de total, para que escribir en ella sea escribir seis datos.
+    assert ws["A3"].value is None
+    assert str(ws["G3"].value).startswith("=")
+    for col in ("A", "B", "C", "D", "E", "F"):
+        assert ws[f"{col}3"].protection.locked is False, col
+    # La columna calculada no se desbloquea: es la unica que no es un dato.
+    assert ws["G3"].protection.locked is True
+
+
+def test_el_total_no_muestra_un_cero_en_la_reserva():
+    # Sin la guarda, una fila libre anunciaria "0 horas" de una asignatura que
+    # todavia no existe.
+    assert 'A3=""' in _libro()["Asignaturas"]["G3"].value
+
+
+def test_rangos_nombrados_de_asignaturas():
+    wb = _libro()
+    assert "AsignaturasValidas" in wb.defined_names
+    assert "AsignaturasTabla" in wb.defined_names
+    # Anclados en la columna de Id y no en la del total: el total es una formula
+    # y ocupa celda siempre, asi que COUNTA sobre el no mide nada.
+    texto = wb.defined_names["AsignaturasValidas"].attr_text
+    assert "$A$2" in texto
+    assert "Asignaturas" in texto
+
+
+def test_el_claustro_tiene_los_huecos_que_declara_el_departamento():
+    # Los mismos huecos son las filas del panel de `Asignacion` y los bloques de
+    # `Carga por profesor`. Si esta hoja tuviera mas, un profesor escrito en un
+    # hueco de mas entraria en el desplegable pero no tendria ni panel ni bloque.
+    depto = Departamento(
+        nombre="D", semestre="1", tope_horas=160, filas_por_profesor=10,
+        profesores=DEPTO.profesores, asignaturas=DEPTO.asignaturas,
+        profesores_reserva=1)
+    ws = _hoja(construir_hoja_profesores, depto)
+    assert ws["A4"].value is None            # 2 profesores + 1 hueco libre
+    assert ws["E4"].value is not None        # el hueco existe, con su formula
+    assert ws["E5"].value is None            # y no hay ninguno de mas

@@ -62,6 +62,29 @@ class Departamento:
     filas_por_profesor: int       # filas reservadas por bloque en la hoja Profesores
     profesores: tuple             # tuple[Profesor]
     asignaturas: tuple            # tuple[Asignatura]
+    # Cuanto puede crecer el libro sin volver a generarlo: filas libres del
+    # claustro (y bloques de `Carga por profesor`), de la hoja Asignaturas y del
+    # final de la hoja Asignacion. Llevan defecto para que construir un
+    # Departamento a mano no obligue a decidirlas.
+    profesores_reserva: int = 5
+    asignaturas_reserva: int = 10
+    filas_carga_reserva: int = 20
+
+    def capacidad_profesores(self) -> int:
+        """Huecos del claustro: los profesores declarados mas su reserva. Lo
+        comparten la hoja `Profesores` y los bloques de `Carga por profesor`,
+        que tienen que cubrir exactamente los mismos huecos."""
+        return len(self.profesores) + self.profesores_reserva
+
+    def capacidad_asignaturas(self) -> int:
+        """Huecos de la hoja `Asignaturas`, que son tambien las filas de la
+        hoja `Cobertura por asignatura`."""
+        return len(self.asignaturas) + self.asignaturas_reserva
+
+    def capacidad_filas(self) -> int:
+        """Filas de la hoja `Asignacion`: las de carga que salen del YAML mas
+        las libres para las que se creen a mano."""
+        return len(self.filas()) + self.filas_carga_reserva
 
     def tope_efectivo(self, profesor: Profesor) -> int | None:
         """Tope de horas que aplica a `profesor`: el suyo propio si lo declara,

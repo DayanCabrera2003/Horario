@@ -247,26 +247,32 @@ El `.xlsx` generado contiene:
 
 - Una hoja **Portada**: de qué YAML salió el libro, cuándo se generó y un
   índice enlazado a las demás hojas, marcando en cuáles se escribe a mano.
-- Hojas con los **datos del problema**, tal como los declara el YAML: `Profesores` (con el grado, el tope y si el tope
-  es propio o del departamento) y `Asignaturas` (las horas declaradas del semestre).
-
-  Se pueden ordenar y filtrar; de ellas solo `Profesores` se edita.
-- Una hoja **Asignación** (la única editable): cada asignatura expandida a sus
-  *filas de carga* (la conferencia + una fila por grupo de CP), con un
-  desplegable de profesor por fila. Amarillo = fila sin profesor; ámbar = id
-  fuera de la lista.
+- Hojas con los **datos del problema**, alimentadas desde el YAML y **editables**
+  para no tener que volver a él: `Profesores` (con el grado, el tope y si el tope
+  es propio o del departamento) y `Asignaturas` (las horas declaradas del
+  semestre). Las dos traen filas libres, así que añadir un profesor o una
+  asignatura se hace dentro del Excel.
+- Una hoja **Asignación**: cada asignatura expandida a sus *filas de carga* (la
+  conferencia + una fila por grupo de CP), más filas libres al final para las
+  que se creen a mano. Se escriben cuatro columnas -id, tipo, grupo y profesor-
+  y las otras cuatro se calculan. Amarillo = fila sin profesor; ámbar = id fuera
+  de la lista. A la derecha, un **panel** con las horas y las asignaturas
+  distintas de cada profesor, en rojo si pasa de su tope.
 - Una hoja **Carga por profesor**: por profesor, qué imparte (asignatura, tipo, grupo,
   horas) y su total de horas, todo por fórmulas. Rojo cuando supera su tope
   (global del departamento o propio del profesor).
-- Una hoja **Cobertura por asignatura**: por asignatura, quién cubre cada fila de carga.
-  Título verde si está completa, naranja si falta alguien.
+- Una hoja **Cobertura por asignatura**: una fila por asignatura del plan, con
+  las horas planificadas, las que ya tienen filas de carga creadas, las que ya
+  tienen profesor y una columna **Estado** que dice qué falta. Verde si está
+  completa, naranja si no. Crece sola con la hoja `Asignaturas`.
 - Una hoja **Auxiliar** (oculta) con las listas y la tabla auxiliar de las
   fórmulas.
 
 ### Configuración
 
 Un único YAML (ejemplo en `config/departamento.yaml`): el departamento (nombre,
-semestre, tope de horas opcional), los profesores (id, nombre, grado, tope
+semestre, tope de horas opcional, y cuántas filas libres reservar para crecer),
+los profesores (id, nombre, grado, tope
 propio opcional) y las asignaturas del semestre (nombre, carrera, horas de
 conferencia, horas de CP **por grupo** y cantidad de grupos de CP).
 

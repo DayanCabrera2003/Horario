@@ -12,7 +12,7 @@ del departamento.
 from openpyxl.workbook.defined_name import DefinedName
 
 from comun.hoja_listado import construir_hoja_listado, FILA_PRIMER_DATO
-from comun.rangos import capacidad_para, rango_dinamico
+from comun.rangos import rango_dinamico
 from comun import vista
 from departamento import estilos
 from departamento.modelo import Departamento
@@ -52,7 +52,11 @@ def _formula_origen(depto: Departamento, fila: int) -> str:
 
 
 def construir_hoja_profesores(wb, depto: Departamento) -> None:
-    capacidad = capacidad_para(len(depto.profesores))
+    # La capacidad la decide el departamento y no `capacidad_para`: estos mismos
+    # huecos son las filas del panel de `Asignacion` y los bloques de `Carga por
+    # profesor`. Con la reserva generica de un listado (20 filas como minimo) el
+    # reporte de carga tendria veinte bloques vacios, que son trescientas filas.
+    capacidad = depto.capacidad_profesores()
     filas = []
     for i in range(capacidad):
         p = depto.profesores[i] if i < len(depto.profesores) else None

@@ -12,6 +12,7 @@ def _departamento(tope_global=160):
     return Departamento(
         nombre="Matemática Aplicada", semestre="2026-2027 / 1",
         tope_horas=tope_global, filas_por_profesor=4,
+        filas_carga_reserva=0, profesores_reserva=1,
         profesores=(
             Profesor(id="PIAD", nombre="Pedro I. Alonso", grado="Dr."),
             Profesor(id="MARA", nombre="Maria Ramirez", grado="MSc.", tope_horas=80),
@@ -38,12 +39,14 @@ def test_bloque_cabecera():
     ws = _hoja()
     # filas_por_profesor=4 -> bloques de altura 9; PIAD en 3, MARA en 12.
     assert [c.value for c in ws["A3":"D3"][0]] == ["Id", "Nombre", "Grado", "Tope horas"]
-    assert ws["A4"].value == "PIAD"
+    # El id sale del claustro por formula: un profesor anadido alli tiene su
+    # bloque, y cambiar un id no deja el bloque buscando a quien ya no existe.
+    assert ws["A4"].value == '=IF(Profesores!A2="","",Profesores!A2)' 
     # Nombre, grado y tope llegan del claustro por BUSCARV desde la fase 3a.
     assert "ProfesoresTabla" in ws["B4"].value
     assert "ProfesoresTabla,4" in ws["D4"].value   # el tope, tambien del claustro
     assert ws["A12"].value == "Id"
-    assert ws["A13"].value == "MARA"
+    assert ws["A13"].value == '=IF(Profesores!A3="","",Profesores!A3)' 
     assert "ProfesoresTabla,4" in ws["D13"].value  # el suyo, del claustro
 
 
@@ -52,10 +55,11 @@ def test_detalle_por_buscarv():
     # Subcabecera en 5; detalle en 6..9.
     assert [c.value for c in ws["A5":"D5"][0]] == ["Asignatura", "Tipo", "Grupo", "Horas"]
     f = ws["A6"].value
-    assert 'VLOOKUP("PIAD#1",CargaPorProfesor,2,0)' in f
-    assert f.startswith("=IFERROR(")
-    assert 'VLOOKUP("PIAD#2",CargaPorProfesor,3,0)' in ws["B7"].value
-    assert 'CargaPorProfesor,5,0' in ws["D6"].value
+    # La clave se compone con la celda de id del bloque, no con un id literal.
+    assert '$A$4&"#1"' in f
+    assert "CargaPorProfesor,2,0" in f
+    assert '$A$4&"#2"' in ws["B7"].value
+    assert "CargaPorProfesor,5,0" in ws["D6"].value
 
 
 def test_ultima_fila_reservada_avisa_desborde():
@@ -64,23 +68,25 @@ def test_ultima_fila_reservada_avisa_desborde():
     # que caben en el bloque.
     f = ws["A9"].value
     assert "más)" in f
-    assert 'COUNTIF(' in f and '"PIAD"' in f
+    assert "COUNTIF(" in f and "$A$4" in f
 
 
 def test_total_con_sumif():
     ws = _hoja()
     assert ws["A10"].value == "TOTAL"
     f = ws["D10"].value
-    # 3 filas de carga -> rango F4:F6 de Asignacion.
-    assert f == ('=SUMIF(\'Asignación\'!$F$4:$F$6,"PIAD",'
-                 "'Asignación'!$E$4:$E$6)")
+    # 3 filas de carga -> se filtra por la columna de profesor (G) y se suma
+    # la de horas (F). El criterio es la celda de id del bloque, y la guarda
+    # deja en blanco el TOTAL de un hueco libre en vez de mostrar un 0.
+    assert f == ('=IF($A$4="","",SUMIF(\'Asignación\'!$G$4:$G$6,$A$4,'
+                 "'Asignación'!$F$4:$F$6))")
 
 
 def test_alto_de_filas_para_padding():
     ws = _hoja()
-    # Bloques de la fila 3 a la ultima fila TOTAL (19): filas mas altas.
+    # 2 profesores + 1 de reserva -> 3 bloques, de la fila 3 a la 28.
     assert ws.row_dimensions[3].height == estilos.ALTO_FILA
-    assert ws.row_dimensions[19].height == estilos.ALTO_FILA
+    assert ws.row_dimensions[28].height == estilos.ALTO_FILA
 
 
 def test_alerta_sobrecarga_en_la_fila_total_de_cada_bloque():
@@ -89,6 +95,7 @@ def test_alerta_sobrecarga_en_la_fila_total_de_cada_bloque():
     # Regla roja sobre la fila TOTAL de cada bloque.
     assert "A10:D10" in rangos
     assert "A19:D19" in rangos
+    assert "A28:D28" in rangos      # tambien el bloque de reserva
     # La regla se crea siempre; el caso de quien no traia tope al generar lo
     # cubre test_la_alerta_existe_aunque_el_profesor_no_tuviera_tope_al_generar.
 
@@ -150,3 +157,22 @@ def test_la_alerta_existe_aunque_el_profesor_no_tuviera_tope_al_generar():
     assert formulas, "sin tope declarado no se creo ninguna alerta"
     # Y no dispara cuando la casilla del tope esta vacia.
     assert any('<>""' in f for f in formulas), formulas
+
+
+def test_hay_bloques_para_la_reserva_del_claustro():
+    # Un profesor anadido a mano en el claustro necesita su bloque de detalle;
+    # sin el, el libro solo serviria para el claustro del dia que se genero.
+    ws = _hoja()
+    assert ws[f"A{L.prof_fila_valores(2, 4)}"].value == (
+        '=IF(Profesores!A4="","",Profesores!A4)')
+
+
+def test_un_bloque_libre_sale_en_blanco():
+    # Sin id en el claustro todas las formulas del bloque devuelven "": el
+    # bloque se ve vacio en vez de mostrar ceros o #N/A de un profesor que
+    # todavia no existe.
+    ws = _hoja()
+    for celda in (ws[f"B{L.prof_fila_valores(2, 4)}"],
+                  ws[f"A{L.prof_fila_detalle(2, 0, 4)}"],
+                  ws[f"D{L.prof_fila_total(2, 4)}"]):
+        assert '=""' in celda.value or '="",""' in celda.value, celda.value
