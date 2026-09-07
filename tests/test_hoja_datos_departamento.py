@@ -92,7 +92,7 @@ def test_clave_del_par_profesor_asignatura():
     # profesor: una fila sin asignar no cuenta para nadie.
     _, ws = _hoja()
     assert ws["L1"].value == (
-        '=IF(\'Asignación\'!$G$4="","",'
+        '=IF(OR(\'Asignación\'!$G$4="",\'Asignación\'!$A$4=""),"",'
         '\'Asignación\'!$G$4&"|"&\'Asignación\'!$A$4)')
 
 
@@ -123,3 +123,11 @@ def test_sin_asignaturas_no_se_declara_el_rango_de_carga():
     wb.remove(wb.active)
     construir_hoja_datos(wb, depto)
     assert "CargaPorProfesor" not in wb.defined_names
+
+
+def test_la_clave_del_par_exige_las_dos_mitades():
+    # Se elige antes el profesor que la asignatura: entre un paso y otro la
+    # clave seria "<profesor>|", que contaria como una asignatura distinta y le
+    # sumaria una de mas en el panel.
+    _, ws = _hoja()
+    assert "OR(" in ws["L1"].value

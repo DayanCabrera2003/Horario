@@ -76,13 +76,16 @@ def _formula_clave(idx: int) -> str:
 def _formula_par(idx: int) -> str:
     """Clave '<profesor>|<asignatura>' de la fila de carga `idx`.
 
-    Vacia cuando la fila no tiene profesor: una fila sin asignar no cuenta como
-    asignatura de nadie, y dejarla con la barra suelta agruparia entre si a
-    todas las filas pendientes.
+    Vacia si le falta cualquiera de las dos mitades. Que falte el profesor es lo
+    normal en una fila pendiente. Que falte la asignatura pasa mientras se
+    escribe una fila nueva: se elige antes a quien se le da que que se le da, y
+    entre un paso y otro la clave seria '<profesor>|', que es una asignatura
+    distinta de su propio derecho y le sumaria una de mas en el panel.
     """
     profesor = _celda_asignacion(L.COL_PROFESOR, idx)
     asignatura = _celda_asignacion(L.COL_ID, idx)
-    return f'=IF({profesor}="","",{profesor}&"|"&{asignatura})'
+    return (f'=IF(OR({profesor}="",{asignatura}=""),"",'
+            f'{profesor}&"|"&{asignatura})')
 
 
 def _formula_primera_vez(fila: int) -> str:
