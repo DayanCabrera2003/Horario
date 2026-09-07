@@ -163,3 +163,39 @@ def test_horas_invalidas_dicen_que_hace_falta_un_entero(tmp_path, valor, motivo)
                        match=r"'horas_conf' debe ser un entero no negativo") as e:
         cargar_departamento(_yaml(tmp_path, mal))
     assert "EST-CC" in str(e.value), motivo
+
+
+def test_reservas_por_defecto(tmp_path):
+    d = cargar_departamento(_yaml(tmp_path, MINIMO))
+    assert d.profesores_reserva == 5
+    assert d.asignaturas_reserva == 10
+    assert d.filas_carga_reserva == 20
+
+
+def test_reservas_declaradas(tmp_path):
+    texto = BASE.replace("  filas_por_profesor: 8",
+                         "  filas_por_profesor: 8\n"
+                         "  profesores_reserva: 2\n"
+                         "  asignaturas_reserva: 3\n"
+                         "  filas_carga_reserva: 4")
+    d = cargar_departamento(_yaml(tmp_path, texto))
+    assert (d.profesores_reserva, d.asignaturas_reserva,
+            d.filas_carga_reserva) == (2, 3, 4)
+
+
+def test_reserva_negativa_es_error(tmp_path):
+    texto = BASE.replace("  tope_horas: 160", "  profesores_reserva: -1")
+    with pytest.raises(ErrorConfig, match="profesores_reserva"):
+        cargar_departamento(_yaml(tmp_path, texto))
+
+
+def test_capacidades(tmp_path):
+    texto = BASE.replace("  filas_por_profesor: 8",
+                         "  filas_por_profesor: 8\n"
+                         "  profesores_reserva: 2\n"
+                         "  asignaturas_reserva: 3\n"
+                         "  filas_carga_reserva: 4")
+    d = cargar_departamento(_yaml(tmp_path, texto))
+    assert d.capacidad_profesores() == 4    # 2 declarados + 2 de reserva
+    assert d.capacidad_asignaturas() == 5   # 2 declaradas + 3 de reserva
+    assert d.capacidad_filas() == 9         # 5 filas de carga + 4 de reserva

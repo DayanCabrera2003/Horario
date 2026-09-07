@@ -12,6 +12,12 @@ from departamento.modelo import Profesor, Asignatura, Departamento
 
 FILAS_POR_PROFESOR_DEFECTO = 10
 
+# Cuantas filas libres trae cada hoja que puede crecer desde el Excel. Son
+# configuracion y no numeros magicos: dicen cuanto aguanta el libro antes de
+# tener que regenerarlo, y eso depende del departamento.
+RESERVAS_DEFECTO = {"profesores_reserva": 5, "asignaturas_reserva": 10,
+                    "filas_carga_reserva": 20}
+
 
 class ErrorConfig(Exception):
     pass
@@ -38,6 +44,18 @@ def _tope(d, contexto):
     if not es_entero(tope) or tope <= 0:
         raise ErrorConfig(f"{contexto}: 'tope_horas' debe ser un entero positivo")
     return tope
+
+
+def _reserva(cabecera, clave):
+    """Lee una reserva opcional; si aparece debe ser un entero no negativo.
+
+    El cero es legitimo y significa "este libro no crece": se regenera desde el
+    YAML cada vez que cambian los datos.
+    """
+    valor = cabecera.get(clave, RESERVAS_DEFECTO[clave])
+    if not es_entero(valor) or valor < 0:
+        raise ErrorConfig(f"departamento: '{clave}' debe ser un entero no negativo")
+    return valor
 
 
 def _sin_duplicados(ids, contexto):
@@ -91,6 +109,8 @@ def cargar_departamento(ruta) -> Departamento:
     asignaturas = tuple(_cargar_asignatura(a) for a in _lista(datos, "asignaturas"))
     _sin_duplicados([a.id for a in asignaturas], "asignaturas")
 
-    return Departamento(nombre=nombre, semestre=semestre, tope_horas=tope,
-                        filas_por_profesor=filas_prof, profesores=profesores,
-                        asignaturas=asignaturas)
+    return Departamento(
+        nombre=nombre, semestre=semestre, tope_horas=tope,
+        filas_por_profesor=filas_prof, profesores=profesores,
+        asignaturas=asignaturas,
+        **{clave: _reserva(cabecera, clave) for clave in RESERVAS_DEFECTO})

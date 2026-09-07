@@ -10,6 +10,13 @@ departamento:
   tope_horas: 160
   # Filas reservadas por profesor en la hoja Profesores (10 si se omite).
   filas_por_profesor: 8
+  # Cuanto puede crecer el libro sin volver a generarlo. Son las filas
+  # libres que traen el claustro, la hoja Asignaturas y el final de la
+  # hoja Asignacion, para anadir gente, asignaturas y filas de carga
+  # desde el propio Excel.
+  profesores_reserva: 5
+  asignaturas_reserva: 10
+  filas_carga_reserva: 20
 
 profesores:
   - {id: PIAD, nombre: "Pedro I. Alonso Diaz", grado: "Dr."}
