@@ -50,15 +50,3 @@ def test_bloque_profesor():
     assert L.prof_fila_detalle(0, 0, 10) == 6
     assert L.prof_fila_detalle(0, 9, 10) == 15
     assert L.prof_fila_total(0, 10) == 16
-
-
-def test_bloque_asignatura():
-    # titulo + subcabecera + filas de carga + blanco; altura variable, se pasa
-    # el acumulado de alturas previas como en la hoja de localizar.
-    assert L.altura_bloque_asignatura(3) == 6
-    assert L.asig_fila_titulo(0) == 3
-    assert L.asig_fila_titulo(6) == 9
-    assert L.asig_fila_subcabecera(0) == 4
-    assert L.asig_fila_carga(0, 0) == 5
-    assert L.asig_fila_carga(0, 2) == 7
-    assert L.asig_fila_carga(6, 0) == 11

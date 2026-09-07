@@ -91,27 +91,3 @@ def prof_fila_detalle(prof_idx: int, k: int, filas_por_profesor: int) -> int:
 
 def prof_fila_total(prof_idx: int, filas_por_profesor: int) -> int:
     return prof_fila_detalle(prof_idx, filas_por_profesor, filas_por_profesor)
-
-
-# --- Hoja Asignaturas: un bloque por asignatura a partir de la fila 3. La
-# altura depende de cuantas filas de carga tiene la asignatura, por eso las
-# posiciones se calculan con el acumulado de alturas previas. ---
-ASIG_FILA_PRIMER_BLOQUE = 3
-
-
-def altura_bloque_asignatura(n_filas_carga: int) -> int:
-    # titulo + subcabecera + filas de carga + blanco de separacion.
-    return n_filas_carga + 3
-
-
-def asig_fila_titulo(alturas_previas: int) -> int:
-    return ASIG_FILA_PRIMER_BLOQUE + alturas_previas
-
-
-def asig_fila_subcabecera(alturas_previas: int) -> int:
-    return asig_fila_titulo(alturas_previas) + 1
-
-
-def asig_fila_carga(alturas_previas: int, k: int) -> int:
-    """Fila de la linea de carga `k` (0-based) dentro del bloque."""
-    return asig_fila_subcabecera(alturas_previas) + 1 + k
