@@ -178,10 +178,12 @@ def _aplicar_formato(ws, depto: Departamento, n: int) -> None:
         ws, f"{L.COL_HORAS}{L.FILA_PRIMERA_CARGA}:{L.COL_HORAS}{fila_fin}")
     _separar_asignaturas(ws, depto.filas())
     formato.autoajustar_columnas(ws, extra=4)
-    # Las cuatro columnas calculadas muestran el resultado de una formula, no su
-    # texto: `autoajustar_columnas` las ignora y su ancho se fija aqui con los
-    # valores que pueden llegar a mostrar.
+    # El ancho de las columnas se fija a mano en dos casos. Las cuatro
+    # calculadas, porque `autoajustar_columnas` mide el texto de la formula y no
+    # su resultado. Y la del id, porque el titulo de la hoja vive en la celda A1
+    # y con el la columna se iria a su ancho maximo.
     for col, textos in (
+        (L.COL_ID, [a.id for a in depto.asignaturas] + ["Id"]),
         (L.COL_ASIGNATURA, [a.nombre for a in depto.asignaturas] + ["Asignatura"]),
         (L.COL_CARRERA, [a.carrera for a in depto.asignaturas] + ["Carrera"]),
         (L.COL_HORAS, ["Horas", "999"]),

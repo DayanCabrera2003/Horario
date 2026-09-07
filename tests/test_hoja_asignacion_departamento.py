@@ -192,3 +192,10 @@ def test_la_hoja_deja_filtrar_pero_no_ordenar():
     ws = _hoja()
     assert ws.protection.autoFilter is False   # filtrar: permitido
     assert ws.protection.sort is True          # ordenar: prohibido
+
+
+def test_la_columna_del_id_no_se_lleva_el_ancho_del_titulo():
+    # El titulo de la hoja vive en A1. Sin fijar el ancho a mano, el autoajuste
+    # deja la columna del id tan ancha como el titulo entero.
+    ws = _hoja()
+    assert ws.column_dimensions["A"].width < 20
