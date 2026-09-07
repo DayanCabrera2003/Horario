@@ -1,8 +1,13 @@
 """Hoja `Carga por profesor`: reporte de carga por profesor, calculado con formulas.
 
-Un bloque por profesor: sus datos (id, nombre, grado, tope efectivo), el
-detalle de lo que imparte y una fila TOTAL. El detalle no se conoce al generar
-(depende de lo que se elija en Asignacion), asi que se reservan
+Un bloque por hueco del claustro -los profesores declarados y su reserva-, con
+sus datos (id, nombre, grado, tope efectivo), el detalle de lo que imparte y
+una fila TOTAL. El id del bloque tampoco se escribe al generar: se lee de la
+hoja `Profesores`, de modo que un profesor anadido alli tiene su bloque y
+cambiar un id no deja el bloque buscando a quien ya no existe.
+
+El detalle no se conoce al generar (depende de lo que se elija en Asignacion),
+asi que se reservan
 `filas_por_profesor` lineas rellenadas con BUSCARV sobre la tabla auxiliar
 CargaPorProfesor de la hoja Datos (claves '<id>#<n>'). Son formulas planas: se
 comportan igual en Excel y en Calc. La ultima linea reservada avisa '(+N más)'
@@ -13,9 +18,12 @@ from openpyxl.utils import quote_sheetname
 from comun import formato, leyenda
 from comun import proteccion
 from comun import vista
+from comun.hoja_listado import FILA_PRIMER_DATO
 from departamento import estilos
 from departamento import layout as L
 from departamento.hoja_asignacion import NOMBRE_HOJA as HOJA_ASIGNACION
+from departamento.hoja_profesores import (
+    NOMBRE_HOJA as HOJA_CLAUSTRO, COL_ID as COL_CLAUSTRO_ID)
 from departamento.modelo import Departamento
 
 # El nombre dice lo que la hoja es: un reporte de carga, no el listado del
@@ -33,10 +41,13 @@ def construir_hoja_carga(wb, depto: Departamento) -> None:
     ws[f"A{L.FILA_TITULO}"].font = estilos.fuente_encabezado()
 
     fpp = depto.filas_por_profesor
-    for i, p in enumerate(depto.profesores):
-        _construir_bloque(ws, depto, i, p)
+    # Un bloque por hueco del claustro, no por profesor declarado: la hoja
+    # `Profesores` tiene filas libres y quien se anada alli necesita el suyo.
+    huecos = depto.capacidad_profesores()
+    for i in range(huecos):
+        _construir_bloque(ws, depto, i)
 
-    ultimo_total = L.prof_fila_total(len(depto.profesores) - 1, fpp)
+    ultimo_total = L.prof_fila_total(huecos - 1, fpp)
     # Padding aproximado para Calc: filas mas altas en toda la zona de bloques.
     formato.aplicar_alto_filas(ws, L.PROF_FILA_PRIMER_BLOQUE, ultimo_total,
                                estilos.ALTO_FILA)
@@ -64,24 +75,31 @@ def _rango_asignacion(col: str, n_filas: int) -> str:
             f":${col}${L.fila_carga(n_filas - 1)}")
 
 
-def _construir_bloque(ws, depto: Departamento, idx: int, profesor) -> None:
+def _construir_bloque(ws, depto: Departamento, idx: int) -> None:
     fpp = depto.filas_por_profesor
-    n_filas = len(depto.filas())
+    # La reserva de Asignacion entra en el rango: si no, las filas de carga
+    # creadas a mano no sumarian para nadie. Es un fallo silencioso -no da
+    # error, solo horas de menos- y por eso va explicito.
+    n_filas = depto.capacidad_filas()
     rango_prof = _rango_asignacion(L.COL_PROFESOR, n_filas)
-    conteo = f'COUNTIF({rango_prof},"{profesor.id}")'
 
     # Cabecera y valores del profesor.
     fila_cab = L.prof_fila_cabecera(idx, fpp)
     _fila_encabezado(ws, fila_cab, ("Id", "Nombre", "Grado", "Tope horas"))
     fila_val = L.prof_fila_valores(idx, fpp)
-    tope = depto.tope_efectivo(profesor)
-    # El id es el dato; el nombre, el grado y el tope se leen del claustro. Desde
-    # la fase 3a esos tres se editan alli, y una copia escrita al generar se
-    # quedaria vieja en cuanto alguien los cambiara.
-    ws[f"A{fila_val}"] = profesor.id
+    # Ni el id se escribe al generar: sale del hueco gemelo del claustro, que es
+    # donde se anaden y se corrigen los profesores. Todo lo demas del bloque se
+    # cuelga de esta celda, asi que un bloque libre queda entero en blanco.
+    id_bloque = f"$A${fila_val}"
+    fila_claustro = FILA_PRIMER_DATO + idx
+    celda_claustro = f"{HOJA_CLAUSTRO}!{COL_CLAUSTRO_ID}{fila_claustro}"
+    ws[f"A{fila_val}"] = (
+        f'=IF({celda_claustro}="","",{celda_claustro})')
+    conteo = f"COUNTIF({rango_prof},{id_bloque})"
     for col, columna_tabla in (("B", 2), ("C", 3), ("D", 4)):
         ws[f"{col}{fila_val}"] = (
-            f'=IFERROR(VLOOKUP("{profesor.id}",ProfesoresTabla,{columna_tabla},0),"")')
+            f'=IF({id_bloque}="","",'
+            f'IFERROR(VLOOKUP({id_bloque},ProfesoresTabla,{columna_tabla},0),""))')
 
     # Subcabecera y detalle reservado.
     _fila_encabezado(ws, L.prof_fila_subcabecera(idx, fpp),
@@ -89,21 +107,23 @@ def _construir_bloque(ws, depto: Departamento, idx: int, profesor) -> None:
     for k in range(fpp):
         fila = L.prof_fila_detalle(idx, k, fpp)
         for col, col_tabla in _COLS_DETALLE:
-            buscar = (f'IFERROR(VLOOKUP("{profesor.id}#{k + 1}",'
+            clave = f'{id_bloque}&"#{k + 1}"'
+            buscar = (f"IFERROR(VLOOKUP({clave},"
                       f'CargaPorProfesor,{col_tabla},0),"")')
             if col == "A" and k == fpp - 1:
                 # Ultima linea reservada: si hay desborde, avisa cuantas faltan
                 # (la propia linea deja de mostrarse, por eso se suma 1).
                 buscar = (f'IF({conteo}>{fpp},'
                           f'"(+"&({conteo}-{fpp}+1)&" más)",{buscar})')
-            ws[f"{col}{fila}"] = f"={buscar}"
+            ws[f"{col}{fila}"] = f'=IF({id_bloque}="","",{buscar})'
 
     # TOTAL de horas del profesor y alerta de sobrecarga.
     fila_total = L.prof_fila_total(idx, fpp)
     ws[f"A{fila_total}"] = "TOTAL"
     ws[f"A{fila_total}"].font = estilos.fuente_encabezado()
-    ws[f"D{fila_total}"] = (f'=SUMIF({rango_prof},"{profesor.id}",'
-                            f"{_rango_asignacion(L.COL_HORAS, n_filas)})")
+    ws[f"D{fila_total}"] = (
+        f'=IF({id_bloque}="","",SUMIF({rango_prof},{id_bloque},'
+        f"{_rango_asignacion(L.COL_HORAS, n_filas)}))")
     # Rojo en la fila TOTAL cuando el acumulado supera el tope del bloque. La
     # regla se crea siempre, tenga tope o no al generar: el tope se edita en el
     # claustro, asi que ponerla solo a quien ya lo traia dejaria sin alerta
