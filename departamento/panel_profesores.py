@@ -104,6 +104,11 @@ def _aplicar_formato(ws, depto: Departamento, huecos: int) -> None:
     formato.aplicar_borde_tabla(ws, rango, interno=estilos.lado_fino(),
                                 externo=estilos.lado_medio())
     formato.aplicar_alineacion(ws, rango, estilos.alineacion_padding())
+    # El alto lo pone tambien el panel, y no solo la tabla: un claustro largo
+    # con pocas asignaturas deja el panel sobresaliendo por debajo de la tabla,
+    # y esas filas se quedarian con el alto por defecto en mitad de un bloque
+    # bordeado. Repetirlo donde las dos coinciden no cuesta nada.
+    formato.aplicar_alto_filas(ws, fila_ini, fila_fin, estilos.ALTO_FILA)
     # Las tres cifras son enteras; sin formato explicito Calc las mostraria
     # segun la configuracion regional de quien abra el libro.
     for col in (L.COL_PANEL_HORAS, L.COL_PANEL_ASIGNATURAS, L.COL_PANEL_TOPE):

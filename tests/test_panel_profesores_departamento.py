@@ -127,3 +127,26 @@ def test_la_leyenda_explica_el_rojo_del_panel():
     ws = _hoja()
     textos = [ws[f"B{r}"].value or "" for r in range(11, 17)]
     assert any("tope" in t.lower() for t in textos), textos
+
+
+def test_el_panel_pone_su_propio_alto_de_fila():
+    # Un claustro largo con pocas asignaturas deja el panel sobresaliendo por
+    # debajo de la tabla. Si el alto lo pusiera solo la tabla, esas filas
+    # quedarian aplastadas dentro de un bloque bordeado.
+    from departamento.hoja_datos import construir_hoja_datos
+    from departamento import estilos as est, layout as L
+    depto = Departamento(
+        nombre="D", semestre="1", tope_horas=160, filas_por_profesor=4,
+        filas_carga_reserva=0, profesores_reserva=0,
+        profesores=tuple(Profesor(id=f"P{i:02}", nombre=f"Prof {i}", grado="Dr.")
+                         for i in range(12)),
+        asignaturas=(Asignatura(id="A", nombre="A", carrera="C",
+                                horas_conf=32, horas_cp=0, grupos_cp=0),))
+    wb = Workbook()
+    wb.remove(wb.active)
+    construir_hoja_datos(wb, depto)
+    construir_hoja_asignacion(wb, depto)
+    ws = wb["Asignación"]
+    ultima = L.fila_panel(depto.capacidad_profesores() - 1)
+    assert ws[f"J{ultima}"].value is not None      # el panel llega hasta ahi
+    assert ws.row_dimensions[ultima].height == est.ALTO_FILA
