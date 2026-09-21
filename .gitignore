@@ -31,3 +31,12 @@ htmlcov/
 
 # Worktrees de trabajo aislado: nunca se versionan
 .worktrees/
+
+# Lisp: los fasl van al cache de SBCL, pero por si se compila en el arbol
+*.fasl
+*.fas
+*.lib
+
+# Artefactos generados por el lenguaje: se reproducen con ./demostrar.sh
+situacion/salida/
+situacion/exploracion/salida/
