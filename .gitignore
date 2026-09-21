@@ -16,9 +16,8 @@ env/
 .coverage
 htmlcov/
 
-# Salidas generadas: se ignoran los xlsx, salvo los ejemplos versionados
+# Salidas generadas
 *.xlsx
-!ejemplos-generados/*.xlsx
 
 # Editores / SO
 .vscode/
