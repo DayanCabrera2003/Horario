@@ -138,6 +138,29 @@
                  "~a no dice nada sobre la agrupacion que pide la vista DIA"
                  (car par)))))
 
-;;; La prueba de que la particion se materializa de verdad entra en la
-;;; tarea 4, cuando hay una arquitectura que la cumple. Aqui solo se rechaza
-;;; lo ambiguo y se exige que nada quede callado.
+;;; ---------------------------------------------------------------------
+;;; Que la particion se materialice de verdad
+;;; ---------------------------------------------------------------------
+
+(definir-prueba vista-partida-sale-una-tabla-por-seccion
+    "Vistas: una vista con :SECCIONES produce una tabla por valor del campo"
+  ;; Dos grupos, una casilla cada uno, en el MISMO dia y turno. Sin particion
+  ;; la rejilla tiene una sola celda, y esa celda dice "MAT" o "ESP" segun cual
+  ;; fila llegara primero. Las dos respuestas son falsas: ninguno de los dos
+  ;; grupos tiene las dos asignaturas.
+  ;;
+  ;; Se mira SOLO la parte de la rejilla, no el documento entero: mas abajo va
+  ;; la tabla plana de CASILLAS, donde los cuatro textos aparecen siempre y la
+  ;; comprobacion pasaria sin significar nada. Comprobar sobre el documento
+  ;; completo seria un verde falso dentro de la propia prueba.
+  (let* ((salida (materializar-en-cadena (situacion.texto:hacer-texto)
+                                         (situacion-de-dos-grupos)
+                                         *dos-grupos*))
+         (fin (or (search "Casillas" salida) (length salida)))
+         (rejilla (subseq salida 0 fin)))
+    (comprobar (search "10-A" rejilla)
+               "la rejilla deberia tener una tabla rotulada 10-A")
+    (comprobar (search "10-B" rejilla)
+               "la rejilla deberia tener una tabla rotulada 10-B")
+    (comprobar (search "MAT" rejilla) "en la rejilla de 10-A")
+    (comprobar (search "ESP" rejilla) "en la rejilla de 10-B")))

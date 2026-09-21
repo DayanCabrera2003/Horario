@@ -65,28 +65,63 @@
       (format flujo "~%"))
     ;; Primero las vistas cruzadas: son la forma en que el usuario piensa el
     ;; problema, y la tabla plana de la que salen va despues.
+    ;;
+    ;; Una vista partida es la misma tabla repetida, una vez por seccion. Sin
+    ;; particion, SECCIONES-DE devuelve (NIL) y el recorrido es el mismo.
     (dolist (vista (nucleo:vistas situacion))
       (when (nucleo:cruzada-p vista)
-        (escribir-cruzada a plan vista flujo)))
+        (dolist (valor (secciones-de plan vista))
+          (escribir-cruzada a plan vista flujo valor))))
     (dolist (coleccion (nucleo:colecciones situacion))
       (escribir-coleccion a plan coleccion flujo))))
 
-(defun valores-distintos (plan coleccion campo)
-  "Los valores que toma un campo, sin repetir y en orden de aparicion.
+(defun valores-distintos-en-filas (plan filas campo)
+  "Los valores que toma CAMPO en FILAS, sin repetir y en orden de aparicion.
 
    Son los que van en un eje de una tabla cruzada. Notese que salen de los
    DATOS: el numero de columnas de un cuadrante depende de lo que haya, no de
-   lo que se declaro."
+   lo que se declaro.
+
+   Recibe las filas en vez de sacarlas del entorno para que quien la llame
+   pueda restringirlas a una seccion. Antes las sacaba de la coleccion entera,
+   y por eso una vista partida no podia significar nada."
   (let ((vistos '()))
-    (dolist (f (nucleo:filas-de (entorno plan) (nucleo:nombre coleccion))
-               (nreverse vistos))
+    (dolist (f filas (nreverse vistos))
       (let ((v (nucleo:valor-de-campo (entorno plan) f campo)))
         (unless (or (nucleo:vacio-p v)
                     (member v vistos :test #'nucleo:iguales-p))
           (push v vistos))))))
 
-(defun fila-del-cruce (plan coleccion vista valor-fila valor-columna)
-  "La fila de la coleccion que cae en ese cruce, o NIL."
+(defun secciones-de (plan vista)
+  "Los valores por los que se parte VISTA, o (NIL) si no se parte.
+
+   Devolver una lista de un solo elemento cuando no hay particion deja el
+   recorrido igual en los dos casos: se escribe una tabla por elemento."
+  (if (nucleo:secciones vista)
+      (valores-distintos-en-filas
+       plan (nucleo:filas-de (entorno plan) (nucleo:fuente vista))
+       (nucleo:secciones vista))
+      (list nil)))
+
+(defun filas-de-la-seccion (plan vista valor)
+  "Las filas de la coleccion de VISTA que caen en la seccion VALOR.
+
+   Con VALOR en NIL son todas: es el caso de la vista que no se parte."
+  (let ((filas (nucleo:filas-de (entorno plan) (nucleo:fuente vista))))
+    (if (null valor)
+        filas
+        (remove-if-not
+         (lambda (f) (nucleo:iguales-p
+                      valor (nucleo:valor-de-campo (entorno plan) f
+                                                   (nucleo:secciones vista))))
+         filas))))
+
+(defun fila-del-cruce (plan filas vista valor-fila valor-columna)
+  "La fila que cae en ese cruce, o NIL.
+
+   Busca dentro de FILAS y no en la coleccion entera. Es lo que hace que la
+   particion signifique algo: con dos grupos en la misma coleccion, los dos
+   caen en el mismo (turno, dia) y sin restringir se dibujaria el primero."
   (find-if (lambda (f)
              (and (nucleo:iguales-p valor-fila
                                     (nucleo:valor-de-campo (entorno plan) f
@@ -94,17 +129,25 @@
                   (nucleo:iguales-p valor-columna
                                     (nucleo:valor-de-campo (entorno plan) f
                                                            (nucleo:eje-de-columnas vista)))))
-           (nucleo:filas-de (entorno plan) (nucleo:nombre coleccion))))
+           filas))
 
-(defun escribir-cruzada (a plan vista flujo)
+(defun escribir-cruzada (a plan vista flujo &optional valor-de-seccion)
   "La vista cruzada, como rejilla de texto alineada.
 
    Texto plano si puede con esto: alinear columnas es lo unico que sabe
-   hacer. Lo que no puede es que el usuario escriba en ella."
+   hacer. Lo que no puede es que el usuario escriba en ella.
+
+   VALOR-DE-SECCION es el valor del campo por el que se parte la vista, o NIL
+   si no se parte. Los dos ejes se calculan sobre las filas de ESA seccion:
+   si un dia solo tiene clase un grupo, en su rejilla no sale una columna
+   vacia para los demas."
   (let* ((situacion (situacion plan))
          (coleccion (nucleo:coleccion-llamada situacion (nucleo:fuente vista)))
-         (filas (valores-distintos plan coleccion (nucleo:eje-de-filas vista)))
-         (columnas (valores-distintos plan coleccion (nucleo:eje-de-columnas vista)))
+         (filas-fuente (filas-de-la-seccion plan vista valor-de-seccion))
+         (filas (valores-distintos-en-filas plan filas-fuente
+                                            (nucleo:eje-de-filas vista)))
+         (columnas (valores-distintos-en-filas plan filas-fuente
+                                               (nucleo:eje-de-columnas vista)))
          (campo-celda (nucleo:campo-llamado coleccion (nucleo:lo-que-se-muestra vista)))
          (encabezados (cons (string-capitalize
                              (symbol-name (nucleo:eje-de-filas vista)))
@@ -113,14 +156,15 @@
                        collect (cons (nucleo:como-texto vf)
                                      (loop for vc in columnas
                                            collect (let ((f (fila-del-cruce
-                                                             plan coleccion vista vf vc)))
+                                                             plan filas-fuente vista vf vc)))
                                                      (if f
                                                          (nucleo:como-texto
                                                           (nucleo:valor-de-campo
                                                            (entorno plan) f
                                                            (nucleo:nombre campo-celda)))
                                                          "")))))))
-    (format flujo "~a~%" (nucleo:etiqueta vista))
+    (format flujo "~a~@[ - ~a~]~%" (nucleo:etiqueta vista)
+            (when valor-de-seccion (nucleo:como-texto valor-de-seccion)))
     (let ((anchos (calcular-anchos encabezados celdas)))
       (escribir-fila flujo encabezados anchos)
       (format flujo "~a~%" (raya anchos))
