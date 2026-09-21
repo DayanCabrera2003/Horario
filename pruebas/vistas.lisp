@@ -164,3 +164,19 @@
                "la rejilla deberia tener una tabla rotulada 10-B")
     (comprobar (search "MAT" rejilla) "en la rejilla de 10-A")
     (comprobar (search "ESP" rejilla) "en la rejilla de 10-B")))
+
+(definir-prueba vista-partida-llega-a-la-pagina
+    "Vistas: la pagina recibe el campo por el que se parte la vista"
+  ;; LO QUE ESTA PRUEBA NO HACE: comprobar que la pagina DIBUJE dos tablas.
+  ;; El verificador de la web ejecuta el JavaScript emitido pero corta antes
+  ;; del dibujo -materializador/verificar-web.js- porque eso necesitaria un
+  ;; DOM, y el proyecto prefiere decir que no lo verifica a darlo por bueno.
+  ;;
+  ;; Lo que si comprueba es que el dato llegue: si alguien deja de emitir el
+  ;; campo de particion, la pagina dibujaria una sola tabla y el informe
+  ;; seguiria diciendo "cumple". Eso es lo que aqui se impide.
+  (let ((salida (materializar-en-cadena (situacion.web:hacer-web)
+                                        (situacion-de-dos-grupos)
+                                        *dos-grupos*)))
+    (comprobar (search "secciones: \"grupo\"" salida)
+               "la pagina no recibe el campo de particion")))

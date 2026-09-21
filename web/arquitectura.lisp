@@ -31,6 +31,7 @@
                protocolo:con-orden-declarado
                protocolo:con-crecimiento
                protocolo:con-relacion-uno-a-muchos
+               protocolo:con-particion-de-vista
                protocolo:con-conteo-de-distintos
                protocolo:con-marcado-visual
                protocolo:con-marcado-textual
@@ -56,14 +57,6 @@
               aparece un valor nuevo en la coleccion de origen, no aparece
               una fila para el: hay que volver a generar."))
 
-    (protocolo:con-particion-de-vista
-     (values :rechaza
-             "la vista se parte por un campo y esta arquitectura todavia no lo
-              materializa. No se degrada a proposito: una rejilla que ignora la
-              particion no es una version mas pobre de lo que se pidio, es una
-              tabla que mezcla filas de secciones distintas y solo dibuja una
-              de cada cruce. Decir que se emula seria el verde falso que este
-              trabajo critica."))
     (protocolo:con-agrupacion-en-vista
      (values :degrada
              "las filas salen todas en una tabla, sin separar por el campo de

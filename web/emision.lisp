@@ -246,10 +246,17 @@
   (format flujo "~%const CRUCES = [~%~{~a~^,~%~}~%];~%"
           (loop for vista in (nucleo:vistas (situacion plan))
                 when (nucleo:cruzada-p vista)
-                  collect (format nil "  {titulo: ~s, coleccion: ~s, ejeFilas: ~s, ejeColumnas: ~s, celda: ~s}"
+                  collect (format nil "  {titulo: ~s, coleccion: ~s, ejeFilas: ~s, ejeColumnas: ~s, celda: ~s, secciones: ~a}"
                                   (nucleo:etiqueta vista)
                                   (nombre-js (nucleo:fuente vista))
                                   (nombre-js (nucleo:eje-de-filas vista))
                                   (nombre-js (nucleo:eje-de-columnas vista))
-                                  (nombre-js (nucleo:lo-que-se-muestra vista)))))
+                                  (nombre-js (nucleo:lo-que-se-muestra vista))
+                                  ;; El campo por el que se parte, o null. La
+                                  ;; pagina calcula las secciones al dibujar:
+                                  ;; si manana aparece un grupo nuevo, aparece
+                                  ;; una tabla nueva sin regenerar nada.
+                                  (if (nucleo:secciones vista)
+                                      (format nil "~s" (nombre-js (nucleo:secciones vista)))
+                                      "null"))))
   (write-string +render-js+ flujo))
