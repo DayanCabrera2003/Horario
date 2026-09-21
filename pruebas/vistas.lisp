@@ -99,26 +99,26 @@
                "la vista DIA de las defensas declara :AGRUPADA-POR desde que se~@
                 escribio y nunca pidio nada")))
 
-(definir-prueba vista-partida-no-se-materializa-en-falso
-    "Vistas: mientras la particion no este implementada, se rechaza y se dice"
-  ;; :RECHAZA senala CAPACIDAD-NO-DISPONIBLE y aborta -carencia.lisp:83-89-, y
-  ;; es lo correcto: una rejilla que ignora la particion no es una version mas
-  ;; pobre de la que se pidio, es una tabla que mezcla filas de secciones
-  ;; distintas y ademas solo dibuja una de cada cruce.
-  ;;
-  ;; La prueba se vacia sola conforme cada arquitectura pase a cumplirla, y en
-  ;; ese momento se borra. Mientras tanto, protege de que alguien "arregle" el
-  ;; rechazo convirtiendolo en una degradacion que no degrada nada.
+(definir-prueba vista-partida-tiene-respuesta-en-las-tres
+    "Vistas: las tres arquitecturas dicen que hacen con la particion"
+  ;; Aqui hubo una prueba que exigia que las tres RECHAZARAN, porque ninguna
+  ;; la implementaba todavia. Ya no: texto y la pagina la cumplen y la hoja de
+  ;; calculo la emula fijando las pestanas al generar. Lo que se conserva es
+  ;; lo unico que no depende de quien la implemente: que ninguna se la calle.
   (dolist (par (arquitecturas-disponibles))
-    (unless (protocolo:cumple-p (cdr par) 'protocolo:con-particion-de-vista)
-      (comprobar (handler-case
-                     (progn (materializar-en-cadena (cdr par)
-                                                    (situacion-de-dos-grupos)
-                                                    *dos-grupos*)
-                            nil)
-                   (protocolo:capacidad-no-disponible () t))
-                 "~a materializo una vista partida sin implementar la particion"
-                 (car par)))))
+    (multiple-value-bind (salida informe)
+        (materializar-en-cadena (cdr par) (situacion-de-dos-grupos) *dos-grupos*)
+      (declare (ignore salida))
+      (let ((entrada (find 'protocolo:con-particion-de-vista
+                           (protocolo:entradas-del-informe informe)
+                           :key #'protocolo:entrada-de-informe-capacidad)))
+        (comprobar entrada "~a no dice nada sobre la particion" (car par))
+        (when entrada
+          (comprobar (member (protocolo:entrada-de-informe-respuesta entrada)
+                             '(:cumple :emula))
+                     "~a deberia cumplirla o emularla, y responde ~(~a~)"
+                     (car par)
+                     (protocolo:entrada-de-informe-respuesta entrada)))))))
 
 (definir-prueba vista-agrupada-sale-en-el-informe
     "Vistas: agrupar sin implementarlo sale como degradacion, no como silencio"

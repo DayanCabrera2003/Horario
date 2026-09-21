@@ -44,13 +44,15 @@
   (case capacidad
 
     (protocolo:con-particion-de-vista
-     (values :rechaza
-             "la vista se parte por un campo y esta arquitectura todavia no lo
-              materializa. No se degrada a proposito: una rejilla que ignora la
-              particion no es una version mas pobre de lo que se pidio, es una
-              tabla que mezcla filas de secciones distintas y solo dibuja una
-              de cada cruce. Decir que se emula seria el verde falso que este
-              trabajo critica."))
+     (values :emula
+             "cada seccion sale como una pestana propia, y el conjunto de
+              pestanas se fija AL GENERAR leyendo los datos. La clave compuesta
+              de la hoja de origen lleva el campo de particion delante, para
+              que la busqueda no cruce secciones.
+              Limite: si manana aparece un grupo nuevo, no aparece una pestana
+              para el; hay que volver a generar el libro. Es el mismo coste que
+              la tabla cruzada, y por la misma razon: lo que depende del
+              contenido mueve el direccionamiento entero."))
     (protocolo:con-agrupacion-en-vista
      (values :degrada
              "las filas salen todas en una tabla, sin separar por el campo de
