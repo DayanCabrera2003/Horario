@@ -153,14 +153,30 @@ function distintosDe(filas, campo){
   return vistos;
 }
 
+// Una vista partida es la misma tabla repetida, una vez por valor. Los
+// valores salen de los DATOS al dibujar: si manana aparece un grupo nuevo,
+// aparece una tabla nueva sin volver a generar nada. Es la misma propiedad
+// que hace que aqui las columnas de un cruce sean gratis, y es justo lo que
+// a una hoja de calculo le cuesta una emulacion.
 function dibujarCruce(cruce, app){
-  const filas = D[cruce.coleccion] || [];
+  const todas = D[cruce.coleccion] || [];
+  const secciones = cruce.secciones ? distintosDe(todas, cruce.secciones) : [null];
+  for (const s of secciones) {
+    const filas = s === null ? todas
+                             : todas.filter(f => IG(f[cruce.secciones], s));
+    dibujarUnaTabla(cruce, filas, s, app);
+  }
+}
+
+function dibujarUnaTabla(cruce, filas, valorDeSeccion, app){
   const ejeF = distintosDe(filas, cruce.ejeFilas);
   const ejeC = distintosDe(filas, cruce.ejeColumnas);
 
   const seccion = document.createElement('section');
   const titulo = document.createElement('h2');
-  titulo.textContent = cruce.titulo;
+  titulo.textContent = valorDeSeccion === null
+    ? cruce.titulo
+    : cruce.titulo + ' - ' + T(valorDeSeccion);
   seccion.appendChild(titulo);
 
   const envoltura = document.createElement('div');
