@@ -43,6 +43,20 @@
 (defmethod protocolo:resolver-carencia ((a excel) capacidad nodo)
   (case capacidad
 
+    (protocolo:con-particion-de-vista
+     (values :rechaza
+             "la vista se parte por un campo y esta arquitectura todavia no lo
+              materializa. No se degrada a proposito: una rejilla que ignora la
+              particion no es una version mas pobre de lo que se pidio, es una
+              tabla que mezcla filas de secciones distintas y solo dibuja una
+              de cada cruce. Decir que se emula seria el verde falso que este
+              trabajo critica."))
+    (protocolo:con-agrupacion-en-vista
+     (values :degrada
+             "las filas salen todas en una tabla, sin separar por el campo de
+              agrupacion. La tabla es correcta -son las mismas filas- y solo
+              pierde legibilidad, que es lo que distingue degradar de rechazar."))
+
     (protocolo:con-crecimiento
      (values :emula
              (format nil

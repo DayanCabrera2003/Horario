@@ -41,6 +41,8 @@
    #:con-crecimiento
    #:con-marcado-visual
    #:con-marcado-textual
+   #:con-particion-de-vista
+   #:con-agrupacion-en-vista
    #:con-navegacion
 
    ;; Declaracion de la arquitectura.

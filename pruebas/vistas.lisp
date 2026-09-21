@@ -76,6 +76,68 @@
   (comprobar (null (errores-de (situacion-de-dos-grupos)))
              "la misma rejilla con :SECCIONES GRUPO si es legal"))
 
+;;; ---------------------------------------------------------------------
+;;; Que ninguna de las dos ranuras quede en silencio
+;;;
+;;; La regla de conformidad numero 3: lo que una arquitectura no cumple sale
+;;; en el informe como emulado, degradado o rechazado. Callar no puede
+;;; significar "algo saldra". Hasta hoy, :SECCIONES y :AGRUPADA-POR se
+;;; aceptaban, se validaban y no las materializaba nadie, y el informe no
+;;; decia ni una palabra.
+;;; ---------------------------------------------------------------------
+
+(definir-prueba vista-partida-se-pide-como-capacidad
+    "Vistas: partir y agrupar aparecen en los requerimientos"
+  (let ((pedidas (mapcar #'first (protocolo:requerimientos
+                                  (situacion-de-dos-grupos)))))
+    (comprobar (member 'protocolo:con-particion-de-vista pedidas)
+               "una vista con :SECCIONES tiene que pedir CON-PARTICION-DE-VISTA"))
+  (let ((pedidas (mapcar #'first (protocolo:requerimientos
+                                  (situacion.lenguaje:situacion-llamada
+                                   "DEFENSAS-DE-TESIS")))))
+    (comprobar (member 'protocolo:con-agrupacion-en-vista pedidas)
+               "la vista DIA de las defensas declara :AGRUPADA-POR desde que se~@
+                escribio y nunca pidio nada")))
+
+(definir-prueba vista-partida-no-se-materializa-en-falso
+    "Vistas: mientras la particion no este implementada, se rechaza y se dice"
+  ;; :RECHAZA senala CAPACIDAD-NO-DISPONIBLE y aborta -carencia.lisp:83-89-, y
+  ;; es lo correcto: una rejilla que ignora la particion no es una version mas
+  ;; pobre de la que se pidio, es una tabla que mezcla filas de secciones
+  ;; distintas y ademas solo dibuja una de cada cruce.
+  ;;
+  ;; La prueba se vacia sola conforme cada arquitectura pase a cumplirla, y en
+  ;; ese momento se borra. Mientras tanto, protege de que alguien "arregle" el
+  ;; rechazo convirtiendolo en una degradacion que no degrada nada.
+  (dolist (par (arquitecturas-disponibles))
+    (unless (protocolo:cumple-p (cdr par) 'protocolo:con-particion-de-vista)
+      (comprobar (handler-case
+                     (progn (materializar-en-cadena (cdr par)
+                                                    (situacion-de-dos-grupos)
+                                                    *dos-grupos*)
+                            nil)
+                   (protocolo:capacidad-no-disponible () t))
+                 "~a materializo una vista partida sin implementar la particion"
+                 (car par)))))
+
+(definir-prueba vista-agrupada-sale-en-el-informe
+    "Vistas: agrupar sin implementarlo sale como degradacion, no como silencio"
+  ;; Al reves que la particion: ignorar la agrupacion produce una tabla
+  ;; correcta -las mismas filas- y solo menos legible. Eso si es degradar, y
+  ;; por eso las defensas se siguen materializando.
+  (dolist (par (arquitecturas-disponibles))
+    (multiple-value-bind (salida informe)
+        (materializar-en-cadena (cdr par)
+                                (situacion.lenguaje:situacion-llamada
+                                 "DEFENSAS-DE-TESIS")
+                                situacion.corpus:datos-de-las-defensas)
+      (declare (ignore salida))
+      (comprobar (find 'protocolo:con-agrupacion-en-vista
+                       (protocolo:entradas-del-informe informe)
+                       :key #'protocolo:entrada-de-informe-capacidad)
+                 "~a no dice nada sobre la agrupacion que pide la vista DIA"
+                 (car par)))))
+
 ;;; La prueba de que la particion se materializa de verdad entra en la
 ;;; tarea 4, cuando hay una arquitectura que la cumple. Aqui solo se rechaza
-;;; lo ambiguo.
+;;; lo ambiguo y se exige que nada quede callado.
