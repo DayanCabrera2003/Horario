@@ -121,10 +121,12 @@
                      (protocolo:entrada-de-informe-respuesta entrada)))))))
 
 (definir-prueba vista-agrupada-sale-en-el-informe
-    "Vistas: agrupar sin implementarlo sale como degradacion, no como silencio"
-  ;; Al reves que la particion: ignorar la agrupacion produce una tabla
-  ;; correcta -las mismas filas- y solo menos legible. Eso si es degradar, y
-  ;; por eso las defensas se siguen materializando.
+    "Vistas: las tres arquitecturas dicen que hacen con la agrupacion"
+  ;; Texto y la pagina la cumplen; la hoja de calculo degrada, porque alli la
+  ;; posicion de la fila es el dato. Lo que esta prueba vigila no es cual de
+  ;; las tres respuestas da cada una, sino que ninguna se la calle: la vista
+  ;; DIA de las defensas la declaro desde el primer dia y el informe no decia
+  ;; ni una palabra.
   (dolist (par (arquitecturas-disponibles))
     (multiple-value-bind (salida informe)
         (materializar-en-cadena (cdr par)
@@ -137,6 +139,55 @@
                        :key #'protocolo:entrada-de-informe-capacidad)
                  "~a no dice nada sobre la agrupacion que pide la vista DIA"
                  (car par)))))
+
+;;; ---------------------------------------------------------------------
+;;; El filtro
+;;;
+;;; Lo que pidio el tutor: ver la ocupacion DE LOS PROFESORES QUE LE DAN
+;;; CLASE A ESE GRUPO, no la de los ciento y pico del centro. Partir da una
+;;; tabla por profesor; filtrar dice cuales.
+;;; ---------------------------------------------------------------------
+
+(situacion.lenguaje:defsituacion un-grupo-de-dos (:etiqueta "Filtrada")
+  (coleccion casillas
+    (:clave grupo dia turno)
+    (campo grupo      :rol fijo)
+    (campo dia        :rol fijo)
+    (campo turno      :rol fijo)
+    (campo asignatura :rol entrada :dominio (uno-de "MAT" "ESP")
+                      :al-violar advertir)
+    ;; Cuenta sobre la coleccion ENTERA. Si el filtro de la vista tocara los
+    ;; datos, este numero cambiaria, y no debe.
+    (campo cuantas-hay :rol derivado :tipo entero
+           (cuantas casillas)))
+  (vista rejilla :de casillas :entrada t :etiqueta "Horario"
+                 :filas turno :columnas dia :muestra asignatura
+                 :secciones grupo
+                 :donde (= (de fila grupo) "10-A")))
+
+(definir-prueba vista-filtrada-deja-fuera-lo-que-no-cumple
+    "Vistas: :DONDE presenta solo las filas que lo cumplen"
+  (let* ((salida (materializar-en-cadena
+                  (situacion.texto:hacer-texto)
+                  (situacion.lenguaje:situacion-llamada "UN-GRUPO-DE-DOS")
+                  *dos-grupos*))
+         (fin (or (search "Casillas" salida) (length salida)))
+         (rejilla (subseq salida 0 fin)))
+    (comprobar (search "10-A" rejilla) "la seccion de 10-A tiene que estar")
+    (comprobar (not (search "10-B" rejilla))
+               "10-B no cumple el filtro y no deberia tener tabla")))
+
+(definir-prueba vista-filtrada-no-cambia-los-datos
+    "Vistas: el filtro es de la presentacion, no de la situacion"
+  ;; Si filtrar tocara los datos, CUANTAS-HAY valdria 1 en vez de 2 y las
+  ;; marcas dejarian de ver las filas escondidas. Un detector de colisiones
+  ;; que solo mira lo que se dibuja no detecta nada: el horario de Rosa no
+  ;; ensena las clases de Julia, y aun asi tiene que saber que chocan.
+  (let* ((s (situacion.lenguaje:situacion-llamada "UN-GRUPO-DE-DOS"))
+         (e (nucleo:hacer-entorno s *dos-grupos*))
+         (fila (first (nucleo:filas-de e (nucleo:nombrar "casillas")))))
+    (comprobar (= 2 (nucleo:valor-de-campo e fila (nucleo:nombrar "cuantas-hay")))
+               "el filtro de la vista no puede cambiar lo que cuenta un agregado")))
 
 (definir-prueba vista-agrupada-separa-las-filas
     "Vistas: :AGRUPADA-POR separa las filas por el valor del campo"

@@ -26,6 +26,7 @@
 (defclass texto (protocolo:con-tabla-cruzada
                  protocolo:con-particion-de-vista
                  protocolo:con-agrupacion-en-vista
+                 protocolo:con-filtro-de-vista
                  protocolo:con-marcado-textual
                  protocolo:con-busqueda-por-clave
                  protocolo:con-orden-declarado)

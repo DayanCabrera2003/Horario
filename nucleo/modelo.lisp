@@ -93,6 +93,14 @@
    (fuente "Coleccion que muestra.")
    (secciones "Campo por cuyo valor se parte en secciones, o NIL.")
    (agrupacion "Campo por el que se agrupa dentro de cada seccion, o NIL.")
+   (filtro "Expresion booleana por fila. Solo se presentan las filas que la
+            cumplen, o NIL si se presentan todas.
+
+            NO CAMBIA LOS DATOS. Una fila que el filtro deja fuera sigue
+            contando para los agregados y para las marcas: el horario de un
+            profesor no ensena las clases de otro, y aun asi tiene que saber
+            que chocan. Lo que se filtra es la PRESENTACION, que es de lo que
+            habla una vista.")
    (eje-de-filas "Campo cuyos valores van en el eje vertical, o NIL.")
    (eje-de-columnas "Campo cuyos valores van en el eje horizontal, o NIL.")
    (lo-que-se-muestra "Campo que aparece en el cruce de los dos ejes, o NIL.")

@@ -98,16 +98,32 @@
    Devolver una lista de un solo elemento cuando no hay particion deja el
    recorrido igual en los dos casos: se escribe una tabla por elemento."
   (if (nucleo:secciones vista)
-      (valores-distintos-en-filas
-       plan (nucleo:filas-de (entorno plan) (nucleo:fuente vista))
-       (nucleo:secciones vista))
+      ;; Las secciones salen de las filas PRESENTABLES: si el filtro deja
+      ;; fuera a un profesor entero, no tiene que aparecer su tabla vacia.
+      (valores-distintos-en-filas plan (filas-presentables plan vista)
+                                  (nucleo:secciones vista))
       (list nil)))
 
-(defun filas-de-la-seccion (plan vista valor)
-  "Las filas de la coleccion de VISTA que caen en la seccion VALOR.
+(defun filas-presentables (plan vista)
+  "Las filas que VISTA presenta: las de su coleccion que pasan su filtro.
 
-   Con VALOR en NIL son todas: es el caso de la vista que no se parte."
+   El filtro es de presentacion y no toca los datos: la coleccion sigue
+   entera en el entorno, asi que los agregados y las marcas siguen viendo
+   las filas que aqui se esconden."
   (let ((filas (nucleo:filas-de (entorno plan) (nucleo:fuente vista))))
+    (if (null (nucleo:filtro vista))
+        filas
+        (remove-if-not
+         (lambda (f) (nucleo:evaluar-en-fila (entorno plan) f
+                                             (nucleo:filtro vista)))
+         filas))))
+
+(defun filas-de-la-seccion (plan vista valor)
+  "Las filas de VISTA que caen en la seccion VALOR.
+
+   Con VALOR en NIL son todas las presentables: es el caso de la vista que no
+   se parte."
+  (let ((filas (filas-presentables plan vista)))
     (if (null valor)
         filas
         (remove-if-not

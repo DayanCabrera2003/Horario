@@ -197,6 +197,18 @@
    no bastan para identificar la fila: el analisis exige que los ejes mas el
    campo de particion cubran la clave.")
 
+(definir-capacidad con-filtro-de-vista
+  "Puede presentar solo las filas que cumplen una condicion.
+
+   Partir da una tabla por profesor; filtrar dice cuales. Las dos juntas son
+   lo que hace falta para ver la ocupacion de los profesores de UN grupo sin
+   sacar a los ciento y pico del centro.
+
+   Lo que se filtra es la presentacion y nunca los datos: una fila escondida
+   sigue contando para los agregados y para las marcas. Una arquitectura que
+   filtrara de verdad la coleccion estaria cambiando el significado de la
+   descripcion, no presentandola.")
+
 (definir-capacidad con-agrupacion-en-vista
   "Puede separar las filas de una tabla por el valor de un campo, dentro de
    la misma tabla.

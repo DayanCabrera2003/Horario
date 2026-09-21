@@ -477,6 +477,20 @@
       (eq (coleccion marca) (nombre coleccion))
       (every (lambda (c) (campo-llamado coleccion c)) (alcance marca))))
 
+(defun evaluar-en-fila (entorno fila expresion)
+  "El valor de EXPRESION con FILA ligada a la variable de fila.
+
+   Es lo que hace falta para evaluar cualquier cosa que el autor escribio
+   pensando en una fila concreta -la condicion de una marca, el filtro de una
+   vista- sin que cada arquitectura tenga que rehacer el ambito por su cuenta.
+   Que este aqui y no en cada backend es lo que garantiza que las tres
+   pregunten lo mismo."
+  (when expresion
+    (let ((ambito (hacer-ambito :ligaduras (list (cons (nombrar "fila")
+                                                       (coleccion fila)))
+                                :actual 'fila)))
+      (evaluar expresion ambito entorno (list (cons (nombrar "fila") fila))))))
+
 (defun explicacion-de-marca (entorno fila marca)
   "El texto de la explicacion de MARCA en FILA, o NIL si no tiene."
   (when (explicacion marca)

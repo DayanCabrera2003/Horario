@@ -170,10 +170,12 @@
 
 (defun compilar-vista (forma)
   "(vista NOMBRE :de COLECCION [:etiqueta ...] [:entrada t]
-                 [:secciones CAMPO] [:agrupada-por CAMPO])"
+                 [:secciones CAMPO] [:agrupada-por CAMPO] [:donde EXPRESION]
+                 [:filas CAMPO :columnas CAMPO :muestra CAMPO])"
   (destructuring-bind (cabeza nombre &rest opciones) forma
     (declare (ignore cabeza))
-    (let ((fuente (opcion opciones :de)))
+    (let ((fuente (opcion opciones :de))
+          (donde (opcion opciones :donde)))
       (unless fuente (error "La vista ~a no dice :DE que coleccion es." nombre))
       `(nucleo:hacer-vista
         :nombre ',(normalizar nombre)
@@ -181,6 +183,7 @@
         :fuente ',(normalizar fuente)
         :secciones ',(normalizar (opcion opciones :secciones))
         :agrupacion ',(normalizar (opcion opciones :agrupada-por))
+        :filtro ,(when donde (compilar-expresion donde))
         :eje-de-filas ',(normalizar (opcion opciones :filas))
         :eje-de-columnas ',(normalizar (opcion opciones :columnas))
         :lo-que-se-muestra ',(normalizar (opcion opciones :muestra))

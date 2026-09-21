@@ -67,6 +67,10 @@
           (pedir 'con-particion-de-vista vista
                  (format nil "~(~a~) se reparte en una tabla por cada ~(~a~)"
                          (nucleo:nombre vista) (nucleo:secciones vista))))
+        (when (nucleo:filtro vista)
+          (pedir 'con-filtro-de-vista vista
+                 (format nil "~(~a~) solo presenta las filas que cumplen una condicion"
+                         (nucleo:nombre vista))))
         (when (nucleo:agrupacion vista)
           (pedir 'con-agrupacion-en-vista vista
                  (format nil "las filas de ~(~a~) se separan por ~(~a~)"

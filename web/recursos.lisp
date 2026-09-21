@@ -160,7 +160,12 @@ function distintosDe(filas, campo){
 // que hace que aqui las columnas de un cruce sean gratis, y es justo lo que
 // a una hoja de calculo le cuesta una emulacion.
 function dibujarCruce(cruce, app){
-  const todas = D[cruce.coleccion] || [];
+  const filasDelDato = D[cruce.coleccion] || [];
+  // El filtro esconde filas de la PRESENTACION y no toca D: los agregados y
+  // las marcas siguen viendo la coleccion entera. Se evalua en cada render,
+  // asi que una fila que deja de cumplirlo desaparece sola.
+  const todas = cruce.filtro ? filasDelDato.filter(f => !!cruce.filtro(f))
+                             : filasDelDato;
   const secciones = cruce.secciones ? distintosDe(todas, cruce.secciones) : [null];
   for (const s of secciones) {
     const filas = s === null ? todas
