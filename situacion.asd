@@ -95,6 +95,7 @@
                (:file "nucleo")
                (:file "alcance")
                (:file "conformidad")
+               (:file "vistas")
                (:file "ejecutar"))
   :perform (test-op (op system)
                     (uiop:symbol-call :situacion.pruebas :ejecutar)))

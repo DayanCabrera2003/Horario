@@ -300,6 +300,34 @@
                    "La vista ~(~a~) declara una tabla cruzada a medias.~@
                     Hacen falta las tres: :FILAS, :COLUMNAS y :CELDA."
                    (nucleo:nombre vista))))
+       ;; Los ejes de un cruce, mas el campo por el que se parte, tienen que
+       ;; determinar la fila. Si no, dos filas distintas caen en la misma
+       ;; casilla y se dibuja una de las dos -la primera que aparezca-, que es
+       ;; el PREVIOUS-OF posicional otra vez: el resultado depende del orden en
+       ;; que esten escritos los datos y no de lo que dice la descripcion.
+       ;;
+       ;; Solo se puede comprobar si la coleccion DECLARA clave. Sin clave no
+       ;; hay con que saberlo, y callar ahi es honesto: no es lo mismo no poder
+       ;; comprobar que comprobar y aprobar.
+       (when (and (nucleo:cruzada-p vista) (nucleo:clave coleccion))
+         (let ((sueltos (set-difference
+                         (nucleo:clave coleccion)
+                         (remove nil (list (nucleo:eje-de-filas vista)
+                                           (nucleo:eje-de-columnas vista)
+                                           (nucleo:secciones vista))))))
+           (when sueltos
+             (anotar :error
+                     "La vista ~(~a~) cruza ~(~a~) por ~(~a~) sobre ~(~a~), cuya~@
+                      clave es (~{~(~a~)~^ ~}).~@
+                      Queda fuera: ~{~(~a~)~^, ~}. Dos filas distintas caen en la~@
+                      misma casilla y solo se dibujaria una, la primera que~@
+                      apareciera en los datos.~@
+                      Anade (:SECCIONES ~(~a~)) para que la vista se parta por ese~@
+                      campo, o cambia los ejes."
+                     (nucleo:nombre vista)
+                     (nucleo:eje-de-filas vista) (nucleo:eje-de-columnas vista)
+                     (nucleo:nombre coleccion) (nucleo:clave coleccion)
+                     sueltos (first sueltos)))))
        ;; Y todo campo que la vista mencione tiene que ser de su coleccion.
        (dolist (par (list (cons :secciones (nucleo:secciones vista))
                           (cons :agrupada-por (nucleo:agrupacion vista))
