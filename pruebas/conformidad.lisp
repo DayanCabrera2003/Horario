@@ -252,11 +252,7 @@
               ;; generar y lo declaran como emulacion. La cumpliria una pagina
               ;; que reagrupara al dibujar, o SQL con GROUP BY.
               protocolo:con-agrupacion
-              ;; Todavia no la materializa nadie: las tres degradan y el
-              ;; informe lo dice. Sale de esta lista en cuanto alguna la
-              ;; cumpla, que es lo que hace que anadir una huerfana -y
-              ;; dejarla aqui cuando ya no lo es- tenga que ser deliberado.
-              protocolo:con-agrupacion-en-vista)))
+              )))
       (comprobar (subsetp huerfanas justificadas)
                  "hay capacidades que ninguna arquitectura declara y que no~@
                   estan en la lista de las justificadas: ~{~(~a~)~^, ~}.~@

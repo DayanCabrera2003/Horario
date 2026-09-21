@@ -189,6 +189,18 @@
           (nombre-js (nucleo:fuente vista))
           (if (nucleo:es-entrada vista) "true" "false")))
 
+(defun campo-de-agrupacion (plan coleccion)
+  "El campo por el que se agrupa esta coleccion, si alguna vista lo dice.
+
+   La agrupacion se declara en la VISTA porque es una decision de
+   presentacion; aqui se busca al reves, desde la coleccion que se esta
+   dibujando."
+  (let ((vista (find-if (lambda (v)
+                          (and (eq (nucleo:fuente v) (nucleo:nombre coleccion))
+                               (nucleo:agrupacion v)))
+                        (nucleo:vistas (situacion plan)))))
+    (when vista (nucleo:agrupacion vista))))
+
 (defun coleccion-de-la-marca (marca situacion)
   (if (nucleo:coleccion marca)
       (nucleo:coleccion-llamada situacion (nucleo:coleccion marca))
@@ -227,10 +239,12 @@
   (loop for coleccion in (nucleo:colecciones (situacion plan))
         for primera = t then nil
         do (unless primera (format flujo ",~%"))
-           (format flujo "  {nombre: ~s, etiqueta: ~s, crece: ~a, campos: [~{~a~^, ~}]}"
+           (format flujo "  {nombre: ~s, etiqueta: ~s, crece: ~a, agrupa: ~a, campos: [~{~a~^, ~}]}"
                    (nombre-js (nucleo:nombre coleccion))
                    (nucleo:etiqueta coleccion)
                    (if (eq (nucleo:crecimiento coleccion) :crece) "true" "false")
+                   (let ((campo (campo-de-agrupacion plan coleccion)))
+                     (if campo (format nil "~s" (nombre-js campo)) "null"))
                    (loop for campo in (nucleo:campos coleccion)
                          collect (format nil "{n: ~s, e: ~s, rol: ~s, tipo: ~s}"
                                          (nombre-js (nucleo:nombre campo))

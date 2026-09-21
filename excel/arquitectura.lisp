@@ -55,9 +55,15 @@
               contenido mueve el direccionamiento entero."))
     (protocolo:con-agrupacion-en-vista
      (values :degrada
-             "las filas salen todas en una tabla, sin separar por el campo de
-              agrupacion. La tabla es correcta -son las mismas filas- y solo
-              pierde legibilidad, que es lo que distingue degradar de rechazar."))
+             "las filas salen en el orden de la coleccion, sin cabecera por
+              grupo. La tabla es correcta -son las mismas filas- y solo pierde
+              legibilidad, que es lo que distingue degradar de rechazar.
+              Aqui cuesta lo que en los otros dos destinos es gratis, y la
+              razon merece decirse: en una pagina o en un informe de texto
+              agrupar es solo el orden en que se DIBUJAN las filas, y el dato
+              no se mueve. En una rejilla la posicion de la fila ES el dato:
+              reordenarla cambiaria lo que significan ANTERIOR y SIGUIENTE, e
+              intercalar cabeceras correria las filas fuera de los rangos."))
 
     (protocolo:con-crecimiento
      (values :emula
