@@ -29,6 +29,11 @@
 (defclass cruce ()
   ((vista :accessor vista :initarg :vista)
    (hoja-origen :accessor hoja-origen :initarg :hoja-origen)
+   (seccion :accessor seccion :initarg :seccion :initform nil
+            :documentation
+            "Valor del campo de particion que le toca a esta pestana, o NIL si
+             la vista no se parte. Una vista partida produce un cruce -y por
+             tanto una pestana- por cada valor.")
    (valores-de-fila :accessor valores-de-fila :initarg :valores-de-fila)
    (valores-de-columna :accessor valores-de-columna :initarg :valores-de-columna)
    (columna-auxiliar :accessor columna-auxiliar :initarg :columna-auxiliar
@@ -104,6 +109,36 @@
     (setf (hojas plan) (nreverse (hojas plan)))
     plan))
 
+(defun capacidad-para (a coleccion n-filas)
+  "Cuantas filas abarca la hoja de COLECCION si lleva N-FILAS de datos.
+
+   Una coleccion que crece se lleva ademas su reserva en blanco. Esta escrito
+   una sola vez porque se aplica dos veces: al planificar, con las filas
+   declaradas, y al emitir, con las que de verdad se van a escribir."
+  (let ((n (max 1 n-filas)))
+    (if (eq (nucleo:crecimiento coleccion) :crece)
+        (+ n (max (reserva-minima a) (floor n 2)))
+        n)))
+
+(defun ajustar-capacidades (a plan)
+  "Redimensiona las hojas con las filas que de verdad se van a escribir.
+
+   AL PLANIFICAR NO SE SABEN. La fase 5 solo tiene la descripcion, donde las
+   filas son las declaradas en (:DATOS ...); las que se materializan llegan
+   con el entorno, en la fase 6, y pueden ser muchas mas: una descripcion
+   declara dos casillas de ejemplo y se genera con ochenta.
+
+   Sin esto, CELDAS-DE escribe las ochenta -toma los valores del entorno- y
+   todo lo que se dimensiona con la capacidad -los rangos, la columna de
+   clave compuesta, las validaciones, los formatos- cubre solo dos. El libro
+   sale con datos fuera de rango y celdas vacias donde deberia haber
+   busquedas, sin un solo error a la vista."
+  (dolist (hoja (hojas plan))
+    (let ((reales (length (nucleo:filas-de (entorno plan)
+                                           (nucleo:nombre (coleccion hoja))))))
+      (setf (capacidad hoja)
+            (max (capacidad hoja) (capacidad-para a (coleccion hoja) reales))))))
+
 (defmethod protocolo:planificar-coleccion ((a excel) coleccion plan)
   "Decide la geometria de una coleccion: que columna ocupa cada campo, donde
    empiezan los datos y cuantas filas se reservan."
@@ -111,10 +146,7 @@
          (columnas (loop for campo in campos
                          for i from 0
                          collect (cons (nucleo:nombre campo) (letra-de-columna i))))
-         (n-datos (max 1 (length (nucleo:datos coleccion))))
-         (capacidad (if (eq (nucleo:crecimiento coleccion) :crece)
-                        (+ n-datos (max (reserva-minima a) (floor n-datos 2)))
-                        n-datos))
+         (capacidad (capacidad-para a coleccion (length (nucleo:datos coleccion))))
          (hoja (make-instance 'hoja
                               :nombre (nucleo:etiqueta coleccion)
                               :coleccion coleccion
@@ -168,34 +200,63 @@
 ;;; turno nuevo, no aparece una columna nueva.
 ;;; ---------------------------------------------------------------------
 
-(defun valores-distintos-en (plan nombre-coleccion campo)
-  "Los valores que toma un campo, sin repetir y en orden de aparicion."
+(defun valores-distintos-en-filas (plan filas campo)
+  "Los valores que toma CAMPO en FILAS, sin repetir y en orden de aparicion."
   (let ((vistos '()))
-    (dolist (f (nucleo:filas-de (entorno plan) nombre-coleccion) (nreverse vistos))
+    (dolist (f filas (nreverse vistos))
       (let ((v (nucleo:valor-de-campo (entorno plan) f campo)))
         (unless (or (nucleo:vacio-p v) (member v vistos :test #'nucleo:iguales-p))
           (push v vistos))))))
 
-(defun planificar-cruce (a vista plan)
-  "Resuelve una vista cruzada a geometria, y declara lo que cuesta."
+(defun valores-distintos-en (plan nombre-coleccion campo)
+  "Los valores que toma un campo en la coleccion entera."
+  (valores-distintos-en-filas
+   plan (nucleo:filas-de (entorno plan) nombre-coleccion) campo))
+
+(defun filas-de-la-seccion (plan vista valor)
+  "Las filas de la coleccion de VISTA que caen en la seccion VALOR.
+
+   Con VALOR en NIL son todas: es el caso de la vista que no se parte."
+  (let ((filas (nucleo:filas-de (entorno plan) (nucleo:fuente vista))))
+    (if (null valor)
+        filas
+        (remove-if-not
+         (lambda (f) (nucleo:iguales-p
+                      valor (nucleo:valor-de-campo (entorno plan) f
+                                                   (nucleo:secciones vista))))
+         filas))))
+
+(defun planificar-cruces (a vista plan)
+  "Resuelve una vista cruzada a geometria: un cruce por seccion.
+
+   Sin particion sale uno solo, con SECCION en NIL. Con particion, uno por
+   valor, y cada uno sera una pestana. Los valores se leen de los DATOS y se
+   fijan aqui, al generar: ese es el coste de la emulacion y esta declarado
+   en el informe."
+  (declare (ignore a))
   (let ((hoja (hoja-de plan (nucleo:fuente vista))))
     ;; La capacidad ya la pidio PROTOCOLO:REQUERIMIENTOS al empezar a
     ;; materializar: pedirla otra vez aqui duplicaba el renglon del informe.
     ;; Un informe que repite cosas se lee peor y, sobre todo, deja de poder
     ;; contarse.
     (when hoja
-      (let ((cruce (make-instance
-                    'cruce
-                    :vista vista
-                    :hoja-origen hoja
-                    :valores-de-fila (valores-distintos-en
-                                      plan (nucleo:fuente vista)
-                                      (nucleo:eje-de-filas vista))
-                    :valores-de-columna (valores-distintos-en
-                                         plan (nucleo:fuente vista)
-                                         (nucleo:eje-de-columnas vista))
-                    ;; La columna de clave compuesta va detras de las declaradas.
-                    :columna-auxiliar (letra-de-columna
-                                       (length (nucleo:campos (coleccion hoja)))))))
-        (push cruce (cruces plan))
-        cruce))))
+      (dolist (valor (if (nucleo:secciones vista)
+                         (valores-distintos-en plan (nucleo:fuente vista)
+                                               (nucleo:secciones vista))
+                         (list nil)))
+        (let ((filas (filas-de-la-seccion plan vista valor)))
+          (push (make-instance
+                 'cruce
+                 :vista vista
+                 :hoja-origen hoja
+                 :seccion valor
+                 :valores-de-fila (valores-distintos-en-filas
+                                   plan filas (nucleo:eje-de-filas vista))
+                 :valores-de-columna (valores-distintos-en-filas
+                                      plan filas (nucleo:eje-de-columnas vista))
+                 ;; La columna de clave compuesta va detras de las declaradas.
+                 ;; Es la misma para todos los cruces de la misma vista: la
+                 ;; escribe la hoja de origen una sola vez.
+                 :columna-auxiliar (letra-de-columna
+                                    (length (nucleo:campos (coleccion hoja)))))
+                (cruces plan)))))))
