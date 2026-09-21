@@ -40,8 +40,11 @@
 (defun construir-plano (a plan)
   ;; Las vistas se planifican antes de emitir: pueden reordenar las hojas y,
   ;; si son cruzadas, anaden geometria propia.
+  ;; Antes que nada, las hojas se redimensionan con las filas que de verdad
+  ;; hay: al planificar solo se conocian las declaradas.
+  (ajustar-capacidades a plan)
   (dolist (vista (nucleo:vistas (situacion plan)))
-    (when (nucleo:cruzada-p vista) (planificar-cruce a vista plan))
+    (when (nucleo:cruzada-p vista) (planificar-cruces a vista plan))
     (protocolo:planificar-vista a vista plan))
   (setf (cruces plan) (nreverse (cruces plan)))
   (list (cons "libro" (nucleo:etiqueta (situacion plan)))
@@ -100,12 +103,18 @@
                                       (list (cons "celda" (format nil "~a~d"
                                                                   (letra-de-columna i) f))
                                             (cons "formula"
-                                                  (format nil "=IFERROR(INDEX(~a,MATCH($A~d&\"|\"&~a$~d,~a,0)),\"\")"
-                                                          rango-valor f
+                                                  ;; La primera parte de la clave
+                                                  ;; es el valor de ESTA pestana,
+                                                  ;; fijado al generar.
+                                                  (format nil "=IFERROR(INDEX(~a,MATCH(~@[\"~a\"&\"|\"&~]$A~d&\"|\"&~a$~d,~a,0)),\"\")"
+                                                          rango-valor
+                                                          (when (seccion cruce)
+                                                            (nucleo:como-texto (seccion cruce)))
+                                                          f
                                                           (letra-de-columna i) fila-enc
                                                           rango-clave)))))))
     (declare (ignore coleccion))
-    (list (cons "nombre" (nucleo:etiqueta vista))
+    (list (cons "nombre" (nombre-de-pestana (nucleo:etiqueta vista) (seccion cruce)))
           (cons "fila_encabezado" fila-enc)
           (cons "fila_primera" fila-ini)
           (cons "capacidad" (max 1 (length (valores-de-fila cruce))))
@@ -118,6 +127,17 @@
           (cons "formatos_condicionales" :lista-vacia)
           (cons "rangos_nombrados" :lista-vacia)
           (cons "leyenda" :lista-vacia))))
+
+(defun nombre-de-pestana (etiqueta seccion)
+  "El nombre de la pestana de un cruce, con su seccion si la tiene.
+
+   Excel no admite nombres de hoja de mas de 31 caracteres. Es una
+   restriccion del formato de salida, asi que se resuelve aqui y ni el
+   lenguaje ni el protocolo se enteran."
+  (let ((completo (if seccion
+                      (format nil "~a - ~a" etiqueta (nucleo:como-texto seccion))
+                      etiqueta)))
+    (if (> (length completo) 31) (subseq completo 0 31) completo)))
 
 (defmethod protocolo:planificar-vista ((a excel) vista plan)
   "Una vista se materializa como la hoja de su coleccion.
@@ -197,13 +217,21 @@
    ninguna falta."
   (let ((cruce (cruce-de-la-hoja plan hoja)))
     (when cruce
-      (let ((vista (vista cruce)))
+      (let* ((vista (vista cruce))
+             (parte-de-seccion (nucleo:secciones vista)))
         (loop for i from 0 below (capacidad hoja)
               for f = (+ (fila-primera hoja) i)
               collect (list (cons "celda" (format nil "~a~d"
                                                   (columna-auxiliar cruce) f))
                             (cons "formula"
-                                  (format nil "=~a&\"|\"&~a"
+                                  ;; Con particion la clave lleva tres partes:
+                                  ;; seccion | eje-de-filas | eje-de-columnas.
+                                  ;; Sin la primera, dos secciones producen la
+                                  ;; misma clave y COINCIDIR devuelve la fila
+                                  ;; de otra pestana.
+                                  (format nil "=~@[~a&\"|\"&~]~a&\"|\"&~a"
+                                          (when parte-de-seccion
+                                            (celda hoja parte-de-seccion f))
                                           (celda hoja (nucleo:eje-de-filas vista) f)
                                           (celda hoja (nucleo:eje-de-columnas vista) f)))))))))
 
