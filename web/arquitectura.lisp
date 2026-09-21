@@ -33,6 +33,7 @@
                protocolo:con-relacion-uno-a-muchos
                protocolo:con-particion-de-vista
                protocolo:con-agrupacion-en-vista
+               protocolo:con-filtro-de-vista
                protocolo:con-conteo-de-distintos
                protocolo:con-marcado-visual
                protocolo:con-marcado-textual

@@ -234,7 +234,6 @@
    El rol de campo decide aqui exactamente lo mismo que en la hoja de
    calculo, con otra realizacion: de entrada es un control, derivado es texto
    de solo lectura, fijo es texto. Un solo hecho del dominio, dos destinos."
-  (declare (ignore a))
   (format flujo "~%const ESQUEMA = [~%")
   (loop for coleccion in (nucleo:colecciones (situacion plan))
         for primera = t then nil
@@ -260,7 +259,7 @@
   (format flujo "~%const CRUCES = [~%~{~a~^,~%~}~%];~%"
           (loop for vista in (nucleo:vistas (situacion plan))
                 when (nucleo:cruzada-p vista)
-                  collect (format nil "  {titulo: ~s, coleccion: ~s, ejeFilas: ~s, ejeColumnas: ~s, celda: ~s, secciones: ~a}"
+                  collect (format nil "  {titulo: ~s, coleccion: ~s, ejeFilas: ~s, ejeColumnas: ~s, celda: ~s, secciones: ~a, filtro: ~a}"
                                   (nucleo:etiqueta vista)
                                   (nombre-js (nucleo:fuente vista))
                                   (nombre-js (nucleo:eje-de-filas vista))
@@ -272,5 +271,18 @@
                                   ;; una tabla nueva sin regenerar nada.
                                   (if (nucleo:secciones vista)
                                       (format nil "~s" (nombre-js (nucleo:secciones vista)))
+                                      "null")
+                                  ;; El filtro va como FUNCION, no como lista de
+                                  ;; filas: se reevalua en cada render, asi que
+                                  ;; si el usuario escribe algo que hace que una
+                                  ;; fila deje de cumplirlo, desaparece sola.
+                                  (if (nucleo:filtro vista)
+                                      (format nil "(f) => ~a"
+                                              (protocolo:emitir-expresion
+                                               a (nucleo:filtro vista)
+                                               (ambito-de (nucleo:coleccion-llamada
+                                                           (situacion plan)
+                                                           (nucleo:fuente vista)))
+                                               plan))
                                       "null"))))
   (write-string +render-js+ flujo))

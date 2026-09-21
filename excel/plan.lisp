@@ -213,11 +213,27 @@
   (valores-distintos-en-filas
    plan (nucleo:filas-de (entorno plan) nombre-coleccion) campo))
 
-(defun filas-de-la-seccion (plan vista valor)
-  "Las filas de la coleccion de VISTA que caen en la seccion VALOR.
+(defun filas-presentables (plan vista)
+  "Las filas que VISTA presenta: las de su coleccion que pasan su filtro.
 
-   Con VALOR en NIL son todas: es el caso de la vista que no se parte."
+   Se evalua AL GENERAR, que es el coste de emularlo aqui: si manana una fila
+   deja de cumplir el filtro, sigue en su pestana hasta que se regenere el
+   libro. La coleccion no se toca, asi que los agregados y las marcas siguen
+   viendo las filas escondidas."
   (let ((filas (nucleo:filas-de (entorno plan) (nucleo:fuente vista))))
+    (if (null (nucleo:filtro vista))
+        filas
+        (remove-if-not
+         (lambda (f) (nucleo:evaluar-en-fila (entorno plan) f
+                                             (nucleo:filtro vista)))
+         filas))))
+
+(defun filas-de-la-seccion (plan vista valor)
+  "Las filas de VISTA que caen en la seccion VALOR.
+
+   Con VALOR en NIL son todas las presentables: es el caso de la vista que no
+   se parte."
+  (let ((filas (filas-presentables plan vista)))
     (if (null valor)
         filas
         (remove-if-not
@@ -241,8 +257,12 @@
     ;; contarse.
     (when hoja
       (dolist (valor (if (nucleo:secciones vista)
-                         (valores-distintos-en plan (nucleo:fuente vista)
-                                               (nucleo:secciones vista))
+                         ;; Las secciones salen de las filas presentables: si
+                         ;; el filtro deja fuera a un profesor entero, no se
+                         ;; le fabrica una pestana vacia.
+                         (valores-distintos-en-filas
+                          plan (filas-presentables plan vista)
+                          (nucleo:secciones vista))
                          (list nil)))
         (let ((filas (filas-de-la-seccion plan vista valor)))
           (push (make-instance

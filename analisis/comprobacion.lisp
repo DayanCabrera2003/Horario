@@ -328,6 +328,29 @@
                      (nucleo:eje-de-filas vista) (nucleo:eje-de-columnas vista)
                      (nucleo:nombre coleccion) (nucleo:clave coleccion)
                      sueltos (first sueltos)))))
+       ;; El filtro se escribe pensando en una fila, asi que se comprueba con
+       ;; la variable FILA ligada a la coleccion de la vista.
+       (when (nucleo:filtro vista)
+         ;; De momento solo lo materializan las vistas cruzadas. En una vista
+         ;; plana, las arquitecturas dibujan la tabla de la COLECCION, que es
+         ;; el dato entero, y el filtro se quedaria sin efecto. Se rechaza en
+         ;; vez de ignorarse en silencio, que es la regla de toda esta casa.
+         (unless (nucleo:cruzada-p vista)
+           (anotar :error
+                   "La vista ~(~a~) declara :DONDE y no es una tabla cruzada.~@
+                    El filtro solo esta implementado para vistas cruzadas: en~@
+                    una vista plana se dibuja la tabla de la coleccion entera~@
+                    y el filtro no se aplicaria.~@
+                    Quita el :DONDE, o declara los tres ejes de la tabla~@
+                    cruzada."
+                   (nucleo:nombre vista)))
+         (comprobar-expresion (nucleo:filtro vista)
+                              (nucleo:ambito-extendido (nucleo:hacer-ambito)
+                                                       (nucleo:nombrar "fila")
+                                                       coleccion)
+                              situacion
+                              (format nil "El filtro de la vista ~(~a~)"
+                                      (nucleo:nombre vista))))
        ;; Y todo campo que la vista mencione tiene que ser de su coleccion.
        (dolist (par (list (cons :secciones (nucleo:secciones vista))
                           (cons :agrupada-por (nucleo:agrupacion vista))

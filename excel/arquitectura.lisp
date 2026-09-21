@@ -53,6 +53,15 @@
               para el; hay que volver a generar el libro. Es el mismo coste que
               la tabla cruzada, y por la misma razon: lo que depende del
               contenido mueve el direccionamiento entero."))
+    (protocolo:con-filtro-de-vista
+     (values :emula
+             "las filas que cumplen la condicion se eligen AL GENERAR y se
+              reparten por las pestanas. Limite: si manana una fila deja de
+              cumplir el filtro, sigue en su pestana hasta que se regenere el
+              libro. Es el mismo coste que la particion y que la tabla
+              cruzada, y por la misma razon: lo que depende del contenido
+              mueve el direccionamiento entero."))
+
     (protocolo:con-agrupacion-en-vista
      (values :degrada
              "las filas salen en el orden de la coleccion, sin cabecera por

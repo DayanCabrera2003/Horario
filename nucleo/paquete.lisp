@@ -58,7 +58,7 @@
    #:marca #:hacer-marca
    #:condicion #:alcance #:severidad #:explicacion
    #:vista #:hacer-vista
-   #:fuente #:secciones #:agrupacion #:es-entrada
+   #:fuente #:secciones #:agrupacion #:filtro #:es-entrada
    #:eje-de-filas #:eje-de-columnas #:lo-que-se-muestra #:cruzada-p
 
    ;; Expresiones
@@ -91,6 +91,6 @@
    ;; Evaluador de referencia
    #:entorno #:hacer-entorno #:filas-de #:fila #:hacer-fila #:valores
    #:evaluar #:valor-de-campo #:marcas-que-disparan #:evaluar-situacion
-   #:explicacion-de-marca #:parametro-llamado #:indice
+   #:explicacion-de-marca #:evaluar-en-fila #:parametro-llamado #:indice
    #:vacio-p #:como-numero #:como-texto #:iguales-p
    #:error-de-evaluacion #:mensaje-de-error))
