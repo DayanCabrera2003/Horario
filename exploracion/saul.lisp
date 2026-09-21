@@ -73,11 +73,14 @@
     ;; 0 = esta asignatura no tiene dia de preparacion.
     (campo dia-preparacion :rol fijo :tipo entero :etiqueta "Dia de preparacion")
     (campo profesor       :rol fijo :etiqueta "Profesor")
-    (:datos (("MAT"  "Matematica"        5 "no" 3 "Rosa")
-             ("ESP"  "Espanol"           4 "no" 1 "Julia")
-             ("EF"   "Educacion Fisica"  2 "no" 0 "Pedro")
-             ("HIST" "Historia"          3 "si" 2 "Julia")
-             ("ING"  "Ingles"            2 "si" 0 "Rosa"))))
+    ;; Donde se da cada asignatura. Igual que el profesor: en un centro chico
+    ;; cada materia tiene su local, y el enunciado dice que viene dado.
+    (campo local          :rol fijo :etiqueta "Local")
+    (:datos (("MAT"  "Matematica"        5 "no" 3 "Rosa"  "Aula 1")
+             ("ESP"  "Espanol"           4 "no" 1 "Julia" "Aula 1")
+             ("EF"   "Educacion Fisica"  2 "no" 0 "Pedro" "Terreno")
+             ("HIST" "Historia"          3 "si" 2 "Julia" "Aula 2")
+             ("ING"  "Ingles"            2 "si" 0 "Rosa"  "Lab de idiomas"))))
 
   ;; Las dos disposiciones fijas del enunciado que hacen falta para las
   ;; reglas duras: quien esta contratado y quien vive lejos. (Las otras dos
@@ -142,6 +145,11 @@
     (campo profesor :rol derivado :etiqueta "Profesor"
            (el profesor de (la-fila-de asignaturas
                              :donde (= abrev (de fila asignatura)))
+               :si-no ""))
+
+    (campo aula :rol derivado :etiqueta "Aula"
+           (el local de (la-fila-de asignaturas
+                          :donde (= abrev (de fila asignatura)))
                :si-no ""))
 
     (campo turno-doble :rol derivado :etiqueta "Turno doble"
@@ -383,7 +391,48 @@
     :severidad informativa
     :explica   "Turno sin asignar")
 
-  (vista rejilla     :de casillas      :entrada t :etiqueta "Casillas")
+  ;; LAS TRES TABLAS QUE PIDIO EL CENTRO. No son tres descripciones: son la
+  ;; misma rejilla de turno por dia, partida por tres campos distintos de la
+  ;; misma coleccion. La primera sale. Las otras dos NO, y el motivo es el
+  ;; hallazgo de esta exploracion.
+  ;;
+  ;; EL ANALISIS LAS RECHAZA, Y TIENE RAZON. La clave de CASILLAS es
+  ;; (grupo dia turno). En la vista por grupo, los ejes (turno, dia) mas la
+  ;; particion por grupo cubren la clave entera: cada casilla del cuadrante
+  ;; corresponde a una fila y a una sola.
+  ;;
+  ;; En la vista por profesor no. Los ejes mas la particion por profesor
+  ;; dejan GRUPO fuera, asi que dos filas -10-A y 10-B- pueden caer en la
+  ;; misma casilla del horario de Rosa. Y eso, en el dominio, tiene nombre:
+  ;; es que Rosa esta citada en dos grupos a la vez, que es justo lo que
+  ;; detecta la marca PROFESOR-COLISIONA de mas abajo.
+  ;;
+  ;; O sea: EL HORARIO POR PROFESOR ESTA BIEN DEFINIDO SOLO SI EL HORARIO ES
+  ;; VALIDO. Mientras haya una colision, la rejilla del profesor tiene dos
+  ;; candidatos para una casilla y cualquier arquitectura dibujaria uno de
+  ;; los dos sin decirlo. Lo mismo con el aula.
+  ;;
+  ;; El analisis no puede saber si los datos son validos -no los mira, y no
+  ;; debe- asi que rechaza. Lo que falta no es una comprobacion mas fina: es
+  ;; una forma de que la descripcion DIGA que esa casilla es unica porque una
+  ;; restriccion del dominio lo garantiza, y que diga tambien que hacer
+  ;; cuando no lo sea. Esa construccion no existe todavia, y decidirla es
+  ;; trabajo de diseno, no de implementacion.
+  ;;
+  ;; Se dejan escritas las tres a proposito. Borrar las dos que fallan
+  ;; borraria la evidencia de lo que el metodo encontro.
+  (vista por-grupo :de casillas :entrada t :etiqueta "Horario del grupo"
+                   :filas turno :columnas dia :muestra asignatura
+                   :secciones grupo)
+
+  (vista por-profesor :de casillas :etiqueta "Horario del profesor"
+                      :filas turno :columnas dia :muestra grupo
+                      :secciones profesor)
+
+  (vista por-aula :de casillas :etiqueta "Horario del aula"
+                  :filas turno :columnas dia :muestra grupo
+                  :secciones aula)
+
   (vista plan        :de asignaturas   :etiqueta "Plan de asignaturas")
   (vista docentes    :de profesores    :etiqueta "Profesores")
   (vista frecuencias :de plan-por-grupo :etiqueta "Frecuencias por grupo")
@@ -455,13 +504,14 @@
 (defparameter datos-de-saul
   (list
    (cons (n "asignaturas")
-         (loop for (a nom f dt dp prof) in '(("MAT" "Matematica" 5 "no" 3 "Rosa")
-                                              ("ESP" "Espanol" 4 "no" 1 "Julia")
-                                              ("EF" "Educacion Fisica" 2 "no" 0 "Pedro")
-                                              ("HIST" "Historia" 3 "si" 2 "Julia")
-                                              ("ING" "Ingles" 2 "si" 0 "Rosa"))
+         (loop for (a nom f dt dp prof local) in '(("MAT" "Matematica" 5 "no" 3 "Rosa" "Aula 1")
+                                                    ("ESP" "Espanol" 4 "no" 1 "Julia" "Aula 1")
+                                                    ("EF" "Educacion Fisica" 2 "no" 0 "Pedro" "Terreno")
+                                                    ("HIST" "Historia" 3 "si" 2 "Julia" "Aula 2")
+                                                    ("ING" "Ingles" 2 "si" 0 "Rosa" "Lab de idiomas"))
                collect (fila "abrev" a "nombre" nom "frecuencia" f
-                             "admite-tarde" dt "dia-preparacion" dp "profesor" prof)))
+                             "admite-tarde" dt "dia-preparacion" dp "profesor" prof
+                             "local" local)))
    (cons (n "profesores")
          (loop for (p c l) in '(("Rosa" "no" "no") ("Julia" "no" "si") ("Pedro" "si" "no"))
                collect (fila "nombre" p "contratado" c "vive-lejos" l)))
