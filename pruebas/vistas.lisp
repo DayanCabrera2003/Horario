@@ -141,6 +141,73 @@
                  (car par)))))
 
 ;;; ---------------------------------------------------------------------
+;;; La casilla en conflicto
+;;;
+;;; El horario por profesor es una rejilla de turno por dia partida por
+;;; profesor, sobre una coleccion cuya clave es (grupo dia turno). Los ejes
+;;; mas la particion dejan GRUPO fuera, asi que dos filas pueden caer en la
+;;; misma casilla. Y eso, en el dominio, tiene nombre: el profesor esta
+;;; citado en dos grupos a la vez.
+;;;
+;;; La vista esta bien definida SOLO SI el horario es valido, y el analisis
+;;; no mira los datos. La salida no es afinar la comprobacion: es que la
+;;; descripcion diga que marca garantiza la casilla, y que se vea el
+;;; conflicto cuando la garantia falle.
+;;; ---------------------------------------------------------------------
+
+(situacion.lenguaje:defsituacion agenda-del-profesor (:etiqueta "Agenda")
+  (coleccion casillas
+    (:clave grupo dia turno)
+    (campo grupo    :rol fijo)
+    (campo dia      :rol fijo)
+    (campo turno    :rol fijo)
+    (campo profesor :rol fijo))
+  (marca profesor-colisiona
+    :en casillas
+    :cuando (existe otra :en casillas
+              :distinta-de fila
+              :donde (y (= (de otra dia) (de fila dia))
+                        (= (de otra turno) (de fila turno))
+                        (= (de otra profesor) (de fila profesor))))
+    :sobre     (profesor)
+    :severidad problema
+    :explica   "Este profesor da clase a otro grupo en este mismo turno")
+  (vista agenda :de casillas :entrada t :etiqueta "Agenda"
+                :filas turno :columnas dia :muestra grupo
+                :secciones profesor
+                :unica-salvo profesor-colisiona))
+
+(defparameter *dos-grupos-un-profesor*
+  (list (cons (nucleo:nombrar "casillas")
+              (loop for (g d tu p) in '(("10-A" "lunes" "T1" "Rosa")
+                                        ("10-B" "lunes" "T1" "Rosa"))
+                    collect (list (cons (nucleo:nombrar "grupo") g)
+                                  (cons (nucleo:nombrar "dia") d)
+                                  (cons (nucleo:nombrar "turno") tu)
+                                  (cons (nucleo:nombrar "profesor") p))))))
+
+(definir-prueba vista-con-guarda-se-acepta
+    "Vistas: una rejilla ambigua se acepta si dice que marca la garantiza"
+  (comprobar (null (errores-de (situacion.lenguaje:situacion-llamada
+                                "AGENDA-DEL-PROFESOR")))
+             "declarar :UNICA-SALVO deberia hacer legal la vista"))
+
+(definir-prueba casilla-en-conflicto-se-ve
+    "Vistas: cuando dos filas caen en una casilla, se ven las dos"
+  ;; Lo contrario de lo que hace hoy cualquiera de las tres: elegir la
+  ;; primera que aparezca y no decir nada. Rosa da clase a 10-A y a 10-B el
+  ;; lunes a primera hora: su agenda tiene que ensenar el choque, no uno de
+  ;; los dos grupos.
+  (let* ((salida (materializar-en-cadena
+                  (situacion.texto:hacer-texto)
+                  (situacion.lenguaje:situacion-llamada "AGENDA-DEL-PROFESOR")
+                  *dos-grupos-un-profesor*))
+         (fin (or (search "Casillas" salida) (length salida)))
+         (rejilla (subseq salida 0 fin)))
+    (comprobar (search "10-A" rejilla) "la casilla tiene que nombrar 10-A")
+    (comprobar (search "10-B" rejilla) "y tambien 10-B, que es el conflicto")))
+
+;;; ---------------------------------------------------------------------
 ;;; El filtro
 ;;;
 ;;; Lo que pidio el tutor: ver la ocupacion DE LOS PROFESORES QUE LE DAN

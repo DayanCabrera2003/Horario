@@ -53,6 +53,16 @@
               para el; hay que volver a generar el libro. Es el mismo coste que
               la tabla cruzada, y por la misma razon: lo que depende del
               contenido mueve el direccionamiento entero."))
+    (protocolo:con-casilla-en-conflicto
+     (values :emula
+             "la casilla pregunta primero cuantas filas cumplen su clave. Con
+              mas de una escribe la primera y cuantas mas hay: (+1), (+2).
+              Limite: no puede escribirlas todas. Concatenar un numero
+              variable de valores necesita formulas matriciales, y esas no se
+              comportan igual en Excel que en LibreOffice Calc, asi que la
+              unica salida portable es decir que hay mas. Lo que no hace, y
+              es lo que importa, es ensenar una como si fuera la unica."))
+
     (protocolo:con-filtro-de-vista
      (values :emula
              "las filas que cumplen la condicion se eligen AL GENERAR y se

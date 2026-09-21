@@ -67,6 +67,10 @@
           (pedir 'con-particion-de-vista vista
                  (format nil "~(~a~) se reparte en una tabla por cada ~(~a~)"
                          (nucleo:nombre vista) (nucleo:secciones vista))))
+        (when (nucleo:conflicto vista)
+          (pedir 'con-casilla-en-conflicto vista
+                 (format nil "~(~a~) cruza campos que no determinan la fila, y ~(~a~) avisa cuando dos caen en una casilla"
+                         (nucleo:nombre vista) (nucleo:conflicto vista))))
         (when (nucleo:filtro vista)
           (pedir 'con-filtro-de-vista vista
                  (format nil "~(~a~) solo presenta las filas que cumplen una condicion"

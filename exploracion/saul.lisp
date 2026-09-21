@@ -255,6 +255,24 @@
     :severidad problema
     :explica   "Este profesor ya da clase a otro grupo en este mismo turno")
 
+  ;; 2b. El aula ocupada por dos grupos a la vez. No esta en el enunciado -el
+  ;; centro no la menciono- y hace falta igual: es la garantia del horario por
+  ;; aula, igual que la de arriba lo es del horario por profesor. Que aparezca
+  ;; al describir la VISTA y no al describir las reglas dice algo: hay
+  ;; restricciones del dominio que solo se ven cuando alguien pregunta como se
+  ;; quiere mirar el problema.
+  (marca aula-ocupada
+    :en casillas
+    :cuando    (y (no (vacio? (de fila asignatura)))
+                  (existe otra :en casillas
+                    :distinta-de fila
+                    :donde (y (= (de otra dia) (de fila dia))
+                              (= (de otra turno) (de fila turno))
+                              (= (de otra aula) (de fila aula)))))
+    :sobre     (aula)
+    :severidad problema
+    :explica   "Ese local esta ocupado por otro grupo a esa hora")
+
   ;; 3 y 4 juntas: "una asignatura que no admite turno doble no puede tener
   ;; dos sesiones del mismo grupo el mismo dia" y "una que si admite, solo
   ;; en turnos consecutivos". Una sola marca: son la misma pregunta -"hay
@@ -396,42 +414,36 @@
   ;; misma coleccion. La primera sale. Las otras dos NO, y el motivo es el
   ;; hallazgo de esta exploracion.
   ;;
-  ;; EL ANALISIS LAS RECHAZA, Y TIENE RAZON. La clave de CASILLAS es
+  ;; LA DIFERENCIA ENTRE LA PRIMERA Y LAS OTRAS DOS. La clave de CASILLAS es
   ;; (grupo dia turno). En la vista por grupo, los ejes (turno, dia) mas la
   ;; particion por grupo cubren la clave entera: cada casilla del cuadrante
-  ;; corresponde a una fila y a una sola.
+  ;; corresponde a una fila y a una sola, y no hay nada mas que decir.
   ;;
   ;; En la vista por profesor no. Los ejes mas la particion por profesor
   ;; dejan GRUPO fuera, asi que dos filas -10-A y 10-B- pueden caer en la
   ;; misma casilla del horario de Rosa. Y eso, en el dominio, tiene nombre:
   ;; es que Rosa esta citada en dos grupos a la vez, que es justo lo que
-  ;; detecta la marca PROFESOR-COLISIONA de mas abajo.
+  ;; detecta PROFESOR-COLISIONA.
   ;;
   ;; O sea: EL HORARIO POR PROFESOR ESTA BIEN DEFINIDO SOLO SI EL HORARIO ES
-  ;; VALIDO. Mientras haya una colision, la rejilla del profesor tiene dos
-  ;; candidatos para una casilla y cualquier arquitectura dibujaria uno de
-  ;; los dos sin decirlo. Lo mismo con el aula.
-  ;;
-  ;; El analisis no puede saber si los datos son validos -no los mira, y no
-  ;; debe- asi que rechaza. Lo que falta no es una comprobacion mas fina: es
-  ;; una forma de que la descripcion DIGA que esa casilla es unica porque una
-  ;; restriccion del dominio lo garantiza, y que diga tambien que hacer
-  ;; cuando no lo sea. Esa construccion no existe todavia, y decidirla es
-  ;; trabajo de diseno, no de implementacion.
-  ;;
-  ;; Se dejan escritas las tres a proposito. Borrar las dos que fallan
-  ;; borraria la evidencia de lo que el metodo encontro.
+  ;; VALIDO. El analisis no mira los datos -no debe- asi que exige que la
+  ;; descripcion lo diga: (:UNICA-SALVO <marca>) declara que la casilla es
+  ;; unica mientras esa marca no dispare, y obliga a las arquitecturas a
+  ;; ensenar el choque cuando dispare, en vez de dibujar una de las dos como
+  ;; si fuera la unica. Lo mismo con el aula.
   (vista por-grupo :de casillas :entrada t :etiqueta "Horario del grupo"
                    :filas turno :columnas dia :muestra asignatura
                    :secciones grupo)
 
   (vista por-profesor :de casillas :etiqueta "Horario del profesor"
                       :filas turno :columnas dia :muestra grupo
-                      :secciones profesor)
+                      :secciones profesor
+                      :unica-salvo profesor-colisiona)
 
   (vista por-aula :de casillas :etiqueta "Horario del aula"
                   :filas turno :columnas dia :muestra grupo
-                  :secciones aula)
+                  :secciones aula
+                  :unica-salvo aula-ocupada)
 
   (vista plan        :de asignaturas   :etiqueta "Plan de asignaturas")
   (vista docentes    :de profesores    :etiqueta "Profesores")

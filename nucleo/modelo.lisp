@@ -93,6 +93,22 @@
    (fuente "Coleccion que muestra.")
    (secciones "Campo por cuyo valor se parte en secciones, o NIL.")
    (agrupacion "Campo por el que se agrupa dentro de cada seccion, o NIL.")
+   (conflicto "Nombre de la marca que garantiza que cada casilla de la tabla
+               cruzada tiene una sola fila, o NIL.
+
+               HACE FALTA CUANDO LOS EJES NO BASTAN. El horario de un grupo
+               se cruza por turno y dia, y con la particion por grupo cada
+               casilla es una fila y solo una. El de un profesor no: dos
+               grupos pueden caer en la misma casilla, y eso en el dominio ya
+               tiene nombre -el profesor esta citado dos veces a la vez- y ya
+               tiene una marca que lo detecta.
+
+               Declararla aqui no es una excusa para saltarse la comprobacion:
+               es decir QUE la casilla es unica mientras esa marca no dispare,
+               y obligar a las arquitecturas a ensenar el conflicto cuando
+               dispare, en vez de elegir una fila y callarse. La diferencia
+               entre una garantia declarada y una suposicion es que la primera
+               se ve cuando falla.")
    (filtro "Expresion booleana por fila. Solo se presentan las filas que la
             cumplen, o NIL si se presentan todas.
 

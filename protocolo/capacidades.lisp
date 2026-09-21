@@ -197,6 +197,18 @@
    no bastan para identificar la fila: el analisis exige que los ejes mas el
    campo de particion cubran la clave.")
 
+(definir-capacidad con-casilla-en-conflicto
+  "Puede ensenar que una casilla de una tabla cruzada tiene mas de una fila
+   candidata, en vez de dibujar una y callarse.
+
+   Es la contrapartida de (:UNICA-SALVO <marca>). La descripcion declara que
+   la casilla es unica mientras esa marca no dispare; esta capacidad es lo
+   que obliga a que, cuando dispare, se vea. Sin ella la garantia seria una
+   suposicion, que es lo que este trabajo persigue en las tesis anteriores.
+
+   Cuesta muy poco donde se dibuja al vuelo y algo mas en una rejilla, donde
+   hay que preguntar primero cuantas filas cumplen la clave de la casilla.")
+
 (definir-capacidad con-filtro-de-vista
   "Puede presentar solo las filas que cumplen una condicion.
 

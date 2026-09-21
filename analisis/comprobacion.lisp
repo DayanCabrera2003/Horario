@@ -315,7 +315,7 @@
                          (remove nil (list (nucleo:eje-de-filas vista)
                                            (nucleo:eje-de-columnas vista)
                                            (nucleo:secciones vista))))))
-           (when sueltos
+           (when (and sueltos (null (nucleo:conflicto vista)))
              (anotar :error
                      "La vista ~(~a~) cruza ~(~a~) por ~(~a~) sobre ~(~a~), cuya~@
                       clave es (~{~(~a~)~^ ~}).~@
@@ -323,11 +323,40 @@
                       misma casilla y solo se dibujaria una, la primera que~@
                       apareciera en los datos.~@
                       Anade (:SECCIONES ~(~a~)) para que la vista se parta por ese~@
-                      campo, o cambia los ejes."
+                      campo, cambia los ejes, o -si la casilla es unica porque~@
+                      una regla del dominio lo garantiza- di cual con~@
+                      (:UNICA-SALVO <marca>)."
                      (nucleo:nombre vista)
                      (nucleo:eje-de-filas vista) (nucleo:eje-de-columnas vista)
                      (nucleo:nombre coleccion) (nucleo:clave coleccion)
-                     sueltos (first sueltos)))))
+                     sueltos (first sueltos)))
+           ;; Declarar una garantia donde no hace falta no rompe nada, pero
+           ;; hace creer que la casilla es fragil cuando no lo es.
+           (when (and (null sueltos) (nucleo:conflicto vista))
+             (anotar :aviso
+                     "La vista ~(~a~) declara :UNICA-SALVO y no le hace falta:~@
+                      sus ejes ya determinan la fila."
+                     (nucleo:nombre vista)))))
+       ;; La marca que se declara como garantia tiene que existir y tiene que
+       ;; hablar de esta coleccion. Si no, la garantia no garantiza nada.
+       (when (nucleo:conflicto vista)
+         (let ((marca (find (nucleo:conflicto vista) (nucleo:marcas situacion)
+                            :key #'nucleo:nombre)))
+           (cond
+             ((null marca)
+              (anotar :error
+                      "La vista ~(~a~) dice :UNICA-SALVO ~(~a~), y no hay~@
+                       ninguna marca con ese nombre."
+                      (nucleo:nombre vista) (nucleo:conflicto vista)))
+             ((and (nucleo:coleccion marca)
+                   (not (eq (nucleo:coleccion marca) (nucleo:nombre coleccion))))
+              (anotar :error
+                      "La vista ~(~a~) muestra ~(~a~) y dice estar garantizada~@
+                       por la marca ~(~a~), que es de ~(~a~).~@
+                       Una marca de otra coleccion no puede decir nada sobre~@
+                       las casillas de esta."
+                      (nucleo:nombre vista) (nucleo:nombre coleccion)
+                      (nucleo:nombre marca) (nucleo:coleccion marca))))))
        ;; El filtro se escribe pensando en una fila, asi que se comprueba con
        ;; la variable FILA ligada a la coleccion de la vista.
        (when (nucleo:filtro vista)
