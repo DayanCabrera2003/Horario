@@ -231,14 +231,18 @@ function dibujarUnaTabla(cruce, filas, valorDeSeccion, app){
     th.textContent = T(vf);
     tr.appendChild(th);
     for (const vc of ejeC) {
-      const fila = filas.find(f => IG(f[cruce.ejeFilas], vf) &&
-                                   IG(f[cruce.ejeColumnas], vc));
+      // TODAS las que caen ahi, no la primera. Normalmente es una, porque
+      // los ejes determinan la fila y el analisis lo exige. Son varias
+      // cuando la vista declaro unica-salvo: entonces el choque existe y hay
+      // que ensenarlo en vez de elegir uno y callarse.
+      const enLaCasilla = filas.filter(f => IG(f[cruce.ejeFilas], vf) &&
+                                            IG(f[cruce.ejeColumnas], vc));
       const td = document.createElement('td');
-      td.textContent = fila ? T(fila[cruce.celda]) : '';
-      // Las marcas de la fila que cae en el cruce tinen la celda.
-      if (fila) {
+      td.textContent = enLaCasilla.map(f => T(f[cruce.celda])).join(' / ');
+      // Las marcas de las filas que caen en el cruce tinen la celda.
+      for (const fila of enLaCasilla) {
         const suyas = marcasDe(cruce.coleccion, fila);
-        if (suyas.length) td.classList.add(suyas[0].clase);
+        if (suyas.length) { td.classList.add(suyas[0].clase); break; }
       }
       tr.appendChild(td);
     }

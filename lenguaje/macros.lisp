@@ -171,6 +171,7 @@
 (defun compilar-vista (forma)
   "(vista NOMBRE :de COLECCION [:etiqueta ...] [:entrada t]
                  [:secciones CAMPO] [:agrupada-por CAMPO] [:donde EXPRESION]
+                 [:unica-salvo MARCA]
                  [:filas CAMPO :columnas CAMPO :muestra CAMPO])"
   (destructuring-bind (cabeza nombre &rest opciones) forma
     (declare (ignore cabeza))
@@ -184,6 +185,7 @@
         :secciones ',(normalizar (opcion opciones :secciones))
         :agrupacion ',(normalizar (opcion opciones :agrupada-por))
         :filtro ,(when donde (compilar-expresion donde))
+        :conflicto ',(normalizar (opcion opciones :unica-salvo))
         :eje-de-filas ',(normalizar (opcion opciones :filas))
         :eje-de-columnas ',(normalizar (opcion opciones :columnas))
         :lo-que-se-muestra ',(normalizar (opcion opciones :muestra))

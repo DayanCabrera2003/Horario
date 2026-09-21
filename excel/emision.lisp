@@ -103,16 +103,9 @@
                                       (list (cons "celda" (format nil "~a~d"
                                                                   (letra-de-columna i) f))
                                             (cons "formula"
-                                                  ;; La primera parte de la clave
-                                                  ;; es el valor de ESTA pestana,
-                                                  ;; fijado al generar.
-                                                  (format nil "=IFERROR(INDEX(~a,MATCH(~@[\"~a\"&\"|\"&~]$A~d&\"|\"&~a$~d,~a,0)),\"\")"
-                                                          rango-valor
-                                                          (when (seccion cruce)
-                                                            (nucleo:como-texto (seccion cruce)))
-                                                          f
-                                                          (letra-de-columna i) fila-enc
-                                                          rango-clave)))))))
+                                                  (formula-de-casilla
+                                                   cruce rango-valor rango-clave
+                                                   f (letra-de-columna i) fila-enc)))))))
     (declare (ignore coleccion))
     (list (cons "nombre" (nombre-de-pestana (nucleo:etiqueta vista) (seccion cruce)))
           (cons "fila_encabezado" fila-enc)
@@ -127,6 +120,33 @@
           (cons "formatos_condicionales" :lista-vacia)
           (cons "rangos_nombrados" :lista-vacia)
           (cons "leyenda" :lista-vacia))))
+
+(defun formula-de-casilla (cruce rango-valor rango-clave fila columna fila-enc)
+  "La formula de una casilla del cruce.
+
+   Normalmente es una busqueda por la clave compuesta: INDICE mas COINCIDIR,
+   que es la pareja portable entre Excel y LibreOffice Calc. La primera parte
+   de la clave es el valor de ESTA pestana, fijado al generar.
+
+   Si la vista declaro (:UNICA-SALVO <marca>), la casilla puede tener mas de
+   una fila candidata, y entonces la formula pregunta primero CUANTAS hay.
+   Con mas de una escribe la primera y cuantas mas: es todo lo que una hoja
+   de calculo puede decir sin formulas matriciales, que no se comportan igual
+   en los dos programas. Por eso aqui la capacidad se emula y no se cumple.
+   Lo que no hace, y es lo que importa, es ensenar una de las dos como si
+   fuera la unica."
+  (let ((clave (format nil "~@[\"~a\"&\"|\"&~]$A~d&\"|\"&~a$~d"
+                       (when (seccion cruce)
+                         (nucleo:como-texto (seccion cruce)))
+                       fila columna fila-enc))
+        (busqueda "IFERROR(INDEX(~a,MATCH(~a,~a,0)),\"\")"))
+    (if (null (nucleo:conflicto (vista cruce)))
+        (format nil "=~a" (format nil busqueda rango-valor clave rango-clave))
+        (format nil "=IF(COUNTIF(~a,~a)>1,~a&\" (+\"&(COUNTIF(~a,~a)-1)&\")\",~a)"
+                rango-clave clave
+                (format nil busqueda rango-valor clave rango-clave)
+                rango-clave clave
+                (format nil busqueda rango-valor clave rango-clave)))))
 
 (defun nombre-de-pestana (etiqueta seccion)
   "El nombre de la pestana de un cruce, con su seccion si la tiene.

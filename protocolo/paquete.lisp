@@ -43,6 +43,7 @@
    #:con-marcado-textual
    #:con-particion-de-vista
    #:con-filtro-de-vista
+   #:con-casilla-en-conflicto
    #:con-agrupacion-en-vista
    #:con-navegacion
 

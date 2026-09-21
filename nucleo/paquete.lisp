@@ -58,7 +58,7 @@
    #:marca #:hacer-marca
    #:condicion #:alcance #:severidad #:explicacion
    #:vista #:hacer-vista
-   #:fuente #:secciones #:agrupacion #:filtro #:es-entrada
+   #:fuente #:secciones #:agrupacion #:filtro #:conflicto #:es-entrada
    #:eje-de-filas #:eje-de-columnas #:lo-que-se-muestra #:cruzada-p
 
    ;; Expresiones

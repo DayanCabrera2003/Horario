@@ -132,20 +132,37 @@
                                                    (nucleo:secciones vista))))
          filas))))
 
-(defun fila-del-cruce (plan filas vista valor-fila valor-columna)
-  "La fila que cae en ese cruce, o NIL.
+(defun filas-del-cruce (plan filas vista valor-fila valor-columna)
+  "TODAS las filas que caen en ese cruce, en orden.
 
    Busca dentro de FILAS y no en la coleccion entera. Es lo que hace que la
    particion signifique algo: con dos grupos en la misma coleccion, los dos
-   caen en el mismo (turno, dia) y sin restringir se dibujaria el primero."
-  (find-if (lambda (f)
-             (and (nucleo:iguales-p valor-fila
-                                    (nucleo:valor-de-campo (entorno plan) f
-                                                           (nucleo:eje-de-filas vista)))
-                  (nucleo:iguales-p valor-columna
-                                    (nucleo:valor-de-campo (entorno plan) f
-                                                           (nucleo:eje-de-columnas vista)))))
-           filas))
+   caen en el mismo (turno, dia) y sin restringir se dibujaria el primero.
+
+   Devuelve la lista entera y no la primera a proposito. Normalmente trae una
+   sola fila, porque los ejes determinan la fila y el analisis lo exige. Trae
+   mas cuando la vista declaro (:UNICA-SALVO <marca>): entonces el conflicto
+   existe, la marca lo nombra, y hay que ensenarlo en vez de elegir."
+  (remove-if-not
+   (lambda (f)
+     (and (nucleo:iguales-p valor-fila
+                            (nucleo:valor-de-campo (entorno plan) f
+                                                   (nucleo:eje-de-filas vista)))
+          (nucleo:iguales-p valor-columna
+                            (nucleo:valor-de-campo (entorno plan) f
+                                                   (nucleo:eje-de-columnas vista)))))
+   filas))
+
+(defun texto-de-la-casilla (plan vista filas-en-la-casilla campo-celda)
+  "Lo que se escribe en una casilla del cruce.
+
+   Con una sola fila, su valor. Con mas de una, todos separados por barras:
+   la casilla ensena el choque en vez de elegir uno y callarse, que es lo que
+   hacia antes."
+  (format nil "~{~a~^ / ~}"
+          (loop for f in filas-en-la-casilla
+                collect (nucleo:como-texto
+                         (nucleo:valor-de-campo (entorno plan) f campo-celda)))))
 
 (defun escribir-cruzada (a plan vista flujo &optional valor-de-seccion)
   "La vista cruzada, como rejilla de texto alineada.
@@ -171,14 +188,11 @@
          (celdas (loop for vf in filas
                        collect (cons (nucleo:como-texto vf)
                                      (loop for vc in columnas
-                                           collect (let ((f (fila-del-cruce
-                                                             plan filas-fuente vista vf vc)))
-                                                     (if f
-                                                         (nucleo:como-texto
-                                                          (nucleo:valor-de-campo
-                                                           (entorno plan) f
-                                                           (nucleo:nombre campo-celda)))
-                                                         "")))))))
+                                           collect (texto-de-la-casilla
+                                                    plan vista
+                                                    (filas-del-cruce plan filas-fuente
+                                                                     vista vf vc)
+                                                    (nucleo:nombre campo-celda)))))))
     (format flujo "~a~@[ - ~a~]~%" (nucleo:etiqueta vista)
             (when valor-de-seccion (nucleo:como-texto valor-de-seccion)))
     (let ((anchos (calcular-anchos encabezados celdas)))

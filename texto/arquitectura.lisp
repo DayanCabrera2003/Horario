@@ -27,6 +27,7 @@
                  protocolo:con-particion-de-vista
                  protocolo:con-agrupacion-en-vista
                  protocolo:con-filtro-de-vista
+                 protocolo:con-casilla-en-conflicto
                  protocolo:con-marcado-textual
                  protocolo:con-busqueda-por-clave
                  protocolo:con-orden-declarado)

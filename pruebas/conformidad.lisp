@@ -301,6 +301,7 @@
   (let ((ranuras '((nucleo:secciones . protocolo:con-particion-de-vista)
                    (nucleo:agrupacion . protocolo:con-agrupacion-en-vista)
                    (nucleo:filtro . protocolo:con-filtro-de-vista)
+                   (nucleo:conflicto . protocolo:con-casilla-en-conflicto)
                    (nucleo:eje-de-filas . protocolo:con-tabla-cruzada))))
     (dolist (par ranuras)
       (let* ((situacion (situacion-con-ranura-de-vista (car par)))
