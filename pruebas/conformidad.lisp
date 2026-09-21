@@ -265,3 +265,53 @@
                   O alguna arquitectura tiene que cumplirla, o hay que decir~@
                   aqui por que no la cumple ninguna."
                  (set-difference huerfanas justificadas)))))
+
+;;; ---------------------------------------------------------------------
+;;; I7 - Ninguna ranura de vista se ignora en silencio
+;;; ---------------------------------------------------------------------
+
+(defun situacion-con-ranura-de-vista (ranura)
+  "Una situacion minima cuya unica vista declara RANURA.
+
+   Se construye con los constructores del nucleo y no con la macro del
+   lenguaje porque un invariante tiene que poder recorrer las ranuras por
+   nombre, y la macro las fija al escribirlas."
+  (flet ((campo (n) (nucleo:hacer-campo :nombre (nucleo:nombrar n)
+                                        :etiqueta n :rol :fijo)))
+    (let* ((coleccion (nucleo:hacer-coleccion
+                       :nombre (nucleo:nombrar "filas") :etiqueta "Filas"
+                       :campos (list (campo "a") (campo "b") (campo "c"))))
+           (vista (nucleo:hacer-vista :nombre (nucleo:nombrar "v") :etiqueta "V"
+                                      :fuente (nucleo:nombre coleccion))))
+      ;; La tabla cruzada necesita las tres ranuras a la vez para contar como
+      ;; declarada; las demas, solo la suya.
+      (if (eq ranura 'nucleo:eje-de-filas)
+          (setf (nucleo:eje-de-filas vista) (nucleo:nombrar "a")
+                (nucleo:eje-de-columnas vista) (nucleo:nombrar "b")
+                (nucleo:lo-que-se-muestra vista) (nucleo:nombrar "c"))
+          (funcall (fdefinition (list 'setf ranura)) (nucleo:nombrar "a") vista))
+      (nucleo:hacer-situacion :nombre (nucleo:nombrar "s") :etiqueta "S"
+                              :colecciones (list coleccion)
+                              :vistas (list vista)))))
+
+(definir-prueba i7-ninguna-ranura-de-vista-se-ignora-en-silencio
+    "I7: toda ranura declarada de una vista pide una capacidad"
+  ;; La forma general del fallo que destapo el caso del Saul Delgado: una
+  ;; ranura que la sintaxis acepta, el analisis valida y nadie materializa.
+  ;; :SECCIONES y :AGRUPADA-POR estuvieron asi desde que se escribieron.
+  ;;
+  ;; Esta prueba tiene una debilidad y conviene decirla: solo comprueba lo que
+  ;; se le enumera. Si manana el nodo VISTA gana una ranura, hay que anadirla
+  ;; A MANO a esta lista. Lo que impide es que una ranura que YA se sabe que
+  ;; existe se quede sin pedir nada.
+  (let ((ranuras '((nucleo:secciones . protocolo:con-particion-de-vista)
+                   (nucleo:agrupacion . protocolo:con-agrupacion-en-vista)
+                   (nucleo:eje-de-filas . protocolo:con-tabla-cruzada))))
+    (dolist (par ranuras)
+      (let* ((situacion (situacion-con-ranura-de-vista (car par)))
+             (pedidas (mapcar #'first (protocolo:requerimientos situacion))))
+        (comprobar (member (cdr par) pedidas)
+                   "una vista con ~(~a~) no pide ~(~a~): la ranura se acepta y~@
+                    no la materializa nadie, que es el verde falso que este~@
+                    trabajo critica"
+                   (car par) (cdr par))))))
