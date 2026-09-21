@@ -37,5 +37,5 @@ htmlcov/
 *.lib
 
 # Artefactos generados por el lenguaje: se reproducen con ./demostrar.sh
-situacion/salida/
-situacion/exploracion/salida/
+salida/
+exploracion/salida/
