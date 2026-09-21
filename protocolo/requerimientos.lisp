@@ -63,6 +63,14 @@
          (nucleo:condicion marca)
          (lambda (e) (pedir-por-expresion e #'pedir))))
       (dolist (vista (nucleo:vistas situacion))
+        (when (nucleo:secciones vista)
+          (pedir 'con-particion-de-vista vista
+                 (format nil "~(~a~) se reparte en una tabla por cada ~(~a~)"
+                         (nucleo:nombre vista) (nucleo:secciones vista))))
+        (when (nucleo:agrupacion vista)
+          (pedir 'con-agrupacion-en-vista vista
+                 (format nil "las filas de ~(~a~) se separan por ~(~a~)"
+                         (nucleo:nombre vista) (nucleo:agrupacion vista))))
         (when (nucleo:cruzada-p vista)
           (pedir 'con-tabla-cruzada vista
                  (format nil "~(~a~) se presenta con ~(~a~) en las filas y ~(~a~) en las columnas"

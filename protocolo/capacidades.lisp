@@ -180,6 +180,34 @@
    departamento escribe 'Falta 1 profesor' o 'Faltan 3 profesores' porque
    ahi el color no alcanzaba.")
 
+(definir-capacidad con-particion-de-vista
+  "Puede repetir una misma vista, una vez por cada valor de un campo.
+
+   El horario por grupo, por profesor y por aula no son tres descripciones:
+   son la misma rejilla de turno por dia, partida por tres campos distintos
+   de la misma coleccion. Lo que el lenguaje declara es POR QUE CAMPO se
+   parte; que eso sean tres pestanas, tres bloques de texto o tres secciones
+   de una pagina lo decide cada arquitectura.
+
+   No confundir con CON-AGRUPACION, que es otra cosa: alli las FILAS de una
+   coleccion se calculan a partir de otra; aqui las filas son las mismas y lo
+   que se reparte es la PRESENTACION.
+
+   Es ademas lo que hace que una rejilla signifique algo cuando los dos ejes
+   no bastan para identificar la fila: el analisis exige que los ejes mas el
+   campo de particion cubran la clave.")
+
+(definir-capacidad con-agrupacion-en-vista
+  "Puede separar las filas de una tabla por el valor de un campo, dentro de
+   la misma tabla.
+
+   Es el escalon intermedio entre no hacer nada y partir en secciones: las
+   filas siguen en una sola tabla, con una cabecera por grupo. Una hoja de
+   calculo no puede intercalar cabeceras sin correr las filas de datos, y
+   todo su direccionamiento parte de que los datos de una coleccion son un
+   bloque contiguo; alli se emula ordenando. En texto y en una pagina es
+   natural.")
+
 (definir-capacidad con-navegacion
   "El documento tiene secciones, un punto de entrada y forma de moverse
    entre ellas.
