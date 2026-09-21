@@ -138,6 +138,28 @@
                  "~a no dice nada sobre la agrupacion que pide la vista DIA"
                  (car par)))))
 
+(definir-prueba vista-agrupada-separa-las-filas
+    "Vistas: :AGRUPADA-POR separa las filas por el valor del campo"
+  ;; La vista DIA de las defensas declara :AGRUPADA-POR LOCAL desde que se
+  ;; escribio la descripcion, y hasta hoy no agrupaba nada: las cuatro
+  ;; citaciones salian en orden de declaracion -Postgrado, Decanato,
+  ;; Postgrado, Decanato-, que es justo lo contrario de agrupar.
+  (let* ((salida (materializar-en-cadena (situacion.texto:hacer-texto)
+                                         (situacion.lenguaje:situacion-llamada
+                                          "DEFENSAS-DE-TESIS")
+                                         situacion.corpus:datos-de-las-defensas))
+         (primera (search "Postgrado" salida))
+         (ultima (search "Postgrado" salida :from-end t))
+         (decanato (search "Decanato" salida)))
+    (comprobar (and primera ultima decanato)
+               "la salida deberia nombrar los dos locales")
+    ;; Agrupadas, las de Postgrado estan juntas: o todas antes de cualquier
+    ;; Decanato, o todas despues.
+    (when (and primera ultima decanato)
+      (comprobar (or (< ultima decanato) (> primera decanato))
+                 "las citaciones de Postgrado salen partidas por las de~@
+                  Decanato: la vista declara :AGRUPADA-POR LOCAL y no agrupa"))))
+
 ;;; ---------------------------------------------------------------------
 ;;; Que la particion se materialice de verdad
 ;;; ---------------------------------------------------------------------

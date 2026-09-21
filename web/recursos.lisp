@@ -26,6 +26,7 @@ th, td { border:1px solid var(--borde); padding:6px 10px; text-align:left;
          white-space:nowrap; }
 th { background:#f0f0ee; font-weight:600; }
 td.derivado { background:#fafafa; color:#333; }
+td.grupo { background:#eef2f8; font-weight:600; }
 td.fijo { color:#333; }
 input, select { font:inherit; border:1px solid #bbb; border-radius:3px;
                 padding:3px 6px; width:100%; min-width:90px; background:#fff; }
@@ -168,6 +169,28 @@ function dibujarCruce(cruce, app){
   }
 }
 
+// Las filas en el orden en que se van a MOSTRAR, cada una con el indice que
+// ocupa en D y, si empieza un grupo, la cabecera que va encima. Sin campo de
+// agrupacion es la identidad: mismas filas, mismo orden, sin cabeceras.
+function ordenarParaMostrar(filas, campo){
+  const pares = filas.map((fila, indice) => ({fila, indice, cabecera: null}));
+  if (!campo) return pares;
+  const grupos = [];
+  for (const par of pares) {
+    let g = grupos.find(x => IG(x.valor, par.fila[campo]));
+    if (!g) { g = {valor: par.fila[campo], pares: []}; grupos.push(g); }
+    g.pares.push(par);
+  }
+  const salida = [];
+  for (const g of grupos) {
+    g.pares.forEach((par, i) => {
+      salida.push({fila: par.fila, indice: par.indice,
+                   cabecera: i === 0 ? g.valor : null});
+    });
+  }
+  return salida;
+}
+
 function dibujarUnaTabla(cruce, filas, valorDeSeccion, app){
   const ejeF = distintosDe(filas, cruce.ejeFilas);
   const ejeC = distintosDe(filas, cruce.ejeColumnas);
@@ -261,7 +284,22 @@ function render(){
     t.appendChild(thead);
 
     const tbody = document.createElement('tbody');
-    D[tabla.nombre].forEach((fila, indice) => {
+    // Agrupar es SOLO de presentacion: el arreglo D no se toca. Sus indices
+    // siguen siendo los mismos, que es lo que usan los controles de entrada
+    // para escribir de vuelta, y lo que hace que la fila anterior siga
+    // significando lo mismo. En una hoja de calculo no se puede separar las
+    // dos cosas, porque alli la posicion de la fila ES el dato.
+    ordenarParaMostrar(D[tabla.nombre], tabla.agrupa).forEach(par => {
+      const fila = par.fila, indice = par.indice;
+      if (par.cabecera !== null) {
+        const trg = document.createElement('tr');
+        const tdg = document.createElement('td');
+        tdg.className = 'grupo';
+        tdg.colSpan = tabla.campos.length + 1;
+        tdg.textContent = T(par.cabecera);
+        trg.appendChild(tdg);
+        tbody.appendChild(trg);
+      }
       const disparadas = marcasDe(tabla.nombre, fila);
       const tr = document.createElement('tr');
 

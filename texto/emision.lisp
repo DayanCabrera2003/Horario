@@ -171,6 +171,35 @@
       (dolist (c celdas) (escribir-fila flujo c anchos)))
     (format flujo "~%")))
 
+(defun campo-de-agrupacion (plan coleccion)
+  "El campo por el que se agrupa esta coleccion, si alguna vista lo dice.
+
+   La agrupacion se declara en la VISTA y no en la coleccion, porque es una
+   decision de presentacion. Aqui se busca al reves: la tabla que se esta
+   escribiendo es la de una coleccion, y hay que ver si alguna vista suya
+   pidio agruparla."
+  (let ((vista (find-if (lambda (v)
+                          (and (eq (nucleo:fuente v) (nucleo:nombre coleccion))
+                               (nucleo:agrupacion v)))
+                        (nucleo:vistas (situacion plan)))))
+    (when vista (nucleo:agrupacion vista))))
+
+(defun agrupar-filas (filas campo)
+  "FILAS repartidas por el valor de CAMPO, como lista de (VALOR . FILAS).
+
+   Los grupos salen en orden de aparicion, y dentro de cada uno las filas
+   conservan el suyo. No se ordena por el valor: el orden de una coleccion lo
+   declara ella, y agrupar no puede cambiarlo a escondidas."
+  (let ((grupos '()))
+    (dolist (fila filas)
+      (let* ((valor (cdr (assoc campo (car fila))))
+             (grupo (assoc valor grupos :test #'nucleo:iguales-p)))
+        (if grupo
+            (push fila (cdr grupo))
+            (push (cons valor (list fila)) grupos))))
+    (loop for (valor . suyas) in (nreverse grupos)
+          collect (cons valor (nreverse suyas)))))
+
 (defun escribir-coleccion (a plan coleccion flujo)
   (let* ((nombre (nucleo:nombre coleccion))
          (filas (rest (assoc nombre (evaluado plan))))
@@ -185,11 +214,26 @@
                                                (cdr (assoc (nucleo:nombre campo)
                                                            (car fila)))))
                                 (list (texto-del-estado a plan coleccion fila)))))
-         (anchos (calcular-anchos encabezados celdas)))
+         (anchos (calcular-anchos encabezados celdas))
+         (agrupacion (campo-de-agrupacion plan coleccion)))
     (format flujo "~a~%" (nucleo:etiqueta coleccion))
     (escribir-fila flujo encabezados anchos)
     (format flujo "~a~%" (raya anchos))
-    (dolist (c celdas) (escribir-fila flujo c anchos))
+    (if (null agrupacion)
+        (dolist (c celdas) (escribir-fila flujo c anchos))
+        ;; Agrupada: un renglon de cabecera por valor, y debajo sus filas.
+        ;; La tabla es la misma; lo que cambia es que se puede leer.
+        (loop for (valor . suyas) in (agrupar-filas filas agrupacion)
+              do (format flujo "  ~a~%" (nucleo:como-texto valor))
+                 (dolist (fila suyas)
+                   (escribir-fila flujo
+                                  (append
+                                   (loop for campo in campos
+                                         collect (nucleo:como-texto
+                                                  (cdr (assoc (nucleo:nombre campo)
+                                                              (car fila)))))
+                                   (list (texto-del-estado a plan coleccion fila)))
+                                  anchos))))
     ;; Los dominios de entrada, al pie: la degradacion del desplegable.
     (dolist (campo campos)
       (when (and (eq (nucleo:rol campo) :entrada) (nucleo:dominio campo))

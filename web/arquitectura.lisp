@@ -32,6 +32,7 @@
                protocolo:con-crecimiento
                protocolo:con-relacion-uno-a-muchos
                protocolo:con-particion-de-vista
+               protocolo:con-agrupacion-en-vista
                protocolo:con-conteo-de-distintos
                protocolo:con-marcado-visual
                protocolo:con-marcado-textual
@@ -56,12 +57,6 @@
              "las filas se calculan al generar y quedan fijas. Si despues
               aparece un valor nuevo en la coleccion de origen, no aparece
               una fila para el: hay que volver a generar."))
-
-    (protocolo:con-agrupacion-en-vista
-     (values :degrada
-             "las filas salen todas en una tabla, sin separar por el campo de
-              agrupacion. La tabla es correcta -son las mismas filas- y solo
-              pierde legibilidad, que es lo que distingue degradar de rechazar."))
 
     (protocolo:con-derivacion-por-consulta
      (values :degrada "las derivaciones son vivas, que es mas de lo que se pide"))

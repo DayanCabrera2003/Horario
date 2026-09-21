@@ -25,6 +25,7 @@
 
 (defclass texto (protocolo:con-tabla-cruzada
                  protocolo:con-particion-de-vista
+                 protocolo:con-agrupacion-en-vista
                  protocolo:con-marcado-textual
                  protocolo:con-busqueda-por-clave
                  protocolo:con-orden-declarado)
@@ -64,12 +65,6 @@
              "las filas se calculan al generar y quedan fijas. Si despues
               aparece un valor nuevo en la coleccion de origen, no aparece
               una fila para el: hay que volver a generar."))
-
-    (protocolo:con-agrupacion-en-vista
-     (values :degrada
-             "las filas salen todas en una tabla, sin separar por el campo de
-              agrupacion. La tabla es correcta -son las mismas filas- y solo
-              pierde legibilidad, que es lo que distingue degradar de rechazar."))
 
     (protocolo:con-relacion-uno-a-muchos
      (values :cumple "las filas relacionadas se escriben separadas por comas"))
