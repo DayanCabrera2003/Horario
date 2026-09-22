@@ -96,6 +96,7 @@
                (:file "alcance")
                (:file "conformidad")
                (:file "vistas")
+               (:file "relacion")
                (:file "ejecutar"))
   :perform (test-op (op system)
                     (uiop:symbol-call :situacion.pruebas :ejecutar)))
@@ -121,6 +122,7 @@
   :serial t
   :components ((:file "arquitectura")
                (:file "plan")
+               (:file "relacion")
                (:file "formula")
                (:file "plano")
                (:file "emision")))

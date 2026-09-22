@@ -138,20 +138,12 @@
               LibreOffice Calc, asi que el rodeo plano es el unico portable."))
 
     (protocolo:con-relacion-uno-a-muchos
-     ;; La emulacion esta disenada -hoja auxiliar con clave numerada, lineas
-     ;; reservadas por fila padre y un aviso al desbordarse, que es lo que
-     ;; hace hoy departamento/hoja_carga.py- y NO esta implementada.
-     ;;
-     ;; Se responde :RECHAZA y no :EMULA a proposito. Decir que se emula algo
-     ;; que no se emula es exactamente el verde falso que este trabajo le
-     ;; reprocha a la tesis de 2026, y el informe de conformidad no sirve
-     ;; para nada si miente.
-     (values :rechaza
-             "la hoja de calculo no tiene listas de largo variable dentro de
-              una fila. La emulacion esta disenada -hoja auxiliar con clave
-              numerada, lineas reservadas y aviso al desbordarse- y todavia no
-              implementada, asi que esta descripcion no se puede materializar
-              aqui sin mentir."))
+     (values :emula
+             (format nil "hoja auxiliar con clave numerada y ~d lineas~@
+                          reservadas por fila padre. Limite: mas de ~:*~d~@
+                          relacionadas no caben; la ultima linea avisa~@
+                          cuantas sobran."
+                     (reserva-de-relacion a))))
 
     (protocolo:con-derivacion-por-consulta
      (values :degrada "las derivaciones son vivas, que es mas de lo que se pide"))

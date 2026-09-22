@@ -76,7 +76,12 @@
   (find nombre-de-coleccion (hojas plan) :key (lambda (h) (nucleo:nombre (coleccion h)))))
 
 (defun columna-de (hoja nombre-de-campo)
-  (or (cdr (assoc nombre-de-campo (columnas hoja)))
+  ;; :TEST #'EQUAL y no el EQL por defecto: la mayoria de las claves son
+  ;; simbolos internados (donde EQUAL se comporta como EQ, sin cambiar nada),
+  ;; pero la tabla cruda de una relacion uno-a-muchos (H4, excel/relacion.lisp)
+  ;; usa la cadena literal "__clave__" como clave de columna, y dos cadenas
+  ;; iguales de distinto archivo no tienen por que ser EQL.
+  (or (cdr (assoc nombre-de-campo (columnas hoja) :test #'equal))
       (error "El plan no tiene columna para ~(~a~)" nombre-de-campo)))
 
 (defun celda (hoja campo fila &key (absoluta-columna t) (absoluta-fila nil))

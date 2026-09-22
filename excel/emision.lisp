@@ -47,6 +47,13 @@
     (when (nucleo:cruzada-p vista) (planificar-cruces a vista plan))
     (protocolo:planificar-vista a vista plan))
   (setf (cruces plan) (nreverse (cruces plan)))
+  ;; La hoja auxiliar de cada relacion uno-a-muchos (H4), antes que
+  ;; PLANO-DE-HOJA: EMITIR-EXPRESION sobre RELACIONADAS (excel/formula.lisp)
+  ;; necesita encontrar su hoja auxiliar en (AUXILIARES PLAN) para escribir
+  ;; el COUNTIF de la hoja de origen.
+  (dolist (hoja (hojas plan))
+    (dolist (campo (campos-de-relacion (coleccion hoja)))
+      (push (planificar-detalle a plan hoja campo) (auxiliares plan))))
   (list (cons "libro" (nucleo:etiqueta (situacion plan)))
         (cons "vistas" (lista (mapcar (lambda (v) (protocolo:emitir-vista a v plan))
                                       (nucleo:vistas (situacion plan)))))
@@ -54,7 +61,9 @@
                               (mapcar (lambda (c) (plano-de-cruce a plan c))
                                       (cruces plan))
                               (mapcar (lambda (h) (plano-de-hoja a plan h))
-                                      (hojas plan)))))))
+                                      (hojas plan))
+                              (mapcar (lambda (d) (plano-de-detalle a plan d))
+                                      (auxiliares plan)))))))
 
 (defun plano-de-cruce (a plan cruce)
   "La hoja de la tabla cruzada, con sus dos ejes fijados y sus busquedas.

@@ -169,10 +169,25 @@
           una formula no significa nada."))
 
 (defmethod protocolo:emitir-expresion ((a excel) (e nucleo:relacionadas) ambito plan)
-  (declare (ignore ambito plan))
+  "Un conteo en vivo sobre la tabla cruda de la hoja auxiliar (H4,
+   excel/relacion.lisp), no la lista entera: eso es lo que REQUERIR deja
+   claro en el informe -se emula, con limite- y lo que esta formula tiene
+   que seguir siendo cierto incluso despues de que REQUERIR deje de
+   senalar error.
+
+   COUNTIF con comodin sobre __clave__ es portable entre Excel y LibreOffice
+   Calc, a diferencia de una formula matricial. \"Rosa#*\" cuenta todas las
+   filas de la tabla cruda cuya clave numerada empieza por la clave de esta
+   fila, que es exactamente cuantas relacionadas tiene ahora mismo."
+  (declare (ignore ambito))
   (protocolo:requerir a 'protocolo:con-relacion-uno-a-muchos e
                       :detalle (format nil "todas las filas de ~(~a~) relacionadas"
-                                       (nucleo:coleccion e))))
+                                       (nucleo:coleccion e)))
+  (let* ((detalle (find e (auxiliares plan) :key (lambda (d) (nucleo:expresion (campo d)))))
+         (tabla-cruda (tabla-cruda detalle))
+         (rango-clave (rango-de-columna tabla-cruda "__clave__" :con-hoja t))
+         (clave-de-esta-fila (celda *hoja* (primera-clave-de (coleccion *hoja*)) *fila*)))
+    (format nil "COUNTIF(~a,~a&\"#*\")" rango-clave clave-de-esta-fila)))
 
 (defmethod protocolo:emitir-expresion ((a excel) (e nucleo:agregado) ambito plan)
   "Contar y sumar sobre un rango con criterios.
