@@ -56,6 +56,18 @@
 
 (defun hacer-excel (&key (reserva-minima 20) (reserva-de-relacion 5)
                          (vistas-en-archivo '()))
+  ;; RESERVA-DE-RELACION es la capacidad del bloque legible de cada fila
+  ;; padre (excel/relacion.lisp): CELDAS-DE-AVISOS-LEGIBLES escribe el aviso
+  ;; de desborde en (+ FILA-CABECERA CAPACIDAD). Con CAPACIDAD 0 esa celda
+  ;; es la misma FILA-CABECERA donde ya se escribio la clave del padre -dos
+  ;; entradas "celda" distintas para la misma direccion en el plano-, y con
+  ;; CAPACIDAD negativa cae en el bloque de OTRA fila padre. Ninguno de los
+  ;; dos casos falla con un error claro si no se comprueba aqui: se valida
+  ;; donde se establece, antes de que llegue nunca a CAPACIDAD-DE-DETALLE.
+  (unless (plusp reserva-de-relacion)
+    (error "RESERVA-DE-RELACION tiene que ser un entero positivo -es~@
+            cuantas lineas se reservan por fila padre en el bloque legible-~@
+            y no ~a." reserva-de-relacion))
   (make-instance 'excel :reserva-minima reserva-minima
                         :reserva-de-relacion reserva-de-relacion
                         :vistas-en-archivo vistas-en-archivo))

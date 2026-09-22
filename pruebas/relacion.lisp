@@ -60,6 +60,22 @@
                  "la celda de ASIGNACIONES tiene que llevar una formula COUNTIF~@
                   real, no lo que devuelva REQUERIR"))))
 
+(definir-prueba con-reserva-de-relacion-no-positiva-se-rechaza
+    "H4: RESERVA-DE-RELACION 0 o negativa senala error, no un plano corrupto"
+  ;; Con CAPACIDAD 0, CELDAS-DE-AVISOS-LEGIBLES (excel/relacion.lisp) escribe
+  ;; el aviso de desborde en la misma celda que ya lleva la clave del padre
+  ;; -dos entradas "celda" para la misma direccion en el plano, sin que nada
+  ;; lo note-, y con un valor negativo el aviso cae en el bloque de OTRA fila
+  ;; padre. HACER-EXCEL tiene que rechazarlo antes de que llegue tan lejos.
+  (flet ((senala-error-p (reserva)
+           (handler-case (progn (situacion.excel:hacer-excel :reserva-de-relacion reserva)
+                                 nil)
+             (error () t))))
+    (comprobar (senala-error-p 0)
+               "(hacer-excel :reserva-de-relacion 0) deberia senalar error")
+    (comprobar (senala-error-p -1)
+               "(hacer-excel :reserva-de-relacion -1) deberia senalar error")))
+
 (definir-prueba con-relacion-uno-a-muchos-avisa-el-desborde
     "H4: con mas relacionadas que reserva, la ultima linea avisa cuantas sobran"
   (let ((informe (nth-value 1
