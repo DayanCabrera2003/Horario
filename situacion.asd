@@ -122,9 +122,9 @@
   :serial t
   :components ((:file "arquitectura")
                (:file "plan")
+               (:file "plano")
                (:file "relacion")
                (:file "formula")
-               (:file "plano")
                (:file "emision")))
 
 (defsystem "situacion/web"
