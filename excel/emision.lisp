@@ -54,6 +54,7 @@
   (dolist (hoja (hojas plan))
     (dolist (campo (campos-de-relacion (coleccion hoja)))
       (push (planificar-detalle a plan hoja campo) (auxiliares plan))))
+  (setf (auxiliares plan) (nreverse (auxiliares plan)))
   (list (cons "libro" (nucleo:etiqueta (situacion plan)))
         (cons "vistas" (lista (mapcar (lambda (v) (protocolo:emitir-vista a v plan))
                                       (nucleo:vistas (situacion plan)))))
