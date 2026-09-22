@@ -14,7 +14,9 @@
    DETALLE), en orden de aparicion y sin repetir."
   (let ((pedidas '()))
     (flet ((pedir (capacidad nodo detalle)
-             (unless (find capacidad pedidas :key #'first)
+             (unless (find-if (lambda (p) (and (eq (first p) capacidad)
+                                               (eq (second p) nodo)))
+                              pedidas)
                (push (list capacidad nodo detalle) pedidas))))
       (dolist (coleccion (nucleo:colecciones situacion))
         (when (and (consp (nucleo:origen coleccion))
