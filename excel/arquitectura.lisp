@@ -12,7 +12,8 @@
 (defpackage #:situacion.excel
   (:use #:common-lisp)
   (:documentation "Arquitectura de salida a hoja de calculo.")
-  (:export #:excel #:hacer-excel #:plan-de-excel #:escribir-plano))
+  (:export #:excel #:hacer-excel #:plan-de-excel #:escribir-plano
+           #:reserva-de-relacion #:vistas-en-archivo))
 
 (in-package #:situacion.excel)
 
@@ -30,15 +31,34 @@
                    :documentation
                    "Filas en blanco que se reservan como minimo a una
                     coleccion que crece. Viene del corpus: con pocos datos,
-                    reservar un porcentaje se queda en nada."))
+                    reservar un porcentaje se queda en nada.")
+   (reserva-de-relacion :accessor reserva-de-relacion :initarg :reserva-de-relacion
+                        :initform 5
+                        :documentation
+                        "Filas que se reservan por fila padre para una
+                         relacion uno-a-muchos (H4). Mas bajo que
+                         RESERVA-MINIMA a proposito: una relacion como
+                         'asignaturas que da un profesor' rara vez pasa de
+                         un punado, a diferencia de una coleccion que crece
+                         todo el curso.")
+   (vistas-en-archivo :accessor vistas-en-archivo :initarg :vistas-en-archivo
+                      :initform '()
+                      :documentation
+                      "Nombres de vista (simbolos) que, en vez de salir
+                       como pestana del libro principal, se reparten en un
+                       .xlsx independiente por seccion. Vacio por defecto:
+                       sin esto, nada cambia respecto a hoy."))
   (:documentation
    "Salida a un libro de hoja de calculo.
 
     No hereda de CON-CRECIMIENTO ni de CON-CONTEO-DE-DISTINTOS a proposito:
     no los tiene. Los emula, y el informe de conformidad lo dice."))
 
-(defun hacer-excel (&key (reserva-minima 20))
-  (make-instance 'excel :reserva-minima reserva-minima))
+(defun hacer-excel (&key (reserva-minima 20) (reserva-de-relacion 5)
+                         (vistas-en-archivo '()))
+  (make-instance 'excel :reserva-minima reserva-minima
+                        :reserva-de-relacion reserva-de-relacion
+                        :vistas-en-archivo vistas-en-archivo))
 
 (defmethod protocolo:resolver-carencia ((a excel) capacidad nodo)
   (case capacidad
