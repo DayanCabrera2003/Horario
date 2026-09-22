@@ -320,3 +320,37 @@
                                         *dos-grupos*)))
     (comprobar (search "secciones: \"grupo\"" salida)
                "la pagina no recibe el campo de particion")))
+
+;;; ---------------------------------------------------------------------
+;;; Dos vistas particionadas no pueden pisarse en el informe
+;;; ---------------------------------------------------------------------
+
+(situacion.lenguaje:defsituacion dos-particiones (:etiqueta "Dos particiones")
+  (coleccion casillas
+    (:clave grupo dia turno)
+    (campo grupo      :rol fijo)
+    (campo dia        :rol fijo)
+    (campo turno      :rol fijo)
+    (campo asignatura :rol entrada :dominio (uno-de "MAT" "ESP")
+                      :al-violar advertir))
+  (vista por-grupo :de casillas :entrada t :etiqueta "Por grupo"
+                   :filas turno :columnas dia :muestra asignatura
+                   :secciones grupo)
+  (vista por-dia   :de casillas :etiqueta "Por dia"
+                   :filas turno :columnas grupo :muestra asignatura
+                   :secciones dia))
+
+(definir-prueba requerimientos-no-deduplica-por-capacidad-sola
+    "Requerimientos: dos vistas que piden la misma capacidad dejan dos hallazgos"
+  (let* ((situacion (situacion.lenguaje:situacion-llamada "DOS-PARTICIONES"))
+         (pedidos (remove 'protocolo:con-particion-de-vista
+                          (protocolo:requerimientos situacion)
+                          :key #'first :test-not #'eq)))
+    (comprobar (= (length pedidos) 2)
+               "dos vistas con :SECCIONES tienen que dejar DOS hallazgos de~@
+                CON-PARTICION-DE-VISTA, uno por vista; hoy la segunda se~@
+                descarta en silencio (encontrados: ~d)" (length pedidos))
+    (comprobar (= (length (remove-duplicates (mapcar #'second pedidos)))
+                  2)
+               "los dos hallazgos tienen que apuntar a nodos (vistas)~@
+                distintos, no al mismo")))
