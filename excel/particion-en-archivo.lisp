@@ -37,7 +37,7 @@
 ;;; El cuadrante congelado
 ;;; ---------------------------------------------------------------------
 
-(defun valor-congelado-de-casilla (plan cruce filas-en-la-casilla campo-celda)
+(defun valor-congelado-de-casilla (plan filas-en-la-casilla campo-celda)
   "Lo que va en una casilla congelada del cruce.
 
    Mismo criterio que TEXTO-DE-LA-CASILLA (texto/emision.lisp), que es el
@@ -46,8 +46,11 @@
    NUCLEO:EVALUAR-SITUACION. Sin filas, cadena vacia; con una, su valor; con
    mas de una -conflicto declarado con :UNICA-SALVO y de verdad presente en
    los datos- todas juntas separadas por \" / \", para ensenar el choque en
-   vez de elegir una y callarse."
-  (declare (ignore cruce))
+   vez de elegir una y callarse.
+
+   No recibe el CRUCE: a diferencia de FILAS-DE-LA-CASILLA-CONGELADA, no
+   necesita nada de su geometria, solo las filas ya elegidas y el campo a
+   mostrar."
   (format nil "~{~a~^ / ~}"
           (loop for f in filas-en-la-casilla
                 collect (nucleo:como-texto
@@ -109,7 +112,7 @@
                                                           (letra-de-columna i) f))
                                     (cons "valor"
                                           (valor-congelado-de-casilla
-                                           plan cruce
+                                           plan
                                            (filas-de-la-casilla-congelada plan cruce vf vc)
                                            campo-celda)))))))
     (list (cons "nombre" (nombre-de-pestana (nucleo:etiqueta vista) (seccion cruce)))
