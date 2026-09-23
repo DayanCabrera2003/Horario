@@ -83,3 +83,96 @@
                     (situacion.excel:hacer-excel :reserva-de-relacion 2)
                     (situacion-de-carga) *datos-de-carga*))))
     (comprobar informe "tiene que producir informe igual")))
+
+;;; ---------------------------------------------------------------------
+;;; La clave compuesta del padre
+;;;
+;;; CARGA-DE-PROFESORES no lo cubre: la clave de PROFESORES es solo NOMBRE,
+;;; asi que "el primer campo de la clave" y "la clave entera" coinciden ahi
+;;; por accidente. Hace falta una coleccion padre con clave compuesta, y dos
+;;; filas que compartan el primer campo y difieran en el segundo, para que
+;;; un COUNTIF que solo mirara el primer campo se note: contaria de mas.
+;;; ---------------------------------------------------------------------
+
+(situacion.lenguaje:defsituacion carga-por-turno (:etiqueta "Carga por turno")
+  (coleccion turnos
+    (:clave dia turno)
+    (campo dia     :rol fijo :etiqueta "Dia")
+    (campo turno   :rol fijo :etiqueta "Turno")
+    (campo citados :rol derivado :etiqueta "Profesores citados"
+           (las-filas-de citacion
+            :donde (y (= dia (de fila dia)) (= turno (de fila turno)))))
+    (:datos (("lunes" "1") ("lunes" "2") ("martes" "1"))))
+  (coleccion citacion
+    (:clave dia turno profesor)
+    (campo dia      :rol fijo :etiqueta "Dia")
+    (campo turno    :rol fijo :etiqueta "Turno")
+    (campo profesor :rol fijo :etiqueta "Profesor")
+    (:datos (("lunes" "1" "Rosa") ("lunes" "1" "Julia")
+             ("lunes" "2" "Pedro")
+             ("martes" "1" "Rosa") ("martes" "1" "Julia") ("martes" "1" "Pedro"))))
+  (vista turnos-vista :de turnos :entrada t :etiqueta "Turnos"))
+
+(defun situacion-de-turnos () (situacion.lenguaje:situacion-llamada "CARGA-POR-TURNO"))
+
+(defparameter *datos-de-turnos*
+  (list (cons (nucleo:nombrar "turnos")
+              (loop for (d tu) in '(("lunes" "1") ("lunes" "2") ("martes" "1"))
+                    collect (list (cons (nucleo:nombrar "dia") d)
+                                  (cons (nucleo:nombrar "turno") tu))))
+        (cons (nucleo:nombrar "citacion")
+              (loop for (d tu p) in '(("lunes" "1" "Rosa") ("lunes" "1" "Julia")
+                                      ("lunes" "2" "Pedro")
+                                      ("martes" "1" "Rosa") ("martes" "1" "Julia")
+                                      ("martes" "1" "Pedro"))
+                    collect (list (cons (nucleo:nombrar "dia") d)
+                                  (cons (nucleo:nombrar "turno") tu)
+                                  (cons (nucleo:nombrar "profesor") p))))))
+
+(defun formula-en-hoja (plano nombre-hoja celda)
+  "La formula (cadena Lisp, tal cual la produce EMITIR-EXPRESION, sin pasar
+   por JSON) de CELDA en la hoja NOMBRE-HOJA del plano nativo que devuelve
+   CONSTRUIR-PLANO -no el texto que escribe ESCRIBIR-PLANO.
+
+   No hay un lector de JSON en el proyecto (vease PRUEBAS/PARTICION-EN-
+   ARCHIVO.LISP), y una formula con COUNTIF/VLOOKUP lleva comillas internas
+   que complican buscarla como texto ya escrito; leer la estructura nativa
+   antes de serializar evita los dos problemas."
+  (let* ((hojas (cdr (assoc "hojas" plano :test #'string=)))
+         (hoja (find nombre-hoja hojas
+                     :key (lambda (h) (cdr (assoc "nombre" h :test #'string=)))
+                     :test #'string=))
+         (formulas (and hoja (cdr (assoc "formulas" hoja :test #'string=)))))
+    (and (listp formulas)
+         (let ((entrada (find celda formulas
+                              :key (lambda (f) (cdr (assoc "celda" f :test #'string=)))
+                              :test #'string=)))
+           (and entrada (cdr (assoc "formula" entrada :test #'string=)))))))
+
+(definir-prueba con-clave-compuesta-el-countif-cuenta-por-toda-la-clave
+    "H4: con clave compuesta, el COUNTIF busca por todos los campos de la clave"
+  ;; (lunes,1) y (lunes,2) comparten DIA y difieren en TURNO. Si el COUNTIF
+  ;; buscara solo por DIA -el error que corrige esta prueba-, "lunes#*"
+  ;; contaria las citaciones de las DOS filas para cada una de las dos: 2+1=3
+  ;; en vez de 2 y 1.
+  (let* ((a (situacion.excel:hacer-excel))
+         (s (situacion-de-turnos))
+         (plan (protocolo:planificar a s)))
+    (setf (situacion.excel::entorno plan) (nucleo:hacer-entorno s *datos-de-turnos*))
+    (let* ((plano (situacion.excel::construir-plano a plan))
+           ;; DIA es la columna A, TURNO la B; TURNOS no declara :ORDEN, asi
+           ;; que las filas salen en el orden de los datos: (lunes 1) es la
+           ;; primera -> fila 4; (lunes 2), la segunda -> fila 5.
+           (f-lunes-1 (formula-en-hoja plano "Turnos" "C4"))
+           (f-lunes-2 (formula-en-hoja plano "Turnos" "C5")))
+      (comprobar f-lunes-1 "no se encontro la formula de C4 en la hoja Turnos")
+      (comprobar f-lunes-2 "no se encontro la formula de C5 en la hoja Turnos")
+      (when (and f-lunes-1 f-lunes-2)
+        (comprobar (search "$B4" f-lunes-1)
+                   "el COUNTIF de (lunes,1) tiene que referenciar tambien TURNO~@
+                    ($B4), no solo DIA -si no, cuenta tambien las citaciones de~@
+                    (lunes,2): ~a" f-lunes-1)
+        (comprobar (search "$B5" f-lunes-2)
+                   "el COUNTIF de (lunes,2) tiene que referenciar tambien TURNO~@
+                    ($B5), no solo DIA -si no, cuenta tambien las citaciones de~@
+                    (lunes,1): ~a" f-lunes-2)))))

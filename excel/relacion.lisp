@@ -70,6 +70,21 @@
           (mapcar (lambda (c) (nucleo:como-texto (nucleo:valor-de-campo entorno fila c)))
                   (nucleo:clave coleccion))))
 
+(defun formula-de-clave (hoja fila coleccion)
+  "La clave de FILA (un numero de fila de HOJA), como fragmento de formula:
+   cada campo de (NUCLEO:CLAVE COLECCION) por su referencia de celda, unidos
+   con '&\"#\"&'. Es el mismo separador y los mismos campos que CLAVE-DE-FILA
+   usa para escribir la clave numerada en la tabla cruda -tienen que
+   coincidir campo a campo, o el COUNTIF de EMITIR-EXPRESION sobre
+   RELACIONADAS (excel/formula.lisp) busca con un prefijo mas corto que la
+   clave real y, con una clave compuesta, cuenta las relacionadas de OTRA
+   fila padre que comparta solo el primer campo.
+
+   Analogo a CLAVES-COMPUESTAS (excel/emision.lisp), que hace lo mismo para
+   los dos ejes de una tabla cruzada."
+  (format nil "~{~a~^&\"#\"&~}"
+          (mapcar (lambda (c) (celda hoja c fila)) (nucleo:clave coleccion))))
+
 (defun nombre-de-hoja-de-detalle (campo)
   "El nombre de la pestana auxiliar de una relacion.
 
@@ -155,12 +170,6 @@
           clave-numerada
           (rango-de-tabla-cruda tabla-cruda 0)
           (+ indice-objetivo 2)))
-
-(defun primera-clave-de (coleccion)
-  "El primer campo de la clave de COLECCION, o el primer campo a secas si no
-   declara clave. Mismo criterio que CON-GUARDA-DE-FILA (excel/emision.lisp)."
-  (or (first (nucleo:clave coleccion))
-      (nucleo:nombre (first (nucleo:campos coleccion)))))
 
 ;;; ---------------------------------------------------------------------
 ;;; El bloque legible
