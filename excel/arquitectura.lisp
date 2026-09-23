@@ -48,7 +48,16 @@
                        (vease HACER-EXCEL), que en vez de salir como pestana
                        del libro principal se reparten en un .xlsx
                        independiente por seccion. Vacio por defecto: sin
-                       esto, nada cambia respecto a hoy."))
+                       esto, nada cambia respecto a hoy.
+
+                       Solo tiene sentido para una vista PARTICIONADA -una
+                       que declara :SECCIONES-: es la seccion la que decide
+                       cuantos archivos salen y como se llaman. El nombre de
+                       una vista sin :SECCIONES puesto aqui no se rechaza,
+                       pero su unico cruce sale con SECCION en NIL y
+                       RUTA-DE-ARCHIVO (excel/particion-en-archivo.lisp)
+                       produce un nombre de archivo raro en vez de uno por
+                       seccion."))
   (:documentation
    "Salida a un libro de hoja de calculo.
 
