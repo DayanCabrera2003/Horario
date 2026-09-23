@@ -97,6 +97,7 @@
                (:file "conformidad")
                (:file "vistas")
                (:file "relacion")
+               (:file "particion-en-archivo")
                (:file "ejecutar"))
   :perform (test-op (op system)
                     (uiop:symbol-call :situacion.pruebas :ejecutar)))
@@ -124,6 +125,7 @@
                (:file "plan")
                (:file "plano")
                (:file "relacion")
+               (:file "particion-en-archivo")
                (:file "formula")
                (:file "emision")))
 

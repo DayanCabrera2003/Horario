@@ -44,10 +44,11 @@
    (vistas-en-archivo :accessor vistas-en-archivo :initarg :vistas-en-archivo
                       :initform '()
                       :documentation
-                      "Nombres de vista (simbolos) que, en vez de salir
-                       como pestana del libro principal, se reparten en un
-                       .xlsx independiente por seccion. Vacio por defecto:
-                       sin esto, nada cambia respecto a hoy."))
+                      "Nombres de vista, ya normalizados con NUCLEO:NOMBRAR
+                       (vease HACER-EXCEL), que en vez de salir como pestana
+                       del libro principal se reparten en un .xlsx
+                       independiente por seccion. Vacio por defecto: sin
+                       esto, nada cambia respecto a hoy."))
   (:documentation
    "Salida a un libro de hoja de calculo.
 
@@ -70,21 +71,43 @@
             y no ~a." reserva-de-relacion))
   (make-instance 'excel :reserva-minima reserva-minima
                         :reserva-de-relacion reserva-de-relacion
-                        :vistas-en-archivo vistas-en-archivo))
+                        ;; NUCLEO:NOMBRE de una vista ya paso por
+                        ;; NUCLEO:NOMBRAR (LENGUAJE:NORMALIZAR, al expandir
+                        ;; la macro VISTA), asi que compararlo por EQL con lo
+                        ;; que aqui llega tal cual -un simbolo leido en el
+                        ;; paquete de quien llame a HACER-EXCEL, casi nunca
+                        ;; el mismo paquete- no encontraria nunca nada.
+                        ;; Normalizar aqui, una sola vez, es lo que permite
+                        ;; que PLANIFICAR-CRUCES compare con MEMBER a secas.
+                        :vistas-en-archivo (mapcar #'nucleo:nombrar vistas-en-archivo)))
 
 (defmethod protocolo:resolver-carencia ((a excel) capacidad nodo)
   (case capacidad
 
     (protocolo:con-particion-de-vista
-     (values :emula
-             "cada seccion sale como una pestana propia, y el conjunto de
-              pestanas se fija AL GENERAR leyendo los datos. La clave compuesta
-              de la hoja de origen lleva el campo de particion delante, para
-              que la busqueda no cruce secciones.
-              Limite: si manana aparece un grupo nuevo, no aparece una pestana
-              para el; hay que volver a generar el libro. Es el mismo coste que
-              la tabla cruzada, y por la misma razon: lo que depende del
-              contenido mueve el direccionamiento entero."))
+     ;; Dos formas de particion, y las dos se cuentan en la MISMA nota:
+     ;; CON-DERIVACION-VIVA no llega nunca aqui para distinguirla como caso
+     ;; aparte, porque esta arquitectura la cumple a nivel de clase (esta en
+     ;; su lista de superclases) y RESOLVER-CARENCIA no se llama para una
+     ;; capacidad que ya se cumple.
+     (if (and (typep nodo 'nucleo:vista)
+              (member (nucleo:nombre nodo) (vistas-en-archivo a)))
+         (values :emula
+                 "se reparte en un archivo .xlsx independiente por seccion,
+                  sin pestana en el libro principal. Cada archivo lleva los
+                  valores ya calculados, no formulas: es una foto fija del
+                  momento de generar, no un instrumento de captura. Limite:
+                  el conjunto de archivos se fija al generar; una seccion
+                  nueva necesita regenerar.")
+         (values :emula
+                 "cada seccion sale como una pestana propia, y el conjunto de
+                  pestanas se fija AL GENERAR leyendo los datos. La clave compuesta
+                  de la hoja de origen lleva el campo de particion delante, para
+                  que la busqueda no cruce secciones.
+                  Limite: si manana aparece un grupo nuevo, no aparece una pestana
+                  para el; hay que volver a generar el libro. Es el mismo coste que
+                  la tabla cruzada, y por la misma razon: lo que depende del
+                  contenido mueve el direccionamiento entero.")))
     (protocolo:con-casilla-en-conflicto
      (values :emula
              "la casilla pregunta primero cuantas filas cumplen su clave. Con

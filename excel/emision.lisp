@@ -35,7 +35,13 @@
       (protocolo:emitir a plan destino))))
 
 (defmethod protocolo:emitir ((a excel) plan destino)
-  (escribir-plano (construir-plano a plan) destino))
+  ;; CONSTRUIR-PLANO resuelve (ARCHIVOS PLAN) como efecto lateral de recorrer
+  ;; las vistas (PLANIFICAR-CRUCES, mas arriba en este archivo), asi que para
+  ;; cuando llega aqui ya se sabe si hay algo que escribir aparte.
+  (escribir-plano (construir-plano a plan) destino)
+  (when (archivos plan)
+    (escribir-archivos-de-vista a plan destino))
+  destino)
 
 (defun construir-plano (a plan)
   ;; Las vistas se planifican antes de emitir: pueden reordenar las hojas y,
@@ -47,6 +53,9 @@
     (when (nucleo:cruzada-p vista) (planificar-cruces a vista plan))
     (protocolo:planificar-vista a vista plan))
   (setf (cruces plan) (nreverse (cruces plan)))
+  ;; Los cruces de una vista en VISTAS-EN-ARCHIVO (H2) tambien se acumularon
+  ;; con PUSH dentro de PLANIFICAR-CRUCES, por la misma razon que CRUCES.
+  (setf (archivos plan) (nreverse (archivos plan)))
   ;; La hoja auxiliar de cada relacion uno-a-muchos (H4), antes que
   ;; PLANO-DE-HOJA: EMITIR-EXPRESION sobre RELACIONADAS (excel/formula.lisp)
   ;; necesita encontrar su hoja auxiliar en (AUXILIARES PLAN) para escribir
@@ -56,8 +65,16 @@
       (push (planificar-detalle a plan hoja campo) (auxiliares plan))))
   (setf (auxiliares plan) (nreverse (auxiliares plan)))
   (list (cons "libro" (nucleo:etiqueta (situacion plan)))
-        (cons "vistas" (lista (mapcar (lambda (v) (protocolo:emitir-vista a v plan))
-                                      (nucleo:vistas (situacion plan)))))
+        ;; Una vista en VISTAS-EN-ARCHIVO (H2) no vive en este libro: no
+        ;; tiene pestana aqui, y su "hoja" en el indice apuntaria -de forma
+        ;; enganosa- a la hoja de datos de origen y no a ningun cuadrante de
+        ;; este libro. Se deja fuera del indice por la misma razon que se
+        ;; deja fuera de (CRUCES PLAN).
+        (cons "vistas" (lista (mapcar
+                               (lambda (v) (protocolo:emitir-vista a v plan))
+                               (remove-if (lambda (v) (member (nucleo:nombre v)
+                                                              (vistas-en-archivo a)))
+                                          (nucleo:vistas (situacion plan))))))
         (cons "hojas" (lista (append
                               (mapcar (lambda (c) (plano-de-cruce a plan c))
                                       (cruces plan))

@@ -56,7 +56,12 @@
    (auxiliares :accessor auxiliares :initarg :auxiliares :initform '()
                :documentation
                "Hojas que la arquitectura se inventa para emular lo que no
-                tiene. El lenguaje no las nombra nunca."))
+                tiene. El lenguaje no las nombra nunca.")
+   (archivos :accessor archivos :initarg :archivos :initform '()
+             :documentation
+             "Cruces de vistas en VISTAS-EN-ARCHIVO: uno por seccion, cada
+              uno destinado a su propio .xlsx en vez de a una pestana del
+              libro principal."))
   (:documentation "Plan de la hoja de calculo. Opaco para el nucleo."))
 
 ;;; ---------------------------------------------------------------------
@@ -253,9 +258,14 @@
    Sin particion sale uno solo, con SECCION en NIL. Con particion, uno por
    valor, y cada uno sera una pestana. Los valores se leen de los DATOS y se
    fijan aqui, al generar: ese es el coste de la emulacion y esta declarado
-   en el informe."
-  (declare (ignore a))
-  (let ((hoja (hoja-de plan (nucleo:fuente vista))))
+   en el informe.
+
+   Si VISTA esta en (VISTAS-EN-ARCHIVO A) (H2), sus cruces no van a
+   (CRUCES PLAN) sino a (ARCHIVOS PLAN): cada uno saldra en su propio .xlsx
+   en vez de en una pestana del libro principal."
+  (let ((hoja (hoja-de plan (nucleo:fuente vista)))
+        (destino (if (member (nucleo:nombre vista) (vistas-en-archivo a))
+                    'archivos 'cruces)))
     ;; La capacidad ya la pidio PROTOCOLO:REQUERIMIENTOS al empezar a
     ;; materializar: pedirla otra vez aqui duplicaba el renglon del informe.
     ;; Un informe que repite cosas se lee peor y, sobre todo, deja de poder
@@ -269,19 +279,25 @@
                           plan (filas-presentables plan vista)
                           (nucleo:secciones vista))
                          (list nil)))
-        (let ((filas (filas-de-la-seccion plan vista valor)))
-          (push (make-instance
-                 'cruce
-                 :vista vista
-                 :hoja-origen hoja
-                 :seccion valor
-                 :valores-de-fila (valores-distintos-en-filas
-                                   plan filas (nucleo:eje-de-filas vista))
-                 :valores-de-columna (valores-distintos-en-filas
-                                      plan filas (nucleo:eje-de-columnas vista))
-                 ;; La columna de clave compuesta va detras de las declaradas.
-                 ;; Es la misma para todos los cruces de la misma vista: la
-                 ;; escribe la hoja de origen una sola vez.
-                 :columna-auxiliar (letra-de-columna
-                                    (length (nucleo:campos (coleccion hoja)))))
-                (cruces plan)))))))
+        (let* ((filas (filas-de-la-seccion plan vista valor))
+               (cruce (make-instance
+                       'cruce
+                       :vista vista
+                       :hoja-origen hoja
+                       :seccion valor
+                       :valores-de-fila (valores-distintos-en-filas
+                                         plan filas (nucleo:eje-de-filas vista))
+                       :valores-de-columna (valores-distintos-en-filas
+                                            plan filas (nucleo:eje-de-columnas vista))
+                       ;; La columna de clave compuesta va detras de las
+                       ;; declaradas. Es la misma para todos los cruces de la
+                       ;; misma vista: la escribe la hoja de origen una sola
+                       ;; vez.
+                       :columna-auxiliar (letra-de-columna
+                                          (length (nucleo:campos (coleccion hoja)))))))
+          ;; PUSH no sirve aqui: el lugar se elige en tiempo de ejecucion con
+          ;; IF, y IF no tiene expansor SETF. De ahi el SETF/CONS explicito
+          ;; en vez del PUSH que usaba esta funcion antes de H2.
+          (if (eq destino 'archivos)
+              (setf (archivos plan) (cons cruce (archivos plan)))
+              (setf (cruces plan) (cons cruce (cruces plan)))))))))
