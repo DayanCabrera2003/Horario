@@ -186,7 +186,12 @@
   (let* ((detalle (find e (auxiliares plan) :key (lambda (d) (nucleo:expresion (campo d)))))
          (tabla-cruda (tabla-cruda detalle))
          (rango-clave (rango-de-columna tabla-cruda "__clave__" :con-hoja t))
-         (clave-de-esta-fila (celda *hoja* (primera-clave-de (coleccion *hoja*)) *fila*)))
+         ;; La clave ENTERA de esta fila, no solo su primer campo: con una
+         ;; clave compuesta, dos filas padre pueden compartir el primer
+         ;; campo y diferir en el segundo (FORMULA-DE-CLAVE, excel/relacion.
+         ;; lisp), y el COUNTIF tiene que buscar por el mismo prefijo que
+         ;; CLAVE-DE-FILA escribio en la tabla cruda.
+         (clave-de-esta-fila (formula-de-clave *hoja* *fila* (coleccion *hoja*))))
     (format nil "COUNTIF(~a,~a&\"#*\")" rango-clave clave-de-esta-fila)))
 
 (defmethod protocolo:emitir-expresion ((a excel) (e nucleo:agregado) ambito plan)
