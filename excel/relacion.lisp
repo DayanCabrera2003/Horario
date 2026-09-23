@@ -45,7 +45,6 @@
 
 (defclass hoja-de-detalle ()
   ((campo :accessor campo :initarg :campo)
-   (hoja-padre :accessor hoja-padre :initarg :hoja-padre)
    (hoja-objetivo :accessor hoja-objetivo :initarg :hoja-objetivo
                   :documentation "La hoja de la coleccion RELACIONADA, si tiene.")
    (tabla-cruda :accessor tabla-cruda :initarg :tabla-cruda
@@ -132,7 +131,6 @@
       (make-instance
        'hoja-de-detalle
        :campo campo
-       :hoja-padre hoja-padre
        :hoja-objetivo hoja-objetivo
        :tabla-cruda (construir-tabla-cruda campo hoja-objetivo bloques)
        :bloques bloques))))
