@@ -175,11 +175,24 @@
               una fila para el: hay que volver a generar."))
 
     (protocolo:con-conteo-de-distintos
-     (values :emula
-             "columna auxiliar que marca la primera aparicion de cada valor y
-              se suma. El recuento condicional no sabe contar unicos, y las
-              formulas matriciales no se comportan igual en Excel que en
-              LibreOffice Calc, asi que el rodeo plano es el unico portable."))
+     ;; Sin filtro, el rodeo plano (columna auxiliar que marca la primera
+     ;; aparicion) cuenta sobre toda la coleccion, que es lo que se pide.
+     ;; Con :DONDE ya no: el rodeo no sabe aplicar el filtro, y fingir un
+     ;; SUMPRODUCT que lo ignora devolveria un numero que no es el que pide
+     ;; la descripcion -exactamente el caso que hay que rechazar, no emular.
+     (if (and (typep nodo 'nucleo:agregado) (nucleo:condicion nodo))
+         (values :rechaza
+                 "el conteo de valores distintos CON FILTRO (:DONDE) no tiene
+                  formula portable entre Excel y LibreOffice Calc sin
+                  funciones dinamicas: el rodeo plano que emula el conteo sin
+                  filtro cuenta sobre toda la columna y no sabe aplicar el
+                  :DONDE, asi que el numero que saldria no seria el que pide
+                  la descripcion.")
+         (values :emula
+                 "columna auxiliar que marca la primera aparicion de cada valor y
+                  se suma. El recuento condicional no sabe contar unicos, y las
+                  formulas matriciales no se comportan igual en Excel que en
+                  LibreOffice Calc, asi que el rodeo plano es el unico portable.")))
 
     (protocolo:con-relacion-uno-a-muchos
      (values :emula
