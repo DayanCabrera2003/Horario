@@ -380,15 +380,23 @@
 
     ;; Comparten: alguna de las columnas de la candidata coincide con alguna
     ;; de las de esta fila. Se despliega en una suma de productos.
+    ;;
+    ;; Cada termino exige ademas que ninguno de los dos lados este vacio: en
+    ;; Excel "" = "" es VERDADERO, asi que sin esta guarda dos campos sin
+    ;; escribir contarian como coincidencia. El evaluador de referencia y la
+    ;; web ya filtran los vacios antes de comparar (NUCLEO:EVALUADOR,
+    ;; metodo COMPARTEN); esta guarda es la misma regla en formula.
     ((typep condicion 'nucleo:comparten)
      (list (format nil "((~{~a~^+~})>0)"
                    (loop for campo-aqui in (nucleo:campos condicion)
                          append (loop for campo-alla in (nucleo:campos condicion)
-                                      collect (format nil "(~a=~a)"
-                                                      (rango-de-columna hoja-destino
-                                                                        campo-alla
-                                                                        :con-hoja t)
-                                                      (celda *hoja* campo-aqui *fila*)))))))
+                                      collect
+                                      (let ((rango (rango-de-columna hoja-destino
+                                                                     campo-alla
+                                                                     :con-hoja t))
+                                            (celda-aqui (celda *hoja* campo-aqui *fila*)))
+                                        (format nil "((~a<>\"\")*(~a<>\"\")*(~a=~a))"
+                                                rango celda-aqui rango celda-aqui)))))))
 
     (t (error "Esta hoja de calculo no sabe traducir esta condicion de~@
                existencia. Solo entiende conjunciones de igualdades entre~@
