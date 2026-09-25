@@ -31,3 +31,37 @@
     (comprobar (search "3" js)
                "la expresion ~s deberia mencionar los tres operandos, no solo dos"
                js)))
+
+;;; ---------------------------------------------------------------------
+;;; COMPARTEN y los valores vacios en Excel (punto 7): la emulacion con
+;;; SUMPRODUCT contaba dos vacios como coincidencia.
+;;; ---------------------------------------------------------------------
+
+(situacion.lenguaje:defsituacion colision-de-vacios (:etiqueta "Colision")
+  (coleccion filas
+    (:clave id)
+    (campo id :rol fijo :etiqueta "Id")
+    (campo m1 :rol fijo :etiqueta "M1")
+    (campo m2 :rol fijo :etiqueta "M2"))
+  (marca choca :en filas :sobre (m1 m2) :severidad problema
+    :cuando (existe otra :en filas :distinta-de fila
+                    :donde (comparten otra fila (m1 m2)))))
+
+(defparameter *datos-colision-de-vacios*
+  (list (cons (nucleo:nombrar "filas")
+              (list (list (cons (nucleo:nombrar "id") "F1"))
+                    (list (cons (nucleo:nombrar "id") "F2"))))))
+
+(definir-prueba excel-comparten-exige-no-vacios
+    "Excel: COMPARTEN no cuenta dos vacios como coincidencia"
+  ;; F1 y F2 no escribieron ni M1 ni M2: el evaluador de referencia y la web
+  ;; ya no los consideran en colision (filtran los vacios antes de comparar,
+  ;; nucleo/evaluador.lisp COMPARTEN); la formula de Excel tiene que exigir
+  ;; lo mismo, no solo la igualdad, o dos celdas en blanco cuentan como
+  ;; coincidencia (en Excel, "" = "" es VERDADERO).
+  (let* ((s (situacion.lenguaje:situacion-llamada "COLISION-DE-VACIOS"))
+         (texto (materializar-en-cadena (situacion.excel:hacer-excel)
+                                        s *datos-colision-de-vacios*)))
+    (comprobar (search "<>\\\"\\\"" texto)
+               "la formula de COMPARTEN en Excel tiene que exigir explicitamente~@
+                que los dos lados no esten vacios, no solo que sean iguales")))
