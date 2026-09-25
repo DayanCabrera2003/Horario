@@ -65,3 +65,45 @@
     (comprobar (search "<>\\\"\\\"" texto)
                "la formula de COMPARTEN en Excel tiene que exigir explicitamente~@
                 que los dos lados no esten vacios, no solo que sean iguales")))
+
+;;; ---------------------------------------------------------------------
+;;; CUANTAS-DISTINTAS con :DONDE en Excel (punto 8b): la emulacion ignoraba
+;;; el filtro y devolvia un numero que no es el que pide la descripcion.
+;;; Rechazar, no fingir.
+;;; ---------------------------------------------------------------------
+
+(situacion.lenguaje:defsituacion inventario-distintos (:etiqueta "Inventario")
+  (coleccion movimientos
+    (:clave id)
+    (campo id :rol fijo :etiqueta "Id")
+    (campo proveedor :rol fijo :etiqueta "Proveedor")
+    (campo articulo :rol fijo :etiqueta "Articulo"))
+  (coleccion resumen
+    (:una-sola-fila)
+    (campo distintos-de-acme :rol derivado :tipo entero
+           (cuantas-distintas articulo de movimientos :donde (= proveedor "Acme")))))
+
+(defparameter *datos-inventario-distintos*
+  (list (cons (nucleo:nombrar "movimientos")
+              (loop for (id prov art) in '(("M1" "Acme" "caja") ("M2" "Acme" "resma")
+                                            ("M3" "Borja" "caja"))
+                    collect (list (cons (nucleo:nombrar "id") id)
+                                  (cons (nucleo:nombrar "proveedor") prov)
+                                  (cons (nucleo:nombrar "articulo") art))))))
+
+(definir-prueba excel-distintas-con-filtro-se-rechaza
+    "Excel: CUANTAS-DISTINTAS con :DONDE se rechaza, no emite un numero equivocado"
+  ;; Sin este rechazo, Excel emitiria un SUMPRODUCT sobre TODA la columna,
+  ;; ignorando el :DONDE por completo -da igual que el numero resultante
+  ;; coincida o no con el correcto en este caso concreto: lo que se prueba
+  ;; aqui es que Excel se niegue en vez de fingir que aplico el filtro.
+  (let ((s (situacion.lenguaje:situacion-llamada "INVENTARIO-DISTINTOS")))
+    (handler-case
+        (progn
+          (materializar-en-cadena (situacion.excel:hacer-excel)
+                                  s *datos-inventario-distintos*)
+          (comprobar nil
+                     "Excel materializo CUANTAS-DISTINTAS con :DONDE sin quejarse;~@
+                      tenia que rechazar: no hay formula portable que aplique el~@
+                      filtro, y fingir una da un numero que no es el que se pide"))
+      (protocolo:capacidad-no-disponible () (comprobar t)))))
