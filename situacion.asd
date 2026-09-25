@@ -97,6 +97,7 @@
                (:file "conformidad")
                (:file "vistas")
                (:file "relacion")
+               (:file "formula")
                (:file "particion-en-archivo")
                (:file "ejecutar"))
   :perform (test-op (op system)

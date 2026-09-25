@@ -58,12 +58,22 @@
   (let ((p (nucleo:parametro-llamado (situacion plan) (nucleo:nombre e))))
     (texto-de-literal (and p (nucleo:valor p)))))
 
+(defparameter +aritmeticos+ '("+" "-" "*" "/")
+  "Los infijos que el evaluador de referencia acepta con cualquier numero de
+   operandos (NUCLEO:APLICAR-OPERADOR, con REDUCE). Los de comparacion son
+   binarios en todo el corpus y no se generalizan sin un uso real que lo pida.")
+
 (defmethod protocolo:emitir-expresion ((a excel) (e nucleo:aplicacion) ambito plan)
   (let* ((partes (mapcar (lambda (x) (protocolo:emitir-expresion a x ambito plan))
                          (nucleo:argumentos e)))
          (op (symbol-name (nucleo:operador e)))
          (infijo (cdr (assoc op +infijos+ :test #'string=))))
     (cond
+      ;; Con tres o mas operandos, un solo INFIJO entre el primero y el
+      ;; segundo dejaba fuera al resto en silencio: (+ a b c) emitia (a+b).
+      ((and infijo (member op +aritmeticos+ :test #'string=))
+       (format nil "(~a)" (reduce (lambda (x y) (format nil "~a~a~a" x infijo y))
+                                  partes)))
       (infijo
        (format nil "(~a~a~a)" (first partes) infijo
                (if (rest partes) (second partes) "")))

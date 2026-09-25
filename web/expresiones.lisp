@@ -55,16 +55,30 @@
     ("=" . "===") ("/=" . "!==") ("<" . "<") ("<=" . "<=") (">" . ">") (">=" . ">="))
   "De operador del lenguaje a operador de JavaScript.")
 
+(defparameter +aritmeticos-js+ '("+" "-" "*" "/")
+  "Los infijos que el evaluador de referencia acepta con cualquier numero de
+   operandos (NUCLEO:APLICAR-OPERADOR, con REDUCE). Los de comparacion son
+   binarios en todo el corpus y no se generalizan sin un uso real que lo pida.")
+
 (defmethod protocolo:emitir-expresion ((a web) (e nucleo:aplicacion) ambito plan)
   (let* ((op (symbol-name (nucleo:operador e)))
          (partes (mapcar (lambda (x) (protocolo:emitir-expresion a x ambito plan))
                          (nucleo:argumentos e)))
          (js (cdr (assoc op +operadores-js+ :test #'string=))))
     (cond
+      ;; Con tres o mas operandos, un solo JS entre el primero y el segundo
+      ;; dejaba fuera al resto en silencio: (+ a b c) emitia (N(a) + N(b)).
+      ;; Cada operando se envuelve en N(...) por separado -no el acumulado-,
+      ;; para no terminar coaccionando a numero una subcadena ya compuesta.
+      ((member op +aritmeticos-js+ :test #'string=)
+       (format nil "(~{N(~a)~^ ~a ~})"
+               (loop for (parte . resto) on partes
+                     collect parte
+                     when resto collect js)))
       ;; Las comparaciones numericas van sobre numeros, no sobre texto: si no,
       ;; "10" seria menor que "9". Es la misma coercion que hace el evaluador
       ;; de referencia, y por eso los dos dan el mismo resultado.
-      ((member op '("<" "<=" ">" ">=" "+" "-" "*" "/") :test #'string=)
+      ((member op '("<" "<=" ">" ">=") :test #'string=)
        (format nil "(N(~a) ~a N(~a))" (first partes) js (second partes)))
       ((string= op "=") (format nil "IG(~a,~a)" (first partes) (second partes)))
       ((string= op "/=") (format nil "(!IG(~a,~a))" (first partes) (second partes)))
