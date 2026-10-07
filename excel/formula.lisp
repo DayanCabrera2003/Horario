@@ -45,13 +45,21 @@
   (declare (ignore ambito plan))
   (texto-de-literal (nucleo:valor e)))
 
+(defvar *candidata* nil
+  "Mientras se traduce la condicion de un EXISTE, (VARIABLE . HOJA) de la
+   fila candidata. Una referencia a esa variable no es una celda de esta
+   fila: es la columna entera de la hoja recorrida, como rango.")
+
 (defmethod protocolo:emitir-expresion ((a excel) (e nucleo:ref-campo) ambito plan)
   (declare (ignore ambito plan))
-  ;; La columna va fijada y la fila relativa: asi la misma expresion vale
-  ;; para todas las filas del rango, que es como funciona el motor de la hoja
-  ;; de calculo. Ese comportamiento es propio de esta arquitectura y por eso
-  ;; la decision se toma aqui y no en el nucleo.
-  (celda *hoja* (nucleo:campo e) *fila*))
+  (if (and *candidata* (eq (nucleo:variable e) (car *candidata*)))
+      ;; La fila candidata de un EXISTE: se recorre la columna entera.
+      (rango-de-columna (cdr *candidata*) (nucleo:campo e) :con-hoja t)
+      ;; La columna va fijada y la fila relativa: asi la misma expresion vale
+      ;; para todas las filas del rango, que es como funciona el motor de la
+      ;; hoja de calculo. Ese comportamiento es propio de esta arquitectura y
+      ;; por eso la decision se toma aqui y no en el nucleo.
+      (celda *hoja* (nucleo:campo e) *fila*)))
 
 (defmethod protocolo:emitir-expresion ((a excel) (e nucleo:ref-parametro) ambito plan)
   (declare (ignore ambito))
@@ -340,8 +348,9 @@
 
 (defmethod protocolo:emitir-expresion ((a excel) (e nucleo:existe) ambito plan)
   (let* ((hoja-destino (hoja-de plan (nucleo:coleccion e)))
-         (factores (factores-de-existencia a e (nucleo:condicion e) hoja-destino
-                                           ambito plan)))
+         (factores (let ((*candidata* (cons (nucleo:variable e) hoja-destino)))
+                     (factores-de-existencia a e (nucleo:condicion e) hoja-destino
+                                             ambito plan))))
     (when (nucleo:distinta-de e)
       ;; Excluir la propia fila. En el corpus esto se hace comparando el
       ;; numero de fila; aqui sale de que :DISTINTA-DE lo diga el lenguaje en
@@ -365,18 +374,31 @@
      (loop for termino in (nucleo:argumentos condicion)
            append (factores-de-existencia a existe termino hoja-destino ambito plan)))
 
-    ;; Igualdad entre un campo de la candidata y una expresion de fuera.
+    ;; Disyuncion. OR() colapsaria el arreglo a un solo valor, asi que se
+    ;; suman las ramas -cada una, producto de sus factores- y se pregunta si
+    ;; alguna dio uno.
     ((and (typep condicion 'nucleo:aplicacion)
-          (string= (symbol-name (nucleo:operador condicion)) "=")
-          (typep (first (nucleo:argumentos condicion)) 'nucleo:ref-campo)
-          (eq (nucleo:variable (first (nucleo:argumentos condicion)))
-              (nucleo:variable existe)))
-     (list (format nil "(~a=~a)"
-                   (rango-de-columna hoja-destino
-                                     (nucleo:campo (first (nucleo:argumentos condicion)))
-                                     :con-hoja t)
-                   (protocolo:emitir-expresion a (second (nucleo:argumentos condicion))
-                                               ambito plan))))
+          (string= (symbol-name (nucleo:operador condicion)) "O"))
+     (list (format nil "((~{(~{~a~^*~})~^+~})>0)"
+                   (loop for rama in (nucleo:argumentos condicion)
+                         collect (factores-de-existencia a existe rama hoja-destino
+                                                         ambito plan)))))
+
+    ;; Negacion, por la misma razon que la disyuncion: NOT() tampoco recorre.
+    ((and (typep condicion 'nucleo:aplicacion)
+          (string= (symbol-name (nucleo:operador condicion)) "NO"))
+     (list (format nil "(1-(~{~a~^*~}))"
+                   (factores-de-existencia a existe (first (nucleo:argumentos condicion))
+                                           hoja-destino ambito plan))))
+
+    ;; Comparacion: igual, distinto, menor... Cada lado se traduce con la
+    ;; candidata ligada a su columna (*CANDIDATA*), asi que un lado que la
+    ;; mencione es un arreglo, aunque lleve aritmetica, y el otro una celda o
+    ;; un literal. La hoja de calculo compara elemento a elemento.
+    ((and (typep condicion 'nucleo:aplicacion)
+          (member (symbol-name (nucleo:operador condicion))
+                  '("=" "/=" "<" "<=" ">" ">=") :test #'string=))
+     (list (protocolo:emitir-expresion a condicion ambito plan)))
 
     ;; Comparten: alguna de las columnas de la candidata coincide con alguna
     ;; de las de esta fila. Se despliega en una suma de productos.
@@ -398,6 +420,11 @@
                                         (format nil "((~a<>\"\")*(~a<>\"\")*(~a=~a))"
                                                 rango celda-aqui rango celda-aqui)))))))
 
+    ;; "Esta vacio": compara con la cadena vacia, elemento a elemento si
+    ;; habla de la candidata.
+    ((typep condicion 'nucleo:sin-escribir)
+     (list (protocolo:emitir-expresion a condicion ambito plan)))
+
     (t (error "Esta hoja de calculo no sabe traducir esta condicion de~@
-               existencia. Solo entiende conjunciones de igualdades entre~@
-               filas y COMPARTEN."))))
+               existencia. Entiende Y, O, NO, comparaciones, \"esta vacio\"~@
+               y COMPARTEN."))))

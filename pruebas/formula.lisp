@@ -129,3 +129,51 @@
                "la expresion ~s deberia llevar el texto \"Faltan\", no un~@
                 objeto del nucleo impreso"
                js)))
+
+;;; ---------------------------------------------------------------------
+;;; EXISTE con O, distinto y aritmetica en Excel. La traduccion a
+;;; SUMPRODUCT solo entendia conjunciones de igualdades con la fila
+;;; candidata a la izquierda, y la regla de turno doble del Saul Delgado
+;;; ("solo en turnos consecutivos") tumbaba la materializacion entera.
+;;; ---------------------------------------------------------------------
+
+(situacion.lenguaje:defsituacion turno-doble (:etiqueta "Turno doble")
+  (coleccion sesiones
+    (:clave dia turno)
+    (campo dia :rol fijo :etiqueta "Dia")
+    (campo turno :rol fijo :tipo entero :etiqueta "Turno")
+    (campo doble :rol fijo :etiqueta "Doble")
+    (campo asignatura :rol fijo :etiqueta "Asignatura")
+    (campo repite-mal :rol derivado :etiqueta "Repite mal"
+           (si (existe otra :en sesiones
+                 :distinta-de fila
+                 :donde (y (= (de otra dia) (de fila dia))
+                           (= (de otra asignatura) (de fila asignatura))
+                           (o (= (de fila doble) "no")
+                              (y (/= (de otra turno) (+ (de fila turno) 1))
+                                 (/= (de otra turno) (- (de fila turno) 1))))))
+               "si" "no"))))
+
+(defparameter *datos-turno-doble*
+  (list (cons (nucleo:nombrar "sesiones")
+              (loop for (dia turno doble asig) in '(("L" 1 "si" "MAT") ("L" 2 "si" "MAT")
+                                                     ("L" 4 "no" "ESP") ("L" 6 "no" "ESP"))
+                    collect (list (cons (nucleo:nombrar "dia") dia)
+                                  (cons (nucleo:nombrar "turno") turno)
+                                  (cons (nucleo:nombrar "doble") doble)
+                                  (cons (nucleo:nombrar "asignatura") asig))))))
+
+(definir-prueba excel-existe-con-o-y-distinto
+    "Excel: EXISTE con O, /= y aritmetica sobre la fila candidata se traduce"
+  (let* ((s (situacion.lenguaje:situacion-llamada "TURNO-DOBLE"))
+         (texto (handler-case (materializar-en-cadena (situacion.excel:hacer-excel)
+                                                      s *datos-turno-doble*)
+                  (error (e) (format nil "ERROR ~a" e)))))
+    (comprobar (not (search "ERROR" texto))
+               "Excel tendria que traducir la condicion, y dijo: ~a" texto)
+    ;; La candidata va como rango de su columna: el distinto compara la
+    ;; columna entera de TURNO contra el turno de esta fila mas uno.
+    (comprobar (search "<>" texto)
+               "la formula tendria que llevar el distinto como <>")
+    (comprobar (not (search "OR(" texto))
+               "dentro de SUMPRODUCT el O no puede ser OR(): colapsa el arreglo")))
