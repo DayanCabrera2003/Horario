@@ -980,11 +980,18 @@ que de verdad falta.
    del corpus; no se había visto porque la verificación con Node solo
    compara campos. Prueba en `pruebas/formula.lisp`.
 
-10. **La relación uno a muchos salía como objetos en texto plano.** El
-   informe de la arquitectura de texto promete "las filas relacionadas se
-   escriben separadas por comas", pero la celda imprimía la lista de filas
-   del evaluador tal cual. Ahora cada fila se escribe por su clave. Prueba en
+10. **La relación uno a muchos salía como objetos en texto y en la
+   página.** El informe de la arquitectura de texto promete "las filas
+   relacionadas se escriben separadas por comas", pero la celda imprimía la
+   lista de filas del evaluador tal cual; la página, `[object Object]`.
+   Ahora las dos escriben cada fila por su clave. Pruebas en
    `pruebas/relacion.lisp`.
+
+11. **Dos marcas del corpus disparaban en filas vacías.** En el horario del
+   grupo, las casillas libres se contaban entre sí y decían "Sobran 2
+   turnos"; en el departamento, las filas de reserva de la cobertura salían
+   como incompletas. Las dos marcas exigen ahora que la fila tenga
+   asignatura. Era un error de las descripciones, no del lenguaje.
 
 **Lo único que de verdad falta — requiere una construcción nueva, no un
 arreglo:**
