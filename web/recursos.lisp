@@ -364,6 +364,10 @@ function render(){
             render();
           });
           td.insertBefore(control, td.firstChild);
+        } else if (c.clave) {
+          // Relacion uno a muchos: cada fila relacionada por su clave.
+          td.textContent = (fila[c.n] || [])
+            .map(r => c.clave.map(k => T(r[k])).join(' ')).join(', ');
         } else {
           td.textContent = T(fila[c.n]);
         }

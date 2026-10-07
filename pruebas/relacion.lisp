@@ -190,3 +190,15 @@
     (comprobar (search "Rosa 10-A MAT, Rosa 10-B MAT, Rosa 10-A ING" texto)
                "las asignaciones de Rosa deberian salir por su clave, separadas~@
                 por comas")))
+
+(definir-prueba web-escribe-las-filas-relacionadas-por-su-clave
+    "Web: la celda de una relacion uno-a-muchos conoce la clave de las filas"
+  ;; La pagina dibujaba la lista de filas con String(), y salia
+  ;; "[object Object],[object Object]". El esquema de la pagina tiene que
+  ;; decir, para el campo de relacion, con que campos se nombra cada fila
+  ;; relacionada. Lo encontro la descripcion del departamento.
+  (let ((html (materializar-en-cadena (situacion.web:hacer-web)
+                                      (situacion-de-carga) *datos-de-carga*)))
+    (comprobar (search "clave: [\"profesor\", \"grupo\", \"abrev\"]" html)
+               "el esquema de ASIGNACIONES deberia llevar la clave de la~@
+                coleccion relacionada")))

@@ -228,6 +228,19 @@
           (mapcar (lambda (v) (protocolo:emitir-vista a v plan))
                   (nucleo:vistas (situacion plan)))))
 
+(defun clave-relacionada (plan campo)
+  "Si CAMPO es una relacion uno a muchos, la clave de la coleccion
+   relacionada como arreglo de JavaScript; si no, null. La celda la usa para
+   nombrar cada fila relacionada en vez de imprimir el objeto."
+  (let ((expresion (nucleo:expresion campo)))
+    (if (typep expresion 'nucleo:relacionadas)
+        (format nil "[~{~s~^, ~}]"
+                (mapcar #'nombre-js
+                        (nucleo:clave (nucleo:coleccion-llamada
+                                       (situacion plan)
+                                       (nucleo:coleccion expresion)))))
+        "null")))
+
 (defun escribir-render (a plan flujo)
   "La tabla y sus controles.
 
@@ -245,12 +258,13 @@
                    (let ((campo (campo-de-agrupacion plan coleccion)))
                      (if campo (format nil "~s" (nombre-js campo)) "null"))
                    (loop for campo in (nucleo:campos coleccion)
-                         collect (format nil "{n: ~s, e: ~s, rol: ~s, tipo: ~s}"
+                         collect (format nil "{n: ~s, e: ~s, rol: ~s, tipo: ~s, clave: ~a}"
                                          (nombre-js (nucleo:nombre campo))
                                          (nucleo:etiqueta campo)
                                          (string-downcase (symbol-name (nucleo:rol campo)))
                                          (string-downcase (symbol-name
-                                                           (or (nucleo:tipo campo) :texto)))))))
+                                                           (or (nucleo:tipo campo) :texto)))
+                                         (clave-relacionada plan campo)))))
   (format flujo "~%];~%")
   ;; Las vistas cruzadas. Una pagina no tiene direcciones que repartir, asi
   ;; que el numero de columnas puede depender del contenido sin que eso
