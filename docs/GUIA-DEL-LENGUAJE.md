@@ -10,9 +10,9 @@ No sustituye a `01-PARA-ENTENDER.md` (el porqué del proyecto) ni a
 situación nueva, o saber si una idea entra en el lenguaje antes de intentarla,
 empieza aquí.
 
-**Fecha de esta guía: 2026-09-24, actualizada el 2026-10-07** (la
-descripción del departamento, dos errores de emisión corregidos y el estado
-del caso Saúl Delgado en Excel). Las citas de código son literales, con
+**Fecha de esta guía: 2026-09-24, actualizada el 2026-10-07** (las
+descripciones del departamento, del Saúl Delgado con su horario real y del
+SEDER, y los errores que encontraron). Las citas de código son literales, con
 `archivo:línea`, verificadas contra el estado del repositorio en esa fecha.
 Donde una afirmación viene de un experimento hecho el 2026-09-21 (antes de
 varios arreglos posteriores) o del 2026-09-22 (cuando se cerraron dos huecos
@@ -76,7 +76,7 @@ Desde `Horario/`:
 | Comando | Qué hace, paso a paso |
 |---|---|
 | `./demostrar.sh` | (1) Carga `situacion/demostracion` en SBCL y genera los artefactos de las situaciones del corpus. (2) Convierte cada `*-plano.json` a `.xlsx` con `materializador/materializar.py`. (3) Verifica cada `.xlsx` abriéndolo con LibreOffice y comparando contra el evaluador de referencia. (4) Verifica cada página ejecutando su JavaScript con Node. Termina imprimiendo ok/fallo por artefacto |
-| `./ejecutar-pruebas.sh` | `sbcl --non-interactive --noinform --disable-debugger --no-userinit`, carga `situacion/pruebas` y llama a `ejecutar-y-salir`. 63 pruebas y 558 comprobaciones el 2026-10-07 |
+| `./ejecutar-pruebas.sh` | `sbcl --non-interactive --noinform --disable-debugger --no-userinit`, carga `situacion/pruebas` y llama a `ejecutar-y-salir`. 67 pruebas y 565 comprobaciones el 2026-10-07 |
 | `./generar-demostracion.sh` | Solo el paso de generación, sin materializar ni verificar |
 | `python3 materializador/materializar.py <plano.json> <salida.xlsx>` | El paso de materialización a mano, sobre un plano ya generado |
 
@@ -837,14 +837,19 @@ referencia:
 - **Cascadas de eliminatorias de varios niveles** (64 equipos, 63 partidos)
   sin degradación, confirmado en el experimento de torneo.
 - **Validar y mostrar un horario ya decidido, con reglas duras y blandas
-  como marcas** — el caso Saúl Delgado (sección 12): nueve reglas duras
-  compiladas y evaluadas de verdad contra un horario escrito a mano, en
-  texto y en la página web. **En la hoja de cálculo todavía no**: verificado
-  el 2026-10-07, la marca `sesion-repetida-mal` pone un `o` y comparaciones
-  aritméticas (`/=`, `(+ turno 1)`) dentro de un `existe`, y la traducción a
-  `SUMPRODUCT` de `excel/formula.lisp` (`factores-de-existencia`) solo
-  entiende conjunciones de igualdades y `comparten`. Falla con un error
-  claro, no con una fórmula equivocada.
+  como marcas** — `horario-saul.lisp` (2026-10-07): el horario real de 10-3
+  y 10-4 del preuniversitario Saúl Delgado, transcrito del impreso, con las
+  reglas del enunciado. Lo que el impreso no dice (profesores, locales,
+  días de preparación) va como supuesto marcado. Verificado con LibreOffice
+  (885 celdas) y Node (2 915 valores). Contra el horario real señala una
+  sola cosa: Lit-L en turno doble sin tener frecuencia cinco. La primera
+  versión, con datos inventados, sigue en `exploracion/saul.lisp`.
+- **Asignar recursos con capacidad y paridad** — `seder.lisp`
+  (2026-10-07): el horario de educación física del SEDER, horario e
+  instalación por brigada, con la semana heredada del año, capacidad,
+  ocupación, profesor en dos brigadas y el equilibrio entre instalaciones y
+  horarios como advertencia. Datos de ejemplo. Verificado con LibreOffice
+  (91 celdas) y Node (221 valores).
 - **Relación uno a muchos** (qué asignaturas da cada profesor, listadas)
   materializada incluso en Excel, con hoja auxiliar y `COUNTIF` en vivo
   (cerrado el 2026-09-22).
@@ -970,7 +975,8 @@ que de verdad falta.
    arquitecturas entienden: cada par profesor-asignatura cuenta 1 en la
    primera fila donde aparece, y se suma esa columna por profesor.
 
-**Encontrados al describir el departamento, corregidos el 2026-10-07**
+**Encontrados al describir el departamento, el Saúl Delgado y el SEDER,
+corregidos el 2026-10-07**
 (con su prueba):
 
 9. **`plural` en la página web imprimía objetos del núcleo.** La web
@@ -992,6 +998,23 @@ que de verdad falta.
    turnos"; en el departamento, las filas de reserva de la cobertura salían
    como incompletas. Las dos marcas exigen ahora que la fila tenga
    asignatura. Era un error de las descripciones, no del lenguaje.
+
+12. **`existe` en Excel solo entendía igualdades.** La regla de turno
+   doble del Saúl Delgado ("solo en turnos consecutivos") pone un `o` y
+   `/=` con aritmética dentro de un `existe`, y la hoja de cálculo no la
+   sabía traducir. Ahora, mientras se traduce la condición, la fila
+   candidata es el rango de su columna; cualquier comparación se escribe
+   elemento a elemento, `o` es una suma de ramas mayor que cero y `no` es
+   uno menos el factor (`OR()` y `NOT()` colapsarían el arreglo). Prueba en
+   `pruebas/formula.lisp`.
+
+13. **Nombres de pestaña de más de 31 caracteres.** Se recortaban por la
+   derecha y todas las secciones de una vista quedaban con el mismo nombre:
+   las treinta pestañas de profesor del Saúl se llamaban "Horario del
+   profesor - Profesor", y Microsoft Excel no abría el libro. Ahora se
+   conserva la sección, se acorta la etiqueta por palabras, los nombres no
+   se repiten, y los signos prohibidos se quitan en el plano y no solo al
+   crear el archivo. Pruebas en `pruebas/vistas.lisp`.
 
 **Lo único que de verdad falta — requiere una construcción nueva, no un
 arreglo:**
