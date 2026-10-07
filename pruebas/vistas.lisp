@@ -354,3 +354,49 @@
                   2)
                "los dos hallazgos tienen que apuntar a nodos (vistas)~@
                 distintos, no al mismo")))
+
+;;; ---------------------------------------------------------------------
+;;; Nombres de pestana de mas de 31 caracteres. Excel no los admite, y
+;;; recortarlos a ciegas dejaba todas las secciones de una vista con el mismo
+;;; nombre: en el Saul Delgado, las treinta pestanas de profesor se llamaban
+;;; "Horario del profesor - Profesor".
+;;; ---------------------------------------------------------------------
+
+(situacion.lenguaje:defsituacion pestanas-largas (:etiqueta "Pestanas largas")
+  (coleccion casillas
+    (:clave profesor dia turno)
+    (campo profesor :rol fijo :etiqueta "Profesor")
+    (campo dia :rol fijo :etiqueta "Dia")
+    (campo turno :rol fijo :etiqueta "Turno")
+    (campo grupo :rol fijo :etiqueta "Grupo"))
+  (vista por-profesor :de casillas :etiqueta "Horario del profesor"
+                      :filas turno :columnas dia :muestra grupo
+                      :secciones profesor))
+
+(defparameter *datos-pestanas-largas*
+  (list (cons (nucleo:nombrar "casillas")
+              (loop for p in '("Profesor de Matematica en 10-3"
+                               "Profesor de Matematica en 10-4")
+                    collect (list (cons (nucleo:nombrar "profesor") p)
+                                  (cons (nucleo:nombrar "dia") "L")
+                                  (cons (nucleo:nombrar "turno") "1")
+                                  (cons (nucleo:nombrar "grupo") "10-3"))))))
+
+(definir-prueba excel-pestanas-largas-conservan-la-seccion
+    "Excel: una pestana de mas de 31 caracteres conserva su seccion y es unica"
+  (let* ((s (situacion.lenguaje:situacion-llamada "PESTANAS-LARGAS"))
+         (plano (materializar-en-cadena (situacion.excel:hacer-excel)
+                                        s *datos-pestanas-largas*)))
+    (dolist (seccion '("Profesor de Matematica en 10-3"
+                       "Profesor de Matematica en 10-4"))
+      (comprobar (search (format nil "\"nombre\": \"~a\"" seccion) plano)
+                 "la pestana de ~s tendria que llamarse por su seccion" seccion))))
+
+(definir-prueba excel-pestana-sin-signos-prohibidos
+    "Excel: el nombre de pestana del plano ya viene sin los signos que Excel prohibe"
+  ;; El materializador quitaba la barra de "AL/AC" al crear la hoja, y el
+  ;; plano seguia diciendo "AL/AC": la hoja y su nombre en el plano dejaban
+  ;; de coincidir.
+  (let ((nombre (situacion.excel::nombre-de-pestana "Horario" "Profesor de AL/AC")))
+    (comprobar (not (find-if (lambda (c) (find c "[]:*?/\\")) nombre))
+               "el nombre ~s lleva un signo que Excel no admite" nombre)))

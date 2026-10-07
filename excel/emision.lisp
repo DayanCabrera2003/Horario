@@ -75,13 +75,28 @@
                                (remove-if (lambda (v) (member (nucleo:nombre v)
                                                               (vistas-en-archivo a)))
                                           (nucleo:vistas (situacion plan))))))
-        (cons "hojas" (lista (append
-                              (mapcar (lambda (c) (plano-de-cruce a plan c))
-                                      (cruces plan))
-                              (mapcar (lambda (h) (plano-de-hoja a plan h))
-                                      (hojas plan))
-                              (mapcar (lambda (d) (plano-de-detalle a plan d))
-                                      (auxiliares plan)))))))
+        (cons "hojas" (let ((cruces (mapcar (lambda (c) (plano-de-cruce a plan c))
+                                            (cruces plan)))
+                            (resto (append
+                                    (mapcar (lambda (h) (plano-de-hoja a plan h))
+                                            (hojas plan))
+                                    (mapcar (lambda (d) (plano-de-detalle a plan d))
+                                            (auxiliares plan)))))
+                        ;; Solo se renombran pestanas de cruce: nadie las
+                        ;; cita en una formula. Las hojas de datos si se
+                        ;; citan, y conservan su nombre.
+                        (lista (append (renombrar-sin-repetir cruces resto)
+                                       resto))))))
+
+(defun renombrar-sin-repetir (cruces resto)
+  "Los planos de CRUCES con nombres que no se repiten entre ellos ni con
+   los de RESTO."
+  (flet ((nombre (plano) (cdr (assoc "nombre" plano :test #'string=))))
+    (mapcar (lambda (plano nuevo)
+              (cons (cons "nombre" nuevo)
+                    (remove "nombre" plano :key #'car :test #'string=)))
+            cruces
+            (nombres-unicos (mapcar #'nombre cruces) (mapcar #'nombre resto)))))
 
 (defun plano-de-cruce (a plan cruce)
   "La hoja de la tabla cruzada, con sus dos ejes fijados y sus busquedas.
@@ -175,16 +190,70 @@
                 rango-clave clave
                 (format nil busqueda rango-valor clave rango-clave)))))
 
+(defconstant +largo-de-pestana+ 31
+  "Excel no admite nombres de hoja de mas de 31 caracteres.")
+
+(defun recortar (texto largo)
+  (if (> (length texto) largo) (subseq texto 0 largo) texto))
+
+(defun sin-signos-prohibidos (texto)
+  "TEXTO sin los signos que Excel no admite en un nombre de hoja. Se quitan
+   aqui, y no al crear el archivo, para que el plano diga el mismo nombre
+   que tendra la hoja."
+  (remove-if (lambda (c) (find c "[]:*?/\\")) texto))
+
 (defun nombre-de-pestana (etiqueta seccion)
   "El nombre de la pestana de un cruce, con su seccion si la tiene.
 
    Excel no admite nombres de hoja de mas de 31 caracteres. Es una
    restriccion del formato de salida, asi que se resuelve aqui y ni el
-   lenguaje ni el protocolo se enteran."
-  (let ((completo (if seccion
-                      (format nil "~a - ~a" etiqueta (nucleo:como-texto seccion))
-                      etiqueta)))
-    (if (> (length completo) 31) (subseq completo 0 31) completo)))
+   lenguaje ni el protocolo se enteran.
+
+   Cuando no cabe, se sacrifica la etiqueta de la vista y no la seccion: la
+   seccion es lo que distingue una pestana de otra. Recortar el nombre
+   entero por la derecha dejaba todas las secciones de una vista con el
+   mismo nombre."
+  (if (null seccion)
+      (recortar (sin-signos-prohibidos etiqueta) +largo-de-pestana+)
+      (let* ((etiqueta (sin-signos-prohibidos etiqueta))
+             (texto (sin-signos-prohibidos (nucleo:como-texto seccion)))
+             (completo (format nil "~a - ~a" etiqueta texto))
+             (sitio (- +largo-de-pestana+ (length texto) (length " - "))))
+        (if (<= (length completo) +largo-de-pestana+)
+            completo
+            ;; Cabe el principio de la etiqueta, cortado por palabras
+            ;; enteras: "Horario - Profesor de H en 10-3", nunca "Horari".
+            (let ((prefijo (palabras-que-caben etiqueta sitio)))
+              (if (string= prefijo "")
+                  (recortar texto +largo-de-pestana+)
+                  (format nil "~a - ~a" prefijo texto)))))))
+
+(defun palabras-que-caben (texto largo)
+  "Las primeras palabras enteras de TEXTO que caben en LARGO caracteres."
+  (if (<= (length texto) largo)
+      texto
+      (let ((corte (and (plusp largo)
+                        (position #\Space texto :end (1+ largo) :from-end t))))
+        (if corte (string-right-trim " " (subseq texto 0 corte)) ""))))
+
+(defun nombres-unicos (nombres ocupados)
+  "Cada nombre de NOMBRES, cambiado lo justo para no repetir ninguno de
+   OCUPADOS ni de los anteriores, sin pasar de 31 caracteres. Si dos
+   secciones solo se distinguen despues del caracter 31, la segunda lleva
+   \" (2)\" al final en vez de llamarse igual que la primera."
+  (let ((usados (copy-list ocupados)))
+    (loop for nombre in nombres
+          collect (let ((elegido nombre))
+                    (loop for n from 2
+                          while (member elegido usados :test #'string-equal)
+                          do (let ((sufijo (format nil " (~d)" n)))
+                               (setf elegido
+                                     (concatenate 'string
+                                                  (recortar nombre (- +largo-de-pestana+
+                                                                      (length sufijo)))
+                                                  sufijo))))
+                    (push elegido usados)
+                    elegido))))
 
 (defmethod protocolo:planificar-vista ((a excel) vista plan)
   "Una vista se materializa como la hoja de su coleccion.
