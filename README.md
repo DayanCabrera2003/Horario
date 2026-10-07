@@ -24,7 +24,7 @@ Por dónde empezar:
 ./demostrar.sh
 ```
 
-Toma las cuatro descripciones de `corpus/`, genera dieciséis artefactos, los
+Toma las seis descripciones de `corpus/`, genera veinticuatro artefactos, los
 materializa y comprueba —con LibreOffice y con Node— que los dos destinos vivos
 calculan exactamente lo mismo que el evaluador de referencia. Tarda menos de un
 minuto.
@@ -36,6 +36,7 @@ xdg-open salida/horario-del-grupo.xlsx     # la rejilla dia por turno
 xdg-open salida/horario-del-grupo.html     # la misma, en el navegador
 xdg-open salida/defensas-de-tesis.html     # escribe un estudiante y mira
 xdg-open salida/departamento.xlsx          # reparte la carga y mira la cobertura
+xdg-open salida/horario-saul.html          # el horario real del Saul Delgado
 ```
 
 ## Los cuatro comandos
@@ -43,7 +44,7 @@ xdg-open salida/departamento.xlsx          # reparte la carga y mira la cobertur
 | Comando | Qué hace |
 |---|---|
 | `./demostrar.sh` | Todo: genera, materializa y verifica |
-| `./ejecutar-pruebas.sh` | 64 pruebas, 559 comprobaciones. Código 1 si algo falla |
+| `./ejecutar-pruebas.sh` | 67 pruebas, 565 comprobaciones. Código 1 si algo falla |
 | `./generar-demostracion.sh` | Solo genera los artefactos |
 | `python3 materializador/materializar.py <plano.json> <salida.xlsx>` | Plano de libro a `.xlsx` |
 | `./ejemplos/actualizar.sh` | Regenera los resultados versionados de `ejemplos/` |
@@ -72,16 +73,16 @@ protocolo/         el contrato de extension: 13 operaciones, 19 capacidades
 texto/             arquitectura de texto plano
 excel/             arquitectura de hoja de calculo
 web/               arquitectura de pagina con recalculo vivo
-corpus/            cuatro descripciones reales de la facultad
+corpus/            seis descripciones de situaciones reales
 pruebas/           invariantes, nucleo, alcance y conformidad
 demostracion/      el guion que genera todo
 materializador/    Python y Node: plano a .xlsx, y las dos verificaciones
 ejemplos/          indice de las descripciones, con sus resultados ya generados
 docs/              la documentacion publicada
-exploracion/       experimentos: el caso Saul Delgado y cinco dominios ajenos
+exploracion/       experimentos: cinco dominios ajenos y el primer Saul Delgado
 ```
 
-**9 262 líneas de Lisp** (con las pruebas), 387 de Python y 112 de
+**10 147 líneas de Lisp** (con las pruebas), 387 de Python y 112 de
 JavaScript.
 
 (`exploracion/` tiene 2 930 líneas más: son las descripciones de los
@@ -175,10 +176,14 @@ calculado coincide con el del evaluador de referencia del núcleo:
   ok   defensas-de-tesis.xlsx:   52 celdas evaluadas por LibreOffice
   ok   horario-del-grupo.xlsx:   15 celdas evaluadas por LibreOffice
   ok   departamento.xlsx:       208 celdas evaluadas por LibreOffice
+  ok   horario-saul.xlsx:       885 celdas evaluadas por LibreOffice
+  ok   seder.xlsx:               91 celdas evaluadas por LibreOffice
   ok   plan-del-grupo.html:      48 valores del JavaScript emitido
   ok   defensas-de-tesis.html:   60 valores del JavaScript emitido
   ok   horario-del-grupo.html:  105 valores del JavaScript emitido
   ok   departamento.html:       231 valores del JavaScript emitido
+  ok   horario-saul.html:      2915 valores del JavaScript emitido
+  ok   seder.html:              221 valores del JavaScript emitido
 ```
 
 Los dos destinos no comparten nada: uno evalúa fórmulas A1 dentro de una
