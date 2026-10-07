@@ -17,7 +17,12 @@ ejecutados de verdad para ver que se podia expresar y que no.
 | `turnos.lisp` | Cuadrante de turnos de guardia | CABE-A-MEDIAS |
 
 Los informes completos, con lo que se pudo expresar, lo que no y por que, estan
-en `documentacion/tesis/alcance/`.
+en [`docs/alcance/`](../docs/alcance/README.md).
+
+Y uno mas que no es ajeno al corpus: `saul.lisp`, el horario del
+preuniversitario Saul Delgado, el primer caso real del reparto con la otra
+tesis. Describe y valida un horario ya escrito; no lo busca. Sus resultados,
+y lo que todavia no produce, estan en [`ejemplos/`](../ejemplos/README.md).
 
 **Se conservan a proposito.** Son la evidencia de un metodo de validacion
 distinto de la bateria de pruebas: una bateria comprueba lo que ya se sabe;
