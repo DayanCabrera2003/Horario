@@ -75,13 +75,26 @@
       (format t "~%"))
     (reverse informes)))
 
+(defun campos-de-relacion (situacion)
+  "Los nombres de los campos cuyo valor es una relacion uno a muchos."
+  (loop for coleccion in (nucleo:colecciones situacion)
+        append (loop for campo in (nucleo:campos coleccion)
+                     when (typep (nucleo:expresion campo) 'nucleo:relacionadas)
+                       collect (nucleo:nombre campo))))
+
 (defun escribir-esperado (situacion datos destino)
   "Los valores que el evaluador de referencia calcula, por coleccion y fila.
+
+   Una relacion uno a muchos se escribe como CUANTAS filas trae. Su contenido
+   lo presenta cada arquitectura a su manera -la hoja de calculo en una hoja
+   auxiliar, la pagina como una lista-, pero el numero es el mismo en todas y
+   es lo que se puede comparar.
 
    Se reutiliza el serializador de la arquitectura de Excel porque es el que
    hay; no es una dependencia del nucleo, solo una comodidad de esta
    demostracion."
-  (let ((evaluado (nucleo:evaluar-situacion situacion datos)))
+  (let ((evaluado (nucleo:evaluar-situacion situacion datos))
+        (relaciones (campos-de-relacion situacion)))
     (situacion.excel::escribir-plano
      (loop for (coleccion . filas) in evaluado
            collect (cons (string-downcase (symbol-name coleccion))
@@ -89,7 +102,9 @@
                                    collect (cons (loop for (campo . valor) in (car fila)
                                                        collect (cons (string-downcase
                                                                       (symbol-name campo))
-                                                                     valor))
+                                                                     (if (member campo relaciones)
+                                                                         (length valor)
+                                                                         valor)))
                                                  nil))
                              :lista-vacia)))
      destino)))

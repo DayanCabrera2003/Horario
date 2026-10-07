@@ -37,6 +37,9 @@ function quitarLaParteDeDibujo(js) {
 }
 
 function normalizar(v) {
+  // Una relacion uno a muchos se compara por cuantas filas trae: es lo que
+  // escribe el oraculo (demostracion.lisp, ESCRIBIR-ESPERADO).
+  if (Array.isArray(v)) return v.length;
   if (v === null || v === undefined || v === '') return '';
   if (typeof v === 'number') return v;
   const n = Number(v);
