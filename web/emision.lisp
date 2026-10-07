@@ -74,8 +74,8 @@
     (format flujo "<style>~%~a</style>~%" +estilos+)
     (format flujo "</head>~%<body>~%")
     (format flujo "<h1>~a</h1>~%" (nucleo:etiqueta situacion))
-    (format flujo "<p class=\"nota\">Escribe en las casillas: lo calculado y las~
- marcas se actualizan solos.</p>~%")
+    (format flujo "<p class=\"nota\">Escribe en las casillas: lo calculado y las ~
+               marcas se actualizan solos.</p>~%")
     (format flujo "<div id=\"app\"></div>~%")
     (format flujo "<script>~%")
     (escribir-datos a plan flujo)
