@@ -101,9 +101,12 @@
     :severidad problema
     :explica   "Ese local esta ocupado por otro grupo a esa hora")
 
+  ;; Solo en casillas con asignatura: una casilla libre no tiene turnos de
+  ;; mas, aunque las libres tambien se cuenten entre si.
   (marca asignatura-excedida
     :en casillas
-    :cuando    (< (de fila faltan) 0)
+    :cuando    (y (no (vacio? (de fila asignatura)))
+                  (< (de fila faltan) 0))
     :sobre     (asignatura nombre faltan)
     :severidad advertencia
     :explica   (texto (plural (- 0 (de fila faltan)) "Sobra" "Sobran") " "
