@@ -176,3 +176,17 @@
                    "el COUNTIF de (lunes,2) tiene que referenciar tambien TURNO~@
                     ($B5), no solo DIA -si no, cuenta tambien las citaciones de~@
                     (lunes,1): ~a" f-lunes-2)))))
+
+(definir-prueba texto-escribe-las-filas-relacionadas-por-su-clave
+    "Texto: la relacion uno-a-muchos se escribe por clave, no como objetos"
+  ;; El informe de la arquitectura de texto promete "las filas relacionadas
+  ;; se escriben separadas por comas". Antes se imprimia la lista de objetos
+  ;; del evaluador tal cual, "(#<FILA ...> ...)". Lo encontro la descripcion
+  ;; del departamento (corpus/departamento.lisp).
+  (let ((texto (materializar-en-cadena (situacion.texto:hacer-texto)
+                                       (situacion-de-carga) *datos-de-carga*)))
+    (comprobar (not (search "#<" texto))
+               "la salida de texto no deberia llevar objetos del nucleo impresos")
+    (comprobar (search "Rosa 10-A MAT, Rosa 10-B MAT, Rosa 10-A ING" texto)
+               "las asignaciones de Rosa deberian salir por su clave, separadas~@
+                por comas")))

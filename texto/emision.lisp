@@ -230,6 +230,22 @@
     (loop for (valor . suyas) in (nreverse grupos)
           collect (cons valor (nreverse suyas)))))
 
+(defun texto-de-valor (plan valor)
+  "Como se escribe en una celda un valor ya calculado.
+
+   Una relacion uno a muchos llega como lista de filas del evaluador: cada
+   una se escribe por su clave y se separan con comas. Es lo que promete el
+   informe de esta arquitectura para CON-RELACION-UNO-A-MUCHOS."
+  (if (and (consp valor) (typep (first valor) 'nucleo:fila))
+      (format nil "~{~a~^, ~}"
+              (loop for fila in valor
+                    collect (format nil "~{~a~^ ~}"
+                                    (loop for campo in (nucleo:clave (nucleo:coleccion fila))
+                                          collect (nucleo:como-texto
+                                                   (nucleo:valor-de-campo
+                                                    (entorno plan) fila campo))))))
+      (nucleo:como-texto valor)))
+
 (defun escribir-coleccion (a plan coleccion flujo)
   (let* ((nombre (nucleo:nombre coleccion))
          (filas (rest (assoc nombre (evaluado plan))))
@@ -240,7 +256,8 @@
          (celdas (loop for fila in filas
                        collect (append
                                 (loop for campo in campos
-                                      collect (nucleo:como-texto
+                                      collect (texto-de-valor
+                                               plan
                                                (cdr (assoc (nucleo:nombre campo)
                                                            (car fila)))))
                                 (list (texto-del-estado a plan coleccion fila)))))
@@ -259,7 +276,8 @@
                    (escribir-fila flujo
                                   (append
                                    (loop for campo in campos
-                                         collect (nucleo:como-texto
+                                         collect (texto-de-valor
+                                                  plan
                                                   (cdr (assoc (nucleo:nombre campo)
                                                               (car fila)))))
                                    (list (texto-del-estado a plan coleccion fila)))
