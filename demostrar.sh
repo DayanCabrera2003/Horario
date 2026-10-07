@@ -23,7 +23,7 @@ echo
 echo "#############################################################"
 echo "#  3.  Del plano de libro al .xlsx"
 echo "#############################################################"
-for f in plan-del-grupo defensas-de-tesis horario-del-grupo departamento; do
+for f in plan-del-grupo defensas-de-tesis horario-del-grupo departamento horario-saul; do
   python3 materializador/materializar.py "salida/$f-plano.json" "salida/$f.xlsx"
 done
 
@@ -35,7 +35,7 @@ echo
 echo "Hoja de calculo: LibreOffice abre el libro, recalcula, y se releen los"
 echo "valores para compararlos con los del evaluador."
 fallos=0
-for f in plan-del-grupo defensas-de-tesis horario-del-grupo departamento; do
+for f in plan-del-grupo defensas-de-tesis horario-del-grupo departamento horario-saul; do
   python3 materializador/verificar.py "salida/$f-plano.json" \
           "salida/$f-esperado.json" "salida/$f.xlsx" || fallos=1
 done
@@ -44,7 +44,7 @@ echo
 echo "Pagina web: se ejecuta el JavaScript que emitio la arquitectura y se"
 echo "comparan los valores que calcula."
 if command -v node >/dev/null 2>&1; then
-  for f in plan-del-grupo defensas-de-tesis horario-del-grupo departamento; do
+  for f in plan-del-grupo defensas-de-tesis horario-del-grupo departamento horario-saul; do
     node materializador/verificar-web.js "salida/$f.html" \
          "salida/$f-esperado.json" || fallos=1
   done

@@ -122,5 +122,8 @@
   (generar situacion.corpus:departamento
            situacion.corpus:datos-del-departamento
            "departamento")
+  (generar situacion.corpus:horario-saul
+           situacion.corpus:datos-del-saul
+           "horario-saul")
   (format t "~&~%Todo en ~a~%" (truename +salida+))
   t)

@@ -153,7 +153,8 @@
                (:file "plan-del-grupo")
                (:file "defensas-de-tesis")
                (:file "horario-del-grupo")
-               (:file "departamento")))
+               (:file "departamento")
+               (:file "horario-saul")))
 
 (defsystem "situacion/demostracion"
   :description "Genera los artefactos de las tres arquitecturas a partir de
