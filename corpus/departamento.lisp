@@ -191,16 +191,20 @@
     :explica   (texto "Pasa del tope en " (- (de fila horas) (de fila tope))
                       " horas"))
 
+  ;; Las dos marcas de cobertura exigen que la fila tenga asignatura: una
+  ;; fila libre al final de la lista no esta incompleta, esta sin usar.
   (marca cobertura-incompleta
     :en asignaturas
-    :cuando    (no (= (de fila estado) "Completa"))
+    :cuando    (y (no (vacio? (de fila id)))
+                  (no (= (de fila estado) "Completa")))
     :sobre     (nombre estado)
     :severidad advertencia
     :explica   (de fila estado))
 
   (marca cobertura-completa
     :en asignaturas
-    :cuando    (= (de fila estado) "Completa")
+    :cuando    (y (no (vacio? (de fila id)))
+                  (= (de fila estado) "Completa"))
     :sobre     (nombre estado)
     :severidad informativa)
 
