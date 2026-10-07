@@ -103,10 +103,13 @@
                   (nucleo:partes e))))
 
 (defmethod protocolo:emitir-expresion ((a web) (e nucleo:concordancia) ambito plan)
+  ;; El singular y el plural son expresiones del nucleo, igual que la
+  ;; cantidad: se traducen, no se imprimen. Pueden venir de los datos, no
+  ;; solo de un texto escrito en la descripcion.
   (format nil "(N(~a) === 1 ? ~a : ~a)"
           (protocolo:emitir-expresion a (nucleo:cantidad e) ambito plan)
-          (js-literal (nucleo:singular e))
-          (js-literal (nucleo:plural e))))
+          (protocolo:emitir-expresion a (nucleo:singular e) ambito plan)
+          (protocolo:emitir-expresion a (nucleo:plural e) ambito plan)))
 
 (defun js-filtro (a expresion variable ambito plan)
   "El cuerpo de un filter sobre la coleccion recorrida."

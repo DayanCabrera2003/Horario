@@ -107,3 +107,25 @@
                       tenia que rechazar: no hay formula portable que aplique el~@
                       filtro, y fingir una da un numero que no es el que se pide"))
       (protocolo:capacidad-no-disponible () (comprobar t)))))
+
+;;; ---------------------------------------------------------------------
+;;; PLURAL en la web: el singular y el plural son expresiones, no valores.
+;;; La web los escribia como literales de JavaScript tal cual, y la pagina
+;;; mostraba "#<LITERAL ...>" donde tenia que decir "Falta" o "Faltan".
+;;; Lo encontro la descripcion del departamento (corpus/departamento.lisp).
+;;; ---------------------------------------------------------------------
+
+(defun falta-o-faltan ()
+  (nucleo:hacer-concordancia
+   :cantidad (nucleo:hacer-literal :valor 2)
+   :singular (nucleo:hacer-literal :valor "Falta")
+   :plural (nucleo:hacer-literal :valor "Faltan")))
+
+(definir-prueba web-plural-emite-sus-expresiones
+    "Web: PLURAL traduce el singular y el plural, no los imprime como objetos"
+  (let ((js (protocolo:emitir-expresion (situacion.web:hacer-web)
+                                        (falta-o-faltan) nil nil)))
+    (comprobar (and (search "\"Faltan\"" js) (not (search "#<" js)))
+               "la expresion ~s deberia llevar el texto \"Faltan\", no un~@
+                objeto del nucleo impreso"
+               js)))
