@@ -39,3 +39,7 @@ htmlcov/
 # Artefactos generados por el lenguaje: se reproducen con ./demostrar.sh
 salida/
 exploracion/salida/
+
+# Los resultados de los ejemplos SI se versionan: son para abrirlos sin
+# instalar nada. Se regeneran con ./ejemplos/actualizar.sh
+!ejemplos/resultados/*.xlsx
