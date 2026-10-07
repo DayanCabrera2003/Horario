@@ -19,10 +19,11 @@ ejecutados de verdad para ver que se podia expresar y que no.
 Los informes completos, con lo que se pudo expresar, lo que no y por que, estan
 en [`docs/alcance/`](../docs/alcance/README.md).
 
-Y uno mas que no es ajeno al corpus: `saul.lisp`, el horario del
-preuniversitario Saul Delgado, el primer caso real del reparto con la otra
-tesis. Describe y valida un horario ya escrito; no lo busca. Sus resultados,
-y lo que todavia no produce, estan en [`ejemplos/`](../ejemplos/README.md).
+Y uno mas que no es ajeno al corpus: `saul.lisp`, el primer intento con el
+horario del preuniversitario Saul Delgado, con datos inventados. Se conserva
+como experimento. La descripcion que vale es `corpus/horario-saul.lisp`, con
+el horario real del centro; sus resultados estan en
+[`ejemplos/`](../ejemplos/README.md).
 
 **Se conservan a proposito.** Son la evidencia de un metodo de validacion
 distinto de la bateria de pruebas: una bateria comprueba lo que ya se sabe;
