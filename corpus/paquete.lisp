@@ -11,5 +11,6 @@
 (defpackage #:situacion.corpus
   (:use #:common-lisp #:situacion.lenguaje)
   (:documentation "Los libros de la facultad, descritos en el lenguaje.")
-  (:export #:plan-del-grupo #:defensas-de-tesis #:horario-del-grupo
-           #:datos-del-plan #:datos-de-las-defensas #:datos-del-horario))
+  (:export #:plan-del-grupo #:defensas-de-tesis #:horario-del-grupo #:departamento
+           #:datos-del-plan #:datos-de-las-defensas #:datos-del-horario
+           #:datos-del-departamento))

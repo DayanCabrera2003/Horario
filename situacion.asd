@@ -152,7 +152,8 @@
   :components ((:file "paquete")
                (:file "plan-del-grupo")
                (:file "defensas-de-tesis")
-               (:file "horario-del-grupo")))
+               (:file "horario-del-grupo")
+               (:file "departamento")))
 
 (defsystem "situacion/demostracion"
   :description "Genera los artefactos de las tres arquitecturas a partir de
