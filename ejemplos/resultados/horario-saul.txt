@@ -1,0 +1,563 @@
+Horario docente de 10mo grado, preuniversitario Saul Delgado
+============================================================
+
+Indice
+  - Horario del grupo  (punto de entrada)
+  - Horario del profesor
+  - Horario del aula
+  - Asignaturas
+  - Frecuencias por grupo
+  - Carga diaria
+
+Horario del grupo - 10-3
+  Turno  L      M      MI     J      V 
+  -----  -----  -----  -----  -----  --
+  1      EF     H      EF     INF    F 
+  2      I      B      M      F      DC
+  3      B      CP     M      Lit-L  Q 
+  4      Lit-L  Lit-L  H      Lit-L  I 
+  5      CA     G      G      I      M 
+  6      M      RD     F      H      M 
+  7                    AL/AC           
+
+Horario del grupo - 10-4
+  Turno  L      M      MI  J      V    
+  -----  -----  -----  --  -----  -----
+  1      M      Lit-L  CP  F      Lit-L
+  2      M      I      EF  I      Lit-L
+  3      EF     B      M   M      F    
+  4      CA     H      G   INF    I    
+  5      RD     DC     F   H      Q    
+  6      B      G      H   Lit-L  M    
+  7      AL/AC                         
+
+Horario del profesor - Profesor de EF en 10-3
+  Turno  L     MI  
+  -----  ----  ----
+  1      10-3  10-3
+
+Horario del profesor - Profesor de H en 10-3
+  Turno  M     MI    J   
+  -----  ----  ----  ----
+  1      10-3            
+  4            10-3      
+  6                  10-3
+
+Horario del profesor - Profesor de INF en 10-3
+  Turno  J   
+  -----  ----
+  1      10-3
+
+Horario del profesor - Profesor de F en 10-3
+  Turno  V     J     MI  
+  -----  ----  ----  ----
+  1      10-3            
+  2            10-3      
+  6                  10-3
+
+Horario del profesor - Profesor de M en 10-4
+  Turno  L     MI    J     V   
+  -----  ----  ----  ----  ----
+  1      10-4                  
+  2      10-4                  
+  3            10-4  10-4      
+  6                        10-4
+
+Horario del profesor - Profesor de Lit-L en 10-4
+  Turno  M     V     J   
+  -----  ----  ----  ----
+  1      10-4  10-4      
+  2            10-4      
+  6                  10-4
+
+Horario del profesor - Profesor de CP en 10-4
+  Turno  MI  
+  -----  ----
+  1      10-4
+
+Horario del profesor - Profesor de F en 10-4
+  Turno  J     V     MI  
+  -----  ----  ----  ----
+  1      10-4            
+  3            10-4      
+  5                  10-4
+
+Horario del profesor - Profesor de I en 10-3
+  Turno  L     V     J   
+  -----  ----  ----  ----
+  2      10-3            
+  4            10-3      
+  5                  10-3
+
+Horario del profesor - Profesor de B en 10-3
+  Turno  M     L   
+  -----  ----  ----
+  2      10-3      
+  3            10-3
+
+Horario del profesor - Profesor de M en 10-3
+  Turno  MI    V     L   
+  -----  ----  ----  ----
+  2      10-3            
+  3      10-3            
+  5            10-3      
+  6            10-3  10-3
+
+Horario del profesor - Profesor de DC en 10-3
+  Turno  V   
+  -----  ----
+  2      10-3
+
+Horario del profesor - Profesor de I en 10-4
+  Turno  M     J     V   
+  -----  ----  ----  ----
+  2      10-4  10-4      
+  4                  10-4
+
+Horario del profesor - Profesor de EF en 10-4
+  Turno  MI    L   
+  -----  ----  ----
+  2      10-4      
+  3            10-4
+
+Horario del profesor - Profesor de CP en 10-3
+  Turno  M   
+  -----  ----
+  3      10-3
+
+Horario del profesor - Profesor de Lit-L en 10-3
+  Turno  J     L     M   
+  -----  ----  ----  ----
+  3      10-3            
+  4      10-3  10-3  10-3
+
+Horario del profesor - Profesor de Q en 10-3
+  Turno  V   
+  -----  ----
+  3      10-3
+
+Horario del profesor - Profesor de B en 10-4
+  Turno  M     L   
+  -----  ----  ----
+  3      10-4      
+  6            10-4
+
+Horario del profesor - Profesor de CA en 10-4
+  Turno  L   
+  -----  ----
+  4      10-4
+
+Horario del profesor - Profesor de H en 10-4
+  Turno  M     J     MI  
+  -----  ----  ----  ----
+  4      10-4            
+  5            10-4      
+  6                  10-4
+
+Horario del profesor - Profesor de G en 10-4
+  Turno  MI    M   
+  -----  ----  ----
+  4      10-4      
+  6            10-4
+
+Horario del profesor - Profesor de INF en 10-4
+  Turno  J   
+  -----  ----
+  4      10-4
+
+Horario del profesor - Profesor de CA en 10-3
+  Turno  L   
+  -----  ----
+  5      10-3
+
+Horario del profesor - Profesor de G en 10-3
+  Turno  M     MI  
+  -----  ----  ----
+  5      10-3  10-3
+
+Horario del profesor - Profesor de RD en 10-4
+  Turno  L   
+  -----  ----
+  5      10-4
+
+Horario del profesor - Profesor de DC en 10-4
+  Turno  M   
+  -----  ----
+  5      10-4
+
+Horario del profesor - Profesor de Q en 10-4
+  Turno  V   
+  -----  ----
+  5      10-4
+
+Horario del profesor - Profesor de RD en 10-3
+  Turno  M   
+  -----  ----
+  6      10-3
+
+Horario del profesor - Profesor de AL/AC en 10-3
+  Turno  MI  
+  -----  ----
+  7      10-3
+
+Horario del profesor - Profesor de AL/AC en 10-4
+  Turno  L   
+  -----  ----
+  7      10-4
+
+Horario del aula - Terreno
+  Turno  L     MI  
+  -----  ----  ----
+  1      10-3  10-3
+  2            10-4
+  3      10-4      
+
+Horario del aula - Aula 10-3
+  Turno  M     V     L     MI    J   
+  -----  ----  ----  ----  ----  ----
+  1      10-3  10-3                  
+  2      10-3  10-3  10-3  10-3  10-3
+  3      10-3  10-3  10-3  10-3  10-3
+  4      10-3  10-3  10-3  10-3  10-3
+  5      10-3  10-3  10-3  10-3  10-3
+  6      10-3  10-3  10-3  10-3  10-3
+  7                        10-3      
+
+Horario del aula - Laboratorio
+  Turno  J   
+  -----  ----
+  1      10-3
+  4      10-4
+
+Horario del aula - Aula 10-4
+  Turno  L     M     MI    J     V   
+  -----  ----  ----  ----  ----  ----
+  1      10-4  10-4  10-4  10-4  10-4
+  2      10-4  10-4        10-4  10-4
+  3            10-4  10-4  10-4  10-4
+  4      10-4  10-4  10-4        10-4
+  5      10-4  10-4  10-4  10-4  10-4
+  6      10-4  10-4  10-4  10-4  10-4
+  7      10-4                        
+
+Asignaturas
+  Abrev  Asignatura              Frecuencia  Turno doble  Admite tarde  Dia de preparacion  Local        Estado
+  -----  ----------------------  ----------  -----------  ------------  ------------------  -----------  ------
+  M      Matematica              5           si           no                                                   
+  Lit-L  Literatura y Lengua     4           no           no                                                   
+  F      Fisica                  3           no           no                                                   
+  I      Ingles                  3           no           no                                                   
+  H      Historia                3           no           no                                                   
+  EF     Educacion Fisica        2           no           no                                Terreno            
+  B      Biologia                2           no           no                                                   
+  G      Geografia               2           no           no                                                   
+  INF    Informatica             1           no           no                                Laboratorio        
+  Q      Quimica                 1           no           no                                                   
+  CP     (CP, por confirmar)     1           no           no                                                   
+  DC     (DC, por confirmar)     1           no           no                                                   
+  CA     (CA, por confirmar)     1           no           no                                                   
+  RD     (RD, por confirmar)     1           no           no                                                   
+  AL/AC  (AL/AC, por confirmar)  1           no           si                                                   
+
+Plan por grupo
+  Clave       Grupo  Abrev  Profesor                   Asignatura              Frecuencia  Asignadas  Faltan  Estado
+  ----------  -----  -----  -------------------------  ----------------------  ----------  ---------  ------  ------
+  10-3#M      10-3   M      Profesor de M en 10-3      Matematica              5           5          0             
+  10-3#Lit-L  10-3   Lit-L  Profesor de Lit-L en 10-3  Literatura y Lengua     4           4          0             
+  10-3#F      10-3   F      Profesor de F en 10-3      Fisica                  3           3          0             
+  10-3#I      10-3   I      Profesor de I en 10-3      Ingles                  3           3          0             
+  10-3#H      10-3   H      Profesor de H en 10-3      Historia                3           3          0             
+  10-3#EF     10-3   EF     Profesor de EF en 10-3     Educacion Fisica        2           2          0             
+  10-3#B      10-3   B      Profesor de B en 10-3      Biologia                2           2          0             
+  10-3#G      10-3   G      Profesor de G en 10-3      Geografia               2           2          0             
+  10-3#INF    10-3   INF    Profesor de INF en 10-3    Informatica             1           1          0             
+  10-3#Q      10-3   Q      Profesor de Q en 10-3      Quimica                 1           1          0             
+  10-3#CP     10-3   CP     Profesor de CP en 10-3     (CP, por confirmar)     1           1          0             
+  10-3#DC     10-3   DC     Profesor de DC en 10-3     (DC, por confirmar)     1           1          0             
+  10-3#CA     10-3   CA     Profesor de CA en 10-3     (CA, por confirmar)     1           1          0             
+  10-3#RD     10-3   RD     Profesor de RD en 10-3     (RD, por confirmar)     1           1          0             
+  10-3#AL/AC  10-3   AL/AC  Profesor de AL/AC en 10-3  (AL/AC, por confirmar)  1           1          0             
+  10-4#M      10-4   M      Profesor de M en 10-4      Matematica              5           5          0             
+  10-4#Lit-L  10-4   Lit-L  Profesor de Lit-L en 10-4  Literatura y Lengua     4           4          0             
+  10-4#F      10-4   F      Profesor de F en 10-4      Fisica                  3           3          0             
+  10-4#I      10-4   I      Profesor de I en 10-4      Ingles                  3           3          0             
+  10-4#H      10-4   H      Profesor de H en 10-4      Historia                3           3          0             
+  10-4#EF     10-4   EF     Profesor de EF en 10-4     Educacion Fisica        2           2          0             
+  10-4#B      10-4   B      Profesor de B en 10-4      Biologia                2           2          0             
+  10-4#G      10-4   G      Profesor de G en 10-4      Geografia               2           2          0             
+  10-4#INF    10-4   INF    Profesor de INF en 10-4    Informatica             1           1          0             
+  10-4#Q      10-4   Q      Profesor de Q en 10-4      Quimica                 1           1          0             
+  10-4#CP     10-4   CP     Profesor de CP en 10-4     (CP, por confirmar)     1           1          0             
+  10-4#DC     10-4   DC     Profesor de DC en 10-4     (DC, por confirmar)     1           1          0             
+  10-4#CA     10-4   CA     Profesor de CA en 10-4     (CA, por confirmar)     1           1          0             
+  10-4#RD     10-4   RD     Profesor de RD en 10-4     (RD, por confirmar)     1           1          0             
+  10-4#AL/AC  10-4   AL/AC  Profesor de AL/AC en 10-4  (AL/AC, por confirmar)  1           1          0             
+
+Profesores
+  Profesor                   Contratado  Vive lejos  Estado
+  -------------------------  ----------  ----------  ------
+  Profesor de M en 10-3      no          no                
+  Profesor de Lit-L en 10-3  no          no                
+  Profesor de F en 10-3      no          no                
+  Profesor de I en 10-3      no          no                
+  Profesor de H en 10-3      no          no                
+  Profesor de EF en 10-3     no          no                
+  Profesor de B en 10-3      no          no                
+  Profesor de G en 10-3      no          no                
+  Profesor de INF en 10-3    no          no                
+  Profesor de Q en 10-3      no          no                
+  Profesor de CP en 10-3     no          no                
+  Profesor de DC en 10-3     no          no                
+  Profesor de CA en 10-3     no          no                
+  Profesor de RD en 10-3     no          no                
+  Profesor de AL/AC en 10-3  no          no                
+  Profesor de M en 10-4      no          no                
+  Profesor de Lit-L en 10-4  no          no                
+  Profesor de F en 10-4      no          no                
+  Profesor de I en 10-4      no          no                
+  Profesor de H en 10-4      no          no                
+  Profesor de EF en 10-4     no          no                
+  Profesor de B en 10-4      no          no                
+  Profesor de G en 10-4      no          no                
+  Profesor de INF en 10-4    no          no                
+  Profesor de Q en 10-4      no          no                
+  Profesor de CP en 10-4     no          no                
+  Profesor de DC en 10-4     no          no                
+  Profesor de CA en 10-4     no          no                
+  Profesor de RD en 10-4     no          no                
+  Profesor de AL/AC en 10-4  no          no                
+
+Dias que asisten los contratados
+  Clave  Profesor  Dia  Asiste  Estado
+  -----  --------  ---  ------  ------
+
+Casillas del horario
+  Grupo  Dia  Turno  Asignatura  Nombre                  Grupo#Asignatura  Profesor                   Local de la asignatura  Aula         Turno doble  Admite tarde  Dia de preparacion  Contratado  Vive lejos  Profesor#Dia                  Asiste hoy  Repite mal el dia  Estado                                                             
+  -----  ---  -----  ----------  ----------------------  ----------------  -------------------------  ----------------------  -----------  -----------  ------------  ------------------  ----------  ----------  ----------------------------  ----------  -----------------  -------------------------------------------------------------------
+  10-3   L    1      EF          Educacion Fisica        10-3#EF           Profesor de EF en 10-3     Terreno                 Terreno      no           no                                no          no          Profesor de EF en 10-3#L      no          no                                                                                    
+  10-3   M    1      H           Historia                10-3#H            Profesor de H en 10-3                              Aula 10-3    no           no                                no          no          Profesor de H en 10-3#M       no          no                                                                                    
+  10-3   MI   1      EF          Educacion Fisica        10-3#EF           Profesor de EF en 10-3     Terreno                 Terreno      no           no                                no          no          Profesor de EF en 10-3#MI     no          no                                                                                    
+  10-3   J    1      INF         Informatica             10-3#INF          Profesor de INF en 10-3    Laboratorio             Laboratorio  no           no                                no          no          Profesor de INF en 10-3#J     no          no                                                                                    
+  10-3   V    1      F           Fisica                  10-3#F            Profesor de F en 10-3                              Aula 10-3    no           no                                no          no          Profesor de F en 10-3#V       no          no                                                                                    
+  10-4   L    1      M           Matematica              10-4#M            Profesor de M en 10-4                              Aula 10-4    si           no                                no          no          Profesor de M en 10-4#L       no          no                                                                                    
+  10-4   M    1      Lit-L       Literatura y Lengua     10-4#Lit-L        Profesor de Lit-L en 10-4                          Aula 10-4    no           no                                no          no          Profesor de Lit-L en 10-4#M   no          no                                                                                    
+  10-4   MI   1      CP          (CP, por confirmar)     10-4#CP           Profesor de CP en 10-4                             Aula 10-4    no           no                                no          no          Profesor de CP en 10-4#MI     no          no                                                                                    
+  10-4   J    1      F           Fisica                  10-4#F            Profesor de F en 10-4                              Aula 10-4    no           no                                no          no          Profesor de F en 10-4#J       no          no                                                                                    
+  10-4   V    1      Lit-L       Literatura y Lengua     10-4#Lit-L        Profesor de Lit-L en 10-4                          Aula 10-4    no           no                                no          no          Profesor de Lit-L en 10-4#V   no          si                 Esta asignatura no admite turno doble y repite el dia en este grupo
+  10-3   L    2      I           Ingles                  10-3#I            Profesor de I en 10-3                              Aula 10-3    no           no                                no          no          Profesor de I en 10-3#L       no          no                                                                                    
+  10-3   M    2      B           Biologia                10-3#B            Profesor de B en 10-3                              Aula 10-3    no           no                                no          no          Profesor de B en 10-3#M       no          no                                                                                    
+  10-3   MI   2      M           Matematica              10-3#M            Profesor de M en 10-3                              Aula 10-3    si           no                                no          no          Profesor de M en 10-3#MI      no          no                                                                                    
+  10-3   J    2      F           Fisica                  10-3#F            Profesor de F en 10-3                              Aula 10-3    no           no                                no          no          Profesor de F en 10-3#J       no          no                                                                                    
+  10-3   V    2      DC          (DC, por confirmar)     10-3#DC           Profesor de DC en 10-3                             Aula 10-3    no           no                                no          no          Profesor de DC en 10-3#V      no          no                                                                                    
+  10-4   L    2      M           Matematica              10-4#M            Profesor de M en 10-4                              Aula 10-4    si           no                                no          no          Profesor de M en 10-4#L       no          no                                                                                    
+  10-4   M    2      I           Ingles                  10-4#I            Profesor de I en 10-4                              Aula 10-4    no           no                                no          no          Profesor de I en 10-4#M       no          no                                                                                    
+  10-4   MI   2      EF          Educacion Fisica        10-4#EF           Profesor de EF en 10-4     Terreno                 Terreno      no           no                                no          no          Profesor de EF en 10-4#MI     no          no                                                                                    
+  10-4   J    2      I           Ingles                  10-4#I            Profesor de I en 10-4                              Aula 10-4    no           no                                no          no          Profesor de I en 10-4#J       no          no                                                                                    
+  10-4   V    2      Lit-L       Literatura y Lengua     10-4#Lit-L        Profesor de Lit-L en 10-4                          Aula 10-4    no           no                                no          no          Profesor de Lit-L en 10-4#V   no          si                 Esta asignatura no admite turno doble y repite el dia en este grupo
+  10-3   L    3      B           Biologia                10-3#B            Profesor de B en 10-3                              Aula 10-3    no           no                                no          no          Profesor de B en 10-3#L       no          no                                                                                    
+  10-3   M    3      CP          (CP, por confirmar)     10-3#CP           Profesor de CP en 10-3                             Aula 10-3    no           no                                no          no          Profesor de CP en 10-3#M      no          no                                                                                    
+  10-3   MI   3      M           Matematica              10-3#M            Profesor de M en 10-3                              Aula 10-3    si           no                                no          no          Profesor de M en 10-3#MI      no          no                                                                                    
+  10-3   J    3      Lit-L       Literatura y Lengua     10-3#Lit-L        Profesor de Lit-L en 10-3                          Aula 10-3    no           no                                no          no          Profesor de Lit-L en 10-3#J   no          si                 Esta asignatura no admite turno doble y repite el dia en este grupo
+  10-3   V    3      Q           Quimica                 10-3#Q            Profesor de Q en 10-3                              Aula 10-3    no           no                                no          no          Profesor de Q en 10-3#V       no          no                                                                                    
+  10-4   L    3      EF          Educacion Fisica        10-4#EF           Profesor de EF en 10-4     Terreno                 Terreno      no           no                                no          no          Profesor de EF en 10-4#L      no          no                                                                                    
+  10-4   M    3      B           Biologia                10-4#B            Profesor de B en 10-4                              Aula 10-4    no           no                                no          no          Profesor de B en 10-4#M       no          no                                                                                    
+  10-4   MI   3      M           Matematica              10-4#M            Profesor de M en 10-4                              Aula 10-4    si           no                                no          no          Profesor de M en 10-4#MI      no          no                                                                                    
+  10-4   J    3      M           Matematica              10-4#M            Profesor de M en 10-4                              Aula 10-4    si           no                                no          no          Profesor de M en 10-4#J       no          no                                                                                    
+  10-4   V    3      F           Fisica                  10-4#F            Profesor de F en 10-4                              Aula 10-4    no           no                                no          no          Profesor de F en 10-4#V       no          no                                                                                    
+  10-3   L    4      Lit-L       Literatura y Lengua     10-3#Lit-L        Profesor de Lit-L en 10-3                          Aula 10-3    no           no                                no          no          Profesor de Lit-L en 10-3#L   no          no                                                                                    
+  10-3   M    4      Lit-L       Literatura y Lengua     10-3#Lit-L        Profesor de Lit-L en 10-3                          Aula 10-3    no           no                                no          no          Profesor de Lit-L en 10-3#M   no          no                                                                                    
+  10-3   MI   4      H           Historia                10-3#H            Profesor de H en 10-3                              Aula 10-3    no           no                                no          no          Profesor de H en 10-3#MI      no          no                                                                                    
+  10-3   J    4      Lit-L       Literatura y Lengua     10-3#Lit-L        Profesor de Lit-L en 10-3                          Aula 10-3    no           no                                no          no          Profesor de Lit-L en 10-3#J   no          si                 Esta asignatura no admite turno doble y repite el dia en este grupo
+  10-3   V    4      I           Ingles                  10-3#I            Profesor de I en 10-3                              Aula 10-3    no           no                                no          no          Profesor de I en 10-3#V       no          no                                                                                    
+  10-4   L    4      CA          (CA, por confirmar)     10-4#CA           Profesor de CA en 10-4                             Aula 10-4    no           no                                no          no          Profesor de CA en 10-4#L      no          no                                                                                    
+  10-4   M    4      H           Historia                10-4#H            Profesor de H en 10-4                              Aula 10-4    no           no                                no          no          Profesor de H en 10-4#M       no          no                                                                                    
+  10-4   MI   4      G           Geografia               10-4#G            Profesor de G en 10-4                              Aula 10-4    no           no                                no          no          Profesor de G en 10-4#MI      no          no                                                                                    
+  10-4   J    4      INF         Informatica             10-4#INF          Profesor de INF en 10-4    Laboratorio             Laboratorio  no           no                                no          no          Profesor de INF en 10-4#J     no          no                                                                                    
+  10-4   V    4      I           Ingles                  10-4#I            Profesor de I en 10-4                              Aula 10-4    no           no                                no          no          Profesor de I en 10-4#V       no          no                                                                                    
+  10-3   L    5      CA          (CA, por confirmar)     10-3#CA           Profesor de CA en 10-3                             Aula 10-3    no           no                                no          no          Profesor de CA en 10-3#L      no          no                                                                                    
+  10-3   M    5      G           Geografia               10-3#G            Profesor de G en 10-3                              Aula 10-3    no           no                                no          no          Profesor de G en 10-3#M       no          no                                                                                    
+  10-3   MI   5      G           Geografia               10-3#G            Profesor de G en 10-3                              Aula 10-3    no           no                                no          no          Profesor de G en 10-3#MI      no          no                                                                                    
+  10-3   J    5      I           Ingles                  10-3#I            Profesor de I en 10-3                              Aula 10-3    no           no                                no          no          Profesor de I en 10-3#J       no          no                                                                                    
+  10-3   V    5      M           Matematica              10-3#M            Profesor de M en 10-3                              Aula 10-3    si           no                                no          no          Profesor de M en 10-3#V       no          no                                                                                    
+  10-4   L    5      RD          (RD, por confirmar)     10-4#RD           Profesor de RD en 10-4                             Aula 10-4    no           no                                no          no          Profesor de RD en 10-4#L      no          no                                                                                    
+  10-4   M    5      DC          (DC, por confirmar)     10-4#DC           Profesor de DC en 10-4                             Aula 10-4    no           no                                no          no          Profesor de DC en 10-4#M      no          no                                                                                    
+  10-4   MI   5      F           Fisica                  10-4#F            Profesor de F en 10-4                              Aula 10-4    no           no                                no          no          Profesor de F en 10-4#MI      no          no                                                                                    
+  10-4   J    5      H           Historia                10-4#H            Profesor de H en 10-4                              Aula 10-4    no           no                                no          no          Profesor de H en 10-4#J       no          no                                                                                    
+  10-4   V    5      Q           Quimica                 10-4#Q            Profesor de Q en 10-4                              Aula 10-4    no           no                                no          no          Profesor de Q en 10-4#V       no          no                                                                                    
+  10-3   L    6      M           Matematica              10-3#M            Profesor de M en 10-3                              Aula 10-3    si           no                                no          no          Profesor de M en 10-3#L       no          no                                                                                    
+  10-3   M    6      RD          (RD, por confirmar)     10-3#RD           Profesor de RD en 10-3                             Aula 10-3    no           no                                no          no          Profesor de RD en 10-3#M      no          no                                                                                    
+  10-3   MI   6      F           Fisica                  10-3#F            Profesor de F en 10-3                              Aula 10-3    no           no                                no          no          Profesor de F en 10-3#MI      no          no                                                                                    
+  10-3   J    6      H           Historia                10-3#H            Profesor de H en 10-3                              Aula 10-3    no           no                                no          no          Profesor de H en 10-3#J       no          no                                                                                    
+  10-3   V    6      M           Matematica              10-3#M            Profesor de M en 10-3                              Aula 10-3    si           no                                no          no          Profesor de M en 10-3#V       no          no                                                                                    
+  10-4   L    6      B           Biologia                10-4#B            Profesor de B en 10-4                              Aula 10-4    no           no                                no          no          Profesor de B en 10-4#L       no          no                                                                                    
+  10-4   M    6      G           Geografia               10-4#G            Profesor de G en 10-4                              Aula 10-4    no           no                                no          no          Profesor de G en 10-4#M       no          no                                                                                    
+  10-4   MI   6      H           Historia                10-4#H            Profesor de H en 10-4                              Aula 10-4    no           no                                no          no          Profesor de H en 10-4#MI      no          no                                                                                    
+  10-4   J    6      Lit-L       Literatura y Lengua     10-4#Lit-L        Profesor de Lit-L en 10-4                          Aula 10-4    no           no                                no          no          Profesor de Lit-L en 10-4#J   no          no                                                                                    
+  10-4   V    6      M           Matematica              10-4#M            Profesor de M en 10-4                              Aula 10-4    si           no                                no          no          Profesor de M en 10-4#V       no          no                                                                                    
+  10-3   L    7                                          10-3#                                                                             no           no                                no          no          #L                            no          no                 Turno sin asignar                                                  
+  10-3   M    7                                          10-3#                                                                             no           no                                no          no          #M                            no          no                 Turno sin asignar                                                  
+  10-3   MI   7      AL/AC       (AL/AC, por confirmar)  10-3#AL/AC        Profesor de AL/AC en 10-3                          Aula 10-3    no           si                                no          no          Profesor de AL/AC en 10-3#MI  no          no                                                                                    
+  10-3   J    7                                          10-3#                                                                             no           no                                no          no          #J                            no          no                 Turno sin asignar                                                  
+  10-3   V    7                                          10-3#                                                                             no           no                                no          no          #V                            no          no                 Turno sin asignar                                                  
+  10-4   L    7      AL/AC       (AL/AC, por confirmar)  10-4#AL/AC        Profesor de AL/AC en 10-4                          Aula 10-4    no           si                                no          no          Profesor de AL/AC en 10-4#L   no          no                                                                                    
+  10-4   M    7                                          10-4#                                                                             no           no                                no          no          #M                            no          no                 Turno sin asignar                                                  
+  10-4   MI   7                                          10-4#                                                                             no           no                                no          no          #MI                           no          no                 Turno sin asignar                                                  
+  10-4   J    7                                          10-4#                                                                             no           no                                no          no          #J                            no          no                 Turno sin asignar                                                  
+  10-4   V    7                                          10-4#                                                                             no           no                                no          no          #V                            no          no                 Turno sin asignar                                                  
+
+  Asignatura admite: M, Lit-L, F, I, H, EF, B, G, INF, Q, CP, DC, CA, RD, AL/AC
+
+Carga diaria por profesor
+  Profesor                   Dia  Sesiones  Estado
+  -------------------------  ---  --------  ------
+  Profesor de M en 10-3      L    1               
+  Profesor de M en 10-3      M    0               
+  Profesor de M en 10-3      MI   2               
+  Profesor de M en 10-3      J    0               
+  Profesor de M en 10-3      V    2               
+  Profesor de Lit-L en 10-3  L    1               
+  Profesor de Lit-L en 10-3  M    1               
+  Profesor de Lit-L en 10-3  MI   0               
+  Profesor de Lit-L en 10-3  J    2               
+  Profesor de Lit-L en 10-3  V    0               
+  Profesor de F en 10-3      L    0               
+  Profesor de F en 10-3      M    0               
+  Profesor de F en 10-3      MI   1               
+  Profesor de F en 10-3      J    1               
+  Profesor de F en 10-3      V    1               
+  Profesor de I en 10-3      L    1               
+  Profesor de I en 10-3      M    0               
+  Profesor de I en 10-3      MI   0               
+  Profesor de I en 10-3      J    1               
+  Profesor de I en 10-3      V    1               
+  Profesor de H en 10-3      L    0               
+  Profesor de H en 10-3      M    1               
+  Profesor de H en 10-3      MI   1               
+  Profesor de H en 10-3      J    1               
+  Profesor de H en 10-3      V    0               
+  Profesor de EF en 10-3     L    1               
+  Profesor de EF en 10-3     M    0               
+  Profesor de EF en 10-3     MI   1               
+  Profesor de EF en 10-3     J    0               
+  Profesor de EF en 10-3     V    0               
+  Profesor de B en 10-3      L    1               
+  Profesor de B en 10-3      M    1               
+  Profesor de B en 10-3      MI   0               
+  Profesor de B en 10-3      J    0               
+  Profesor de B en 10-3      V    0               
+  Profesor de G en 10-3      L    0               
+  Profesor de G en 10-3      M    1               
+  Profesor de G en 10-3      MI   1               
+  Profesor de G en 10-3      J    0               
+  Profesor de G en 10-3      V    0               
+  Profesor de INF en 10-3    L    0               
+  Profesor de INF en 10-3    M    0               
+  Profesor de INF en 10-3    MI   0               
+  Profesor de INF en 10-3    J    1               
+  Profesor de INF en 10-3    V    0               
+  Profesor de Q en 10-3      L    0               
+  Profesor de Q en 10-3      M    0               
+  Profesor de Q en 10-3      MI   0               
+  Profesor de Q en 10-3      J    0               
+  Profesor de Q en 10-3      V    1               
+  Profesor de CP en 10-3     L    0               
+  Profesor de CP en 10-3     M    1               
+  Profesor de CP en 10-3     MI   0               
+  Profesor de CP en 10-3     J    0               
+  Profesor de CP en 10-3     V    0               
+  Profesor de DC en 10-3     L    0               
+  Profesor de DC en 10-3     M    0               
+  Profesor de DC en 10-3     MI   0               
+  Profesor de DC en 10-3     J    0               
+  Profesor de DC en 10-3     V    1               
+  Profesor de CA en 10-3     L    1               
+  Profesor de CA en 10-3     M    0               
+  Profesor de CA en 10-3     MI   0               
+  Profesor de CA en 10-3     J    0               
+  Profesor de CA en 10-3     V    0               
+  Profesor de RD en 10-3     L    0               
+  Profesor de RD en 10-3     M    1               
+  Profesor de RD en 10-3     MI   0               
+  Profesor de RD en 10-3     J    0               
+  Profesor de RD en 10-3     V    0               
+  Profesor de AL/AC en 10-3  L    0               
+  Profesor de AL/AC en 10-3  M    0               
+  Profesor de AL/AC en 10-3  MI   1               
+  Profesor de AL/AC en 10-3  J    0               
+  Profesor de AL/AC en 10-3  V    0               
+  Profesor de M en 10-4      L    2               
+  Profesor de M en 10-4      M    0               
+  Profesor de M en 10-4      MI   1               
+  Profesor de M en 10-4      J    1               
+  Profesor de M en 10-4      V    1               
+  Profesor de Lit-L en 10-4  L    0               
+  Profesor de Lit-L en 10-4  M    1               
+  Profesor de Lit-L en 10-4  MI   0               
+  Profesor de Lit-L en 10-4  J    1               
+  Profesor de Lit-L en 10-4  V    2               
+  Profesor de F en 10-4      L    0               
+  Profesor de F en 10-4      M    0               
+  Profesor de F en 10-4      MI   1               
+  Profesor de F en 10-4      J    1               
+  Profesor de F en 10-4      V    1               
+  Profesor de I en 10-4      L    0               
+  Profesor de I en 10-4      M    1               
+  Profesor de I en 10-4      MI   0               
+  Profesor de I en 10-4      J    1               
+  Profesor de I en 10-4      V    1               
+  Profesor de H en 10-4      L    0               
+  Profesor de H en 10-4      M    1               
+  Profesor de H en 10-4      MI   1               
+  Profesor de H en 10-4      J    1               
+  Profesor de H en 10-4      V    0               
+  Profesor de EF en 10-4     L    1               
+  Profesor de EF en 10-4     M    0               
+  Profesor de EF en 10-4     MI   1               
+  Profesor de EF en 10-4     J    0               
+  Profesor de EF en 10-4     V    0               
+  Profesor de B en 10-4      L    1               
+  Profesor de B en 10-4      M    1               
+  Profesor de B en 10-4      MI   0               
+  Profesor de B en 10-4      J    0               
+  Profesor de B en 10-4      V    0               
+  Profesor de G en 10-4      L    0               
+  Profesor de G en 10-4      M    1               
+  Profesor de G en 10-4      MI   1               
+  Profesor de G en 10-4      J    0               
+  Profesor de G en 10-4      V    0               
+  Profesor de INF en 10-4    L    0               
+  Profesor de INF en 10-4    M    0               
+  Profesor de INF en 10-4    MI   0               
+  Profesor de INF en 10-4    J    1               
+  Profesor de INF en 10-4    V    0               
+  Profesor de Q en 10-4      L    0               
+  Profesor de Q en 10-4      M    0               
+  Profesor de Q en 10-4      MI   0               
+  Profesor de Q en 10-4      J    0               
+  Profesor de Q en 10-4      V    1               
+  Profesor de CP en 10-4     L    0               
+  Profesor de CP en 10-4     M    0               
+  Profesor de CP en 10-4     MI   1               
+  Profesor de CP en 10-4     J    0               
+  Profesor de CP en 10-4     V    0               
+  Profesor de DC en 10-4     L    0               
+  Profesor de DC en 10-4     M    1               
+  Profesor de DC en 10-4     MI   0               
+  Profesor de DC en 10-4     J    0               
+  Profesor de DC en 10-4     V    0               
+  Profesor de CA en 10-4     L    1               
+  Profesor de CA en 10-4     M    0               
+  Profesor de CA en 10-4     MI   0               
+  Profesor de CA en 10-4     J    0               
+  Profesor de CA en 10-4     V    0               
+  Profesor de RD en 10-4     L    1               
+  Profesor de RD en 10-4     M    0               
+  Profesor de RD en 10-4     MI   0               
+  Profesor de RD en 10-4     J    0               
+  Profesor de RD en 10-4     V    0               
+  Profesor de AL/AC en 10-4  L    1               
+  Profesor de AL/AC en 10-4  M    0               
+  Profesor de AL/AC en 10-4  MI   0               
+  Profesor de AL/AC en 10-4  J    0               
+  Profesor de AL/AC en 10-4  V    0               
+

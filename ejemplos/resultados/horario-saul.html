@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Horario docente de 10mo grado, preuniversitario Saul Delgado</title>
+<style>
+
+:root { --tinta:#1a1a1a; --suave:#666; --borde:#d8d8d8; --fondo:#fbfbfa; }
+* { box-sizing: border-box; }
+body { margin:0; padding:24px 16px 64px; background:var(--fondo); color:var(--tinta);
+       font:15px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif; }
+h1 { font-size:22px; margin:0 0 4px; }
+h2 { font-size:17px; margin:28px 0 8px; font-weight:600; }
+.nota { color:var(--suave); margin:0 0 16px; font-size:13px; }
+.envoltura { overflow-x:auto; }
+table { border-collapse:collapse; background:#fff; font-size:14px; min-width:100%; }
+th, td { border:1px solid var(--borde); padding:6px 10px; text-align:left;
+         white-space:nowrap; }
+th { background:#f0f0ee; font-weight:600; }
+td.derivado { background:#fafafa; color:#333; }
+td.grupo { background:#eef2f8; font-weight:600; }
+td.fijo { color:#333; }
+input, select { font:inherit; border:1px solid #bbb; border-radius:3px;
+                padding:3px 6px; width:100%; min-width:90px; background:#fff; }
+input:focus, select:focus { outline:2px solid #4472c4; outline-offset:-1px; }
+.problema { background:#ffc7ce !important; }
+.advertencia { background:#ffeb9c !important; }
+.informativa { background:#ddebf7 !important; }
+.estado { color:var(--suave); font-size:13px; white-space:normal; }
+.leyenda { margin:10px 0 0; font-size:13px; color:var(--suave); }
+.leyenda span { display:inline-block; padding:2px 8px; border:1px solid var(--borde);
+                margin-right:8px; border-radius:3px; }
+button { font:inherit; padding:5px 12px; margin-top:8px; cursor:pointer;
+         border:1px solid #bbb; border-radius:3px; background:#fff; }
+button:hover { background:#f0f0ee; }
+.aviso { color:#a5402a; font-size:12px; }
+@media (max-width:520px) { th, td { padding:5px 7px; } }
+</style>
+</head>
+<body>
+<h1>Horario docente de 10mo grado, preuniversitario Saul Delgado</h1>
+<p class="nota">Escribe en las casillas: lo calculado y las marcas se actualizan solos.</p>
+<div id="app"></div>
+<script>
+const D = {};
+D["asignaturas"] = [
+  {"abrev": "M", "nombre": "Matematica", "frecuencia": 5, "admite-tarde": "no", "dia-preparacion": "", "local": ""},
+  {"abrev": "Lit-L", "nombre": "Literatura y Lengua", "frecuencia": 4, "admite-tarde": "no", "dia-preparacion": "", "local": ""},
+  {"abrev": "F", "nombre": "Fisica", "frecuencia": 3, "admite-tarde": "no", "dia-preparacion": "", "local": ""},
+  {"abrev": "I", "nombre": "Ingles", "frecuencia": 3, "admite-tarde": "no", "dia-preparacion": "", "local": ""},
+  {"abrev": "H", "nombre": "Historia", "frecuencia": 3, "admite-tarde": "no", "dia-preparacion": "", "local": ""},
+  {"abrev": "EF", "nombre": "Educacion Fisica", "frecuencia": 2, "admite-tarde": "no", "dia-preparacion": "", "local": "Terreno"},
+  {"abrev": "B", "nombre": "Biologia", "frecuencia": 2, "admite-tarde": "no", "dia-preparacion": "", "local": ""},
+  {"abrev": "G", "nombre": "Geografia", "frecuencia": 2, "admite-tarde": "no", "dia-preparacion": "", "local": ""},
+  {"abrev": "INF", "nombre": "Informatica", "frecuencia": 1, "admite-tarde": "no", "dia-preparacion": "", "local": "Laboratorio"},
+  {"abrev": "Q", "nombre": "Quimica", "frecuencia": 1, "admite-tarde": "no", "dia-preparacion": "", "local": ""},
+  {"abrev": "CP", "nombre": "(CP, por confirmar)", "frecuencia": 1, "admite-tarde": "no", "dia-preparacion": "", "local": ""},
+  {"abrev": "DC", "nombre": "(DC, por confirmar)", "frecuencia": 1, "admite-tarde": "no", "dia-preparacion": "", "local": ""},
+  {"abrev": "CA", "nombre": "(CA, por confirmar)", "frecuencia": 1, "admite-tarde": "no", "dia-preparacion": "", "local": ""},
+  {"abrev": "RD", "nombre": "(RD, por confirmar)", "frecuencia": 1, "admite-tarde": "no", "dia-preparacion": "", "local": ""},
+  {"abrev": "AL/AC", "nombre": "(AL/AC, por confirmar)", "frecuencia": 1, "admite-tarde": "si", "dia-preparacion": "", "local": ""}
+];
+D["plan-por-grupo"] = [
+  {"clave": "10-3#M", "grupo": "10-3", "abrev": "M", "profesor": "Profesor de M en 10-3"},
+  {"clave": "10-3#Lit-L", "grupo": "10-3", "abrev": "Lit-L", "profesor": "Profesor de Lit-L en 10-3"},
+  {"clave": "10-3#F", "grupo": "10-3", "abrev": "F", "profesor": "Profesor de F en 10-3"},
+  {"clave": "10-3#I", "grupo": "10-3", "abrev": "I", "profesor": "Profesor de I en 10-3"},
+  {"clave": "10-3#H", "grupo": "10-3", "abrev": "H", "profesor": "Profesor de H en 10-3"},
+  {"clave": "10-3#EF", "grupo": "10-3", "abrev": "EF", "profesor": "Profesor de EF en 10-3"},
+  {"clave": "10-3#B", "grupo": "10-3", "abrev": "B", "profesor": "Profesor de B en 10-3"},
+  {"clave": "10-3#G", "grupo": "10-3", "abrev": "G", "profesor": "Profesor de G en 10-3"},
+  {"clave": "10-3#INF", "grupo": "10-3", "abrev": "INF", "profesor": "Profesor de INF en 10-3"},
+  {"clave": "10-3#Q", "grupo": "10-3", "abrev": "Q", "profesor": "Profesor de Q en 10-3"},
+  {"clave": "10-3#CP", "grupo": "10-3", "abrev": "CP", "profesor": "Profesor de CP en 10-3"},
+  {"clave": "10-3#DC", "grupo": "10-3", "abrev": "DC", "profesor": "Profesor de DC en 10-3"},
+  {"clave": "10-3#CA", "grupo": "10-3", "abrev": "CA", "profesor": "Profesor de CA en 10-3"},
+  {"clave": "10-3#RD", "grupo": "10-3", "abrev": "RD", "profesor": "Profesor de RD en 10-3"},
+  {"clave": "10-3#AL/AC", "grupo": "10-3", "abrev": "AL/AC", "profesor": "Profesor de AL/AC en 10-3"},
+  {"clave": "10-4#M", "grupo": "10-4", "abrev": "M", "profesor": "Profesor de M en 10-4"},
+  {"clave": "10-4#Lit-L", "grupo": "10-4", "abrev": "Lit-L", "profesor": "Profesor de Lit-L en 10-4"},
+  {"clave": "10-4#F", "grupo": "10-4", "abrev": "F", "profesor": "Profesor de F en 10-4"},
+  {"clave": "10-4#I", "grupo": "10-4", "abrev": "I", "profesor": "Profesor de I en 10-4"},
+  {"clave": "10-4#H", "grupo": "10-4", "abrev": "H", "profesor": "Profesor de H en 10-4"},
+  {"clave": "10-4#EF", "grupo": "10-4", "abrev": "EF", "profesor": "Profesor de EF en 10-4"},
+  {"clave": "10-4#B", "grupo": "10-4", "abrev": "B", "profesor": "Profesor de B en 10-4"},
+  {"clave": "10-4#G", "grupo": "10-4", "abrev": "G", "profesor": "Profesor de G en 10-4"},
+  {"clave": "10-4#INF", "grupo": "10-4", "abrev": "INF", "profesor": "Profesor de INF en 10-4"},
+  {"clave": "10-4#Q", "grupo": "10-4", "abrev": "Q", "profesor": "Profesor de Q en 10-4"},
+  {"clave": "10-4#CP", "grupo": "10-4", "abrev": "CP", "profesor": "Profesor de CP en 10-4"},
+  {"clave": "10-4#DC", "grupo": "10-4", "abrev": "DC", "profesor": "Profesor de DC en 10-4"},
+  {"clave": "10-4#CA", "grupo": "10-4", "abrev": "CA", "profesor": "Profesor de CA en 10-4"},
+  {"clave": "10-4#RD", "grupo": "10-4", "abrev": "RD", "profesor": "Profesor de RD en 10-4"},
+  {"clave": "10-4#AL/AC", "grupo": "10-4", "abrev": "AL/AC", "profesor": "Profesor de AL/AC en 10-4"}
+];
+D["profesores"] = [
+  {"nombre": "Profesor de M en 10-3", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de Lit-L en 10-3", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de F en 10-3", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de I en 10-3", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de H en 10-3", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de EF en 10-3", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de B en 10-3", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de G en 10-3", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de INF en 10-3", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de Q en 10-3", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de CP en 10-3", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de DC en 10-3", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de CA en 10-3", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de RD en 10-3", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de AL/AC en 10-3", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de M en 10-4", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de Lit-L en 10-4", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de F en 10-4", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de I en 10-4", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de H en 10-4", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de EF en 10-4", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de B en 10-4", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de G en 10-4", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de INF en 10-4", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de Q en 10-4", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de CP en 10-4", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de DC en 10-4", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de CA en 10-4", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de RD en 10-4", "contratado": "no", "vive-lejos": "no"},
+  {"nombre": "Profesor de AL/AC en 10-4", "contratado": "no", "vive-lejos": "no"}
+];
+D["disponibilidad"] = [
+
+];
+D["casillas"] = [
+  {"grupo": "10-3", "dia": "L", "turno": 1, "asignatura": "EF"},
+  {"grupo": "10-3", "dia": "M", "turno": 1, "asignatura": "H"},
+  {"grupo": "10-3", "dia": "MI", "turno": 1, "asignatura": "EF"},
+  {"grupo": "10-3", "dia": "J", "turno": 1, "asignatura": "INF"},
+  {"grupo": "10-3", "dia": "V", "turno": 1, "asignatura": "F"},
+  {"grupo": "10-4", "dia": "L", "turno": 1, "asignatura": "M"},
+  {"grupo": "10-4", "dia": "M", "turno": 1, "asignatura": "Lit-L"},
+  {"grupo": "10-4", "dia": "MI", "turno": 1, "asignatura": "CP"},
+  {"grupo": "10-4", "dia": "J", "turno": 1, "asignatura": "F"},
+  {"grupo": "10-4", "dia": "V", "turno": 1, "asignatura": "Lit-L"},
+  {"grupo": "10-3", "dia": "L", "turno": 2, "asignatura": "I"},
+  {"grupo": "10-3", "dia": "M", "turno": 2, "asignatura": "B"},
+  {"grupo": "10-3", "dia": "MI", "turno": 2, "asignatura": "M"},
+  {"grupo": "10-3", "dia": "J", "turno": 2, "asignatura": "F"},
+  {"grupo": "10-3", "dia": "V", "turno": 2, "asignatura": "DC"},
+  {"grupo": "10-4", "dia": "L", "turno": 2, "asignatura": "M"},
+  {"grupo": "10-4", "dia": "M", "turno": 2, "asignatura": "I"},
+  {"grupo": "10-4", "dia": "MI", "turno": 2, "asignatura": "EF"},
+  {"grupo": "10-4", "dia": "J", "turno": 2, "asignatura": "I"},
+  {"grupo": "10-4", "dia": "V", "turno": 2, "asignatura": "Lit-L"},
+  {"grupo": "10-3", "dia": "L", "turno": 3, "asignatura": "B"},
+  {"grupo": "10-3", "dia": "M", "turno": 3, "asignatura": "CP"},
+  {"grupo": "10-3", "dia": "MI", "turno": 3, "asignatura": "M"},
+  {"grupo": "10-3", "dia": "J", "turno": 3, "asignatura": "Lit-L"},
+  {"grupo": "10-3", "dia": "V", "turno": 3, "asignatura": "Q"},
+  {"grupo": "10-4", "dia": "L", "turno": 3, "asignatura": "EF"},
+  {"grupo": "10-4", "dia": "M", "turno": 3, "asignatura": "B"},
+  {"grupo": "10-4", "dia": "MI", "turno": 3, "asignatura": "M"},
+  {"grupo": "10-4", "dia": "J", "turno": 3, "asignatura": "M"},
+  {"grupo": "10-4", "dia": "V", "turno": 3, "asignatura": "F"},
+  {"grupo": "10-3", "dia": "L", "turno": 4, "asignatura": "Lit-L"},
+  {"grupo": "10-3", "dia": "M", "turno": 4, "asignatura": "Lit-L"},
+  {"grupo": "10-3", "dia": "MI", "turno": 4, "asignatura": "H"},
+  {"grupo": "10-3", "dia": "J", "turno": 4, "asignatura": "Lit-L"},
+  {"grupo": "10-3", "dia": "V", "turno": 4, "asignatura": "I"},
+  {"grupo": "10-4", "dia": "L", "turno": 4, "asignatura": "CA"},
+  {"grupo": "10-4", "dia": "M", "turno": 4, "asignatura": "H"},
+  {"grupo": "10-4", "dia": "MI", "turno": 4, "asignatura": "G"},
+  {"grupo": "10-4", "dia": "J", "turno": 4, "asignatura": "INF"},
+  {"grupo": "10-4", "dia": "V", "turno": 4, "asignatura": "I"},
+  {"grupo": "10-3", "dia": "L", "turno": 5, "asignatura": "CA"},
+  {"grupo": "10-3", "dia": "M", "turno": 5, "asignatura": "G"},
+  {"grupo": "10-3", "dia": "MI", "turno": 5, "asignatura": "G"},
+  {"grupo": "10-3", "dia": "J", "turno": 5, "asignatura": "I"},
+  {"grupo": "10-3", "dia": "V", "turno": 5, "asignatura": "M"},
+  {"grupo": "10-4", "dia": "L", "turno": 5, "asignatura": "RD"},
+  {"grupo": "10-4", "dia": "M", "turno": 5, "asignatura": "DC"},
+  {"grupo": "10-4", "dia": "MI", "turno": 5, "asignatura": "F"},
+  {"grupo": "10-4", "dia": "J", "turno": 5, "asignatura": "H"},
+  {"grupo": "10-4", "dia": "V", "turno": 5, "asignatura": "Q"},
+  {"grupo": "10-3", "dia": "L", "turno": 6, "asignatura": "M"},
+  {"grupo": "10-3", "dia": "M", "turno": 6, "asignatura": "RD"},
+  {"grupo": "10-3", "dia": "MI", "turno": 6, "asignatura": "F"},
+  {"grupo": "10-3", "dia": "J", "turno": 6, "asignatura": "H"},
+  {"grupo": "10-3", "dia": "V", "turno": 6, "asignatura": "M"},
+  {"grupo": "10-4", "dia": "L", "turno": 6, "asignatura": "B"},
+  {"grupo": "10-4", "dia": "M", "turno": 6, "asignatura": "G"},
+  {"grupo": "10-4", "dia": "MI", "turno": 6, "asignatura": "H"},
+  {"grupo": "10-4", "dia": "J", "turno": 6, "asignatura": "Lit-L"},
+  {"grupo": "10-4", "dia": "V", "turno": 6, "asignatura": "M"},
+  {"grupo": "10-3", "dia": "L", "turno": 7, "asignatura": ""},
+  {"grupo": "10-3", "dia": "M", "turno": 7, "asignatura": ""},
+  {"grupo": "10-3", "dia": "MI", "turno": 7, "asignatura": "AL/AC"},
+  {"grupo": "10-3", "dia": "J", "turno": 7, "asignatura": ""},
+  {"grupo": "10-3", "dia": "V", "turno": 7, "asignatura": ""},
+  {"grupo": "10-4", "dia": "L", "turno": 7, "asignatura": "AL/AC"},
+  {"grupo": "10-4", "dia": "M", "turno": 7, "asignatura": ""},
+  {"grupo": "10-4", "dia": "MI", "turno": 7, "asignatura": ""},
+  {"grupo": "10-4", "dia": "J", "turno": 7, "asignatura": ""},
+  {"grupo": "10-4", "dia": "V", "turno": 7, "asignatura": ""}
+];
+D["carga-diaria"] = [
+  {"profesor": "Profesor de M en 10-3", "dia": "L"},
+  {"profesor": "Profesor de M en 10-3", "dia": "M"},
+  {"profesor": "Profesor de M en 10-3", "dia": "MI"},
+  {"profesor": "Profesor de M en 10-3", "dia": "J"},
+  {"profesor": "Profesor de M en 10-3", "dia": "V"},
+  {"profesor": "Profesor de Lit-L en 10-3", "dia": "L"},
+  {"profesor": "Profesor de Lit-L en 10-3", "dia": "M"},
+  {"profesor": "Profesor de Lit-L en 10-3", "dia": "MI"},
+  {"profesor": "Profesor de Lit-L en 10-3", "dia": "J"},
+  {"profesor": "Profesor de Lit-L en 10-3", "dia": "V"},
+  {"profesor": "Profesor de F en 10-3", "dia": "L"},
+  {"profesor": "Profesor de F en 10-3", "dia": "M"},
+  {"profesor": "Profesor de F en 10-3", "dia": "MI"},
+  {"profesor": "Profesor de F en 10-3", "dia": "J"},
+  {"profesor": "Profesor de F en 10-3", "dia": "V"},
+  {"profesor": "Profesor de I en 10-3", "dia": "L"},
+  {"profesor": "Profesor de I en 10-3", "dia": "M"},
+  {"profesor": "Profesor de I en 10-3", "dia": "MI"},
+  {"profesor": "Profesor de I en 10-3", "dia": "J"},
+  {"profesor": "Profesor de I en 10-3", "dia": "V"},
+  {"profesor": "Profesor de H en 10-3", "dia": "L"},
+  {"profesor": "Profesor de H en 10-3", "dia": "M"},
+  {"profesor": "Profesor de H en 10-3", "dia": "MI"},
+  {"profesor": "Profesor de H en 10-3", "dia": "J"},
+  {"profesor": "Profesor de H en 10-3", "dia": "V"},
+  {"profesor": "Profesor de EF en 10-3", "dia": "L"},
+  {"profesor": "Profesor de EF en 10-3", "dia": "M"},
+  {"profesor": "Profesor de EF en 10-3", "dia": "MI"},
+  {"profesor": "Profesor de EF en 10-3", "dia": "J"},
+  {"profesor": "Profesor de EF en 10-3", "dia": "V"},
+  {"profesor": "Profesor de B en 10-3", "dia": "L"},
+  {"profesor": "Profesor de B en 10-3", "dia": "M"},
+  {"profesor": "Profesor de B en 10-3", "dia": "MI"},
+  {"profesor": "Profesor de B en 10-3", "dia": "J"},
+  {"profesor": "Profesor de B en 10-3", "dia": "V"},
+  {"profesor": "Profesor de G en 10-3", "dia": "L"},
+  {"profesor": "Profesor de G en 10-3", "dia": "M"},
+  {"profesor": "Profesor de G en 10-3", "dia": "MI"},
+  {"profesor": "Profesor de G en 10-3", "dia": "J"},
+  {"profesor": "Profesor de G en 10-3", "dia": "V"},
+  {"profesor": "Profesor de INF en 10-3", "dia": "L"},
+  {"profesor": "Profesor de INF en 10-3", "dia": "M"},
+  {"profesor": "Profesor de INF en 10-3", "dia": "MI"},
+  {"profesor": "Profesor de INF en 10-3", "dia": "J"},
+  {"profesor": "Profesor de INF en 10-3", "dia": "V"},
+  {"profesor": "Profesor de Q en 10-3", "dia": "L"},
+  {"profesor": "Profesor de Q en 10-3", "dia": "M"},
+  {"profesor": "Profesor de Q en 10-3", "dia": "MI"},
+  {"profesor": "Profesor de Q en 10-3", "dia": "J"},
+  {"profesor": "Profesor de Q en 10-3", "dia": "V"},
+  {"profesor": "Profesor de CP en 10-3", "dia": "L"},
+  {"profesor": "Profesor de CP en 10-3", "dia": "M"},
+  {"profesor": "Profesor de CP en 10-3", "dia": "MI"},
+  {"profesor": "Profesor de CP en 10-3", "dia": "J"},
+  {"profesor": "Profesor de CP en 10-3", "dia": "V"},
+  {"profesor": "Profesor de DC en 10-3", "dia": "L"},
+  {"profesor": "Profesor de DC en 10-3", "dia": "M"},
+  {"profesor": "Profesor de DC en 10-3", "dia": "MI"},
+  {"profesor": "Profesor de DC en 10-3", "dia": "J"},
+  {"profesor": "Profesor de DC en 10-3", "dia": "V"},
+  {"profesor": "Profesor de CA en 10-3", "dia": "L"},
+  {"profesor": "Profesor de CA en 10-3", "dia": "M"},
+  {"profesor": "Profesor de CA en 10-3", "dia": "MI"},
+  {"profesor": "Profesor de CA en 10-3", "dia": "J"},
+  {"profesor": "Profesor de CA en 10-3", "dia": "V"},
+  {"profesor": "Profesor de RD en 10-3", "dia": "L"},
+  {"profesor": "Profesor de RD en 10-3", "dia": "M"},
+  {"profesor": "Profesor de RD en 10-3", "dia": "MI"},
+  {"profesor": "Profesor de RD en 10-3", "dia": "J"},
+  {"profesor": "Profesor de RD en 10-3", "dia": "V"},
+  {"profesor": "Profesor de AL/AC en 10-3", "dia": "L"},
+  {"profesor": "Profesor de AL/AC en 10-3", "dia": "M"},
+  {"profesor": "Profesor de AL/AC en 10-3", "dia": "MI"},
+  {"profesor": "Profesor de AL/AC en 10-3", "dia": "J"},
+  {"profesor": "Profesor de AL/AC en 10-3", "dia": "V"},
+  {"profesor": "Profesor de M en 10-4", "dia": "L"},
+  {"profesor": "Profesor de M en 10-4", "dia": "M"},
+  {"profesor": "Profesor de M en 10-4", "dia": "MI"},
+  {"profesor": "Profesor de M en 10-4", "dia": "J"},
+  {"profesor": "Profesor de M en 10-4", "dia": "V"},
+  {"profesor": "Profesor de Lit-L en 10-4", "dia": "L"},
+  {"profesor": "Profesor de Lit-L en 10-4", "dia": "M"},
+  {"profesor": "Profesor de Lit-L en 10-4", "dia": "MI"},
+  {"profesor": "Profesor de Lit-L en 10-4", "dia": "J"},
+  {"profesor": "Profesor de Lit-L en 10-4", "dia": "V"},
+  {"profesor": "Profesor de F en 10-4", "dia": "L"},
+  {"profesor": "Profesor de F en 10-4", "dia": "M"},
+  {"profesor": "Profesor de F en 10-4", "dia": "MI"},
+  {"profesor": "Profesor de F en 10-4", "dia": "J"},
+  {"profesor": "Profesor de F en 10-4", "dia": "V"},
+  {"profesor": "Profesor de I en 10-4", "dia": "L"},
+  {"profesor": "Profesor de I en 10-4", "dia": "M"},
+  {"profesor": "Profesor de I en 10-4", "dia": "MI"},
+  {"profesor": "Profesor de I en 10-4", "dia": "J"},
+  {"profesor": "Profesor de I en 10-4", "dia": "V"},
+  {"profesor": "Profesor de H en 10-4", "dia": "L"},
+  {"profesor": "Profesor de H en 10-4", "dia": "M"},
+  {"profesor": "Profesor de H en 10-4", "dia": "MI"},
+  {"profesor": "Profesor de H en 10-4", "dia": "J"},
+  {"profesor": "Profesor de H en 10-4", "dia": "V"},
+  {"profesor": "Profesor de EF en 10-4", "dia": "L"},
+  {"profesor": "Profesor de EF en 10-4", "dia": "M"},
+  {"profesor": "Profesor de EF en 10-4", "dia": "MI"},
+  {"profesor": "Profesor de EF en 10-4", "dia": "J"},
+  {"profesor": "Profesor de EF en 10-4", "dia": "V"},
+  {"profesor": "Profesor de B en 10-4", "dia": "L"},
+  {"profesor": "Profesor de B en 10-4", "dia": "M"},
+  {"profesor": "Profesor de B en 10-4", "dia": "MI"},
+  {"profesor": "Profesor de B en 10-4", "dia": "J"},
+  {"profesor": "Profesor de B en 10-4", "dia": "V"},
+  {"profesor": "Profesor de G en 10-4", "dia": "L"},
+  {"profesor": "Profesor de G en 10-4", "dia": "M"},
+  {"profesor": "Profesor de G en 10-4", "dia": "MI"},
+  {"profesor": "Profesor de G en 10-4", "dia": "J"},
+  {"profesor": "Profesor de G en 10-4", "dia": "V"},
+  {"profesor": "Profesor de INF en 10-4", "dia": "L"},
+  {"profesor": "Profesor de INF en 10-4", "dia": "M"},
+  {"profesor": "Profesor de INF en 10-4", "dia": "MI"},
+  {"profesor": "Profesor de INF en 10-4", "dia": "J"},
+  {"profesor": "Profesor de INF en 10-4", "dia": "V"},
+  {"profesor": "Profesor de Q en 10-4", "dia": "L"},
+  {"profesor": "Profesor de Q en 10-4", "dia": "M"},
+  {"profesor": "Profesor de Q en 10-4", "dia": "MI"},
+  {"profesor": "Profesor de Q en 10-4", "dia": "J"},
+  {"profesor": "Profesor de Q en 10-4", "dia": "V"},
+  {"profesor": "Profesor de CP en 10-4", "dia": "L"},
+  {"profesor": "Profesor de CP en 10-4", "dia": "M"},
+  {"profesor": "Profesor de CP en 10-4", "dia": "MI"},
+  {"profesor": "Profesor de CP en 10-4", "dia": "J"},
+  {"profesor": "Profesor de CP en 10-4", "dia": "V"},
+  {"profesor": "Profesor de DC en 10-4", "dia": "L"},
+  {"profesor": "Profesor de DC en 10-4", "dia": "M"},
+  {"profesor": "Profesor de DC en 10-4", "dia": "MI"},
+  {"profesor": "Profesor de DC en 10-4", "dia": "J"},
+  {"profesor": "Profesor de DC en 10-4", "dia": "V"},
+  {"profesor": "Profesor de CA en 10-4", "dia": "L"},
+  {"profesor": "Profesor de CA en 10-4", "dia": "M"},
+  {"profesor": "Profesor de CA en 10-4", "dia": "MI"},
+  {"profesor": "Profesor de CA en 10-4", "dia": "J"},
+  {"profesor": "Profesor de CA en 10-4", "dia": "V"},
+  {"profesor": "Profesor de RD en 10-4", "dia": "L"},
+  {"profesor": "Profesor de RD en 10-4", "dia": "M"},
+  {"profesor": "Profesor de RD en 10-4", "dia": "MI"},
+  {"profesor": "Profesor de RD en 10-4", "dia": "J"},
+  {"profesor": "Profesor de RD en 10-4", "dia": "V"},
+  {"profesor": "Profesor de AL/AC en 10-4", "dia": "L"},
+  {"profesor": "Profesor de AL/AC en 10-4", "dia": "M"},
+  {"profesor": "Profesor de AL/AC en 10-4", "dia": "MI"},
+  {"profesor": "Profesor de AL/AC en 10-4", "dia": "J"},
+  {"profesor": "Profesor de AL/AC en 10-4", "dia": "V"}
+];
+const CRECEN = [];
+
+// --- Coercion, identica a la del evaluador de referencia del nucleo ---
+function VACIO(x){ return x === null || x === undefined || x === ''; }
+function N(x){ if (typeof x === 'number') return x;
+               if (VACIO(x)) return 0;
+               const n = parseFloat(x); return isNaN(n) ? 0 : n; }
+function T(x){ if (x === null || x === undefined) return '';
+               if (x === true) return 'si';
+               return String(x); }
+function IG(a,b){ if (VACIO(a) && VACIO(b)) return true;
+                  if (VACIO(a) || VACIO(b)) return false;
+                  if (typeof a === 'number' || typeof b === 'number') return N(a) === N(b);
+                  return String(a) === String(b); }
+function V(x){ return x === undefined ? '' : x; }
+
+// --- Busqueda por clave con su valor por defecto ---
+function PROY(fila, campo, pordefecto){
+  if (!fila) return pordefecto;
+  const v = fila[campo];
+  return VACIO(v) ? pordefecto : v;
+}
+
+// --- Dos filas comparten algun valor en esos campos ---
+function COMPARTEN(a, b, campos){
+  const va = campos.map(c => a[c]).filter(x => !VACIO(x));
+  const vb = campos.map(c => b[c]).filter(x => !VACIO(x));
+  return va.some(x => vb.some(y => IG(x,y)));
+}
+
+// --- La fila contigua segun el orden declarado ---
+function VECINO(coleccion, fila, paso){
+  const i = coleccion.indexOf(fila);
+  const j = i + paso;
+  return (j >= 0 && j < coleccion.length) ? coleccion[j] : null;
+}
+
+// --- Calcula los derivados de una fila y los deja puestos ---
+function calcular(nombre, fila){
+  const d = DERIV[nombre];
+  if (!d) return fila;
+  for (const campo in d) {
+    try { fila[campo] = d[campo](fila); }
+    catch (e) { fila[campo] = ''; }
+  }
+  return fila;
+}
+
+// Recalcula hasta punto fijo, no una sola pasada.
+//
+// POR QUE. Un campo derivado puede depender de OTRA fila de su misma
+// coleccion -el ganador de un partido pasa al siguiente, el saldo de un
+// renglon se arrastra del anterior-. Con una sola pasada en el orden del
+// arreglo, cada render hace converger exactamente un nivel de esa cadena, y
+// la pagina ensena valores incompletos sin avisar de nada.
+//
+// Lo encontro un experimento de alcance con un cuadro de eliminatorias, y es
+// la clase de fallo que este trabajo le reprocha a la tesis de 2026: la
+// arquitectura declaraba cumplir la derivacion viva y no la cumplia.
+//
+// El tope existe para que una dependencia circular no cuelgue el navegador.
+// Si se alcanza, RECALCULO_INCOMPLETO queda en true y la pagina lo dice, que
+// es lo unico honesto que se puede hacer: callar seria volver al verde falso.
+const TOPE_DE_PASADAS = 32;
+let RECALCULO_INCOMPLETO = false;
+
+function huellaDe(){
+  const partes = [];
+  for (const nombre in D) for (const f of D[nombre]) partes.push(JSON.stringify(f));
+  return partes.join('|');
+}
+
+function recalcularTodo(){
+  let antes = huellaDe();
+  for (let pasada = 0; pasada < TOPE_DE_PASADAS; pasada++) {
+    for (const nombre in D) D[nombre].forEach(f => calcular(nombre, f));
+    const despues = huellaDe();
+    if (despues === antes) { RECALCULO_INCOMPLETO = false; return pasada + 1; }
+    antes = despues;
+  }
+  RECALCULO_INCOMPLETO = true;
+  return TOPE_DE_PASADAS;
+}
+
+const DERIV = {};
+DERIV["asignaturas"] = {
+  "turno-doble": (f) => (IG(V(f["frecuencia"]),5) ? "si" : "no")
+};
+DERIV["plan-por-grupo"] = {
+  "nombre": (f) => PROY((D["asignaturas"].find(c => IG(V(c["abrev"]),V(f["abrev"]))) ?? null), "nombre", ""),
+  "frecuencia": (f) => PROY((D["asignaturas"].find(c => IG(V(c["abrev"]),V(f["abrev"]))) ?? null), "frecuencia", 0),
+  "asignadas": (f) => D["casillas"].filter(c => (IG(V(c["grupo"]),V(f["grupo"])) && IG(V(c["asignatura"]),V(f["abrev"])))).length,
+  "faltan": (f) => (N(V(f["frecuencia"])) - N(V(f["asignadas"])))
+};
+DERIV["casillas"] = {
+  "nombre": (f) => PROY((D["asignaturas"].find(c => IG(V(c["abrev"]),V(f["asignatura"]))) ?? null), "nombre", ""),
+  "clave-plan": (f) => [V(f["grupo"]), "#", V(f["asignatura"])].map(T).join(""),
+  "profesor": (f) => PROY((D["plan-por-grupo"].find(c => IG(V(c["clave"]),V(f["clave-plan"]))) ?? null), "profesor", ""),
+  "local": (f) => PROY((D["asignaturas"].find(c => IG(V(c["abrev"]),V(f["asignatura"]))) ?? null), "local", ""),
+  "aula": (f) => (VACIO(V(f["asignatura"])) ? "" : (VACIO(V(f["local"])) ? ["Aula ", V(f["grupo"])].map(T).join("") : V(f["local"]))),
+  "turno-doble": (f) => PROY((D["asignaturas"].find(c => IG(V(c["abrev"]),V(f["asignatura"]))) ?? null), "turno-doble", "no"),
+  "admite-tarde": (f) => PROY((D["asignaturas"].find(c => IG(V(c["abrev"]),V(f["asignatura"]))) ?? null), "admite-tarde", "no"),
+  "dia-preparacion": (f) => PROY((D["asignaturas"].find(c => IG(V(c["abrev"]),V(f["asignatura"]))) ?? null), "dia-preparacion", ""),
+  "profesor-contratado": (f) => PROY((D["profesores"].find(c => IG(V(c["nombre"]),V(f["profesor"]))) ?? null), "contratado", "no"),
+  "profesor-vive-lejos": (f) => PROY((D["profesores"].find(c => IG(V(c["nombre"]),V(f["profesor"]))) ?? null), "vive-lejos", "no"),
+  "clave-asistencia": (f) => [V(f["profesor"]), "#", V(f["dia"])].map(T).join(""),
+  "profesor-asiste-hoy": (f) => PROY((D["disponibilidad"].find(c => IG(V(c["clave"]),V(f["clave-asistencia"]))) ?? null), "asiste", "no"),
+  "repite-mal": (f) => (((!VACIO(V(f["asignatura"]))) && D["casillas"].some(o => o !== f && (IG(V(o["grupo"]),V(f["grupo"])) && IG(V(o["dia"]),V(f["dia"])) && IG(V(o["asignatura"]),V(f["asignatura"])) && (IG(V(f["turno-doble"]),"no") || ((!IG(V(o["turno"]),(N(V(f["turno"])) + N(1)))) && (!IG(V(o["turno"]),(N(V(f["turno"])) - N(1))))))))) ? "si" : "no")
+};
+DERIV["carga-diaria"] = {
+  "sesiones": (f) => D["casillas"].filter(c => (IG(V(c["profesor"]),V(f["profesor"])) && IG(V(c["dia"]),V(f["dia"])) && (!VACIO(V(c["asignatura"]))))).length
+};
+
+const MARCAS = [
+  {nombre: "profesor-colisiona", coleccion: "casillas", clase: "problema", campos: ["asignatura", "profesor"],
+   cond: (f) => ((!VACIO(V(f["asignatura"]))) && D["casillas"].some(o => o !== f && (IG(V(o["dia"]),V(f["dia"])) && IG(V(o["turno"]),V(f["turno"])) && IG(V(o["profesor"]),V(f["profesor"]))))),
+   explica: (f) => "Este profesor ya da clase a otro grupo en este mismo turno"},
+  {nombre: "aula-ocupada", coleccion: "casillas", clase: "problema", campos: ["aula"],
+   cond: (f) => ((!VACIO(V(f["asignatura"]))) && D["casillas"].some(o => o !== f && (IG(V(o["dia"]),V(f["dia"])) && IG(V(o["turno"]),V(f["turno"])) && IG(V(o["aula"]),V(f["aula"]))))),
+   explica: (f) => "Ese local esta ocupado por otro grupo a esa hora"},
+  {nombre: "sesion-repetida-mal", coleccion: "casillas", clase: "problema", campos: ["asignatura"],
+   cond: (f) => IG(V(f["repite-mal"]),"si"),
+   explica: (f) => (IG(V(f["turno-doble"]),"no") ? "Esta asignatura no admite turno doble y repite el dia en este grupo" : "Esta asignatura repite el dia en este grupo sin ser en turnos seguidos")},
+  {nombre: "en-dia-de-preparacion", coleccion: "casillas", clase: "problema", campos: ["asignatura"],
+   cond: (f) => ((!VACIO(V(f["asignatura"]))) && IG(V(f["dia"]),V(f["dia-preparacion"]))),
+   explica: (f) => "Es el dia de preparacion de la asignatura"},
+  {nombre: "ef-despues-del-tercer-turno", coleccion: "casillas", clase: "problema", campos: ["asignatura", "turno"],
+   cond: (f) => (IG(V(f["asignatura"]),"EF") && (N(V(f["turno"])) > N(3))),
+   explica: (f) => "Educacion Fisica no puede caer despues del tercer turno"},
+  {nombre: "en-la-tarde-sin-admitirla", coleccion: "casillas", clase: "problema", campos: ["asignatura", "turno"],
+   cond: (f) => ((!VACIO(V(f["asignatura"]))) && IG(V(f["admite-tarde"]),"no") && (N(V(f["turno"])) > N(6))),
+   explica: (f) => "Esta asignatura no admite turnos de tarde"},
+  {nombre: "contratado-en-dia-que-no-asiste", coleccion: "casillas", clase: "problema", campos: ["asignatura", "profesor"],
+   cond: (f) => ((!VACIO(V(f["asignatura"]))) && IG(V(f["profesor-contratado"]),"si") && IG(V(f["profesor-asiste-hoy"]),"no")),
+   explica: (f) => "Este profesor esta contratado y no asiste al centro este dia"},
+  {nombre: "frecuencia-incompleta", coleccion: "plan-por-grupo", clase: "problema", campos: ["asignadas", "faltan"],
+   cond: (f) => (N(V(f["faltan"])) > N(0)),
+   explica: (f) => [(N(V(f["faltan"])) === 1 ? "Falta" : "Faltan"), " ", V(f["faltan"]), " ", (N(V(f["faltan"])) === 1 ? "sesion" : "sesiones")].map(T).join("")},
+  {nombre: "frecuencia-excedida", coleccion: "plan-por-grupo", clase: "problema", campos: ["asignadas", "faltan"],
+   cond: (f) => (N(V(f["faltan"])) < N(0)),
+   explica: (f) => [(N((N(0) - N(V(f["faltan"])))) === 1 ? "Sobra" : "Sobran"), " ", (N(0) - N(V(f["faltan"]))), " ", (N((N(0) - N(V(f["faltan"])))) === 1 ? "sesion" : "sesiones")].map(T).join("")},
+  {nombre: "primer-turno-a-quien-vive-lejos", coleccion: "casillas", clase: "advertencia", campos: ["asignatura", "profesor"],
+   cond: (f) => ((!VACIO(V(f["asignatura"]))) && IG(V(f["profesor-vive-lejos"]),"si") && IG(V(f["turno"]),1)),
+   explica: (f) => "Se preferiria no darle el primer turno a un profesor que vive lejos"},
+  {nombre: "pasa-del-tope-diario", coleccion: "carga-diaria", clase: "advertencia", campos: ["sesiones"],
+   cond: (f) => (N(V(f["sesiones"])) > N(3)),
+   explica: (f) => ["Da ", V(f["sesiones"]), " sesiones ese dia"].map(T).join("")},
+  {nombre: "turno-libre", coleccion: "casillas", clase: "informativa", campos: ["asignatura"],
+   cond: (f) => VACIO(V(f["asignatura"])),
+   explica: (f) => "Turno sin asignar"}
+];
+
+const DOMINIOS = {};
+DOMINIOS["casillas.asignatura"] = {bloquea: false, valores: () => [...new Set(D["asignaturas"].filter(c => true).map(c => V(c["abrev"])).filter(x => !VACIO(x)))]};
+
+const VISTAS = [
+  {nombre: "por-grupo", titulo: "Horario del grupo", coleccion: "casillas", entrada: true},
+  {nombre: "por-profesor", titulo: "Horario del profesor", coleccion: "casillas", entrada: false},
+  {nombre: "por-aula", titulo: "Horario del aula", coleccion: "casillas", entrada: false},
+  {nombre: "plan", titulo: "Asignaturas", coleccion: "asignaturas", entrada: false},
+  {nombre: "frecuencias", titulo: "Frecuencias por grupo", coleccion: "plan-por-grupo", entrada: false},
+  {nombre: "carga", titulo: "Carga diaria", coleccion: "carga-diaria", entrada: false}
+];
+
+const ESQUEMA = [
+  {nombre: "asignaturas", etiqueta: "Asignaturas", crece: false, agrupa: null, campos: [{n: "abrev", e: "Abrev", rol: "fijo", tipo: "texto", clave: null}, {n: "nombre", e: "Asignatura", rol: "fijo", tipo: "texto", clave: null}, {n: "frecuencia", e: "Frecuencia", rol: "fijo", tipo: "entero", clave: null}, {n: "turno-doble", e: "Turno doble", rol: "derivado", tipo: "texto", clave: null}, {n: "admite-tarde", e: "Admite tarde", rol: "fijo", tipo: "texto", clave: null}, {n: "dia-preparacion", e: "Dia de preparacion", rol: "fijo", tipo: "texto", clave: null}, {n: "local", e: "Local", rol: "fijo", tipo: "texto", clave: null}]},
+  {nombre: "plan-por-grupo", etiqueta: "Plan por grupo", crece: false, agrupa: null, campos: [{n: "clave", e: "Clave", rol: "fijo", tipo: "texto", clave: null}, {n: "grupo", e: "Grupo", rol: "fijo", tipo: "texto", clave: null}, {n: "abrev", e: "Abrev", rol: "fijo", tipo: "texto", clave: null}, {n: "profesor", e: "Profesor", rol: "fijo", tipo: "texto", clave: null}, {n: "nombre", e: "Asignatura", rol: "derivado", tipo: "texto", clave: null}, {n: "frecuencia", e: "Frecuencia", rol: "derivado", tipo: "entero", clave: null}, {n: "asignadas", e: "Asignadas", rol: "derivado", tipo: "entero", clave: null}, {n: "faltan", e: "Faltan", rol: "derivado", tipo: "entero", clave: null}]},
+  {nombre: "profesores", etiqueta: "Profesores", crece: false, agrupa: null, campos: [{n: "nombre", e: "Profesor", rol: "fijo", tipo: "texto", clave: null}, {n: "contratado", e: "Contratado", rol: "fijo", tipo: "texto", clave: null}, {n: "vive-lejos", e: "Vive lejos", rol: "fijo", tipo: "texto", clave: null}]},
+  {nombre: "disponibilidad", etiqueta: "Dias que asisten los contratados", crece: false, agrupa: null, campos: [{n: "clave", e: "Clave", rol: "fijo", tipo: "texto", clave: null}, {n: "profesor", e: "Profesor", rol: "fijo", tipo: "texto", clave: null}, {n: "dia", e: "Dia", rol: "fijo", tipo: "texto", clave: null}, {n: "asiste", e: "Asiste", rol: "fijo", tipo: "texto", clave: null}]},
+  {nombre: "casillas", etiqueta: "Casillas del horario", crece: false, agrupa: null, campos: [{n: "grupo", e: "Grupo", rol: "fijo", tipo: "texto", clave: null}, {n: "dia", e: "Dia", rol: "fijo", tipo: "texto", clave: null}, {n: "turno", e: "Turno", rol: "fijo", tipo: "entero", clave: null}, {n: "asignatura", e: "Asignatura", rol: "entrada", tipo: "texto", clave: null}, {n: "nombre", e: "Nombre", rol: "derivado", tipo: "texto", clave: null}, {n: "clave-plan", e: "Grupo#Asignatura", rol: "derivado", tipo: "texto", clave: null}, {n: "profesor", e: "Profesor", rol: "derivado", tipo: "texto", clave: null}, {n: "local", e: "Local de la asignatura", rol: "derivado", tipo: "texto", clave: null}, {n: "aula", e: "Aula", rol: "derivado", tipo: "texto", clave: null}, {n: "turno-doble", e: "Turno doble", rol: "derivado", tipo: "texto", clave: null}, {n: "admite-tarde", e: "Admite tarde", rol: "derivado", tipo: "texto", clave: null}, {n: "dia-preparacion", e: "Dia de preparacion", rol: "derivado", tipo: "texto", clave: null}, {n: "profesor-contratado", e: "Contratado", rol: "derivado", tipo: "texto", clave: null}, {n: "profesor-vive-lejos", e: "Vive lejos", rol: "derivado", tipo: "texto", clave: null}, {n: "clave-asistencia", e: "Profesor#Dia", rol: "derivado", tipo: "texto", clave: null}, {n: "profesor-asiste-hoy", e: "Asiste hoy", rol: "derivado", tipo: "texto", clave: null}, {n: "repite-mal", e: "Repite mal el dia", rol: "derivado", tipo: "texto", clave: null}]},
+  {nombre: "carga-diaria", etiqueta: "Carga diaria por profesor", crece: false, agrupa: null, campos: [{n: "profesor", e: "Profesor", rol: "fijo", tipo: "texto", clave: null}, {n: "dia", e: "Dia", rol: "fijo", tipo: "texto", clave: null}, {n: "sesiones", e: "Sesiones", rol: "derivado", tipo: "entero", clave: null}]}
+];
+
+const CRUCES = [
+  {titulo: "Horario del grupo", coleccion: "casillas", ejeFilas: "turno", ejeColumnas: "dia", celda: "asignatura", secciones: "grupo", filtro: null},
+  {titulo: "Horario del profesor", coleccion: "casillas", ejeFilas: "turno", ejeColumnas: "dia", celda: "grupo", secciones: "profesor", filtro: null},
+  {titulo: "Horario del aula", coleccion: "casillas", ejeFilas: "turno", ejeColumnas: "dia", celda: "grupo", secciones: "aula", filtro: null}
+];
+
+function marcasDe(nombreColeccion, fila){
+  return MARCAS.filter(m => m.coleccion === nombreColeccion)
+               .filter(m => { try { return !!m.cond(fila); } catch(e){ return false; } });
+}
+
+// --- Tabla cruzada: los valores de un campo van en el eje de columnas ---
+//
+// El numero de columnas sale de los DATOS, no de la declaracion. En una
+// pagina eso no cuesta nada: se recalcula al dibujar, y si aparece un valor
+// nuevo aparece una columna nueva. En una hoja de calculo, lo mismo mueve el
+// direccionamiento entero, y por eso alli es una emulacion con coste.
+function distintosDe(filas, campo){
+  const vistos = [];
+  for (const f of filas) {
+    const v = f[campo];
+    if (!VACIO(v) && !vistos.some(x => IG(x, v))) vistos.push(v);
+  }
+  return vistos;
+}
+
+// Una vista partida es la misma tabla repetida, una vez por valor. Los
+// valores salen de los DATOS al dibujar: si manana aparece un grupo nuevo,
+// aparece una tabla nueva sin volver a generar nada. Es la misma propiedad
+// que hace que aqui las columnas de un cruce sean gratis, y es justo lo que
+// a una hoja de calculo le cuesta una emulacion.
+function dibujarCruce(cruce, app){
+  const filasDelDato = D[cruce.coleccion] || [];
+  // El filtro esconde filas de la PRESENTACION y no toca D: los agregados y
+  // las marcas siguen viendo la coleccion entera. Se evalua en cada render,
+  // asi que una fila que deja de cumplirlo desaparece sola.
+  const todas = cruce.filtro ? filasDelDato.filter(f => !!cruce.filtro(f))
+                             : filasDelDato;
+  const secciones = cruce.secciones ? distintosDe(todas, cruce.secciones) : [null];
+  for (const s of secciones) {
+    const filas = s === null ? todas
+                             : todas.filter(f => IG(f[cruce.secciones], s));
+    dibujarUnaTabla(cruce, filas, s, app);
+  }
+}
+
+// Las filas en el orden en que se van a MOSTRAR, cada una con el indice que
+// ocupa en D y, si empieza un grupo, la cabecera que va encima. Sin campo de
+// agrupacion es la identidad: mismas filas, mismo orden, sin cabeceras.
+function ordenarParaMostrar(filas, campo){
+  const pares = filas.map((fila, indice) => ({fila, indice, cabecera: null}));
+  if (!campo) return pares;
+  const grupos = [];
+  for (const par of pares) {
+    let g = grupos.find(x => IG(x.valor, par.fila[campo]));
+    if (!g) { g = {valor: par.fila[campo], pares: []}; grupos.push(g); }
+    g.pares.push(par);
+  }
+  const salida = [];
+  for (const g of grupos) {
+    g.pares.forEach((par, i) => {
+      salida.push({fila: par.fila, indice: par.indice,
+                   cabecera: i === 0 ? g.valor : null});
+    });
+  }
+  return salida;
+}
+
+function dibujarUnaTabla(cruce, filas, valorDeSeccion, app){
+  const ejeF = distintosDe(filas, cruce.ejeFilas);
+  const ejeC = distintosDe(filas, cruce.ejeColumnas);
+
+  const seccion = document.createElement('section');
+  const titulo = document.createElement('h2');
+  titulo.textContent = valorDeSeccion === null
+    ? cruce.titulo
+    : cruce.titulo + ' - ' + T(valorDeSeccion);
+  seccion.appendChild(titulo);
+
+  const envoltura = document.createElement('div');
+  envoltura.className = 'envoltura';
+  const t = document.createElement('table');
+
+  const trh = document.createElement('tr');
+  const esquina = document.createElement('th');
+  esquina.textContent = cruce.ejeFilas;
+  trh.appendChild(esquina);
+  for (const c of ejeC) {
+    const th = document.createElement('th');
+    th.textContent = T(c);
+    trh.appendChild(th);
+  }
+  const thead = document.createElement('thead');
+  thead.appendChild(trh);
+  t.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  for (const vf of ejeF) {
+    const tr = document.createElement('tr');
+    const th = document.createElement('th');
+    th.textContent = T(vf);
+    tr.appendChild(th);
+    for (const vc of ejeC) {
+      // TODAS las que caen ahi, no la primera. Normalmente es una, porque
+      // los ejes determinan la fila y el analisis lo exige. Son varias
+      // cuando la vista declaro unica-salvo: entonces el choque existe y hay
+      // que ensenarlo en vez de elegir uno y callarse.
+      const enLaCasilla = filas.filter(f => IG(f[cruce.ejeFilas], vf) &&
+                                            IG(f[cruce.ejeColumnas], vc));
+      const td = document.createElement('td');
+      td.textContent = enLaCasilla.map(f => T(f[cruce.celda])).join(' / ');
+      // Las marcas de las filas que caen en el cruce tinen la celda.
+      for (const fila of enLaCasilla) {
+        const suyas = marcasDe(cruce.coleccion, fila);
+        if (suyas.length) { td.classList.add(suyas[0].clase); break; }
+      }
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+  t.appendChild(tbody);
+  envoltura.appendChild(t);
+  seccion.appendChild(envoltura);
+  app.appendChild(seccion);
+}
+
+function render(){
+  recalcularTodo();
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+
+  if (typeof CRUCES !== 'undefined') for (const c of CRUCES) dibujarCruce(c, app);
+
+  if (RECALCULO_INCOMPLETO) {
+    const aviso = document.createElement('p');
+    aviso.className = 'aviso';
+    aviso.textContent = 'Los valores calculados no acabaron de estabilizarse. ' +
+      'Puede haber una dependencia circular entre filas.';
+    app.appendChild(aviso);
+  }
+
+  for (const tabla of ESQUEMA) {
+    const seccion = document.createElement('section');
+    const titulo = document.createElement('h2');
+    titulo.textContent = tabla.etiqueta;
+    seccion.appendChild(titulo);
+
+    const envoltura = document.createElement('div');
+    envoltura.className = 'envoltura';
+    const t = document.createElement('table');
+
+    const thead = document.createElement('thead');
+    const trh = document.createElement('tr');
+    for (const c of tabla.campos) {
+      const th = document.createElement('th');
+      th.textContent = c.e;
+      trh.appendChild(th);
+    }
+    const thEstado = document.createElement('th');
+    thEstado.textContent = 'Estado';
+    trh.appendChild(thEstado);
+    thead.appendChild(trh);
+    t.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    // Agrupar es SOLO de presentacion: el arreglo D no se toca. Sus indices
+    // siguen siendo los mismos, que es lo que usan los controles de entrada
+    // para escribir de vuelta, y lo que hace que la fila anterior siga
+    // significando lo mismo. En una hoja de calculo no se puede separar las
+    // dos cosas, porque alli la posicion de la fila ES el dato.
+    ordenarParaMostrar(D[tabla.nombre], tabla.agrupa).forEach(par => {
+      const fila = par.fila, indice = par.indice;
+      if (par.cabecera !== null) {
+        const trg = document.createElement('tr');
+        const tdg = document.createElement('td');
+        tdg.className = 'grupo';
+        tdg.colSpan = tabla.campos.length + 1;
+        tdg.textContent = T(par.cabecera);
+        trg.appendChild(tdg);
+        tbody.appendChild(trg);
+      }
+      const disparadas = marcasDe(tabla.nombre, fila);
+      const tr = document.createElement('tr');
+
+      for (const c of tabla.campos) {
+        const td = document.createElement('td');
+        td.className = c.rol;
+        // El rol decide que se dibuja. Es el mismo hecho del dominio que en
+        // la hoja de calculo decide el bloqueo y el color de la pestana.
+        if (c.rol === 'entrada') {
+          const clave = tabla.nombre + '.' + c.n;
+          const dominio = DOMINIOS[clave];
+          let control;
+          if (dominio) {
+            const valores = dominio.valores();
+            if (dominio.bloquea) {
+              control = document.createElement('select');
+              const vacia = document.createElement('option');
+              vacia.value = ''; vacia.textContent = '';
+              control.appendChild(vacia);
+              for (const v of valores) {
+                const o = document.createElement('option');
+                o.value = v; o.textContent = v;
+                control.appendChild(o);
+              }
+            } else {
+              // Avisa sin bloquear, como los desplegables del corpus.
+              control = document.createElement('input');
+              const lista = document.createElement('datalist');
+              lista.id = 'dl_' + tabla.nombre + '_' + c.n + '_' + indice;
+              for (const v of valores) {
+                const o = document.createElement('option');
+                o.value = v;
+                lista.appendChild(o);
+              }
+              control.setAttribute('list', lista.id);
+              td.appendChild(lista);
+              if (!VACIO(fila[c.n]) && !valores.some(v => IG(v, fila[c.n]))) {
+                const aviso = document.createElement('div');
+                aviso.className = 'aviso';
+                aviso.textContent = 'no esta en la lista';
+                td.appendChild(aviso);
+              }
+            }
+          } else {
+            control = document.createElement('input');
+            if (c.tipo === 'entero' || c.tipo === 'numero') control.type = 'number';
+          }
+          control.value = fila[c.n] ?? '';
+          control.addEventListener('input', e => {
+            const v = e.target.value;
+            fila[c.n] = (c.tipo === 'entero' || c.tipo === 'numero')
+                        ? (v === '' ? '' : Number(v)) : v;
+            render();
+          });
+          td.insertBefore(control, td.firstChild);
+        } else if (c.clave) {
+          // Relacion uno a muchos: cada fila relacionada por su clave.
+          td.textContent = (fila[c.n] || [])
+            .map(r => c.clave.map(k => T(r[k])).join(' ')).join(', ');
+        } else {
+          td.textContent = T(fila[c.n]);
+        }
+        // La marca senala los campos que declara su alcance.
+        const suyas = disparadas.filter(m => m.campos.includes(c.n));
+        if (suyas.length) td.classList.add(suyas[0].clase);
+        tr.appendChild(td);
+      }
+
+      const tdEstado = document.createElement('td');
+      tdEstado.className = 'estado';
+      tdEstado.textContent = disparadas.map(m => {
+        try { return m.explica ? m.explica(fila) : m.nombre.replace(/-/g, ' '); }
+        catch(e){ return m.nombre.replace(/-/g, ' '); }
+      }).join('; ');
+      tr.appendChild(tdEstado);
+      tbody.appendChild(tr);
+    });
+    t.appendChild(tbody);
+    envoltura.appendChild(t);
+    seccion.appendChild(envoltura);
+
+    // Crecer es nativo aqui: un boton. En la hoja de calculo hace falta
+    // reservar filas y definir un rango que se dimensione con lo escrito.
+    if (tabla.crece) {
+      const boton = document.createElement('button');
+      boton.textContent = '+ Anadir fila';
+      boton.addEventListener('click', () => {
+        const nueva = {};
+        for (const c of tabla.campos) if (c.rol !== 'derivado') nueva[c.n] = '';
+        D[tabla.nombre].push(nueva);
+        render();
+      });
+      seccion.appendChild(boton);
+    }
+
+    const leyenda = MARCAS.filter(m => m.coleccion === tabla.nombre);
+    if (leyenda.length) {
+      const p = document.createElement('p');
+      p.className = 'leyenda';
+      for (const m of leyenda) {
+        const s = document.createElement('span');
+        s.className = m.clase;
+        s.textContent = m.nombre.replace(/-/g, ' ');
+        p.appendChild(s);
+      }
+      seccion.appendChild(p);
+    }
+    app.appendChild(seccion);
+  }
+}
+
+render();
+</script>
+</body>
+</html>

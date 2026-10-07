@@ -1,0 +1,106 @@
+Horario de educacion fisica del SEDER
+=====================================
+
+Indice
+  - Reparto de brigadas  (punto de entrada)
+  - Ocupacion de instalaciones
+  - Horario del profesor
+  - Instalaciones
+  - Brigadas por horario
+  - Anos de carrera
+
+Ocupacion de instalaciones - par
+  Instalacion  10 a.m.  11 a.m.
+  -----------  -------  -------
+  Pista 1      C111            
+  Gimnasio              C112   
+  Pista 2      M11             
+  Piscina      F11             
+
+Ocupacion de instalaciones - impar
+  Instalacion  3 p.m.  11 a.m.   
+  -----------  ------  ----------
+  Piscina      C211              
+  Pista 2              C212 / M21
+
+Horario del profesor - Prof. Alvarez
+  Horario  par       
+  -------  ----------
+  10 a.m.  C111 / F11
+  11 a.m.  C112      
+
+Horario del profesor - Prof. Benitez
+  Horario  impar
+  -------  -----
+  3 p.m.   C211 
+  11 a.m.  C212 
+
+Horario del profesor - Prof. Castro
+  Horario  par  impar
+  -------  ---  -----
+  10 a.m.  M11       
+  11 a.m.       M21  
+
+Horario del profesor - Prof. Diaz
+  Horario  par
+  -------  ---
+
+Instalaciones
+  Instalacion  Capacidad  Brigadas  La que menos tiene  Estado                         
+  -----------  ---------  --------  ------------------  -------------------------------
+  Pista 1      40         1         1                                                  
+  Pista 2      30         3         1                   Tiene 3 brigadas y otra tiene 1
+  Gimnasio     25         1         1                                                  
+  Piscina      20         2         1                                                  
+
+Anos de carrera
+  Ano    Carrera                    Semana  Estado
+  -----  -------------------------  ------  ------
+  CC-1   Ciencia de la Computacion  par           
+  CC-2   Ciencia de la Computacion  impar         
+  MAT-1  Matematica                 par           
+  MAT-2  Matematica                 impar         
+  FIS-1  Fisica                     par           
+  FIS-2  Fisica                     par           
+
+Horarios disponibles por ano
+  Clave          Ano    Horario  Estado
+  -------------  -----  -------  ------
+  CC-1#10 a.m.   CC-1   10 a.m.        
+  CC-1#11 a.m.   CC-1   11 a.m.        
+  CC-2#11 a.m.   CC-2   11 a.m.        
+  CC-2#3 p.m.    CC-2   3 p.m.         
+  MAT-1#10 a.m.  MAT-1  10 a.m.        
+  MAT-2#10 a.m.  MAT-2  10 a.m.        
+  MAT-2#11 a.m.  MAT-2  11 a.m.        
+  MAT-2#3 p.m.   MAT-2  3 p.m.         
+  FIS-1#11 a.m.  FIS-1  11 a.m.        
+  FIS-1#3 p.m.   FIS-1  3 p.m.         
+  FIS-2#3 p.m.   FIS-2  3 p.m.         
+
+Brigadas
+  Brigada  Ano    Personas  Profesor       Horario  Instalacion  Semana  Capacidad  Ano#Horario    Horario disponible  Estado                                                                                               
+  -------  -----  --------  -------------  -------  -----------  ------  ---------  -------------  ------------------  -----------------------------------------------------------------------------------------------------
+  C111     CC-1   28        Prof. Alvarez  10 a.m.  Pista 1      par     40         CC-1#10 a.m.   si                  Este profesor tiene otra brigada en ese horario y esa semana                                         
+  C112     CC-1   25        Prof. Alvarez  11 a.m.  Gimnasio     par     25         CC-1#11 a.m.   si                                                                                                                       
+  C211     CC-2   22        Prof. Benitez  3 p.m.   Piscina      impar   20         CC-2#3 p.m.    si                  La instalacion es para 20 personas y la brigada tiene 22                                             
+  C212     CC-2   20        Prof. Benitez  11 a.m.  Pista 2      impar   30         CC-2#11 a.m.   si                  Otra brigada usa esta instalacion en ese horario y esa semana                                        
+  M11      MAT-1  30        Prof. Castro   10 a.m.  Pista 2      par     30         MAT-1#10 a.m.  si                                                                                                                       
+  M21      MAT-2  18        Prof. Castro   11 a.m.  Pista 2      impar   30         MAT-2#11 a.m.  si                  Otra brigada usa esta instalacion en ese horario y esa semana                                        
+  F11      FIS-1  15        Prof. Alvarez  10 a.m.  Piscina      par     20         FIS-1#10 a.m.  no                  Su ano no tiene este horario disponible; Este profesor tiene otra brigada en ese horario y esa semana
+  F21      FIS-2  12        Prof. Diaz                           par     0          FIS-2#                             Esta brigada todavia no tiene clase esta semana                                                      
+
+  Horario admite: 10 a.m., 11 a.m., 3 p.m.
+
+  Instalacion admite: Pista 1, Pista 2, Gimnasio, Piscina
+
+Franja
+  Semana  Horario  Brigadas  La que menos tiene  Estado                                 
+  ------  -------  --------  ------------------  ---------------------------------------
+  par     10 a.m.  3         0                   Tiene 3 brigadas y otro horario tiene 0
+  par     11 a.m.  1         0                                                          
+  par     3 p.m.   0         0                                                          
+  impar   10 a.m.  0         0                                                          
+  impar   11 a.m.  2         0                   Tiene 2 brigadas y otro horario tiene 0
+  impar   3 p.m.   1         0                                                          
+
