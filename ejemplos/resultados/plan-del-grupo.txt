@@ -1,0 +1,13 @@
+Plan de asignaturas del grupo D111
+==================================
+
+Asignaturas
+  Abrev  Asignatura                       Frec  Asignadas  Faltan  Estado       
+  -----  -------------------------------  ----  ---------  ------  -------------
+  AL     Algebra Lineal                   3     3          0       completa     
+  L      Logica                           2     2          0       completa     
+  IP     Introduccion a la Programacion   2     2          0       completa     
+  AM     Analisis Matematico              2     3          -1      Sobra 1 turno
+  ICD    Introduccion a Ciencia de Datos  2     1          1       Falta 1 turno
+  F      Fisica                           2     1          1       Falta 1 turno
+

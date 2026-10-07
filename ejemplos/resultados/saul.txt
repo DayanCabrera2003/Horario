@@ -1,0 +1,235 @@
+Horario semanal del preuniversitario Saul
+=========================================
+
+Indice
+  - Horario del grupo  (punto de entrada)
+  - Horario del profesor
+  - Horario del aula
+  - Plan de asignaturas
+  - Profesores
+  - Frecuencias por grupo
+  - Carga diaria
+
+Horario del grupo - 10-A
+  Turno  1    2     3     4    5   
+  -----  ---  ----  ----  ---  ----
+  1      MAT  MAT   HIST  MAT  MAT 
+  2      ESP  ESP         MAT  ESP 
+  3      ESP              EF       
+  4      ING  HIST                 
+  5      EF                        
+  6                                
+  7                       ING  HIST
+  8                                
+
+Horario del grupo - 10-B
+  Turno  1     2    3    4     5   
+  -----  ----  ---  ---  ----  ----
+  1      MAT                       
+  2      ESP   ESP  EF         ESP 
+  3      EF    MAT  ESP        MAT 
+  4            ING       MAT   MAT 
+  5                      HIST      
+  6      HIST                      
+  7                      ING   HIST
+  8                                
+
+Horario del profesor - Rosa
+  Turno  1            2     4            5   
+  -----  -----------  ----  -----------  ----
+  1      10-A / 10-B  10-A  10-A         10-A
+  2                         10-A             
+  3                   10-B               10-B
+  4      10-A         10-B  10-B         10-B
+  7                         10-A / 10-B      
+
+Horario del profesor - Julia
+  Turno  3     1            2            5            4   
+  -----  ----  -----------  -----------  -----------  ----
+  1      10-A                                             
+  2            10-A / 10-B  10-A / 10-B  10-A / 10-B      
+  3      10-B  10-A                                       
+  4                         10-A                          
+  5                                                   10-B
+  6            10-B                                       
+  7                                      10-A / 10-B      
+
+Horario del profesor - Pedro
+  Turno  3     4     1   
+  -----  ----  ----  ----
+  2      10-B            
+  3            10-A  10-B
+  5                  10-A
+
+Horario del aula - Aula 1
+  Turno  1            2            4     5            3   
+  -----  -----------  -----------  ----  -----------  ----
+  1      10-A / 10-B  10-A         10-A  10-A             
+  2      10-A / 10-B  10-A / 10-B  10-A  10-A / 10-B      
+  3      10-A         10-B               10-B         10-B
+  4                                10-B  10-B             
+
+Horario del aula - Aula 2
+  Turno  3     2     4     1     5          
+  -----  ----  ----  ----  ----  -----------
+  1      10-A                               
+  4            10-A                         
+  5                  10-B                   
+  6                        10-B             
+  7                              10-A / 10-B
+
+Horario del aula - Terreno
+  Turno  3     4     1   
+  -----  ----  ----  ----
+  2      10-B            
+  3            10-A  10-B
+  5                  10-A
+
+Horario del aula - Lab de idiomas
+  Turno  1     2     4          
+  -----  ----  ----  -----------
+  4      10-A  10-B             
+  7                  10-A / 10-B
+
+Asignaturas
+  Abrev  Asignatura        Frecuencia semanal  Turno doble  Admite tarde  Dia de preparacion  Profesor  Local           Estado
+  -----  ----------------  ------------------  -----------  ------------  ------------------  --------  --------------  ------
+  MAT    Matematica        5                   si           no            3                   Rosa      Aula 1                
+  ESP    Espanol           4                   no           no            1                   Julia     Aula 1                
+  EF     Educacion Fisica  2                   no           no            0                   Pedro     Terreno               
+  HIST   Historia          3                   no           si            2                   Julia     Aula 2                
+  ING    Ingles            2                   no           si            0                   Rosa      Lab de idiomas        
+
+Profesores
+  Profesor  Contratado  Vive lejos  Estado
+  --------  ----------  ----------  ------
+  Rosa      no          no                
+  Julia     no          si                
+  Pedro     si          no                
+
+Disponibilidad de profesores contratados
+  Clave    Profesor  Dia  Asiste  Estado
+  -------  --------  ---  ------  ------
+  Pedro#1  Pedro     1    si            
+  Pedro#3  Pedro     3    si            
+  Pedro#5  Pedro     5    si            
+
+Casillas del horario
+  Grupo  Dia  Turno  Asignatura  Nombre            Profesor  Aula            Turno doble  Admite tarde  Dia de preparacion  Profesor contratado  Profesor vive lejos  Clave de consulta  Profesor asiste hoy  Estado                                                                                                                                                                                                                                                                    
+  -----  ---  -----  ----------  ----------------  --------  --------------  -----------  ------------  ------------------  -------------------  -------------------  -----------------  -------------------  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  10-A   1    1      MAT         Matematica        Rosa      Aula 1          si           no            3                   no                   no                   Rosa#1             no                   Este profesor ya da clase a otro grupo en este mismo turno; Ese local esta ocupado por otro grupo a esa hora                                                                                                                                                              
+  10-A   2    1      MAT         Matematica        Rosa      Aula 1          si           no            3                   no                   no                   Rosa#2             no                                                                                                                                                                                                                                                                                             
+  10-A   3    1      HIST        Historia          Julia     Aula 2          no           si            2                   no                   si                   Julia#3            no                   Se preferiria no darle el primer turno a un profesor que vive lejos                                                                                                                                                                                                       
+  10-A   4    1      MAT         Matematica        Rosa      Aula 1          si           no            3                   no                   no                   Rosa#4             no                                                                                                                                                                                                                                                                                             
+  10-A   5    1      MAT         Matematica        Rosa      Aula 1          si           no            3                   no                   no                   Rosa#5             no                                                                                                                                                                                                                                                                                             
+  10-B   1    1      MAT         Matematica        Rosa      Aula 1          si           no            3                   no                   no                   Rosa#1             no                   Este profesor ya da clase a otro grupo en este mismo turno; Ese local esta ocupado por otro grupo a esa hora                                                                                                                                                              
+  10-B   2    1                                                              no           no            0                   no                   no                   #2                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   3    1                                                              no           no            0                   no                   no                   #3                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   4    1                                                              no           no            0                   no                   no                   #4                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   5    1                                                              no           no            0                   no                   no                   #5                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   1    2      ESP         Espanol           Julia     Aula 1          no           no            1                   no                   si                   Julia#1            no                   Este profesor ya da clase a otro grupo en este mismo turno; Ese local esta ocupado por otro grupo a esa hora; Esta asignatura repite el mismo dia en este grupo, y no en turnos consecutivos; Este es el dia de preparacion de la asignatura: no se imparte a ningun grupo
+  10-A   2    2      ESP         Espanol           Julia     Aula 1          no           no            1                   no                   si                   Julia#2            no                   Este profesor ya da clase a otro grupo en este mismo turno; Ese local esta ocupado por otro grupo a esa hora                                                                                                                                                              
+  10-A   3    2                                                              no           no            0                   no                   no                   #3                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   4    2      MAT         Matematica        Rosa      Aula 1          si           no            3                   no                   no                   Rosa#4             no                                                                                                                                                                                                                                                                                             
+  10-A   5    2      ESP         Espanol           Julia     Aula 1          no           no            1                   no                   si                   Julia#5            no                   Este profesor ya da clase a otro grupo en este mismo turno; Ese local esta ocupado por otro grupo a esa hora                                                                                                                                                              
+  10-B   1    2      ESP         Espanol           Julia     Aula 1          no           no            1                   no                   si                   Julia#1            no                   Este profesor ya da clase a otro grupo en este mismo turno; Ese local esta ocupado por otro grupo a esa hora; Este es el dia de preparacion de la asignatura: no se imparte a ningun grupo                                                                                
+  10-B   2    2      ESP         Espanol           Julia     Aula 1          no           no            1                   no                   si                   Julia#2            no                   Este profesor ya da clase a otro grupo en este mismo turno; Ese local esta ocupado por otro grupo a esa hora                                                                                                                                                              
+  10-B   3    2      EF          Educacion Fisica  Pedro     Terreno         no           no            0                   si                   no                   Pedro#3            si                                                                                                                                                                                                                                                                                             
+  10-B   4    2                                                              no           no            0                   no                   no                   #4                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   5    2      ESP         Espanol           Julia     Aula 1          no           no            1                   no                   si                   Julia#5            no                   Este profesor ya da clase a otro grupo en este mismo turno; Ese local esta ocupado por otro grupo a esa hora                                                                                                                                                              
+  10-A   1    3      ESP         Espanol           Julia     Aula 1          no           no            1                   no                   si                   Julia#1            no                   Esta asignatura repite el mismo dia en este grupo, y no en turnos consecutivos; Este es el dia de preparacion de la asignatura: no se imparte a ningun grupo                                                                                                              
+  10-A   2    3                                                              no           no            0                   no                   no                   #2                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   3    3                                                              no           no            0                   no                   no                   #3                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   4    3      EF          Educacion Fisica  Pedro     Terreno         no           no            0                   si                   no                   Pedro#4            no                   Este profesor esta contratado y no asiste al centro este dia                                                                                                                                                                                                              
+  10-A   5    3                                                              no           no            0                   no                   no                   #5                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   1    3      EF          Educacion Fisica  Pedro     Terreno         no           no            0                   si                   no                   Pedro#1            si                                                                                                                                                                                                                                                                                             
+  10-B   2    3      MAT         Matematica        Rosa      Aula 1          si           no            3                   no                   no                   Rosa#2             no                                                                                                                                                                                                                                                                                             
+  10-B   3    3      ESP         Espanol           Julia     Aula 1          no           no            1                   no                   si                   Julia#3            no                                                                                                                                                                                                                                                                                             
+  10-B   4    3                                                              no           no            0                   no                   no                   #4                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   5    3      MAT         Matematica        Rosa      Aula 1          si           no            3                   no                   no                   Rosa#5             no                                                                                                                                                                                                                                                                                             
+  10-A   1    4      ING         Ingles            Rosa      Lab de idiomas  no           si            0                   no                   no                   Rosa#1             no                                                                                                                                                                                                                                                                                             
+  10-A   2    4      HIST        Historia          Julia     Aula 2          no           si            2                   no                   si                   Julia#2            no                   Este es el dia de preparacion de la asignatura: no se imparte a ningun grupo                                                                                                                                                                                              
+  10-A   3    4                                                              no           no            0                   no                   no                   #3                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   4    4                                                              no           no            0                   no                   no                   #4                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   5    4                                                              no           no            0                   no                   no                   #5                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   1    4                                                              no           no            0                   no                   no                   #1                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   2    4      ING         Ingles            Rosa      Lab de idiomas  no           si            0                   no                   no                   Rosa#2             no                                                                                                                                                                                                                                                                                             
+  10-B   3    4                                                              no           no            0                   no                   no                   #3                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   4    4      MAT         Matematica        Rosa      Aula 1          si           no            3                   no                   no                   Rosa#4             no                                                                                                                                                                                                                                                                                             
+  10-B   5    4      MAT         Matematica        Rosa      Aula 1          si           no            3                   no                   no                   Rosa#5             no                                                                                                                                                                                                                                                                                             
+  10-A   1    5      EF          Educacion Fisica  Pedro     Terreno         no           no            0                   si                   no                   Pedro#1            si                   Educacion Fisica no puede caer despues del tercer turno                                                                                                                                                                                                                   
+  10-A   2    5                                                              no           no            0                   no                   no                   #2                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   3    5                                                              no           no            0                   no                   no                   #3                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   4    5                                                              no           no            0                   no                   no                   #4                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   5    5                                                              no           no            0                   no                   no                   #5                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   1    5                                                              no           no            0                   no                   no                   #1                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   2    5                                                              no           no            0                   no                   no                   #2                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   3    5                                                              no           no            0                   no                   no                   #3                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   4    5      HIST        Historia          Julia     Aula 2          no           si            2                   no                   si                   Julia#4            no                                                                                                                                                                                                                                                                                             
+  10-B   5    5                                                              no           no            0                   no                   no                   #5                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   1    6                                                              no           no            0                   no                   no                   #1                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   2    6                                                              no           no            0                   no                   no                   #2                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   3    6                                                              no           no            0                   no                   no                   #3                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   4    6                                                              no           no            0                   no                   no                   #4                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   5    6                                                              no           no            0                   no                   no                   #5                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   1    6      HIST        Historia          Julia     Aula 2          no           si            2                   no                   si                   Julia#1            no                                                                                                                                                                                                                                                                                             
+  10-B   2    6                                                              no           no            0                   no                   no                   #2                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   3    6                                                              no           no            0                   no                   no                   #3                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   4    6                                                              no           no            0                   no                   no                   #4                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   5    6                                                              no           no            0                   no                   no                   #5                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   1    7                                                              no           no            0                   no                   no                   #1                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   2    7                                                              no           no            0                   no                   no                   #2                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   3    7                                                              no           no            0                   no                   no                   #3                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   4    7      ING         Ingles            Rosa      Lab de idiomas  no           si            0                   no                   no                   Rosa#4             no                   Este profesor ya da clase a otro grupo en este mismo turno; Ese local esta ocupado por otro grupo a esa hora                                                                                                                                                              
+  10-A   5    7      HIST        Historia          Julia     Aula 2          no           si            2                   no                   si                   Julia#5            no                   Este profesor ya da clase a otro grupo en este mismo turno; Ese local esta ocupado por otro grupo a esa hora                                                                                                                                                              
+  10-B   1    7                                                              no           no            0                   no                   no                   #1                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   2    7                                                              no           no            0                   no                   no                   #2                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   3    7                                                              no           no            0                   no                   no                   #3                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   4    7      ING         Ingles            Rosa      Lab de idiomas  no           si            0                   no                   no                   Rosa#4             no                   Este profesor ya da clase a otro grupo en este mismo turno; Ese local esta ocupado por otro grupo a esa hora                                                                                                                                                              
+  10-B   5    7      HIST        Historia          Julia     Aula 2          no           si            2                   no                   si                   Julia#5            no                   Este profesor ya da clase a otro grupo en este mismo turno; Ese local esta ocupado por otro grupo a esa hora                                                                                                                                                              
+  10-A   1    8                                                              no           no            0                   no                   no                   #1                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   2    8                                                              no           no            0                   no                   no                   #2                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   3    8                                                              no           no            0                   no                   no                   #3                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   4    8                                                              no           no            0                   no                   no                   #4                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-A   5    8                                                              no           no            0                   no                   no                   #5                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   1    8                                                              no           no            0                   no                   no                   #1                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   2    8                                                              no           no            0                   no                   no                   #2                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   3    8                                                              no           no            0                   no                   no                   #3                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   4    8                                                              no           no            0                   no                   no                   #4                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+  10-B   5    8                                                              no           no            0                   no                   no                   #5                 no                   Turno sin asignar                                                                                                                                                                                                                                                         
+
+  Asignatura admite: MAT, ESP, EF, HIST, ING
+
+Plan por grupo
+  Grupo  Abrev  Asignatura        Frecuencia  Asignadas  Faltan  Estado
+  -----  -----  ----------------  ----------  ---------  ------  ------
+  10-A   MAT    Matematica        5           5          0             
+  10-A   ESP    Espanol           4           4          0             
+  10-A   EF     Educacion Fisica  2           2          0             
+  10-A   HIST   Historia          3           3          0             
+  10-A   ING    Ingles            2           2          0             
+  10-B   MAT    Matematica        5           5          0             
+  10-B   ESP    Espanol           4           4          0             
+  10-B   EF     Educacion Fisica  2           2          0             
+  10-B   HIST   Historia          3           3          0             
+  10-B   ING    Ingles            2           2          0             
+
+Carga diaria por profesor
+  Profesor  Dia  Sesiones  Estado                  
+  --------  ---  --------  ------------------------
+  Rosa      1    3                                 
+  Rosa      2    3                                 
+  Rosa      3    0                                 
+  Rosa      4    5         Lleva 5 sesiones ese dia
+  Rosa      5    3                                 
+  Julia     1    4         Lleva 4 sesiones ese dia
+  Julia     2    3                                 
+  Julia     3    2                                 
+  Julia     4    1                                 
+  Julia     5    4         Lleva 4 sesiones ese dia
+  Pedro     1    2                                 
+  Pedro     2    0                                 
+  Pedro     3    1                                 
+  Pedro     4    1                                 
+  Pedro     5    0                                 
+

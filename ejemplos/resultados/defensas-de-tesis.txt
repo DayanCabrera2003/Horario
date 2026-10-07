@@ -1,0 +1,27 @@
+Defensas de tesis
+=================
+
+Indice
+  - Citaciones del dia  (punto de entrada)
+  - Tesis y sus tribunales
+
+Tesis
+  Estudiante       Tutor       Oponente    Presidente  Secretario  Estado
+  ---------------  ----------  ----------  ----------  ----------  ------
+  Juan Perez       P. Alonso   M. Ramirez  L. Gomez    A. Suarez         
+  Laura Fernandez  R. Torres   L. Gomez    P. Alonso   A. Suarez         
+  Mario Gomez      M. Ramirez  R. Torres   P. Alonso   L. Gomez          
+  Ana Valdes       A. Suarez   P. Alonso   R. Torres   M. Ramirez        
+
+Citaciones
+  Dia    Momento  Local      Estudiante       Tutor       Oponente    Presidente  Secretario  Estado                                           
+  -----  -------  ---------  ---------------  ----------  ----------  ----------  ----------  -------------------------------------------------
+  Postgrado
+  lunes  09:00    Postgrado  Juan Perez       P. Alonso   M. Ramirez  L. Gomez    A. Suarez   Este profesor esta citado en dos locales a la vez
+  lunes  10:00    Postgrado  Mario Gomez      M. Ramirez  R. Torres   P. Alonso   L. Gomez                                                     
+  Decanato
+  lunes  09:00    Decanato   Laura Fernandez  R. Torres   L. Gomez    P. Alonso   A. Suarez   Este profesor esta citado en dos locales a la vez
+  lunes  10:00    Decanato                                                                    Este hueco todavia no tiene defensa              
+
+  Estudiante admite: Juan Perez, Laura Fernandez, Mario Gomez, Ana Valdes
+

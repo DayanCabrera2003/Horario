@@ -1,0 +1,45 @@
+Departamento de Matematica Aplicada
+===================================
+
+Indice
+  - Asignacion  (punto de entrada)
+  - Carga por profesor
+  - Cobertura por asignatura
+
+Profesores
+  Id    Nombre                Grado  Tope  Horas  Asignaturas  Lo que imparte  Estado                   
+  ----  --------------------  -----  ----  -----  -----------  --------------  -------------------------
+  PIAD  Pedro I. Alonso Diaz  Dr.    160   128    2            1, 2, 3, 4                               
+  MARA  Maria Ramirez         MSc.   80    112    2            6, 7, 9         Pasa del tope en 32 horas
+  LUGO  Luis Gomez            Lic.   160   32     1            5                                        
+  ROTO  Rosa Torres           Dra.   160   0      0                                                     
+
+Asignaturas
+  Id       Asignatura         Carrera                    Horas Conf  Horas CP  Grupos CP  Horas planificadas  Filas de carga  Horas en filas  Horas asignadas  Sin profesor  Cobertura                 Estado                  
+  -------  -----------------  -------------------------  ----------  --------  ---------  ------------------  --------------  --------------  ---------------  ------------  ------------------------  ------------------------
+  EST-CC   Estadistica (CC)   Ciencia de la Computacion  32          32        2          96                  3               96              96               0             Completa                  cobertura-completa      
+  EST-MAT  Estadistica (Mat)  Matematica                 32          32        1          64                  2               64              64               0             Completa                  cobertura-completa      
+  PROB     Probabilidades     Matematica                 48          32        2          112                 3               112             80               1             Falta 1 profesor          Falta 1 profesor        
+  MNUM     Metodos Numericos  Ciencia de la Computacion  32          48        1          80                  1               32              32               0             Faltan 48 horas de carga  Faltan 48 horas de carga
+
+Asignacion
+  No.  Id       Tipo  Grupo  Profesor  Asignatura         Horas  Nombre                Par           Codigo         Primera del par  Cuenta  Estado                                      
+  ---  -------  ----  -----  --------  -----------------  -----  --------------------  ------------  -------------  ---------------  ------  --------------------------------------------
+  1    EST-CC   Conf         PIAD      Estadistica (CC)   32     Pedro I. Alonso Diaz  PIAD|EST-CC   EST-CC Conf    EST-CC Conf      1                                                   
+  2    EST-CC   CP    1      PIAD      Estadistica (CC)   32     Pedro I. Alonso Diaz  PIAD|EST-CC   EST-CC CP 1    EST-CC Conf      0                                                   
+  3    EST-CC   CP    2      PIAD      Estadistica (CC)   32     Pedro I. Alonso Diaz  PIAD|EST-CC   EST-CC CP 2    EST-CC Conf      0                                                   
+  4    EST-MAT  Conf         PIAD      Estadistica (Mat)  32     Pedro I. Alonso Diaz  PIAD|EST-MAT  EST-MAT Conf   EST-MAT Conf     1                                                   
+  5    EST-MAT  CP    1      LUGO      Estadistica (Mat)  32     Luis Gomez            LUGO|EST-MAT  EST-MAT CP 1   EST-MAT CP 1     1                                                   
+  6    PROB     Conf         MARA      Probabilidades     48     Maria Ramirez         MARA|PROB     PROB Conf      PROB Conf        1                                                   
+  7    PROB     CP    1      MARA      Probabilidades     32     Maria Ramirez         MARA|PROB     PROB CP 1      PROB Conf        0                                                   
+  8    PROB     CP    2                Probabilidades     32                                         PROB CP 2                       0       Esta fila de carga todavia no tiene profesor
+  9    MNUM     Conf         MARA      Metodos Numericos  32     Maria Ramirez         MARA|MNUM     MNUM Conf      MNUM Conf        1                                                   
+  10                                                      0                                                                          0                                                   
+  11                                                      0                                                                          0                                                   
+
+  Id admite: EST-CC, EST-MAT, PROB, MNUM
+
+  Tipo admite: Conf, CP
+
+  Profesor admite: PIAD, MARA, LUGO, ROTO
+

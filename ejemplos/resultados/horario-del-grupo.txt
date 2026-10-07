@@ -1,0 +1,47 @@
+Horario del grupo D111
+======================
+
+Indice
+  - Horario semanal  (punto de entrada)
+  - Casilla por casilla
+  - Plan de la carrera
+
+Horario semanal
+  Turno  lunes  martes  miercoles
+  -----  -----  ------  ---------
+  T1     AL     AL      AL       
+  T2     L      IP      AL       
+  T3            AM               
+
+Asignaturas
+  Abrev  Asignatura               Frec  Estado
+  -----  -----------------------  ----  ------
+  AL     Algebra Lineal           3           
+  L      Logica                   2           
+  IP     Intro a la Programacion  2           
+  AM     Analisis Matematico      2           
+
+Aulas
+  Aula    Estado
+  ------  ------
+  Aula 7        
+  Aula 8        
+  Lab 1         
+
+Casillas
+  Dia        Turno  Asignatura  Aula    Nombre                   Puestos  Faltan  Estado           
+  ---------  -----  ----------  ------  -----------------------  -------  ------  -----------------
+  lunes      T1     AL          Aula 8  Algebra Lineal           4        -1      Sobra 1 turno    
+  martes     T1     AL          Aula 8  Algebra Lineal           4        -1      Sobra 1 turno    
+  miercoles  T1     AL          Aula 8  Algebra Lineal           4        -1      Sobra 1 turno    
+  lunes      T2     L           Aula 7  Logica                   1        1                        
+  martes     T2     IP          Lab 1   Intro a la Programacion  1        1                        
+  miercoles  T2     AL          Aula 7  Algebra Lineal           4        -1      Sobra 1 turno    
+  lunes      T3                                                  2        -2      Turno sin asignar
+  martes     T3     AM          Aula 7  Analisis Matematico      1        1                        
+  miercoles  T3                                                  2        -2      Turno sin asignar
+
+  Asignatura admite: AL, L, IP, AM
+
+  Aula admite: Aula 7, Aula 8, Lab 1
+
