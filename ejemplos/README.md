@@ -74,8 +74,14 @@ descripción no recoge.
 Las seis las comprueba `./demostrar.sh` en cada ejecución: LibreOffice
 recalcula el `.xlsx` y Node ejecuta el JavaScript de la página, y cada valor
 calculado tiene que coincidir con el del evaluador de referencia del núcleo.
-Hoy coinciden todos; solo el Saúl Delgado son 885 celdas en LibreOffice y
+Hoy coinciden todos; solo el Saúl Delgado son 1 161 celdas en LibreOffice y
 2 915 valores en Node.
+
+En la hoja de cálculo se comprueban también las tablas cruzadas, casilla por
+casilla, contra lo que el núcleo dice que cae en cada una. Hasta el
+2026-10-13 solo se comprobaban las hojas de datos, y por ese hueco pasaron
+sin verse las pestañas por profesor y por aula del Saúl Delgado, que salían
+vacías.
 
 Lo que esa comprobación no cubre es el color: en la hoja de cálculo, las
 marcas son formato condicional y LibreOffice no informa de cuáles se
