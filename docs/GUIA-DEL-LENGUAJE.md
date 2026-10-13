@@ -76,7 +76,7 @@ Desde `Horario/`:
 | Comando | Qué hace, paso a paso |
 |---|---|
 | `./demostrar.sh` | (1) Carga `situacion/demostracion` en SBCL y genera los artefactos de las situaciones del corpus. (2) Convierte cada `*-plano.json` a `.xlsx` con `materializador/materializar.py`. (3) Verifica cada `.xlsx` abriéndolo con LibreOffice y comparando contra el evaluador de referencia. (4) Verifica cada página ejecutando su JavaScript con Node. Termina imprimiendo ok/fallo por artefacto |
-| `./ejecutar-pruebas.sh` | `sbcl --non-interactive --noinform --disable-debugger --no-userinit`, carga `situacion/pruebas` y llama a `ejecutar-y-salir`. 67 pruebas y 565 comprobaciones el 2026-10-07 |
+| `./ejecutar-pruebas.sh` | `sbcl --non-interactive --noinform --disable-debugger --no-userinit`, carga `situacion/pruebas` y llama a `ejecutar-y-salir`. 69 pruebas y 573 comprobaciones el 2026-10-13 |
 | `./generar-demostracion.sh` | Solo el paso de generación, sin materializar ni verificar |
 | `python3 materializador/materializar.py <plano.json> <salida.xlsx>` | El paso de materialización a mano, sobre un plano ya generado |
 
@@ -682,9 +682,13 @@ que el protocolo no se diseñó mirando solo a Excel o solo a la web.
 **Excel.** Cada emulación tiene un truco concreto, documentado en el propio
 código:
 
-- **Tabla cruzada** — se fijan los dos ejes al generar, y se añade una
-  columna de clave compuesta resuelta con `INDICE`+`COINCIDIR` (portable
-  entre Excel y Calc, a diferencia de una fórmula matricial).
+- **Tabla cruzada** — se fijan los dos ejes al generar, y se añade a la hoja
+  de datos una columna de clave compuesta resuelta con `INDICE`+`COINCIDIR`
+  (portable entre Excel y Calc, a diferencia de una fórmula matricial). Hay
+  una columna por clave distinta, no por vista: dos vistas cruzadas sobre la
+  misma colección que buscan por campos distintos tienen cada una la suya, y
+  si la vista lleva `:donde`, la clave queda vacía en las filas que no lo
+  cumplen.
 - **Relación uno a muchos** (`excel/relacion.lisp`) — una hoja auxiliar de
   clave numerada (`Rosa#1`, `Rosa#2`...) más un bloque legible por fila
   padre con un número fijo de líneas reservadas (`reserva-de-relacion`,
@@ -841,7 +845,8 @@ referencia:
   y 10-4 del preuniversitario Saúl Delgado, transcrito del impreso, con las
   reglas del enunciado. Lo que el impreso no dice (profesores, locales,
   días de preparación) va como supuesto marcado. Verificado con LibreOffice
-  (885 celdas) y Node (2 915 valores). Contra el horario real señala una
+  (1 161 celdas, incluidas las tres tablas cruzadas casilla por casilla) y
+  Node (2 915 valores). Contra el horario real señala una
   sola cosa: Lit-L en turno doble sin tener frecuencia cinco. La primera
   versión, con datos inventados, sigue en `exploracion/saul.lisp`.
 - **Asignar recursos con capacidad y paridad** — `seder.lisp`
@@ -849,7 +854,7 @@ referencia:
   instalación por brigada, con la semana heredada del año, capacidad,
   ocupación, profesor en dos brigadas y el equilibrio entre instalaciones y
   horarios como advertencia. Datos de ejemplo. Verificado con LibreOffice
-  (91 celdas) y Node (221 valores).
+  (111 celdas) y Node (221 valores).
 - **Relación uno a muchos** (qué asignaturas da cada profesor, listadas)
   materializada incluso en Excel, con hoja auxiliar y `COUNTIF` en vivo
   (cerrado el 2026-09-22).
