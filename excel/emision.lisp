@@ -116,8 +116,8 @@
          (fila-enc 3) (fila-ini 4)
          (campo-celda (nucleo:lo-que-se-muestra vista))
          (rango-clave (format nil "~a!$~a$~d:$~a$~d" nombre-origen
-                              (columna-auxiliar cruce) (fila-primera hoja)
-                              (columna-auxiliar cruce) (fila-ultima hoja)))
+                              (letra (clave cruce)) (fila-primera hoja)
+                              (letra (clave cruce)) (fila-ultima hoja)))
          (rango-valor (format nil "~a!$~a$~d:$~a$~d" nombre-origen
                               (columna-de hoja campo-celda) (fila-primera hoja)
                               (columna-de hoja campo-celda) (fila-ultima hoja)))
@@ -168,7 +168,8 @@
 
    Normalmente es una busqueda por la clave compuesta: INDICE mas COINCIDIR,
    que es la pareja portable entre Excel y LibreOffice Calc. La primera parte
-   de la clave es el valor de ESTA pestana, fijado al generar.
+   de la clave es el valor de ESTA pestana, fijado al generar. Las partes van
+   en el orden de PARTES-DE-LA-CLAVE, que es el de la columna donde se busca.
 
    Si la vista declaro (:UNICA-SALVO <marca>), la casilla puede tener mas de
    una fila candidata, y entonces la formula pregunta primero CUANTAS hay.
@@ -284,10 +285,10 @@
           (cons "capacidad" (capacidad hoja))
           (cons "color_pestana" (color-de-pestana hoja))
           (cons "encabezados" (lista (append (encabezados-de hoja)
-                                             (encabezado-auxiliar plan hoja))))
+                                             (encabezados-de-claves hoja))))
           (cons "celdas" (lista (celdas-de a plan hoja)))
           (cons "formulas" (lista (append (formulas-de a plan hoja)
-                                          (claves-compuestas plan hoja))))
+                                          (formulas-de-claves hoja))))
           (cons "editables" (lista (rangos-editables hoja)))
           (cons "validaciones" (lista (validaciones-de a plan hoja)))
           (cons "formatos_condicionales" (lista (formatos-de a plan hoja)))
@@ -301,9 +302,6 @@
    usan los libros del corpus."
   (if (nucleo:campos-de-rol (coleccion hoja) :entrada) "4472C4" "8EA9DB"))
 
-(defun cruce-de-la-hoja (plan hoja)
-  (find hoja (cruces plan) :key #'hoja-origen))
-
 (defun encabezados-de (hoja)
   (loop for campo in (nucleo:campos (coleccion hoja))
         collect (list (cons "celda" (format nil "~a~d"
@@ -313,43 +311,35 @@
                       (cons "rol" (string-downcase (symbol-name (nucleo:rol campo))))
                       (cons "texto" (nucleo:etiqueta campo)))))
 
-(defun encabezado-auxiliar (plan hoja)
-  "El encabezado de la columna de clave compuesta, si esta hoja alimenta una
-   tabla cruzada."
-  (let ((cruce (cruce-de-la-hoja plan hoja)))
-    (when cruce
-      (list (list (cons "celda" (format nil "~a~d" (columna-auxiliar cruce)
-                                        (fila-encabezado hoja)))
-                  (cons "campo" "__clave__")
-                  (cons "rol" "derivado")
-                  (cons "texto" "(clave)"))))))
+(defun encabezados-de-claves (hoja)
+  "El encabezado de cada columna de clave compuesta de HOJA.
 
-(defun claves-compuestas (plan hoja)
-  "La columna que concatena los dos ejes, para que la tabla cruzada pueda
-   buscar por dos criterios.
+   Dice que campos concatena: con mas de una clave en la hoja, un rotulo
+   igual para todas no deja saber cual es cual."
+  (loop for clave in (claves hoja)
+        for i from 1
+        collect (list (cons "celda" (format nil "~a~d" (letra clave)
+                                            (fila-encabezado hoja)))
+                      (cons "campo" (format nil "__clave~d__" i))
+                      (cons "rol" "derivado")
+                      (cons "texto" (format nil "(clave ~{~(~a~)~^|~})"
+                                            (partes clave))))))
 
-   Es maquinaria que el lenguaje no nombra: la inventa esta arquitectura
-   porque no tiene busqueda por clave compuesta. En una pagina no hace
-   ninguna falta."
-  (let ((cruce (cruce-de-la-hoja plan hoja)))
-    (when cruce
-      (let* ((vista (vista cruce))
-             (parte-de-seccion (nucleo:secciones vista)))
-        (loop for i from 0 below (capacidad hoja)
-              for f = (+ (fila-primera hoja) i)
-              collect (list (cons "celda" (format nil "~a~d"
-                                                  (columna-auxiliar cruce) f))
-                            (cons "formula"
-                                  ;; Con particion la clave lleva tres partes:
-                                  ;; seccion | eje-de-filas | eje-de-columnas.
-                                  ;; Sin la primera, dos secciones producen la
-                                  ;; misma clave y COINCIDIR devuelve la fila
-                                  ;; de otra pestana.
-                                  (format nil "=~@[~a&\"|\"&~]~a&\"|\"&~a"
-                                          (when parte-de-seccion
-                                            (celda hoja parte-de-seccion f))
-                                          (celda hoja (nucleo:eje-de-filas vista) f)
-                                          (celda hoja (nucleo:eje-de-columnas vista) f)))))))))
+(defun formulas-de-claves (hoja)
+  "Las columnas de clave compuesta de HOJA, fila por fila.
+
+   Cada una concatena sus campos para que una tabla cruzada pueda buscar por
+   todos a la vez. Es maquinaria que el lenguaje no nombra: la inventa esta
+   arquitectura porque no tiene busqueda por clave compuesta. En una pagina
+   no hace ninguna falta."
+  (loop for clave in (claves hoja)
+        append (loop for i from 0 below (capacidad hoja)
+                     for f = (+ (fila-primera hoja) i)
+                     collect (list (cons "celda" (format nil "~a~d" (letra clave) f))
+                                   (cons "formula"
+                                         (format nil "=~{~a~^&\"|\"&~}"
+                                                 (loop for parte in (partes clave)
+                                                       collect (celda hoja parte f))))))))
 
 (defun celdas-de (a plan hoja)
   "Los valores que no se calculan: los fijos y lo que el usuario ya escribio.

@@ -23,8 +23,32 @@
    (capacidad :accessor capacidad :initarg :capacidad
               :documentation
               "Cuantas filas abarca la hoja: las que hay mas la reserva.")
-   (rango-nombrado :accessor rango-nombrado :initarg :rango-nombrado))
+   (rango-nombrado :accessor rango-nombrado :initarg :rango-nombrado)
+   (claves :accessor claves :initform '()
+           :documentation
+           "Las columnas de clave compuesta que esta arquitectura anade a la
+            hoja, en el orden en que se pidieron. Van detras de las columnas
+            declaradas. Solo CLAVE-COMPUESTA-DE escribe aqui."))
   (:documentation "Donde cae cada cosa de una coleccion dentro del libro."))
+
+(defclass clave-compuesta ()
+  ((partes :accessor partes :initarg :partes
+           :documentation
+           "Los nombres de los campos que se concatenan, en orden.")
+   (letra :accessor letra :initarg :letra
+          :documentation "La columna de la hoja donde se escribe."))
+  (:documentation
+   "Una columna que concatena varios campos de una fila para poder buscarla
+    por todos a la vez.
+
+    Es maquinaria de esta arquitectura: una hoja de calculo busca por un solo
+    criterio, y lo que el lenguaje pide -una casilla por seccion, fila y
+    columna- son varios. El lenguaje no la nombra y las demas arquitecturas
+    no la necesitan.
+
+    Lo que la identifica es QUE concatena, no quien la pidio. Dos vistas que
+    buscan por los mismos campos comparten columna; dos que buscan por campos
+    distintos tienen cada una la suya."))
 
 (defclass cruce ()
   ((vista :accessor vista :initarg :vista)
@@ -36,11 +60,12 @@
              tanto una pestana- por cada valor.")
    (valores-de-fila :accessor valores-de-fila :initarg :valores-de-fila)
    (valores-de-columna :accessor valores-de-columna :initarg :valores-de-columna)
-   (columna-auxiliar :accessor columna-auxiliar :initarg :columna-auxiliar
-                     :documentation
-                     "Letra de la columna de clave compuesta que se anade a la
-                      hoja de origen. Es la maquinaria de la emulacion: sin
-                      ella no hay forma portable de buscar por dos criterios."))
+   (clave :accessor clave :initarg :clave :initform nil
+          :documentation
+          "La clave compuesta de la hoja de origen por la que busca este
+           cruce. Es la maquinaria de la emulacion: sin ella no hay forma
+           portable de buscar por dos criterios. NIL si el cruce sale en su
+           propio archivo, que lleva valores y no busquedas."))
   (:documentation
    "Una vista cruzada, ya resuelta a geometria.
 
@@ -104,6 +129,25 @@
 
 (defun fila-ultima (hoja)
   (+ (fila-primera hoja) (capacidad hoja) -1))
+
+(defun siguiente-columna-libre (hoja)
+  "La primera columna de HOJA que no ocupa ni un campo declarado ni una
+   columna anadida por esta arquitectura."
+  (letra-de-columna (+ (length (columnas hoja)) (length (claves hoja)))))
+
+(defun clave-compuesta-de (hoja partes)
+  "La clave compuesta de HOJA que concatena PARTES, creandola si no existe.
+
+   Es el unico sitio que reparte columnas detras de las declaradas. Quien
+   necesite buscar por varios campos la pide aqui y recibe siempre una
+   columna que contiene exactamente lo que pidio, haya las vistas que haya
+   sobre la coleccion."
+  (or (find partes (claves hoja) :key #'partes :test #'equal)
+      (let ((nueva (make-instance 'clave-compuesta
+                                  :partes partes
+                                  :letra (siguiente-columna-libre hoja))))
+        (setf (claves hoja) (append (claves hoja) (list nueva)))
+        nueva)))
 
 (defun entrecomillar (nombre)
   (if (find #\Space nombre) (format nil "'~a'" nombre) nombre))
@@ -252,6 +296,16 @@
                                                    (nucleo:secciones vista))))
          filas))))
 
+(defun partes-de-la-clave (vista)
+  "Los campos por los que una casilla de VISTA identifica su fila: la seccion
+   si la vista se parte, el eje de filas y el eje de columnas.
+
+   El orden importa: es el mismo en que FORMULA-DE-CASILLA arma la clave que
+   busca."
+  (remove nil (list (nucleo:secciones vista)
+                    (nucleo:eje-de-filas vista)
+                    (nucleo:eje-de-columnas vista))))
+
 (defun planificar-cruces (a vista plan)
   "Resuelve una vista cruzada a geometria: un cruce por seccion.
 
@@ -289,12 +343,12 @@
                                          plan filas (nucleo:eje-de-filas vista))
                        :valores-de-columna (valores-distintos-en-filas
                                             plan filas (nucleo:eje-de-columnas vista))
-                       ;; La columna de clave compuesta va detras de las
-                       ;; declaradas. Es la misma para todos los cruces de la
-                       ;; misma vista: la escribe la hoja de origen una sola
-                       ;; vez.
-                       :columna-auxiliar (letra-de-columna
-                                          (length (nucleo:campos (coleccion hoja)))))))
+                       ;; Todos los cruces de una vista buscan por la misma
+                       ;; clave. Un cruce que sale en su propio archivo no
+                       ;; busca nada, y no hace gastar una columna.
+                       :clave (when (eq destino 'cruces)
+                                (clave-compuesta-de
+                                 hoja (partes-de-la-clave vista))))))
           ;; PUSH no sirve aqui: el lugar se elige en tiempo de ejecucion con
           ;; IF, y IF no tiene expansor SETF. De ahi el SETF/CONS explicito
           ;; en vez del PUSH que usaba esta funcion antes de H2.

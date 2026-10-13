@@ -356,6 +356,49 @@
                 distintos, no al mismo")))
 
 ;;; ---------------------------------------------------------------------
+;;; Dos tablas cruzadas sobre la misma coleccion. En la hoja de calculo cada
+;;; una busca por su propia clave compuesta, y las dos claves no son la misma:
+;;; en el Saul Delgado, las pestanas por profesor y por aula buscaban en la
+;;; columna de clave de la vista por grupo y salian vacias.
+;;; ---------------------------------------------------------------------
+
+(defun columna-de-clave-buscada (formula)
+  "La letra de la columna donde busca la casilla de un cruce: la del rango
+   que sigue a la clave dentro de COINCIDIR."
+  (let* ((coincidir (search "MATCH(" formula))
+         (rango (and coincidir (search "!$" formula :start2 coincidir)))
+         (fin (and rango (position #\$ formula :start (+ rango 2)))))
+    (and fin (subseq formula (+ rango 2) fin))))
+
+(definir-prueba excel-cada-tabla-cruzada-busca-por-su-clave
+    "Excel: dos tablas cruzadas sobre la misma coleccion tienen cada una su clave"
+  (let* ((a (situacion.excel:hacer-excel))
+         (s (situacion.lenguaje:situacion-llamada "DOS-PARTICIONES"))
+         (plan (protocolo:planificar a s)))
+    (setf (situacion.excel::entorno plan) (nucleo:hacer-entorno s *dos-grupos*))
+    (let* ((plano (situacion.excel::construir-plano a plan))
+           (origen (situacion.excel::nombre
+                    (situacion.excel::hoja-de plan (nucleo:nombrar "casillas")))))
+      ;; GRUPO es la columna A, DIA la B y TURNO la C. La clave de cada vista
+      ;; es seccion, eje de filas y eje de columnas, en ese orden.
+      (loop for (pestana . partes) in '(("Por grupo - 10-A" "$A4" "$C4" "$B4")
+                                        ("Por dia - lunes"  "$B4" "$C4" "$A4"))
+            do (let* ((casilla (formula-en-hoja plano pestana "B4"))
+                      (columna (and casilla (columna-de-clave-buscada casilla)))
+                      (clave (and columna
+                                  (formula-en-hoja plano origen
+                                                   (format nil "~a4" columna)))))
+                 (comprobar casilla "la pestana ~s no tiene formula en B4" pestana)
+                 (comprobar clave
+                            "la pestana ~s busca en la columna ~a de ~s, y ahi~@
+                             no hay ninguna clave" pestana columna origen)
+                 (when clave
+                   (comprobar (string= clave
+                                       (format nil "=~{~a~^&\"|\"&~}" partes))
+                              "la pestana ~s busca en una clave que no es la~@
+                               suya: ~a" pestana clave)))))))
+
+;;; ---------------------------------------------------------------------
 ;;; Nombres de pestana de mas de 31 caracteres. Excel no los admite, y
 ;;; recortarlos a ciegas dejaba todas las secciones de una vista con el mismo
 ;;; nombre: en el Saul Delgado, las treinta pestanas de profesor se llamaban
