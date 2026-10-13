@@ -399,6 +399,57 @@
                                suya: ~a" pestana clave)))))))
 
 ;;; ---------------------------------------------------------------------
+;;; El filtro de una tabla cruzada, en la hoja de calculo. Elegir con el los
+;;; ejes y las secciones no basta: la casilla busca en la coleccion entera, y
+;;; una fila que el filtro deja fuera pero cae en un turno y un dia que si
+;;; estan en los ejes se colaba en el cuadrante.
+;;; ---------------------------------------------------------------------
+
+(situacion.lenguaje:defsituacion solo-conferencias (:etiqueta "Solo conferencias")
+  (coleccion casillas
+    (:clave dia turno)
+    (campo dia        :rol fijo)
+    (campo turno      :rol fijo)
+    (campo tipo       :rol fijo)
+    (campo asignatura :rol fijo))
+  (vista conferencias :de casillas :etiqueta "Conferencias"
+                      :filas turno :columnas dia :muestra asignatura
+                      :donde (= (de fila tipo) "conf")))
+
+(defparameter *conferencias-y-seminarios*
+  ;; El seminario del lunes a T1 no cumple el filtro, pero tanto "lunes" como
+  ;; "T1" estan en los ejes por las otras dos filas.
+  (list (cons (nucleo:nombrar "casillas")
+              (loop for (d tu ti a) in '(("lunes"  "T1" "sem"  "ESP")
+                                         ("lunes"  "T2" "conf" "MAT")
+                                         ("martes" "T1" "conf" "FIS"))
+                    collect (list (cons (nucleo:nombrar "dia") d)
+                                  (cons (nucleo:nombrar "turno") tu)
+                                  (cons (nucleo:nombrar "tipo") ti)
+                                  (cons (nucleo:nombrar "asignatura") a))))))
+
+(definir-prueba excel-la-clave-de-una-vista-filtrada-lleva-el-filtro
+    "Excel: la casilla de una tabla cruzada filtrada no encuentra las filas que el filtro deja fuera"
+  (let* ((a (situacion.excel:hacer-excel))
+         (s (situacion.lenguaje:situacion-llamada "SOLO-CONFERENCIAS"))
+         (plan (protocolo:planificar a s)))
+    (setf (situacion.excel::entorno plan)
+          (nucleo:hacer-entorno s *conferencias-y-seminarios*))
+    (let* ((plano (situacion.excel::construir-plano a plan))
+           (origen (situacion.excel::nombre
+                    (situacion.excel::hoja-de plan (nucleo:nombrar "casillas"))))
+           (casilla (formula-en-hoja plano "Conferencias" "B4"))
+           (columna (and casilla (columna-de-clave-buscada casilla)))
+           (clave (and columna
+                       (formula-en-hoja plano origen (format nil "~a4" columna)))))
+      (comprobar clave "la vista filtrada no tiene columna de clave")
+      (when clave
+        ;; TIPO es la columna C. La clave de una fila que no cumple el filtro
+        ;; tiene que quedar vacia, para que ninguna casilla la encuentre.
+        (comprobar (and (eql 0 (search "=IF(" clave)) (search "$C4" clave))
+                   "la clave no pregunta por el filtro de la vista: ~a" clave)))))
+
+;;; ---------------------------------------------------------------------
 ;;; Nombres de pestana de mas de 31 caracteres. Excel no los admite, y
 ;;; recortarlos a ciegas dejaba todas las secciones de una vista con el mismo
 ;;; nombre: en el Saul Delgado, las treinta pestanas de profesor se llamaban

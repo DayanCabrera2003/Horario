@@ -307,7 +307,7 @@
                                              (encabezados-de-claves hoja))))
           (cons "celdas" (lista (celdas-de a plan hoja)))
           (cons "formulas" (lista (append (formulas-de a plan hoja)
-                                          (formulas-de-claves hoja))))
+                                          (formulas-de-claves a plan hoja))))
           (cons "editables" (lista (rangos-editables hoja)))
           (cons "validaciones" (lista (validaciones-de a plan hoja)))
           (cons "formatos_condicionales" (lista (formatos-de a plan hoja)))
@@ -341,10 +341,10 @@
                                             (fila-encabezado hoja)))
                       (cons "campo" (format nil "__clave~d__" i))
                       (cons "rol" "derivado")
-                      (cons "texto" (format nil "(clave ~{~(~a~)~^|~})"
-                                            (partes clave))))))
+                      (cons "texto" (format nil "(clave ~{~(~a~)~^|~}~:[~;, filtrada~])"
+                                            (partes clave) (filtro clave))))))
 
-(defun formulas-de-claves (hoja)
+(defun formulas-de-claves (a plan hoja)
   "Las columnas de clave compuesta de HOJA, fila por fila.
 
    Cada una concatena sus campos para que una tabla cruzada pueda buscar por
@@ -356,9 +356,25 @@
                      for f = (+ (fila-primera hoja) i)
                      collect (list (cons "celda" (format nil "~a~d" (letra clave) f))
                                    (cons "formula"
-                                         (format nil "=~{~a~^&\"|\"&~}"
-                                                 (loop for parte in (partes clave)
-                                                       collect (celda hoja parte f))))))))
+                                         (formula-de-clave-compuesta a plan hoja clave f))))))
+
+(defun formula-de-clave-compuesta (a plan hoja clave fila)
+  "La clave compuesta de una fila: sus partes separadas por una barra.
+
+   Si la clave lleva filtro, la fila que no lo cumple se queda con la clave
+   vacia. El filtro se pregunta en la hoja y no al generar: una fila que
+   deja de cumplirlo sale de su casilla sin regenerar el libro."
+  (let ((partes (format nil "~{~a~^&\"|\"&~}"
+                        (loop for parte in (partes clave)
+                              collect (celda hoja parte fila)))))
+    (if (null (filtro clave))
+        (format nil "=~a" partes)
+        (let ((*fila* fila)
+              (*hoja* hoja))
+          (format nil "=IF(~a,~a,\"\")"
+                  (protocolo:emitir-expresion a (filtro clave)
+                                              (ambito-de (coleccion hoja)) plan)
+                  partes)))))
 
 (defun celdas-de (a plan hoja)
   "Los valores que no se calculan: los fijos y lo que el usuario ya escribio.

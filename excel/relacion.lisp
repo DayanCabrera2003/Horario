@@ -79,8 +79,8 @@
    clave real y, con una clave compuesta, cuenta las relacionadas de OTRA
    fila padre que comparta solo el primer campo.
 
-   Analogo a CLAVES-COMPUESTAS (excel/emision.lisp), que hace lo mismo para
-   los dos ejes de una tabla cruzada."
+   Analogo a FORMULA-DE-CLAVE-COMPUESTA (excel/emision.lisp), que hace lo
+   mismo para la seccion y los dos ejes de una tabla cruzada."
   (format nil "~{~a~^&\"#\"&~}"
           (mapcar (lambda (c) (celda hoja c fila)) (nucleo:clave coleccion))))
 

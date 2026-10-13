@@ -129,12 +129,14 @@
 
     (protocolo:con-filtro-de-vista
      (values :emula
-             "las filas que cumplen la condicion se eligen AL GENERAR y se
-              reparten por las pestanas. Limite: si manana una fila deja de
-              cumplir el filtro, sigue en su pestana hasta que se regenere el
-              libro. Es el mismo coste que la particion y que la tabla
-              cruzada, y por la misma razon: lo que depende del contenido
-              mueve el direccionamiento entero."))
+             "las pestanas y los ejes se eligen AL GENERAR entre las filas
+              que cumplen la condicion; lo que hay en cada casilla si vuelve
+              a preguntarla, asi que una fila que deja de cumplirla sale de
+              su casilla. Limite: una fila que empieza a cumplirla con una
+              seccion o un valor de eje que no existian no aparece hasta que
+              se regenere el libro. Es el mismo coste que la particion y que
+              la tabla cruzada, y por la misma razon: lo que depende del
+              contenido mueve el direccionamiento entero."))
 
     (protocolo:con-agrupacion-en-vista
      (values :degrada

@@ -35,6 +35,10 @@
   ((partes :accessor partes :initarg :partes
            :documentation
            "Los nombres de los campos que se concatenan, en orden.")
+   (filtro :accessor filtro :initarg :filtro :initform nil
+           :documentation
+           "Expresion booleana por fila, o NIL. La fila que no la cumple
+            tiene la clave vacia, y asi ninguna busqueda la encuentra.")
    (letra :accessor letra :initarg :letra
           :documentation "La columna de la hoja donde se escribe."))
   (:documentation
@@ -46,9 +50,9 @@
     columna- son varios. El lenguaje no la nombra y las demas arquitecturas
     no la necesitan.
 
-    Lo que la identifica es QUE concatena, no quien la pidio. Dos vistas que
-    buscan por los mismos campos comparten columna; dos que buscan por campos
-    distintos tienen cada una la suya."))
+    Lo que la identifica es QUE contiene, no quien la pidio. Dos vistas que
+    buscan por los mismos campos entre las mismas filas comparten columna;
+    dos que difieren en los campos o en el filtro tienen cada una la suya."))
 
 (defclass cruce ()
   ((vista :accessor vista :initarg :vista)
@@ -135,16 +139,20 @@
    columna anadida por esta arquitectura."
   (letra-de-columna (+ (length (columnas hoja)) (length (claves hoja)))))
 
-(defun clave-compuesta-de (hoja partes)
-  "La clave compuesta de HOJA que concatena PARTES, creandola si no existe.
+(defun clave-compuesta-de (hoja partes &optional filtro)
+  "La clave compuesta de HOJA que concatena PARTES en las filas que cumplen
+   FILTRO, creandola si no existe.
 
    Es el unico sitio que reparte columnas detras de las declaradas. Quien
    necesite buscar por varios campos la pide aqui y recibe siempre una
    columna que contiene exactamente lo que pidio, haya las vistas que haya
    sobre la coleccion."
-  (or (find partes (claves hoja) :key #'partes :test #'equal)
+  (or (find-if (lambda (clave) (and (equal (partes clave) partes)
+                                    (eq (filtro clave) filtro)))
+               (claves hoja))
       (let ((nueva (make-instance 'clave-compuesta
                                   :partes partes
+                                  :filtro filtro
                                   :letra (siguiente-columna-libre hoja))))
         (setf (claves hoja) (append (claves hoja) (list nueva)))
         nueva)))
@@ -270,10 +278,11 @@
 (defun filas-presentables (plan vista)
   "Las filas que VISTA presenta: las de su coleccion que pasan su filtro.
 
-   Se evalua AL GENERAR, que es el coste de emularlo aqui: si manana una fila
-   deja de cumplir el filtro, sigue en su pestana hasta que se regenere el
-   libro. La coleccion no se toca, asi que los agregados y las marcas siguen
-   viendo las filas escondidas."
+   Se evalua AL GENERAR, y de aqui salen las secciones y los ejes: ese es el
+   coste de emularlo. Lo que hay DENTRO de cada casilla no depende de esta
+   lista: la clave compuesta vuelve a preguntar el filtro en la hoja (ver
+   CLAVE-COMPUESTA). La coleccion no se toca, asi que los agregados y las
+   marcas siguen viendo las filas escondidas."
   (let ((filas (nucleo:filas-de (entorno plan) (nucleo:fuente vista))))
     (if (null (nucleo:filtro vista))
         filas
@@ -348,7 +357,8 @@
                        ;; busca nada, y no hace gastar una columna.
                        :clave (when (eq destino 'cruces)
                                 (clave-compuesta-de
-                                 hoja (partes-de-la-clave vista))))))
+                                 hoja (partes-de-la-clave vista)
+                                 (nucleo:filtro vista))))))
           ;; PUSH no sirve aqui: el lugar se elige en tiempo de ejecucion con
           ;; IF, y IF no tiene expansor SETF. De ahi el SETF/CONS explicito
           ;; en vez del PUSH que usaba esta funcion antes de H2.
