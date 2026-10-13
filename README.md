@@ -44,7 +44,7 @@ xdg-open salida/horario-saul.html          # el horario real del Saul Delgado
 | Comando | Qué hace |
 |---|---|
 | `./demostrar.sh` | Todo: genera, materializa y verifica |
-| `./ejecutar-pruebas.sh` | 67 pruebas, 565 comprobaciones. Código 1 si algo falla |
+| `./ejecutar-pruebas.sh` | 69 pruebas, 573 comprobaciones. Código 1 si algo falla |
 | `./generar-demostracion.sh` | Solo genera los artefactos |
 | `python3 materializador/materializar.py <plano.json> <salida.xlsx>` | Plano de libro a `.xlsx` |
 | `./ejemplos/actualizar.sh` | Regenera los resultados versionados de `ejemplos/` |
@@ -174,10 +174,10 @@ calculado coincide con el del evaluador de referencia del núcleo:
 ```
   ok   plan-del-grupo.xlsx:      30 celdas evaluadas por LibreOffice
   ok   defensas-de-tesis.xlsx:   52 celdas evaluadas por LibreOffice
-  ok   horario-del-grupo.xlsx:   15 celdas evaluadas por LibreOffice
+  ok   horario-del-grupo.xlsx:   24 celdas evaluadas por LibreOffice
   ok   departamento.xlsx:       208 celdas evaluadas por LibreOffice
-  ok   horario-saul.xlsx:       885 celdas evaluadas por LibreOffice
-  ok   seder.xlsx:               91 celdas evaluadas por LibreOffice
+  ok   horario-saul.xlsx:      1161 celdas evaluadas por LibreOffice
+  ok   seder.xlsx:              111 celdas evaluadas por LibreOffice
   ok   plan-del-grupo.html:      48 valores del JavaScript emitido
   ok   defensas-de-tesis.html:   60 valores del JavaScript emitido
   ok   horario-del-grupo.html:  105 valores del JavaScript emitido
