@@ -164,4 +164,5 @@
                "situacion/texto" "situacion/excel" "situacion/web")
   :pathname "demostracion/"
   :serial t
-  :components ((:file "demostracion")))
+  :components ((:file "demostracion")
+               (:file "cruces")))

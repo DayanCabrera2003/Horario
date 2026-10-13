@@ -1,0 +1,117 @@
+"""Comprueba las tablas cruzadas del libro contra el oraculo de cruces.
+
+EL PROBLEMA QUE RESUELVE
+
+El oraculo de valores dice que vale cada campo de cada fila, y con el se
+comprueban las hojas de datos. Una tabla cruzada no es una coleccion: es una
+vista, y su pestana no tiene filas con las que emparejarse. Mientras solo se
+comprobaron las hojas de datos, un libro podia salir con todas sus pestanas
+cruzadas vacias y pasar la verificacion entera.
+
+LO QUE COMPRUEBA
+
+  1. Que cada cuadrante del oraculo tiene su pestana en el libro.
+  2. Que cada casilla ocupada del oraculo esta en los ejes de su pestana.
+  3. Que cada casilla de la pestana, ocupada o no, vale lo que dice el
+     oraculo.
+
+Lo llama verificar.py, con el libro ya recalculado por LibreOffice.
+"""
+
+
+def texto_de_casilla(valores):
+    """Lo que la hoja de calculo ensena en una casilla con esos valores.
+
+    Con un valor, el valor. Con varios -un conflicto declarado con
+    :UNICA-SALVO-, el primero y cuantos mas hay: es la emulacion que declara
+    la arquitectura en su informe de conformidad.
+    """
+    if not valores:
+        return ""
+    if len(valores) == 1:
+        return valores[0]
+    return "{} (+{})".format(valores[0], len(valores) - 1)
+
+
+def _ejes_de(hoja_plan):
+    """Los dos ejes de una pestana cruzada, leidos del plano.
+
+    Devuelve (filas, columnas): de numero de fila a valor del eje de filas, y
+    de letra de columna a texto del eje de columnas.
+    """
+    columnas = {}
+    for enc in hoja_plan.get("encabezados") or []:
+        if enc["campo"] != "__eje__":
+            letra = "".join(c for c in enc["celda"] if c.isalpha())
+            columnas[letra] = enc["texto"]
+    filas = {}
+    for celda in hoja_plan.get("celdas") or []:
+        if celda["celda"].startswith("A"):
+            filas[int(celda["celda"][1:])] = celda["valor"]
+    return filas, columnas
+
+
+def verificar_cruces(plano, cruces, libro, normalizar):
+    """Compara cada pestana cruzada de LIBRO con su cuadrante del oraculo.
+
+    NORMALIZAR es la funcion con la que verificar.py iguala lo leido y lo
+    esperado antes de compararlos; se recibe para que las dos comprobaciones
+    usen exactamente el mismo criterio.
+
+    Devuelve (comprobadas, fallos).
+    """
+    esperados = {}
+    for vista in cruces:
+        for cuadrante in vista["cuadrantes"]:
+            esperados[(vista["vista"], cuadrante["seccion"])] = cuadrante["casillas"]
+
+    comprobadas = 0
+    fallos = []
+    vistos = set()
+
+    for hoja_plan in plano["hojas"]:
+        identidad = hoja_plan.get("cruce")
+        if not identidad:
+            continue
+        clave = (identidad["vista"], identidad["seccion"])
+        nombre = hoja_plan["nombre"][:31]
+        vistos.add(clave)
+        if clave not in esperados:
+            fallos.append("la pestana {!r} no corresponde a ningun cuadrante "
+                          "del oraculo".format(nombre))
+            continue
+        if nombre not in libro.sheetnames:
+            fallos.append("falta la hoja {!r}".format(nombre))
+            continue
+
+        hoja = libro[nombre]
+        filas, columnas = _ejes_de(hoja_plan)
+        casillas = {}
+        for casilla in esperados[clave]:
+            casillas[(normalizar(casilla["fila"]),
+                      normalizar(casilla["columna"]))] = casilla["valores"]
+
+        en_los_ejes = set()
+        for numero, valor_fila in filas.items():
+            for letra, valor_columna in columnas.items():
+                posicion = (normalizar(valor_fila), normalizar(valor_columna))
+                en_los_ejes.add(posicion)
+                esperado = normalizar(texto_de_casilla(casillas.get(posicion, [])))
+                real = normalizar(hoja["{}{}".format(letra, numero)].value)
+                comprobadas += 1
+                if real != esperado:
+                    fallos.append(
+                        "{}!{}{}  esperado {!r}  obtenido {!r}".format(
+                            nombre, letra, numero, esperado, real))
+
+        for posicion in casillas:
+            if posicion not in en_los_ejes:
+                fallos.append("{}: la casilla {!r} del oraculo no esta en "
+                              "los ejes de la pestana".format(nombre, posicion))
+
+    for clave in esperados:
+        if clave not in vistos:
+            fallos.append("la vista {!r}, seccion {!r}, no tiene pestana "
+                          "en el libro".format(*clave))
+
+    return comprobadas, fallos

@@ -150,6 +150,7 @@
                                                    f (letra-de-columna i) fila-enc)))))))
     (declare (ignore coleccion))
     (list (cons "nombre" (nombre-de-pestana (nucleo:etiqueta vista) (seccion cruce)))
+          (cons "cruce" (identidad-de-cruce cruce))
           (cons "fila_encabezado" fila-enc)
           (cons "fila_primera" fila-ini)
           (cons "capacidad" (max 1 (length (valores-de-fila cruce))))
@@ -162,6 +163,17 @@
           (cons "formatos_condicionales" :lista-vacia)
           (cons "rangos_nombrados" :lista-vacia)
           (cons "leyenda" :lista-vacia))))
+
+(defun identidad-de-cruce (cruce)
+  "De que vista y de que seccion es la pestana de CRUCE.
+
+   El nombre de la pestana no sirve para saberlo: se recorta a 31 caracteres
+   y se renombra si se repite. Quien compare el libro con el oraculo de las
+   tablas cruzadas necesita el dato sin adivinarlo."
+  (list (cons "vista" (string-downcase (symbol-name (nucleo:nombre (vista cruce)))))
+        (cons "seccion" (if (seccion cruce)
+                            (nucleo:como-texto (seccion cruce))
+                            ""))))
 
 (defun formula-de-casilla (cruce rango-valor rango-clave fila columna fila-enc)
   "La formula de una casilla del cruce.

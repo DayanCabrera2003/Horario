@@ -61,6 +61,10 @@
     ;; evalue sus formulas, y lo que tiene que dar la pagina al abrirse.
     (escribir-esperado situacion datos (ruta (format nil "~a-esperado.json" prefijo)))
     (format t "Generado salida/~a-esperado.json  (oraculo del evaluador)~%" prefijo)
+    (escribir-cruces-esperados situacion datos
+                               (ruta (format nil "~a-cruces.json" prefijo)))
+    (format t "Generado salida/~a-cruces.json  (oraculo de las tablas cruzadas)~%"
+            prefijo)
 
     ;; --- pagina web ---
     (multiple-value-bind (destino informe)

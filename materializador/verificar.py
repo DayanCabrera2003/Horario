@@ -21,8 +21,12 @@ lenguaje. Ninguna de las tres tesis anteriores de la linea presenta evidencia
 de que las formulas que genera se evaluen; la de 2026 lo afirma y lo respalda
 con capturas de pantalla, que es lo mas lejos que se llego.
 
+Las tablas cruzadas no son colecciones y el oraculo de valores no las
+describe. Se comprueban aparte, contra el oraculo de cruces, si se pasa: ver
+verificar_cruces.py.
+
 Uso:
-    python3 verificar.py <plano.json> <esperado.json> <libro.xlsx>
+    python3 verificar.py <plano.json> <esperado.json> <libro.xlsx> [<cruces.json>]
 """
 
 import json
@@ -34,6 +38,8 @@ from pathlib import Path
 
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
+
+from verificar_cruces import verificar_cruces
 
 
 def recalcular_con_libreoffice(xlsx):
@@ -83,9 +89,11 @@ def normalizar(valor):
         return texto
 
 
-def verificar(plano_path, esperado_path, xlsx_path):
+def verificar(plano_path, esperado_path, xlsx_path, cruces_path=None):
     plano = json.loads(Path(plano_path).read_text(encoding="utf-8"))
     esperado = json.loads(Path(esperado_path).read_text(encoding="utf-8"))
+    cruces = (json.loads(Path(cruces_path).read_text(encoding="utf-8"))
+              if cruces_path else None)
 
     recalculado, temporal = recalcular_con_libreoffice(xlsx_path)
     try:
@@ -125,6 +133,12 @@ def verificar(plano_path, esperado_path, xlsx_path):
                             "{}!{}{}  esperado {!r}  obtenido {!r}".format(
                                 nombre, letra, fila, esperado_v, real))
 
+        if cruces is not None:
+            en_cruces, fallos_de_cruces = verificar_cruces(
+                plano, cruces, libro, normalizar)
+            comprobadas += en_cruces
+            fallos.extend(fallos_de_cruces)
+
         return comprobadas, fallos
     finally:
         shutil.rmtree(temporal, ignore_errors=True)
@@ -146,10 +160,10 @@ def _clave_de_coleccion(esperado, hoja_plan, columnas):
 
 
 def main(argv):
-    if len(argv) != 4:
+    if len(argv) not in (4, 5):
         print(__doc__)
         return 2
-    comprobadas, fallos = verificar(argv[1], argv[2], argv[3])
+    comprobadas, fallos = verificar(*argv[1:])
     nombre = Path(argv[3]).name
     if fallos:
         print("FALLA  {}: {} celdas comprobadas, {} discrepancias"
