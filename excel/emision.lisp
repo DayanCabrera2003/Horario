@@ -189,19 +189,26 @@
    de calculo puede decir sin formulas matriciales, que no se comportan igual
    en los dos programas. Por eso aqui la capacidad se emula y no se cumple.
    Lo que no hace, y es lo que importa, es ensenar una de las dos como si
-   fuera la unica."
-  (let ((clave (format nil "~@[\"~a\"&\"|\"&~]$A~d&\"|\"&~a$~d"
-                       (when (seccion cruce)
-                         (nucleo:como-texto (seccion cruce)))
-                       fila columna fila-enc))
-        (busqueda "IFERROR(INDEX(~a,MATCH(~a,~a,0)),\"\")"))
+   fuera la unica.
+
+   La busqueda pregunta ademas si lo encontrado esta vacio. INDICE sobre una
+   celda en blanco devuelve cero, no blanco, y sin la pregunta un turno libre
+   se leeria como un 0 en el cuadrante."
+  (let* ((clave (format nil "~@[\"~a\"&\"|\"&~]$A~d&\"|\"&~a$~d"
+                        (when (seccion cruce)
+                          (nucleo:como-texto (seccion cruce)))
+                        fila columna fila-enc))
+         (encontrado (format nil "INDEX(~a,MATCH(~a,~a,0))"
+                             rango-valor clave rango-clave))
+         (busqueda (format nil "IFERROR(IF(~a=\"\",\"\",~a),\"\")"
+                           encontrado encontrado)))
     (if (null (nucleo:conflicto (vista cruce)))
-        (format nil "=~a" (format nil busqueda rango-valor clave rango-clave))
+        (format nil "=~a" busqueda)
         (format nil "=IF(COUNTIF(~a,~a)>1,~a&\" (+\"&(COUNTIF(~a,~a)-1)&\")\",~a)"
                 rango-clave clave
-                (format nil busqueda rango-valor clave rango-clave)
+                busqueda
                 rango-clave clave
-                (format nil busqueda rango-valor clave rango-clave)))))
+                busqueda))))
 
 (defconstant +largo-de-pestana+ 31
   "Excel no admite nombres de hoja de mas de 31 caracteres.")
