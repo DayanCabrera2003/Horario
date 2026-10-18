@@ -50,9 +50,36 @@ button:hover { background:#f0f0ee; }
 (defparameter +ayudas-js+ "
 // --- Coercion, identica a la del evaluador de referencia del nucleo ---
 function VACIO(x){ return x === null || x === undefined || x === ''; }
+// Una fecha AAAA-MM-DD vale su dia juliano y una hora HH:MM sus minutos desde
+// medianoche, exactamente como en nucleo/evaluador.lisp (FECHA-COMO-NUMERO y
+// HORA-COMO-NUMERO). Antes se usaba parseFloat, y '2026-10-12' y '2026-10-10'
+// valian los dos 2026: comparar dos fechas del mismo ano daba siempre falso.
+function FECHANUM(s){
+  const m = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.exec(s);
+  if (!m) return null;
+  const anio = +m[1], mes = +m[2], dia = +m[3];
+  if (mes < 1 || mes > 12 || dia < 1 || dia > 31) return null;
+  const a = Math.floor((14 - mes) / 12), y = anio + 4800 - a, mm = mes + 12 * a - 3;
+  return dia + Math.floor((153 * mm + 2) / 5) + 365 * y + Math.floor(y / 4)
+         - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+}
+function HORANUM(s){
+  const m = /^([0-9]{2}):([0-9]{2})$/.exec(s);
+  if (!m) return null;
+  const h = +m[1], mi = +m[2];
+  return (h <= 23 && mi <= 59) ? 60 * h + mi : null;
+}
+function ESFECHA(s){ return FECHANUM(s) !== null; }
+function ESHORA(s){ return HORANUM(s) !== null; }
+// Un texto vale su numero si lo es entero (Number, no parseFloat: '12abc' no
+// es 12 para el evaluador), o su fecha o su hora; si no, 0.
 function N(x){ if (typeof x === 'number') return x;
-               if (VACIO(x)) return 0;
-               const n = parseFloat(x); return isNaN(n) ? 0 : n; }
+               if (VACIO(x) || x === false) return 0;
+               if (x === true) return 0;
+               const s = String(x);
+               const f = FECHANUM(s); if (f !== null) return f;
+               const h = HORANUM(s); if (h !== null) return h;
+               const n = Number(s.trim()); return isNaN(n) ? 0 : n; }
 // Un numero se ensena con hasta 10 cifras significativas, sin ceros a la
 // derecha: la misma regla que nucleo/numeros.lisp (TEXTO-DE-NUMERO).
 function NUMTXT(x){ if (Number.isInteger(x)) return String(x);
@@ -373,6 +400,9 @@ function render(){
           } else {
             control = document.createElement('input');
             if (c.tipo === 'entero' || c.tipo === 'numero') control.type = 'number';
+            // Plan aprobado de tipos, seccion 4.1: un selector de verdad.
+            if (c.tipo === 'fecha') control.type = 'date';
+            if (c.tipo === 'hora') control.type = 'time';
           }
           control.value = fila[c.n] ?? '';
           control.addEventListener('input', e => {

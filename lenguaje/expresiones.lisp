@@ -173,6 +173,13 @@
                                   :variable-b ',(normalizar (second resto))
                                   :campos ',(normalizar-lista (third resto))))
 
+        ;; (forma-invalida campo): la sintetiza el lenguaje para cada campo
+        ;; :TIPO FECHA o :TIPO HORA (nucleo/forma.lisp). Escribirla a mano
+        ;; evalua lo mismo, sin otro efecto.
+        ((es cabeza "FORMA-INVALIDA")
+         `(nucleo:hacer-forma-invalida :variable ',(normalizar 'fila)
+                                       :campo ',(normalizar (first resto))))
+
         ;; (anterior V) / (siguiente V) sueltos: solo validos dentro de (de ...)
         ((es-alguno cabeza "ANTERIOR" "SIGUIENTE")
          (error "~s solo se puede usar dentro de un acceso: (DE (~(~a~) ~a) CAMPO)"

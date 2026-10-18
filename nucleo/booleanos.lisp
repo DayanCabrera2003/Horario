@@ -35,7 +35,9 @@
                              :test #'string=)
                      t))
     ((or sin-escribir existe comparten) t)
-    (t nil)))
+    ;; FORMA-INVALIDA se define despues (nucleo/forma.lisp); se reconoce por
+    ;; su nombre de clase para no depender del orden de carga.
+    (t (and (eq (type-of e) 'forma-invalida) t))))
 
 (defun campo-booleano-p (campo)
   "Cierto si CAMPO es derivado y vale \"si\" o \"no\"."

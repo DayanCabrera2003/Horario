@@ -39,7 +39,8 @@
                (:file "ambito")
                (:file "numeros")
                (:file "booleanos")
-               (:file "evaluador")))
+               (:file "evaluador")
+               (:file "forma")))
 
 ;;; El protocolo depende del nucleo y de nada mas. En particular NO depende
 ;;; del lenguaje: el contrato de extension se define contra el dominio, no
@@ -106,6 +107,7 @@
                (:file "nombres-de-hoja")
                (:file "escapes")
                (:file "numeros")
+               (:file "fechas")
                (:file "formula")
                (:file "particion-en-archivo")
                (:file "ejecutar"))

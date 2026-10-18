@@ -66,6 +66,7 @@ def materializar(plano, destino):
         _escribir_formulas(hoja, hoja_plan)
         _aplicar_formatos_condicionales(hoja, hoja_plan)
         _aplicar_validaciones(hoja, hoja_plan)
+        _aplicar_formatos_de_celda(hoja, hoja_plan)
         _escribir_leyenda(hoja, hoja_plan)
         _aplicar_presentacion(hoja, hoja_plan)
         _proteger(hoja, hoja_plan)
@@ -150,6 +151,20 @@ def _aplicar_formatos_condicionales(hoja, plan):
         regla = FormulaRule(formula=[item["formula"]], fill=relleno, stopIfTrue=False)
         for rango in item["rango"].split():
             hoja.conditional_formatting.add(rango, regla)
+
+
+FORMATOS_DE_CELDA = {"fecha": "YYYY-MM-DD", "hora": "HH:MM"}
+
+
+def _aplicar_formatos_de_celda(hoja, plan):
+    """El formato de fecha u hora de las columnas que lo declaran. Solo
+    cambia como se ve un numero de serie: un texto ISO sigue siendo texto."""
+    for item in plan.get("formatos_de_celda") or []:
+        formato = FORMATOS_DE_CELDA[item["formato"]]
+        minc, minr, maxc, maxr = range_boundaries(item["rango"])
+        for fila in hoja.iter_rows(min_row=minr, max_row=maxr, min_col=minc, max_col=maxc):
+            for celda in fila:
+                celda.number_format = formato
 
 
 def _aplicar_validaciones(hoja, plan):

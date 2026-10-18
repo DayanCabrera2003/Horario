@@ -207,6 +207,15 @@
     (protocolo:con-derivacion-por-consulta
      (values :degrada "las derivaciones son vivas, que es mas de lo que se pide"))
 
+    (protocolo:con-validacion-de-forma
+     (values :degrada
+             "la hoja de calculo no valida la forma de una fecha o una hora:
+              FECHANUMERO y HORANUMERO aceptan formas mas laxas que el
+              chequeo AAAA-MM-DD y HH:MM del nucleo, y fingir que coinciden
+              seria dar por correcto lo que no lo es. La marca se genera y
+              nunca se dispara; el valor mal escrito si se senala en la
+              pagina y en el evaluador."))
+
     (t (values :rechaza
                (format nil "la hoja de calculo no tiene ~(~a~) ni forma de~@
                             emularla de manera honesta~@[ (~a)~]"

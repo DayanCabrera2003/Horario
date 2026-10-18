@@ -239,3 +239,14 @@
    Pestanas y enlaces en Excel, rutas en la web, buffers en Emacs. SQL no la
    tiene. Es de las cosas que mas cambian de forma entre arquitecturas, y
    por eso el lenguaje declara la intencion y no el mecanismo.")
+
+(definir-capacidad con-validacion-de-forma
+  "El destino sabe decir si un valor escrito tiene la forma de una fecha
+   (AAAA-MM-DD) o de una hora (HH:MM), exactamente como lo juzga el
+   evaluador de referencia.
+
+   La pide la marca sintetica que el lenguaje anade a cada campo :TIPO FECHA
+   o :TIPO HORA (plan aprobado de tipos, seccion 4.2). Una pagina la tiene
+   con una expresion regular; una hoja de calculo tiene funciones de fecha
+   mas laxas que el chequeo estricto del nucleo, y fingir que coinciden
+   seria dar por correcto lo que no lo es.")

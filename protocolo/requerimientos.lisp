@@ -109,4 +109,8 @@
                       (nucleo:coleccion e))))
     (nucleo:vecino
      (funcall pedir 'con-orden-declarado e
-              "se habla de la fila anterior o la siguiente"))))
+              "se habla de la fila anterior o la siguiente"))
+    (nucleo:forma-invalida
+     (funcall pedir 'con-validacion-de-forma e
+              (format nil "hay que decir si ~(~a~) tiene la forma de su tipo"
+                      (nucleo:campo e))))))

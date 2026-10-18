@@ -38,7 +38,8 @@
                protocolo:con-conteo-de-distintos
                protocolo:con-marcado-visual
                protocolo:con-marcado-textual
-               protocolo:con-navegacion)
+               protocolo:con-navegacion
+               protocolo:con-validacion-de-forma)
   ()
   (:documentation
    "Salida a una pagina autonoma con recalculo vivo.

@@ -39,6 +39,14 @@ for f in $casos; do
   node materializador/verificar-web.js "salida/$f.html" "salida/$f-esperado.json" || fallos=1
 done
 
+# Una fecha tecleada de verdad (un numero de serie) tiene que comparar igual
+# que una escrita como texto: Lia entrega el 11 de octubre, despues del 10.
+case " $casos " in
+  *" caso-notas "*)
+    python3 materializador/sonda_fecha_tecleada.py salida/caso-notas.xlsx \
+            Estudiantes H4 2026-10-11 K4 si || fallos=1 ;;
+esac
+
 echo
 if [ "$fallos" = "0" ]; then
   echo "Robustez: todos los casos coinciden en las tres arquitecturas."

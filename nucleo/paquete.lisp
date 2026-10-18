@@ -79,6 +79,7 @@
    #:existe #:hacer-existe #:distinta-de
    #:comparten #:hacer-comparten #:variable-a #:variable-b
    #:vecino #:hacer-vecino #:direccion
+   #:forma-invalida #:hacer-forma-invalida #:tipo-de-forma
 
    ;; Ambitos
    #:ambito #:hacer-ambito #:ligaduras #:actual

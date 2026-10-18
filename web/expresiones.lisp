@@ -242,3 +242,15 @@
             (js-coleccion (nucleo:nombre coleccion))
             (js-variable (nucleo:variable e))
             (if (eq (nucleo:direccion e) :anterior) -1 1))))
+
+(defmethod protocolo:emitir-expresion ((a web) (e nucleo:forma-invalida) ambito plan)
+  "Una expresion regular con la misma forma que exige el evaluador: AAAA-MM-DD
+   con mes y dia en rango, o HH:MM con hora y minutos en rango."
+  (declare (ignore plan))
+  (protocolo:requerir a 'protocolo:con-validacion-de-forma e
+                      :detalle (format nil "la forma de ~(~a~)" (nucleo:campo e)))
+  (let* ((coleccion (nucleo:coleccion-de-variable ambito (nucleo:variable e)))
+         (tipo (nucleo:tipo-de-forma coleccion (nucleo:campo e))))
+    (format nil "(!~a(T(V(~a~a))))"
+            (if (eq tipo :hora) "ESHORA" "ESFECHA")
+            (js-variable (nucleo:variable e)) (js-campo (nucleo:campo e)))))

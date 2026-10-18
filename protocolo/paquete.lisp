@@ -46,6 +46,7 @@
    #:con-casilla-en-conflicto
    #:con-agrupacion-en-vista
    #:con-navegacion
+   #:con-validacion-de-forma
 
    ;; Declaracion de la arquitectura.
    #:capacidades

@@ -272,6 +272,7 @@
                                           (formulas-de-claves a plan hoja))))
           (cons "editables" (lista (rangos-editables hoja)))
           (cons "validaciones" (lista (validaciones-de a plan hoja)))
+          (cons "formatos_de_celda" (lista (formatos-de-celda hoja)))
           (cons "formatos_condicionales" (lista (formatos-de a plan hoja)))
           (cons "rangos_nombrados" (lista (rangos-nombrados-de hoja)))
           (cons "leyenda" (lista (leyenda-de plan hoja))))))
@@ -447,6 +448,23 @@
         collect (format nil "~a~d:~a~d"
                         (columna-de hoja (nucleo:nombre campo)) (fila-primera hoja)
                         (columna-de hoja (nucleo:nombre campo)) (fila-ultima hoja))))
+
+(defun formatos-de-celda (hoja)
+  "El formato de fecha u hora de cada campo fijo o de entrada con ese tipo.
+
+   Plan aprobado de tipos, seccion 4.1: por rango de columna entero, de la
+   primera fila a la ultima de la capacidad, como las validaciones. Asi lo
+   tiene tambien una fila de reserva que el usuario todavia no ha escrito, y
+   una fecha tecleada de verdad se ve como fecha y no como un numero."
+  (loop for campo in (nucleo:campos (coleccion hoja))
+        when (and (member (nucleo:tipo campo) '(:fecha :hora))
+                  (member (nucleo:rol campo) '(:fijo :entrada)))
+          collect (let ((letra (columna-de hoja (nucleo:nombre campo))))
+                    (list (cons "rango" (format nil "~a~d:~a~d"
+                                                letra (fila-primera hoja)
+                                                letra (fila-ultima hoja)))
+                          (cons "formato" (string-downcase
+                                           (symbol-name (nucleo:tipo campo))))))))
 
 (defun validaciones-de (a plan hoja)
   "El desplegable de cada campo de entrada con dominio.

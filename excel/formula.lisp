@@ -228,6 +228,13 @@
           (protocolo:emitir-expresion a (nucleo:singular e) ambito plan)
           (protocolo:emitir-expresion a (nucleo:plural e) ambito plan)))
 
+(defmethod protocolo:emitir-expresion ((a excel) (e nucleo:forma-invalida) ambito plan)
+  (declare (ignore ambito plan))
+  ;; Plan aprobado de tipos, seccion 4.2: se degrada, y el informe lo dice.
+  (protocolo:requerir a 'protocolo:con-validacion-de-forma e
+                      :detalle (format nil "la forma de ~(~a~)" (nucleo:campo e)))
+  "FALSE()")
+
 (defmethod protocolo:emitir-expresion ((a excel) (e nucleo:enumeracion) ambito plan)
   (declare (ignore ambito plan))
   ;; Dentro de una formula, un conjunto literal solo tiene sentido como lista
