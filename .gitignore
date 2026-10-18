@@ -43,3 +43,6 @@ exploracion/salida/
 # Los resultados de los ejemplos SI se versionan: son para abrirlos sin
 # instalar nada. Se regeneran con ./ejemplos/actualizar.sh
 !ejemplos/resultados/*.xlsx
+
+# La documentacion del proyecto no se publica en el repositorio
+docs/
