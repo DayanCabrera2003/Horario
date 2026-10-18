@@ -115,7 +115,7 @@ def verificar_tabla(lineas, tabla, esperado, desde):
             fallos.append("{}: faltan filas".format(titulo))
             break
         celdas = celdas_de(lineas[j], columnas)
-        valores, _marcas, estado = filas[indice]
+        valores, _marcas, estado = filas[indice][:3]
         for k, campo in enumerate(campos):
             esperado_v = valores.get(campo["campo"])
             real = celdas[k] if k < len(celdas) else ""

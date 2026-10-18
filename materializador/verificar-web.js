@@ -77,6 +77,7 @@ function main(argv) {
   const D = vm.runInContext('D', contexto);
   const MARCAS = vm.runInContext('MARCAS', contexto);
   const estadoDe = vm.runInContext('estadoDe', contexto);
+  const camposMarcados = vm.runInContext('camposMarcados', contexto);
 
   let comprobadas = 0;
   // Las comprobaciones que comparan con el oraculo, sin las de las marcas.
@@ -101,6 +102,20 @@ function main(argv) {
         if (real !== envoltura[2]) {
           fallos.push(`${coleccion}[${i}] estado esperado ${JSON.stringify(envoltura[2])}` +
                       `  obtenido ${JSON.stringify(real)}`);
+        }
+      }
+      // Los campos que pinta cada marca (fase 2, hueco C7), comparados con
+      // los que dice el evaluador.
+      if (Array.isArray(envoltura) && envoltura.length > 3) {
+        const marcados = envoltura[3] || {};
+        for (const m of MARCAS.filter(m => m.coleccion === coleccion)) {
+          comprobadas++;
+          comparadas++;
+          const real = JSON.stringify(camposMarcados(m, fila));
+          const esp = JSON.stringify(marcados[m.nombre] ? marcados[m.nombre][1] : []);
+          if (real !== esp) {
+            fallos.push(`${coleccion}[${i}] la marca ${m.nombre} pinta ${real} y el evaluador ${esp}`);
+          }
         }
       }
       for (const [campo, valor] of Object.entries(valores)) {
