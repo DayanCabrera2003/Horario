@@ -92,7 +92,10 @@
   `(("excel"
      (protocolo:con-busqueda-por-clave
       . ,(lambda (salida plano s) (declare (ignore salida s))
-           (search "MATCH(1,INDEX(EXACT(" (formulas-del-plano plano))))
+           ;; Una igualdad sobre un campo, o el producto de factores de
+           ;; cualquier otra condicion (fase 2, hueco C2).
+           (or (search "MATCH(1,INDEX(EXACT(" (formulas-del-plano plano))
+               (search "MATCH(1,INDEX(1*" (formulas-del-plano plano)))))
      (protocolo:con-derivacion-viva
       . ,(lambda (salida plano s) (declare (ignore salida s))
            (plusp (length (formulas-del-plano plano)))))
