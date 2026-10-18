@@ -189,7 +189,8 @@
      (values :emula
              "las filas se calculan al generar y quedan fijas. Si despues
               aparece un valor nuevo en la coleccion de origen, no aparece
-              una fila para el: hay que volver a generar."))
+              una fila para el: aunque el origen crezca (filas de reserva),
+              la derivada no gana filas hasta regenerar el libro."))
 
     (protocolo:con-conteo-de-distintos
      ;; Sin filtro, el rodeo plano (columna auxiliar que marca la primera

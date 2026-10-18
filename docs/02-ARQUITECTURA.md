@@ -1342,6 +1342,17 @@ texto formateado (texto y DOM) y el formato de número de la columna (libro).
 redondeara el valor, que mezclaría aspecto y valor (un 59.996 se vería 60.00
 y aprobaría o no según dónde se declarara el formato).
 
+**D14 — Las faltas de una colección derivada son errores (2026-10-18, fase
+2, C8).** El campo que recibe el grupo de `:una-fila-por` tiene que estar
+declarado y ser `:rol fijo`, y el resto de campos de una derivada son
+`:rol derivado`. Antes, sin el agrupador, el análisis solo avisaba y el
+evaluador ponía el valor en el primer campo, que es justo el tipo de
+descarte silencioso que este trabajo quita donde lo encuentra.
+*Alternativa descartada:* declarar el agrupador implícitamente, que daría un
+campo visible en las tres salidas sin estar escrito en la descripción.
+*Coste:* una línea más en cada derivada. De las 10 derivadas del
+repositorio, ninguna tuvo que cambiar.
+
 ---
 
 ## 13 bis. Estado de implementación

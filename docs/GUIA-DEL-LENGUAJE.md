@@ -255,11 +255,55 @@ corrigió.
   la web).
 - **`:datos`** es una lista de listas de valores, en el orden de los campos
   de rol `:fijo`.
-- Existen en la sintaxis y en el análisis dos orígenes especiales,
-  `(:una-fila-por campo :de coleccion)` y `(:una-sola-fila)`, para una
-  colección que se agrupa o proyecta de otra. **No hay ningún uso real
-  ejecutado** de ninguno de los dos ni en el corpus ni en las exploraciones —
-  existen como forma, no como práctica probada.
+- `(:una-fila-por campo :de coleccion)` y `(:una-sola-fila)` hacen una
+  **colección derivada**: sus filas no se escriben, salen de otra colección.
+  Se explican en el apartado siguiente.
+
+**Colecciones derivadas (2026-10-18, fase 2, hueco C8).**
+
+- `(:una-fila-por CAMPO :de COLECCION)` da una fila por cada valor distinto
+  y no vacío de `CAMPO` en `COLECCION`, en el orden de primera aparición (o
+  en su propio `:orden`, si lo declara). El valor de cada grupo va en el
+  campo de la derivada que se llama igual, que **hay que declarar, con
+  `:rol fijo`**: lo pone la agrupación; ni se calcula ni lo escribe nadie.
+- `(:una-sola-fila)` da exactamente una fila, sin campos escritos. Es el
+  sitio de lo que es de la situación entera: el total general, cuántas
+  personas distintas hay.
+- En las dos, todos los demás campos son `:rol derivado`. Sus filas no son
+  de nadie: lo que alguien escribiera se perdería al recalcular, y un campo
+  fijo no tendría quien le diera valor.
+- Los datos no traen filas para una derivada. Una fila vacía,
+  `(list "resumen" (fila))`, se tolera, pero sobra.
+- Qué hace cada destino:
+  - la página las recalcula vivas;
+  - el texto las escribe calculadas;
+  - la hoja de cálculo las calcula **al generar**, y su informe lo dice
+    (`emula` en `con-agrupacion`): aunque la colección de origen crezca, la
+    derivada no gana filas hasta regenerar el libro.
+- Las tres faltas (el campo agrupador sin declarar, el agrupador que no es
+  `:rol fijo` y otro campo que no es `:rol derivado`) son **errores de
+  análisis** con el arreglo en el mensaje. Hasta el 2026-10-18 la primera
+  era solo un aviso y el valor del grupo iba al primer campo de la
+  colección, fuera cual fuera.
+
+Ejemplo, `pruebas/casos/horas.lisp`:
+
+```lisp
+(coleccion personas
+  (:una-fila-por persona :de registros)
+  (:etiqueta "Personas")
+  (campo persona :rol fijo :etiqueta "Persona")      ; donde va cada grupo
+  (campo total :rol derivado :tipo entero :etiqueta "Total"
+         (suma horas de registros :donde (= persona (de fila persona))))
+  (campo semanas :rol derivado :tipo entero :etiqueta "Semanas"
+         (cuantas registros :donde (= persona (de fila persona)))))
+
+(coleccion resumen
+  (:una-sola-fila)
+  (:etiqueta "Resumen")
+  (campo gente :rol derivado :tipo entero :etiqueta "Personas distintas"
+         (cuantas-distintas persona de registros)))
+```
 
 Ejemplo real con clave compuesta, orden y crecimiento,
 `corpus/defensas-de-tesis.lisp:43-50`:
@@ -701,9 +745,11 @@ rechaza en tiempo de análisis, como **error duro** (bloquea la compilación):
   cruzada; cualquier campo de vista que no sea campo real de la colección.
 - Ciclo de dependencia entre campos derivados de la misma fila.
 - Una situación sin ninguna colección.
+- Colección derivada: `:una-fila-por` sin su campo agrupador (el mensaje
+  dice cómo declararlo), agrupador que no es `:rol fijo`, o cualquier otro
+  campo que no sea `:rol derivado` (sección 5.3).
 
-Solo **aviso**, no bloquea: colección derivada sin campo propio para el
-agrupador (usa el primero); campo `:entrada` con `:al-violar impedir` sin
+Solo **aviso**, no bloquea: campo `:entrada` con `:al-violar impedir` sin
 `:dominio`; `:unica-salvo` declarado donde no hacía falta.
 
 Y una regla léxica del núcleo, verificable con una prueba: **ningún símbolo
@@ -1258,8 +1304,7 @@ Lo que sigue faltando de verdad, como construcción del lenguaje, queda para
 una segunda fase, con una nota de diseño por hueco antes de escribir código: orden y dominio de los ejes (C1, hecho el 2026-10-17), búsqueda por
 varios campos en Excel (C2, hecho el 2026-10-17), orden compuesto y vecino dentro de una partición
 (C3, hecho el 2026-10-18), formato numérico (C6, hecho el 2026-10-18), marca por campo (C7), sintaxis única de `:donde`
-(C4) y documentar `:una-fila-por` (C8; hoy hay que volver a declarar el campo
-agrupador en la colección derivada).
+(C4) y documentar `:una-fila-por` (C8, hecho el 2026-10-18).
 
 ---
 
