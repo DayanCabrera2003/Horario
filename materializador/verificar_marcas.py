@@ -40,6 +40,12 @@ def _marcados_de(envoltura):
     return {}
 
 
+def _limites(rango):
+    """Los limites de RANGO como tupla: "C4:C4" y "C4" son el mismo rango,
+    y el plano y openpyxl no siempre lo escriben igual."""
+    return range_boundaries(rango)
+
+
 def _reglas_del_libro(hoja):
     """Las reglas de formato condicional de HOJA, como (rango, formula)."""
     reglas = []
@@ -55,7 +61,8 @@ def _marca_de_regla(rango, formula, reglas_del_plano):
     """La marca de la regla del libro (RANGO, FORMULA): la del plano con el
     mismo rango y la misma formula, o si la formula cambio, la del mismo
     rango. None si ninguna regla del plano cubre ese rango."""
-    del_rango = [r for r in reglas_del_plano if rango in r["rango"].split()]
+    del_rango = [r for r in reglas_del_plano
+                 if _limites(rango) in {_limites(x) for x in r["rango"].split()}]
     exacta = [r for r in del_rango if r["formula"] == formula]
     elegida = (exacta or del_rango or [None])[0]
     return elegida["estado"] if elegida else None
@@ -77,10 +84,10 @@ def preparar_sondas(libro, plano, esperado):
         reglas_del_plano = hoja_plan.get("formatos_condicionales") or []
         hoja = libro[hoja_plan["nombre"]]
         reglas = _reglas_del_libro(hoja)
-        en_el_libro = {(rango, formula) for rango, formula in reglas}
+        en_el_libro = {(_limites(rango), formula) for rango, formula in reglas}
         for regla in reglas_del_plano:
             for rango in regla["rango"].split():
-                if (rango, regla["formula"]) not in en_el_libro:
+                if (_limites(rango), regla["formula"]) not in en_el_libro:
                     fallos.append("{}: la marca {} no tiene su formato en {}".format(
                         hoja.title, regla["estado"], rango))
         campo_de_letra = {}
