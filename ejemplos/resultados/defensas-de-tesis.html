@@ -211,20 +211,37 @@ function huellaDe(){
 }
 
 // --- Marcas y estado de una fila ---
-function marcasDe(nombreColeccion, fila){
-  return MARCAS.filter(m => m.coleccion === nombreColeccion)
-               .filter(m => { try { return VERDAD(m.cond(fila)); } catch(e){ return false; } });
+// Los campos de FILA que senala la marca M, en el orden de sus campos: todos
+// si su condicion se cumple, o ninguno; para una marca porCampo (fase 2,
+// hueco C7), los campos donde se cumple con el valor de ese campo. Es
+// NUCLEO:CAMPOS-MARCADOS.
+function camposMarcados(m, fila){
+  const cumple = (...args) => { try { return VERDAD(m.cond(fila, ...args)); } catch(e){ return false; } };
+  if (m.porCampo) return m.campos.filter(c => cumple(V(fila[c])));
+  return cumple() ? m.campos.slice() : [];
 }
 
-function explicacionDe(m, fila){
-  try { return m.explica ? T(m.explica(fila)) : m.leyenda; }
+function marcasDe(nombreColeccion, fila){
+  return MARCAS.filter(m => m.coleccion === nombreColeccion)
+               .filter(m => camposMarcados(m, fila).length > 0);
+}
+
+function explicacionDe(m, fila, campo){
+  try {
+    if (!m.explica) return m.leyenda;
+    return T(m.porCampo ? m.explica(fila, V(fila[campo])) : m.explica(fila));
+  }
   catch(e){ return m.leyenda; }
 }
 
 // El estado de una fila en palabras: el mismo texto que escriben el texto
-// plano y la hoja de calculo (NUCLEO:TEXTO-DE-ESTADO).
+// plano y la hoja de calculo (NUCLEO:TEXTO-DE-ESTADO). Una marca porCampo
+// da una explicacion por campo que senala.
 function estadoDe(nombreColeccion, fila){
-  return marcasDe(nombreColeccion, fila).map(m => explicacionDe(m, fila)).join('; ');
+  return marcasDe(nombreColeccion, fila)
+    .flatMap(m => m.porCampo ? camposMarcados(m, fila).map(c => explicacionDe(m, fila, c))
+                             : [explicacionDe(m, fila)])
+    .join('; ');
 }
 
 function recalcularTodo(){
@@ -248,9 +265,9 @@ DERIV["citaciones"] = {
 };
 
 const MARCAS = [
-  {nombre: "profesor-citado-dos-veces", leyenda: "profesor citado dos veces", coleccion: "citaciones", clase: "problema", campos: ["tutor", "oponente", "presidente", "secretario"],
-   cond: (f) => D["citaciones"].some(o => o !== f && (IG(V(o["dia"]),V(f["dia"])) && IG(V(o["momento"]),V(f["momento"])) && COMPARTEN(o, f, ["tutor", "oponente", "presidente", "secretario"]))),
-   explica: (f) => "Este profesor esta citado en dos locales a la vez"},
+  {nombre: "profesor-citado-dos-veces", leyenda: "profesor citado dos veces", coleccion: "citaciones", clase: "problema", campos: ["tutor", "oponente", "presidente", "secretario"], porCampo: true,
+   cond: (f, v_profesor) => ((!VACIO(v_profesor)) && D["citaciones"].some(o => o !== f && (IG(V(o["dia"]),V(f["dia"])) && IG(V(o["momento"]),V(f["momento"])) && (IG(V(o["tutor"]),v_profesor) || IG(V(o["oponente"]),v_profesor) || IG(V(o["presidente"]),v_profesor) || IG(V(o["secretario"]),v_profesor))))),
+   explica: (f, v_profesor) => [v_profesor, " esta citado en dos locales a la vez"].map(T).join("")},
   {nombre: "sin-asignar", leyenda: "sin asignar", coleccion: "citaciones", clase: "informativa", campos: ["estudiante"],
    cond: (f) => VACIO(V(f["estudiante"])),
    explica: (f) => "Este hueco todavia no tiene defensa"}
@@ -644,7 +661,8 @@ function dibujarTabla(tabla, contenedor){
       registrar(() => {
         // La marca senala los campos que declara su alcance.
         marcada.classList.remove('problema', 'advertencia', 'informativa');
-        const suyas = marcasDe(tabla.coleccion, fila).filter(m => m.campos.includes(c.n));
+        const suyas = marcasDe(tabla.coleccion, fila)
+                        .filter(m => camposMarcados(m, fila).includes(c.n));
         if (suyas.length) marcada.classList.add(suyas[0].clase);
       });
       tr.appendChild(td);
