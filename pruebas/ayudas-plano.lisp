@@ -42,6 +42,15 @@
                        :key (lambda (f) (dato f "celda")) :test #'string=)))
     (and entrada (dato entrada "formula"))))
 
+(defun celda-de-campo (hoja campo fila)
+  "La celda de CAMPO (una cadena) en la fila FILA de HOJA (una hoja del
+   plano), buscando su columna por el encabezado: asi una prueba no se rompe
+   si la descripcion gana o pierde un campo antes que el."
+  (let ((encabezado (find campo (lista-del-plano (dato hoja "encabezados"))
+                          :key (lambda (e) (dato e "campo")) :test #'string=)))
+    (and encabezado
+         (format nil "~a~d" (remove-if #'digit-char-p (dato encabezado "celda")) fila))))
+
 (defun texto-de-archivo (ruta)
   "El contenido entero de RUTA como cadena, leido en UTF-8."
   (with-open-file (f ruta :external-format :utf-8)
