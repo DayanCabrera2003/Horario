@@ -79,6 +79,8 @@ function main(argv) {
   const estadoDe = vm.runInContext('estadoDe', contexto);
 
   let comprobadas = 0;
+  // Las comprobaciones que comparan con el oraculo, sin las de las marcas.
+  let comparadas = 0;
   const fallos = [];
 
   for (const [coleccion, filasEsperadas] of Object.entries(esperado)) {
@@ -94,6 +96,7 @@ function main(argv) {
       // El estado: el texto de las marcas que disparan, como el evaluador.
       if (Array.isArray(envoltura) && envoltura.length > 2) {
         comprobadas++;
+        comparadas++;
         const real = estadoDe(coleccion, fila);
         if (real !== envoltura[2]) {
           fallos.push(`${coleccion}[${i}] estado esperado ${JSON.stringify(envoltura[2])}` +
@@ -104,6 +107,7 @@ function main(argv) {
         const real = normalizar(fila[campo]);
         const esp = normalizar(valor);
         comprobadas++;
+        comparadas++;
         if (!iguales(real, esp)) {
           fallos.push(`${coleccion}[${i}].${campo}  esperado ${JSON.stringify(esp)}` +
                       `  obtenido ${JSON.stringify(real)}`);
@@ -123,9 +127,11 @@ function main(argv) {
   }
 
   const nombre = argv[2].split('/').pop();
-  const filasDelOraculo = Object.values(esperado).reduce((s, f) => s + f.length, 0);
-  if (filasDelOraculo > 0 && comprobadas === 0) {
-    fallos.push('no se comparo ningun valor');
+  // Comparar cero valores del oraculo nunca demuestra nada: falla siempre,
+  // aunque el oraculo venga vacio. Las comprobaciones de las marcas no
+  // cuentan, porque no comparan con el evaluador de referencia.
+  if (comparadas === 0) {
+    fallos.push('no se comparo ningun valor con el oraculo');
   }
   if (fallos.length) {
     console.log(`FALLA  ${nombre}: ${comprobadas} comprobaciones, ${fallos.length} discrepancias`);

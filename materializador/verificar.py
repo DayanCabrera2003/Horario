@@ -36,6 +36,8 @@ CUANDO FALLA
   - Una celda no coincide con el oraculo.
   - Una coleccion del oraculo no tiene hoja, o una hoja no tiene identidad.
   - Una hoja con filas en el oraculo no compara ninguna celda.
+  - El libro entero no compara ninguna celda, aunque el oraculo venga vacio:
+    comparar cero valores nunca demuestra nada.
   - Cualquier celda del libro, este o no en el oraculo, vale un error de
     formula (#VALUE!, #NAME?, #REF!, #N/A, #DIV/0!...).
 
@@ -201,9 +203,19 @@ def verificar(plano_path, esperado_path, xlsx_path, cruces_path=None, vistas_pat
 
         fallos.extend("error de formula en " + e for e in errores_del_libro(libro))
         comprobadas = sum(n for _, n in por_hoja if isinstance(n, int))
+        fallos.extend(fallos_del_total(comprobadas))
         return comprobadas, fallos, por_hoja
     finally:
         shutil.rmtree(temporal, ignore_errors=True)
+
+
+def fallos_del_total(comprobadas):
+    """Los fallos que se deben solo al total de celdas comparadas: si es cero,
+    la verificacion no ha demostrado nada y no puede salir en verde, venga el
+    oraculo como venga."""
+    if comprobadas == 0:
+        return ["no se comparo ninguna celda en todo el libro"]
+    return []
 
 
 def main(argv):

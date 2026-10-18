@@ -120,6 +120,7 @@
                (:file "presentacion")
                (:file "formula")
                (:file "particion-en-archivo")
+               (:file "verificador-sin-comparar")
                (:file "ejecutar"))
   :perform (test-op (op system)
                     (uiop:symbol-call :situacion.pruebas :ejecutar)))
