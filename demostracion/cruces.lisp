@@ -12,15 +12,6 @@
 
 (in-package #:situacion.demostracion)
 
-(defun filas-que-presenta (entorno vista)
-  "Las filas de la coleccion de VISTA que pasan su filtro, en su orden."
-  (let ((filas (nucleo:filas-de entorno (nucleo:fuente vista))))
-    (if (null (nucleo:filtro vista))
-        filas
-        (remove-if-not (lambda (f)
-                         (nucleo:cumple-en-fila entorno f (nucleo:filtro vista)))
-                       filas))))
-
 (defun agrupar-por (entorno filas campo)
   "FILAS repartidas por el valor de CAMPO, como lista de (VALOR . FILAS) en
    orden de aparicion. Las filas sin valor en CAMPO no entran en ningun
@@ -54,7 +45,7 @@
 
 (defun cuadrantes-de (entorno vista)
   "Un cuadrante por seccion de VISTA, o uno solo si no se parte."
-  (let ((filas (filas-que-presenta entorno vista)))
+  (let ((filas (nucleo:filas-que-presenta entorno vista)))
     (if (nucleo:secciones vista)
         (loop for (seccion . suyas)
                 in (agrupar-por entorno filas (nucleo:secciones vista))

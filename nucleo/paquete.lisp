@@ -100,4 +100,7 @@
    #:expresion-booleana-p #:campo-booleano-p #:verdadero-p #:como-booleano
    #:cumple-en-fila #:normalizar-valor
    #:texto-de-estado #:nombre-legible-de-marca
+
+   ;; Ejes y secciones de una vista cruzada
+   #:filas-que-presenta #:valores-de-eje #:secciones-de-vista
    #:error-de-evaluacion #:mensaje-de-error))

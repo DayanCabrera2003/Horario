@@ -131,9 +131,18 @@ function seccionesDe(cruce, filas){
   return distintosDe(filas, cruce.secciones).sort(compararSecciones);
 }
 
+// La misma comparacion que NUCLEO::MENOR-P: numeros por su valor, fechas y
+// horas por su valor, textos por sus caracteres.
 function compararSecciones(a, b){
   if (typeof a === 'number' && typeof b === 'number') return a - b;
-  return T(a).localeCompare(T(b), 'es');
+  if (typeof a === 'string' && typeof b === 'string') {
+    const fa = FECHANUM(a), fb = FECHANUM(b);
+    if (fa !== null && fb !== null) return fa - fb;
+    const ha = HORANUM(a), hb = HORANUM(b);
+    if (ha !== null && hb !== null) return ha - hb;
+    return a < b ? -1 : (a > b ? 1 : 0);
+  }
+  return 0;
 }
 
 function ejesDe(cruce, filas){
@@ -145,7 +154,7 @@ function ejesDe(cruce, filas){
 // van en ese orden; si no, en el de primera aparicion.
 function ordenarEje(valores, campo, cruce){
   if (cruce.orden !== campo) return valores;
-  return valores.slice().sort((a, b) => N(a) - N(b) || T(a).localeCompare(T(b)));
+  return valores.slice().sort(compararSecciones);
 }
 
 function dibujarCruce(cruce, indiceCruce, app){

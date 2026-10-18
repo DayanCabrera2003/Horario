@@ -322,19 +322,6 @@
 ;;; turno nuevo, no aparece una columna nueva.
 ;;; ---------------------------------------------------------------------
 
-(defun valores-distintos-en-filas (plan filas campo)
-  "Los valores que toma CAMPO en FILAS, sin repetir y en orden de aparicion."
-  (let ((vistos '()))
-    (dolist (f filas (nreverse vistos))
-      (let ((v (nucleo:valor-de-campo (entorno plan) f campo)))
-        (unless (or (nucleo:vacio-p v) (member v vistos :test #'nucleo:iguales-p))
-          (push v vistos))))))
-
-(defun valores-distintos-en (plan nombre-coleccion campo)
-  "Los valores que toma un campo en la coleccion entera."
-  (valores-distintos-en-filas
-   plan (nucleo:filas-de (entorno plan) nombre-coleccion) campo))
-
 (defun filas-presentables (plan vista)
   "Las filas que VISTA presenta: las de su coleccion que pasan su filtro.
 
@@ -343,13 +330,7 @@
    lista: la clave compuesta vuelve a preguntar el filtro en la hoja (ver
    CLAVE-COMPUESTA). La coleccion no se toca, asi que los agregados y las
    marcas siguen viendo las filas escondidas."
-  (let ((filas (nucleo:filas-de (entorno plan) (nucleo:fuente vista))))
-    (if (null (nucleo:filtro vista))
-        filas
-        (remove-if-not
-         (lambda (f) (nucleo:cumple-en-fila (entorno plan) f
-                                             (nucleo:filtro vista)))
-         filas))))
+  (nucleo:filas-que-presenta (entorno plan) vista))
 
 (defun filas-de-la-seccion (plan vista valor)
   "Las filas de VISTA que caen en la seccion VALOR.
@@ -394,24 +375,21 @@
     ;; Un informe que repite cosas se lee peor y, sobre todo, deja de poder
     ;; contarse.
     (when hoja
-      (dolist (valor (if (nucleo:secciones vista)
-                         ;; Las secciones salen de las filas presentables: si
-                         ;; el filtro deja fuera a un profesor entero, no se
-                         ;; le fabrica una pestana vacia.
-                         (valores-distintos-en-filas
-                          plan (filas-presentables plan vista)
-                          (nucleo:secciones vista))
-                         (list nil)))
-        (let* ((filas (filas-de-la-seccion plan vista valor))
-               (cruce (make-instance
+      ;; Las secciones salen de las filas presentables, ordenadas: si el
+      ;; filtro deja fuera a un profesor entero, no se le fabrica una pestana
+      ;; vacia. Los ejes son los mismos para todas las secciones de la vista
+      ;; (nucleo/ejes.lisp), para que todas sus pestanas se lean igual.
+      (dolist (valor (nucleo:secciones-de-vista (entorno plan) vista))
+        (let* ((cruce (make-instance
                        'cruce
                        :vista vista
                        :hoja-origen hoja
                        :seccion valor
-                       :valores-de-fila (valores-distintos-en-filas
-                                         plan filas (nucleo:eje-de-filas vista))
-                       :valores-de-columna (valores-distintos-en-filas
-                                            plan filas (nucleo:eje-de-columnas vista))
+                       :valores-de-fila (nucleo:valores-de-eje
+                                         (entorno plan) vista (nucleo:eje-de-filas vista))
+                       :valores-de-columna (nucleo:valores-de-eje
+                                            (entorno plan) vista
+                                            (nucleo:eje-de-columnas vista))
                        ;; Todos los cruces de una vista buscan por la misma
                        ;; clave. Un cruce que sale en su propio archivo no
                        ;; busca nada, y no hace gastar una columna.
