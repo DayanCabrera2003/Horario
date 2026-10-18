@@ -181,7 +181,9 @@
               la pareja portable entre Excel y LibreOffice Calc.
               Limite: si manana aparece un valor nuevo en cualquiera de los
               dos ejes, no aparece una fila ni una columna para el; hay que
-              volver a generar el libro."))
+              volver a generar el libro. Un eje con dominio escrito con
+              uno-de sale completo desde el principio; uno leido de otra
+              coleccion con (los ...) se fija al generar, como los demas."))
 
     (protocolo:con-agrupacion
      (values :emula
