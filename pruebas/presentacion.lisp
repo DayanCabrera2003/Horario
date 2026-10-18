@@ -61,3 +61,60 @@
   (let ((rejilla (hoja-llamada (plano-del-saul) "Horario del grupo - 10-3")))
     (comprobar (= 3 (length (lista-del-plano (dato rejilla "formatos_condicionales"))))
                "la rejilla tiene que llevar una regla por severidad")))
+
+;;; ---------------------------------------------------------------------
+;;; La pagina y el texto
+;;; ---------------------------------------------------------------------
+
+(situacion.lenguaje:defsituacion con-campo-estado (:etiqueta "Con un campo Estado")
+  (coleccion tramites
+    (:etiqueta "Tramites")
+    (:clave numero)
+    (campo numero :rol fijo :tipo entero :etiqueta "No.")
+    (campo estado :rol fijo :etiqueta "Estado"))
+  (marca abierto :en tramites :cuando (= (de fila estado) "abierto") :sobre (estado)
+                 :explica "Sigue abierto")
+  (vista v :de tramites :etiqueta "Tramites"))
+
+(defparameter *datos-con-campo-estado*
+  (list (cons (nucleo:nombrar "tramites")
+              (list (list (cons (nucleo:nombrar "numero") 1)
+                          (cons (nucleo:nombrar "estado") "abierto"))))))
+
+(definir-prueba presentacion-no-se-repite-la-columna-estado
+    "Presentacion: si un campo se llama Estado, la columna de las marcas se llama Avisos"
+  (let ((s (situacion.lenguaje:situacion-llamada "CON-CAMPO-ESTADO")))
+    (comprobar (search "columnaEstado: \"Avisos\""
+                       (materializar-en-cadena (situacion.web:hacer-web) s *datos-con-campo-estado*))
+               "la pagina repite la columna Estado")
+    (comprobar (search "Avisos" (materializar-en-cadena (situacion.texto:hacer-texto) s
+                                                        *datos-con-campo-estado*))
+               "el texto repite la columna Estado")
+    (comprobar (search "Avisos" (formatos-y-encabezados (plano-de s *datos-con-campo-estado*)))
+               "la hoja de calculo repite la columna Estado")))
+
+(defun formatos-y-encabezados (plano)
+  (format nil "~{~a~%~}" (loop for h in (hojas-del-plano plano)
+                               append (mapcar (lambda (e) (dato e "texto"))
+                                              (lista-del-plano (dato h "encabezados"))))))
+
+(definir-prueba presentacion-la-esquina-lleva-la-etiqueta
+    "Presentacion: la esquina de una rejilla dice la etiqueta del campo, no su nombre interno"
+  (let ((html (materializar-en-cadena (situacion.web:hacer-web)
+                                      (situacion.lenguaje:situacion-llamada "HORARIO-SAUL")
+                                      situacion.corpus:datos-del-saul)))
+    (comprobar (search "etiquetaFilas: \"Turno\"" html)
+               "la esquina de la rejilla tiene que decir Turno")))
+
+(definir-prueba presentacion-ayuda-solo-donde-se-escribe
+    "Presentacion: la ayuda para escribir solo sale si hay algo que escribir"
+  (let ((sin (materializar-en-cadena (situacion.web:hacer-web)
+                                     (situacion.lenguaje:situacion-llamada "CASO-BIBLIOTECA")
+                                     (datos-del-caso "DATOS-DE-BIBLIOTECA")))
+        (con (materializar-en-cadena (situacion.web:hacer-web)
+                                     (situacion.lenguaje:situacion-llamada "PLAN-DEL-GRUPO")
+                                     situacion.corpus:datos-del-plan)))
+    (comprobar (not (search "Escribe en las casillas" sin))
+               "una pagina sin nada que escribir no puede invitar a escribir")
+    (comprobar (search "Escribe en las casillas" con)
+               "una pagina con entradas tiene que llevar la ayuda")))
