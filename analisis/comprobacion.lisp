@@ -51,6 +51,10 @@
   (when (null expresion) (return-from comprobar-expresion))
   (typecase expresion
 
+    ;; La variable de una marca :POR-CAMPO: el lenguaje solo la crea dentro
+    ;; de esa marca, asi que siempre esta ligada.
+    (nucleo:ref-valor nil)
+
     (nucleo:ref-campo
      (let* ((v (nucleo:variable expresion))
             (coleccion (nucleo:coleccion-de-variable ambito v)))

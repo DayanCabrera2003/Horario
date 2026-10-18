@@ -84,7 +84,11 @@
    (condicion "Expresion booleana, evaluada por fila.")
    (alcance "Campos sobre los que se senala.")
    (severidad ":INFORMATIVA, :ADVERTENCIA o :PROBLEMA.")
-   (explicacion "Expresion de texto que dice por que, o NIL."))
+   (explicacion "Expresion de texto que dice por que, o NIL.")
+   (por-campo "Variable de valor, o NIL. Si la hay, la condicion y la
+               explicacion se evaluan una vez por cada campo de ALCANCE, con
+               la variable ligada al valor de ese campo, y solo se senalan los
+               campos donde se cumple (fase 2, hueco C7)."))
   "Una condicion que senala un estado con nombre.
 
    Que la marca declare significado y no color es lo que permite que

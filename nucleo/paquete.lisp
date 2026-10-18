@@ -66,6 +66,7 @@
    #:literal #:hacer-literal
    #:ref-parametro #:hacer-ref-parametro
    #:ref-campo #:hacer-ref-campo #:variable
+   #:ref-valor #:hacer-ref-valor
    #:aplicacion #:hacer-aplicacion #:operador #:argumentos
    #:condicional #:hacer-condicional #:prueba #:entonces #:si-no
    #:sin-escribir #:hacer-sin-escribir #:argumento
@@ -102,6 +103,7 @@
    #:expresion-booleana-p #:campo-booleano-p #:verdadero-p #:como-booleano
    #:cumple-en-fila #:normalizar-valor
    #:texto-de-estado #:nombre-legible-de-marca
+   #:campos-marcados #:cumple-marca-p #:por-campo
 
    ;; Ejes y secciones de una vista cruzada
    #:filas-que-presenta #:valores-de-eje #:secciones-de-vista

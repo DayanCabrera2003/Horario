@@ -184,22 +184,38 @@
 ;;; ---------------------------------------------------------------------
 
 (defun compilar-marca (forma)
-  "(marca NOMBRE :cuando EXPR :sobre (campo ...) :severidad ... [:explica EXPR])"
+  "(marca NOMBRE :cuando EXPR :sobre (campo ...) :severidad ... [:explica EXPR]
+                 [:por-campo VARIABLE])
+
+   Con :POR-CAMPO, la condicion y la explicacion se evaluan una vez por cada
+   campo de :SOBRE, con VARIABLE ligada al valor de ese campo, y solo se
+   senalan los campos donde se cumple (fase 2, hueco C7)."
   (destructuring-bind (cabeza nombre &rest opciones) forma
     (declare (ignore cabeza))
     (let ((cuando (opcion opciones :cuando))
           (sobre (opcion opciones :sobre))
           (en (opcion opciones :en))
-          (explica (opcion opciones :explica)))
+          (explica (opcion opciones :explica))
+          (por-campo (opcion opciones :por-campo)))
       (unless cuando (error "La marca ~a no dice :CUANDO se cumple." nombre))
       (unless sobre (error "La marca ~a no dice :SOBRE que campos senala." nombre))
-      `(nucleo:hacer-marca
-        :nombre ',(normalizar nombre)
-        :coleccion ',(normalizar en)
-        :condicion ,(compilar-expresion cuando)
-        :alcance ',(normalizar-lista sobre)
-        :severidad ,(como-clave (opcion opciones :severidad 'nucleo::advertencia))
-        :explicacion ,(when explica (compilar-expresion explica))))))
+      (when (and (opcion-presente-p opciones :por-campo)
+                 (not (and por-campo (symbolp por-campo) (not (keywordp por-campo)))))
+        (error "La marca ~a tiene :POR-CAMPO ~s.~@
+                :POR-CAMPO lleva el nombre de una variable, que en cada campo de~@
+                :SOBRE vale lo que hay en ese campo: (:por-campo profesor)."
+               nombre por-campo))
+      (let ((*variables-de-valor* (if por-campo
+                                      (cons por-campo *variables-de-valor*)
+                                      *variables-de-valor*)))
+        `(nucleo:hacer-marca
+          :nombre ',(normalizar nombre)
+          :coleccion ',(normalizar en)
+          :condicion ,(compilar-expresion cuando)
+          :alcance ',(normalizar-lista sobre)
+          :severidad ,(como-clave (opcion opciones :severidad 'nucleo::advertencia))
+          :explicacion ,(when explica (compilar-expresion explica))
+          :por-campo ',(normalizar por-campo))))))
 
 ;;; ---------------------------------------------------------------------
 ;;; Vistas y parametros
