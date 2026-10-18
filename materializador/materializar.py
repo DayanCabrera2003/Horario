@@ -226,14 +226,42 @@ def _aplicar_presentacion(hoja, plan):
         for celda in fila:
             celda.border = BORDE
 
+    # Los anchos los calcula la arquitectura sobre las etiquetas y los
+    # valores (excel/presentacion.lisp). Antes se median aqui sobre el texto
+    # de la celda, que en una columna calculada es la formula: todas salian
+    # al tope aunque valieran "no". Solo las hojas sin anchos en el plano
+    # caen en la medida de lo escrito.
+    anchos = plan.get("anchos") or {}
     for col in range(1, n_columnas + 1):
         letra = get_column_letter(col)
+        if letra in anchos:
+            hoja.column_dimensions[letra].width = anchos[letra]
+            continue
         ancho = max(
             [len(str(hoja.cell(row=r, column=col).value or ""))
-             for r in range(encabezado, min(ultima, primera + 30) + 1)]
+             for r in range(encabezado, min(ultima, primera + 30) + 1)
+             if not str(hoja.cell(row=r, column=col).value or "").startswith("=")]
             + [10]
         )
-        hoja.column_dimensions[letra].width = min(ancho + 3, 42)
+        hoja.column_dimensions[letra].width = min(ancho + 3, 40)
+    for letra, ancho in anchos.items():
+        hoja.column_dimensions[letra].width = ancho
+
+    # Las columnas auxiliares (claves compuestas, primera aparicion, nivel de
+    # las marcas) no son para leer.
+    for letra in plan.get("columnas_ocultas") or []:
+        hoja.column_dimensions[letra].hidden = True
+
+    # Una pagina de ancho, apaisada si la hoja es ancha: una rejilla de cinco
+    # dias no puede imprimirse con un dia por pagina.
+    impresion = plan.get("impresion")
+    if impresion:
+        if impresion.get("horizontal"):
+            hoja.page_setup.orientation = "landscape"
+        if impresion.get("ajustar_ancho"):
+            hoja.sheet_properties.pageSetUpPr.fitToPage = True
+            hoja.page_setup.fitToWidth = 1
+            hoja.page_setup.fitToHeight = 0
 
     # Inmoviliza el encabezado para que no se pierda al bajar.
     hoja.freeze_panes = hoja.cell(row=primera, column=1)

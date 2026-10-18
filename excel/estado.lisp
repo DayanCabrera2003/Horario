@@ -75,3 +75,51 @@
                                            a coleccion hoja ambito plan
                                            (formula-de-estado a plan hoja marcas
                                                               ambito))))))))))
+
+;;; ---------------------------------------------------------------------
+;;; El nivel de cada fila, para las rejillas
+;;; ---------------------------------------------------------------------
+
+(defparameter +niveles+ '((:problema . 3) (:advertencia . 2) (:informativa . 1))
+  "De severidad a numero, para quedarse con la mas grave.")
+
+(defun formula-de-nivel (a plan marcas ambito)
+  "La severidad mas alta de las MARCAS que disparan en la fila *FILA*, como
+   numero: 3 problema, 2 advertencia, 1 informativa, 0 ninguna."
+  (let ((ramas (loop for (severidad . numero) in +niveles+
+                     for suyas = (remove severidad marcas :key #'nucleo:severidad
+                                                          :test-not #'eq)
+                     when suyas
+                       collect (cons numero
+                                     (format nil "OR(~{~a~^,~})"
+                                             (mapcar (lambda (m)
+                                                       (condicion-excel
+                                                        a (nucleo:condicion m) ambito plan))
+                                                     suyas))))))
+    (reduce (lambda (rama resto) (format nil "IF(~a,~d,~a)" (cdr rama) (car rama) resto))
+            ramas :from-end t :initial-value "0")))
+
+(defun encabezado-de-nivel (hoja)
+  "El encabezado de la columna oculta de nivel de HOJA, si la tiene."
+  (when (columna-de-nivel hoja)
+    (list (list (cons "celda" (format nil "~a~d" (columna-de-nivel hoja)
+                                      (fila-encabezado hoja)))
+                (cons "campo" "__nivel__")
+                (cons "rol" "derivado")
+                (cons "texto" "(nivel de las marcas)")))))
+
+(defun formulas-de-nivel (a plan hoja)
+  "La columna oculta de nivel de HOJA, fila por fila."
+  (when (columna-de-nivel hoja)
+    (let* ((coleccion (coleccion hoja))
+           (ambito (ambito-de coleccion))
+           (marcas (remove-if-not (lambda (m) (marca-de-esta-hoja-p m coleccion))
+                                  (nucleo:marcas (situacion plan)))))
+      (loop for i from 0 below (capacidad hoja)
+            collect (let ((*fila* (+ (fila-primera hoja) i))
+                          (*hoja* hoja))
+                      (list (cons "celda" (format nil "~a~d" (columna-de-nivel hoja) *fila*))
+                            (cons "formula"
+                                  (format nil "=~a"
+                                          (handler-case (formula-de-nivel a plan marcas ambito)
+                                            (error () "0"))))))))))

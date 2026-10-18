@@ -39,6 +39,11 @@
                       "La letra de la columna de estado, que escribe en palabras
                        que marcas disparan en cada fila, o NIL si la coleccion
                        no tiene marcas. Va justo detras de los campos.")
+   (columna-de-nivel :accessor columna-de-nivel :initform nil
+                     :documentation
+                     "La letra de una columna oculta con la severidad mas alta de
+                      las marcas que disparan en cada fila (3, 2, 1 o 0), o NIL.
+                      La usan las rejillas para pintar sus casillas.")
    (distintos :accessor distintos :initform '()
               :documentation
               "Las columnas auxiliares que marcan la primera aparicion de cada
@@ -189,6 +194,7 @@
    columna anadida por esta arquitectura."
   (letra-de-columna (+ (length (columnas hoja))
                        (if (columna-de-estado hoja) 1 0)
+                       (if (columna-de-nivel hoja) 1 0)
                        (length (claves hoja))
                        (length (distintos hoja)))))
 
@@ -282,7 +288,8 @@
     ;; realizacion del marcado textual en esta arquitectura.
     (when (some (lambda (m) (marca-de-esta-hoja-p m coleccion))
                 (nucleo:marcas (situacion plan)))
-      (setf (columna-de-estado hoja) (letra-de-columna (length campos))))
+      (setf (columna-de-estado hoja) (letra-de-columna (length campos))
+            (columna-de-nivel hoja) (letra-de-columna (1+ (length campos)))))
     hoja))
 
 (defun nombre-de-rango (coleccion)

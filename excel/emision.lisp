@@ -7,24 +7,6 @@
 
 (in-package #:situacion.excel)
 
-(defparameter +paleta+
-  '((:problema    . "FFC7CE")
-    (:advertencia . "FFEB9C")
-    (:informativa . "DDEBF7"))
-  "De severidad a relleno.
-
-   Es una opcion de esta arquitectura, no del lenguaje. La marca declara un
-   significado y una severidad; que el problema se vea rojo es una decision
-   de como se pinta una hoja de calculo, y otra arquitectura puede decidir
-   otra cosa sin tocar ninguna descripcion.
-
-   Que este aqui y no en el nodo de la marca es la correccion del hallazgo
-   sobre 2026: alli la definicion 3.8 decia que la regla tenia color, el nodo
-   no lo tenia, y el backend lo asignaba por orden de aparicion.")
-
-(defun relleno-de (severidad)
-  (or (cdr (assoc severidad +paleta+)) "EEEEEE"))
-
 (defmethod protocolo:materializar ((a excel) situacion datos destino)
   (protocolo:con-informe (a)
     (let ((*situacion* situacion))
@@ -95,7 +77,7 @@
                                             (cruces plan))
                                     (mapcar (lambda (h) (plano-de-hoja a plan h))
                                             (hojas plan))
-                                    (mapcar #'plano-de-vista-derivada
+                                    (mapcar (lambda (d) (plano-de-vista-derivada plan d))
                                             (vistas-derivadas plan))
                                     (mapcar (lambda (d) (plano-de-detalle a plan d))
                                             (auxiliares plan)))))
@@ -188,11 +170,41 @@
           (cons "encabezados" (lista encabezados))
           (cons "celdas" (lista celdas))
           (cons "formulas" (lista formulas))
+          (cons "anchos" (anchos-de-cruce plan cruce))
+          (cons "impresion" (impresion t))
           (cons "editables" :lista-vacia)
           (cons "validaciones" :lista-vacia)
-          (cons "formatos_condicionales" :lista-vacia)
+          (cons "formatos_condicionales" (lista (marcas-de-la-rejilla cruce fila-ini fila-enc)))
           (cons "rangos_nombrados" :lista-vacia)
           (cons "leyenda" :lista-vacia))))
+
+(defun marcas-de-la-rejilla (cruce fila-ini fila-enc)
+  "Las reglas que pintan las casillas de una rejilla con la severidad mas
+   alta de las marcas de la fila que cae en ella. La leen de la columna de
+   nivel de la hoja de origen. Antes las marcas no pintaban las rejillas: la
+   pagina si, la hoja de calculo no."
+  (let ((hoja (hoja-origen cruce)))
+    (when (and (columna-de-nivel hoja) (clave cruce)
+               (valores-de-fila cruce) (valores-de-columna cruce))
+      (let* ((origen (entrecomillar (nombre hoja)))
+             (rango (lambda (letra) (format nil "~a!$~a$~d:$~a$~d" origen letra
+                                            (fila-primera hoja) letra (fila-ultima hoja))))
+             (clave (format nil "~@[~a&CHAR(31)&~]$A~d&CHAR(31)&B$~d"
+                            (when (seccion cruce)
+                              (cadena-excel (nucleo:como-texto (seccion cruce))))
+                            fila-ini fila-enc))
+             (nivel (format nil "IFERROR(INDEX(~a,MATCH(1,INDEX(EXACT(~a,~a)*1,0),0)),0)"
+                            (funcall rango (columna-de-nivel hoja))
+                            (funcall rango (letra (clave cruce))) clave))
+             (casillas (format nil "B~d:~a~d" fila-ini
+                               (letra-de-columna (length (valores-de-columna cruce)))
+                               (+ fila-ini (length (valores-de-fila cruce)) -1))))
+        (loop for (severidad . numero) in +niveles+
+              collect (list (cons "rango" casillas)
+                            (cons "estado" (string-downcase (symbol-name severidad)))
+                            (cons "severidad" (string-downcase (symbol-name severidad)))
+                            (cons "formula" (format nil "~a=~d" nivel numero))
+                            (cons "relleno" (relleno-de-severidad severidad))))))))
 
 (defun identidad-de-cruce (cruce)
   "De que vista y de que seccion es la pestana de CRUCE.
@@ -284,11 +296,16 @@
           (cons "color_pestana" (color-de-pestana hoja))
           (cons "encabezados" (lista (append (encabezados-de hoja)
                                              (encabezado-de-estado hoja)
+                                             (encabezado-de-nivel hoja)
                                              (encabezados-de-claves hoja))))
           (cons "celdas" (lista (celdas-de a plan hoja)))
           (cons "formulas" (lista (append (formulas-de a plan hoja)
                                           (formulas-de-estado a plan hoja)
+                                          (formulas-de-nivel a plan hoja)
                                           (formulas-de-claves a plan hoja))))
+          (cons "anchos" (anchos-de-hoja plan hoja))
+          (cons "columnas_ocultas" (lista (columnas-ocultas hoja)))
+          (cons "impresion" (impresion (> (length (nucleo:campos (coleccion hoja))) 6)))
           (cons "editables" (lista (rangos-editables plan hoja)))
           (cons "validaciones" (lista (validaciones-de a plan hoja)))
           (cons "formatos_de_celda" (lista (formatos-de-celda hoja)))
@@ -600,7 +617,7 @@
         (cons "estado" (string-downcase (symbol-name (nucleo:nombre marca))))
         (cons "severidad" (string-downcase (symbol-name (nucleo:severidad marca))))
         (cons "formula" (condicion-excel a (nucleo:condicion marca) ambito plan))
-        (cons "relleno" (relleno-de (nucleo:severidad marca)))))
+        (cons "relleno" (relleno-de-marca plan marca))))
 
 (defun rango-de-alcance (hoja campos)
   (format nil "~{~a~^ ~}"
@@ -639,7 +656,5 @@
   (let ((coleccion (coleccion hoja)))
     (loop for marca in (nucleo:marcas (situacion plan))
           when (marca-de-esta-hoja-p marca coleccion)
-            collect (list (cons "relleno" (relleno-de (nucleo:severidad marca)))
-                          (cons "texto" (string-downcase
-                                         (substitute #\Space #\-
-                                                     (symbol-name (nucleo:nombre marca)))))))))
+            collect (list (cons "relleno" (relleno-de-marca plan marca))
+                          (cons "texto" (texto-de-leyenda marca))))))

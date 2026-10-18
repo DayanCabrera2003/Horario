@@ -117,6 +117,7 @@
                (:file "conformidad-salida")
                (:file "crecimiento")
                (:file "datos")
+               (:file "presentacion")
                (:file "formula")
                (:file "particion-en-archivo")
                (:file "ejecutar"))
@@ -154,6 +155,7 @@
                (:file "agregados")
                (:file "particion-en-archivo")
                (:file "estado")
+               (:file "presentacion")
                (:file "vistas")
                (:file "emision")))
 

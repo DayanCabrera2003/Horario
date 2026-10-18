@@ -52,7 +52,7 @@
   (let ((celda (format nil "~a!$~a$~d" (entrecomillar (nombre origen)) letra fila)))
     (format nil "=IF(ISBLANK(~a),\"\",~a)" celda celda)))
 
-(defun plano-de-vista-derivada (derivada)
+(defun plano-de-vista-derivada (plan derivada)
   "El plano de una hoja derivada: los encabezados de la hoja de datos, una
    linea por cabecera de grupo y una por fila, cada celda apuntando a la de
    la hoja de datos."
@@ -117,6 +117,9 @@
           (cons "celdas" (lista (nreverse celdas)))
           (cons "formulas" (lista (nreverse formulas)))
           (cons "filas_de_grupo" (lista (nreverse grupos)))
+          ;; Las mismas columnas que la hoja de datos, con los mismos anchos.
+          (cons "anchos" (anchos-de-hoja plan origen))
+          (cons "impresion" (impresion (> (length campos) 6)))
           (cons "editables" :lista-vacia)
           (cons "validaciones" :lista-vacia)
           (cons "formatos_condicionales" :lista-vacia)
