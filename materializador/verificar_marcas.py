@@ -34,10 +34,12 @@ from openpyxl.utils import get_column_letter, range_boundaries
 
 def _marcados_de(envoltura):
     """Los campos que pinta cada marca en una fila del oraculo, como dict
-    marca -> lista de campos (vacio si la fila no trae ese dato)."""
-    if isinstance(envoltura, list) and len(envoltura) > 3 and envoltura[3]:
-        return {marca: datos[1] for marca, datos in envoltura[3].items()}
-    return {}
+    marca -> lista de campos, o None si la fila no trae ese dato (un oraculo
+    escrito con un formato anterior): entonces no hay con que comparar, y
+    darlo por "no pinta nada" seria inventarse el oraculo."""
+    if isinstance(envoltura, list) and len(envoltura) > 3:
+        return {marca: datos[1] for marca, datos in (envoltura[3] or {}).items()}
+    return None
 
 
 def _limites(rango):
@@ -94,7 +96,10 @@ def preparar_sondas(libro, plano, esperado):
         for enc in hoja_plan.get("encabezados") or []:
             letra = "".join(c for c in enc["celda"] if c.isalpha())
             campo_de_letra[letra] = enc["campo"]
+        # Solo las filas cuyo oraculo dice que campos pinta cada marca.
         filas = len(esperado[coleccion] or [])
+        if any(_marcados_de(e) is None for e in esperado[coleccion] or []):
+            continue
         primera = hoja_plan["fila_primera"]
         columna_libre = hoja.max_column + 2
         for rango, formula_regla in reglas:
@@ -127,7 +132,7 @@ def comprobar_sondas(libro, sondas, esperado):
     fallos = []
     for nombre, celda, marca, campo, indice, pintada, coleccion in sondas:
         real = libro[nombre][celda].value
-        marcados = _marcados_de(esperado[coleccion][indice])
+        marcados = _marcados_de(esperado[coleccion][indice]) or {}
         debe = campo in marcados.get(marca, [])
         if real not in (0, 1):
             fallos.append("{}!{}: la regla de {} no se puede evaluar ({!r})".format(
