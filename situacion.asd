@@ -121,6 +121,7 @@
                (:file "formula")
                (:file "particion-en-archivo")
                (:file "verificador-sin-comparar")
+               (:file "busqueda-multicampo")
                (:file "ejecutar"))
   :perform (test-op (op system)
                     (uiop:symbol-call :situacion.pruebas :ejecutar)))
@@ -203,7 +204,8 @@
                (:file "horas")
                (:file "biblioteca")
                (:file "escapes")
-               (:file "guardias")))
+               (:file "guardias")
+               (:file "pedidos")))
 
 (defsystem "situacion/demostracion"
   :description "Genera los artefactos de las tres arquitecturas a partir de
