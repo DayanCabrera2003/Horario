@@ -38,6 +38,7 @@
                (:file "expresion")
                (:file "ambito")
                (:file "numeros")
+               (:file "booleanos")
                (:file "evaluador")))
 
 ;;; El protocolo depende del nucleo y de nada mas. En particular NO depende
@@ -87,7 +88,8 @@
                 que puede mirar dentro de los demas."
   :depends-on ("situacion/nucleo" "situacion/protocolo" "situacion/lenguaje"
                "situacion/analisis" "situacion/corpus" "situacion/casos"
-               "situacion/texto" "situacion/excel" "situacion/web")
+               "situacion/texto" "situacion/excel" "situacion/web"
+               "situacion/demostracion")
   :pathname "pruebas/"
   :serial t
   :components ((:file "paquete")
@@ -103,6 +105,7 @@
                (:file "comparacion-exacta")
                (:file "nombres-de-hoja")
                (:file "escapes")
+               (:file "numeros")
                (:file "formula")
                (:file "particion-en-archivo")
                (:file "ejecutar"))

@@ -84,6 +84,13 @@
   (let ((p (nucleo:parametro-llamado (situacion plan) (nucleo:nombre e))))
     (js-literal (and p (nucleo:valor p)))))
 
+(defun js-condicion (a e ambito plan)
+  "E traducida para usarla como condicion. Si por su forma ya es verdadero o
+   falso, tal cual; si no -un campo que vale \"si\" o \"no\", un numero-,
+   pasa por VERDAD, que la juzga como el evaluador (NUCLEO:VERDADERO-P)."
+  (let ((js (protocolo:emitir-expresion a e ambito plan)))
+    (if (nucleo:expresion-booleana-p e) js (format nil "VERDAD(~a)" js))))
+
 (defparameter +operadores-js+
   '(("+" . "+") ("-" . "-") ("*" . "*") ("/" . "/")
     ("=" . "===") ("/=" . "!==") ("<" . "<") ("<=" . "<=") (">" . ">") (">=" . ">="))
@@ -99,11 +106,16 @@
          (partes (mapcar (lambda (x) (protocolo:emitir-expresion a x ambito plan))
                          (nucleo:argumentos e)))
          (js (cdr (assoc op +operadores-js+ :test #'string=))))
+    (flet ((condiciones ()
+             (mapcar (lambda (x) (js-condicion a x ambito plan)) (nucleo:argumentos e))))
     (cond
       ;; Con tres o mas operandos, un solo JS entre el primero y el segundo
       ;; dejaba fuera al resto en silencio: (+ a b c) emitia (N(a) + N(b)).
       ;; Cada operando se envuelve en N(...) por separado -no el acumulado-,
       ;; para no terminar coaccionando a numero una subcadena ya compuesta.
+      ;; Dividir por cero da vacio, no Infinity.
+      ((string= op "/")
+       (reduce (lambda (x y) (format nil "DIV(~a, ~a)" x y)) partes))
       ((member op +aritmeticos-js+ :test #'string=)
        (format nil "(~{N(~a)~^ ~a ~})"
                (loop for (parte . resto) on partes
@@ -116,14 +128,14 @@
        (format nil "(N(~a) ~a N(~a))" (first partes) js (second partes)))
       ((string= op "=") (format nil "IG(~a,~a)" (first partes) (second partes)))
       ((string= op "/=") (format nil "(!IG(~a,~a))" (first partes) (second partes)))
-      ((string= op "Y") (format nil "(~{~a~^ && ~})" partes))
-      ((string= op "O") (format nil "(~{~a~^ || ~})" partes))
-      ((string= op "NO") (format nil "(!~a)" (first partes)))
-      (t (error "Operador sin traduccion a JavaScript: ~a" op)))))
+      ((string= op "Y") (format nil "(~{~a~^ && ~})" (condiciones)))
+      ((string= op "O") (format nil "(~{~a~^ || ~})" (condiciones)))
+      ((string= op "NO") (format nil "(!~a)" (first (condiciones))))
+      (t (error "Operador sin traduccion a JavaScript: ~a" op))))))
 
 (defmethod protocolo:emitir-expresion ((a web) (e nucleo:condicional) ambito plan)
   (format nil "(~a ? ~a : ~a)"
-          (protocolo:emitir-expresion a (nucleo:prueba e) ambito plan)
+          (js-condicion a (nucleo:prueba e) ambito plan)
           (protocolo:emitir-expresion a (nucleo:entonces e) ambito plan)
           (protocolo:emitir-expresion a (nucleo:si-no e) ambito plan)))
 
@@ -147,9 +159,10 @@
 
 (defun js-filtro (a expresion variable ambito plan)
   "El cuerpo de un filter sobre la coleccion recorrida."
+  (declare (ignore variable))
   (if (null expresion)
       "true"
-      (protocolo:emitir-expresion a expresion ambito plan)))
+      (js-condicion a expresion ambito plan)))
 
 (defmethod protocolo:emitir-expresion ((a web) (e nucleo:conjunto) ambito plan)
   (format nil "[...new Set(~a.filter(~a => ~a).map(~a => V(~a~a)).filter(x => !VACIO(x)))]"
@@ -210,7 +223,7 @@
             (if (nucleo:distinta-de e)
                 (format nil "~a !== ~a && " v (js-variable (nucleo:distinta-de e)))
                 "")
-            (protocolo:emitir-expresion a (nucleo:condicion e) ambito plan))))
+            (js-condicion a (nucleo:condicion e) ambito plan))))
 
 (defmethod protocolo:emitir-expresion ((a web) (e nucleo:comparten) ambito plan)
   (declare (ignore ambito plan))

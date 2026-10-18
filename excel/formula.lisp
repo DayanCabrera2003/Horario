@@ -108,6 +108,18 @@
   (format nil "IF(ISNUMBER(~a),IF(~a=0,\"0\",ROUND(~a,9-INT(LOG10(ABS(~a))))&\"\"),~a&\"\")"
           fragmento fragmento fragmento fragmento fragmento))
 
+(defun condicion-excel (a expresion ambito plan)
+  "EXPRESION traducida para usarla como condicion de un SI, de Y, O o NO, o
+   de una regla de formato. Si por su forma ya es verdadero o falso, tal
+   cual. Si no -un campo que vale \"si\" o \"no\", un numero-, se juzga
+   como el evaluador (NUCLEO:VERDADERO-P): verdadero si es \"si\", VERDADERO
+   o un numero distinto de cero."
+  (let ((formula (protocolo:emitir-expresion a expresion ambito plan)))
+    (if (nucleo:expresion-booleana-p expresion)
+        formula
+        (format nil "OR(EXACT(~a&\"\",\"si\"),EXACT(~a&\"\",\"TRUE\"),IFERROR(1*~a<>0,FALSE))"
+                formula formula formula))))
+
 (defmethod protocolo:emitir-expresion ((a excel) (e nucleo:literal) ambito plan)
   (declare (ignore ambito plan))
   (texto-de-literal (nucleo:valor e)))
@@ -155,9 +167,8 @@
          (de-orden (cdr (assoc op +de-orden+ :test #'string=))))
     (flet ((numericos ()
              (mapcar (lambda (x) (operando-numerico a x ambito plan)) argumentos))
-           (traducidos ()
-             (mapcar (lambda (x) (protocolo:emitir-expresion a x ambito plan))
-                     argumentos)))
+           (condiciones ()
+             (mapcar (lambda (x) (condicion-excel a x ambito plan)) argumentos)))
       (cond
         ;; La division por cero da vacio en el evaluador, no un error.
         ((string= op "/")
@@ -183,14 +194,14 @@
          (format nil "NOT(EXACT(~a,~a))"
                  (operando-de-igualdad a (first argumentos) ambito plan)
                  (operando-de-igualdad a (second argumentos) ambito plan)))
-        ((string= op "Y") (format nil "AND(~{~a~^,~})" (traducidos)))
-        ((string= op "O") (format nil "OR(~{~a~^,~})" (traducidos)))
-        ((string= op "NO") (format nil "NOT(~a)" (first (traducidos))))
+        ((string= op "Y") (format nil "AND(~{~a~^,~})" (condiciones)))
+        ((string= op "O") (format nil "OR(~{~a~^,~})" (condiciones)))
+        ((string= op "NO") (format nil "NOT(~a)" (first (condiciones))))
         (t (error "Operador sin traduccion a hoja de calculo: ~a" op))))))
 
 (defmethod protocolo:emitir-expresion ((a excel) (e nucleo:condicional) ambito plan)
   (format nil "IF(~a,~a,~a)"
-          (protocolo:emitir-expresion a (nucleo:prueba e) ambito plan)
+          (condicion-excel a (nucleo:prueba e) ambito plan)
           (protocolo:emitir-expresion a (nucleo:entonces e) ambito plan)
           (protocolo:emitir-expresion a (nucleo:si-no e) ambito plan)))
 

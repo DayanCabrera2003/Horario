@@ -329,7 +329,7 @@
     (if (null (nucleo:filtro vista))
         filas
         (remove-if-not
-         (lambda (f) (nucleo:evaluar-en-fila (entorno plan) f
+         (lambda (f) (nucleo:cumple-en-fila (entorno plan) f
                                              (nucleo:filtro vista)))
          filas))))
 

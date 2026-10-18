@@ -35,7 +35,9 @@
       ((eq valor t) (write-string "true" flujo))
       ((eq valor :false) (write-string "false" flujo))
       ((stringp valor) (escribir-cadena-json valor flujo))
-      ((realp valor) (format flujo "~a" valor))
+      ;; Un numero se escribe exacto y sin el sufijo "d0" de Lisp: 157/3 o
+      ;; 3.6d0 no son JSON, y el oraculo tiene que serlo siempre.
+      ((realp valor) (write-string (nucleo:escritura-de-numero valor) flujo))
       ((symbolp valor) (escribir-cadena-json (string-downcase (symbol-name valor)) flujo))
       ;; Lista asociativa: la reconocemos porque su primer elemento es un par
       ;; con una cadena delante.

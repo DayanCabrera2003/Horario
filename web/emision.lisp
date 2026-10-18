@@ -140,8 +140,13 @@
               do (unless primera (format flujo ",~%"))
                  (format flujo "  ~/situacion.web::js/: (f) => ~a"
                          (nombre-js (nucleo:nombre campo))
-                         (protocolo:emitir-expresion a (nucleo:expresion campo)
-                                                     ambito plan)))
+                         ;; Un campo booleano vale "si" o "no", nunca true o
+                         ;; false: es lo que escriben las otras dos.
+                         (let ((js (protocolo:emitir-expresion
+                                    a (nucleo:expresion campo) ambito plan)))
+                           (if (nucleo:campo-booleano-p campo)
+                               (format nil "BOOL(~a)" js)
+                               js))))
         (format flujo "~%};~%")))))
 
 (defun escribir-marcas (a plan flujo)
@@ -171,7 +176,7 @@
             (nombre-js (nucleo:nombre coleccion))
             (or (cdr (assoc (nucleo:severidad marca) +paleta-web+)) "informativa")
             (mapcar #'nombre-js (nucleo:alcance marca))
-            (protocolo:emitir-expresion a (nucleo:condicion marca) ambito plan)
+            (js-condicion a (nucleo:condicion marca) ambito plan)
             (if (nucleo:explicacion marca)
                 (format nil "(f) => ~a"
                         (protocolo:emitir-expresion a (nucleo:explicacion marca)
@@ -305,7 +310,7 @@
                                   ;; fila deje de cumplirlo, desaparece sola.
                                   (if (nucleo:filtro vista)
                                       (format nil "(f) => ~a"
-                                              (protocolo:emitir-expresion
+                                              (js-condicion
                                                a (nucleo:filtro vista)
                                                (ambito-de (nucleo:coleccion-llamada
                                                            (situacion plan)

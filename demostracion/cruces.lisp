@@ -18,7 +18,7 @@
     (if (null (nucleo:filtro vista))
         filas
         (remove-if-not (lambda (f)
-                         (nucleo:evaluar-en-fila entorno f (nucleo:filtro vista)))
+                         (nucleo:cumple-en-fila entorno f (nucleo:filtro vista)))
                        filas))))
 
 (defun agrupar-por (entorno filas campo)

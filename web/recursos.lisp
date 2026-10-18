@@ -53,20 +53,38 @@ function VACIO(x){ return x === null || x === undefined || x === ''; }
 function N(x){ if (typeof x === 'number') return x;
                if (VACIO(x)) return 0;
                const n = parseFloat(x); return isNaN(n) ? 0 : n; }
-function T(x){ if (x === null || x === undefined) return '';
+// Un numero se ensena con hasta 10 cifras significativas, sin ceros a la
+// derecha: la misma regla que nucleo/numeros.lisp (TEXTO-DE-NUMERO).
+function NUMTXT(x){ if (Number.isInteger(x)) return String(x);
+                    if (!isFinite(x)) return '';
+                    return String(Number(x.toPrecision(10))); }
+function T(x){ if (x === null || x === undefined || x === false) return '';
                if (x === true) return 'si';
+               if (typeof x === 'number') return NUMTXT(x);
                return String(x); }
-function IG(a,b){ if (VACIO(a) && VACIO(b)) return true;
+// Un booleano del lenguaje es la cadena 'si' o 'no' (nucleo/booleanos.lisp).
+// VERDAD dice si un valor cuenta como verdadero en una condicion; BOOL lo
+// convierte en 'si' o 'no'.
+function VERDAD(x){ return x === true || x === 'si' || (typeof x === 'number' && x !== 0); }
+function BOOL(x){ return VERDAD(x) ? 'si' : 'no'; }
+// Dividir por cero da vacio, como en el evaluador.
+function DIV(a, b){ const d = N(b); return d === 0 ? '' : N(a) / d; }
+function IG(a,b){ if (a === true) a = 'si'; if (b === true) b = 'si';
+                  if (a === false) a = ''; if (b === false) b = '';
+                  if (VACIO(a) && VACIO(b)) return true;
                   if (VACIO(a) || VACIO(b)) return false;
                   if (typeof a === 'number' || typeof b === 'number') return N(a) === N(b);
                   return String(a) === String(b); }
 function V(x){ return x === undefined ? '' : x; }
 
 // --- Busqueda por clave con su valor por defecto ---
+// El valor por defecto es para cuando la fila no existe. Si existe y su campo
+// esta vacio, el resultado es vacio: es lo que dice el evaluador de
+// referencia, y lo que hace la hoja de calculo. Antes se devolvia el valor
+// por defecto tambien en ese caso, y la pagina discrepaba de las otras dos.
 function PROY(fila, campo, pordefecto){
   if (!fila) return pordefecto;
-  const v = fila[campo];
-  return VACIO(v) ? pordefecto : v;
+  return V(fila[campo]);
 }
 
 // --- Dos filas comparten algun valor en esos campos ---

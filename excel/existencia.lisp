@@ -100,9 +100,13 @@
     ((typep condicion 'nucleo:sin-escribir)
      (list (protocolo:emitir-expresion a condicion ambito plan)))
 
-    (t (error "Esta hoja de calculo no sabe traducir esta condicion sobre las~@
-               filas de una coleccion. Entiende Y, O, NO, comparaciones, \"esta~@
-               vacio\" y COMPARTEN."))))
+    ;; Cualquier otra cosa -un campo de la candidata que vale "si" o "no",
+    ;; un numero- se juzga como el evaluador: cuenta si es "si" o un numero
+    ;; distinto de cero. Elemento a elemento, sin OR(), que colapsaria el
+    ;; arreglo.
+    (t (let ((v (protocolo:emitir-expresion a condicion ambito plan)))
+         (list (format nil "((EXACT(~a&\"\",\"si\")+ISNUMBER(~a)*(~a<>0))>0)"
+                       v v v))))))
 
 (defun factores-del-recorrido (a variable condicion hoja-destino ambito plan)
   "Los factores de un recorrido de HOJA-DESTINO con VARIABLE como fila

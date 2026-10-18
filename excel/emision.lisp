@@ -353,8 +353,7 @@
         (let ((*fila* fila)
               (*hoja* hoja))
           (format nil "=IF(~a,~a,\"\")"
-                  (protocolo:emitir-expresion a (filtro clave)
-                                              (ambito-de (coleccion hoja)) plan)
+                  (condicion-excel a (filtro clave) (ambito-de (coleccion hoja)) plan)
                   partes)))))
 
 (defun celdas-de (a plan hoja)
@@ -405,10 +404,17 @@
                                    (format nil "=~a"
                                            (con-guarda-de-fila
                                             a coleccion hoja ambito plan
-                                            (protocolo:emitir-expresion
-                                             a (nucleo:expresion campo) ambito plan)))))
+                                            (formula-del-campo a campo ambito plan)))))
                        resultado))))
     (nreverse resultado)))
+
+(defun formula-del-campo (a campo ambito plan)
+  "La formula de un campo derivado. Un campo booleano vale \"si\" o \"no\",
+   nunca VERDADERO o FALSO: es lo que escriben el texto y la pagina."
+  (if (nucleo:campo-booleano-p campo)
+      (format nil "IF(~a,\"si\",\"no\")"
+              (condicion-excel a (nucleo:expresion campo) ambito plan))
+      (protocolo:emitir-expresion a (nucleo:expresion campo) ambito plan)))
 
 (defun con-guarda-de-fila (a coleccion hoja ambito plan formula)
   "Envuelve una formula para que no muestre nada en una fila todavia vacia.
@@ -510,8 +516,7 @@
   (list (cons "rango" (rango-de-alcance *hoja* (nucleo:alcance marca)))
         (cons "estado" (string-downcase (symbol-name (nucleo:nombre marca))))
         (cons "severidad" (string-downcase (symbol-name (nucleo:severidad marca))))
-        (cons "formula" (protocolo:emitir-expresion
-                         a (nucleo:condicion marca) ambito plan))
+        (cons "formula" (condicion-excel a (nucleo:condicion marca) ambito plan))
         (cons "relleno" (relleno-de (nucleo:severidad marca)))))
 
 (defun marca-de-esta-hoja-p (marca coleccion)

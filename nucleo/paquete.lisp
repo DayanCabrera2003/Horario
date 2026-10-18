@@ -94,6 +94,8 @@
    #:explicacion-de-marca #:evaluar-en-fila #:parametro-llamado #:indice
    #:vacio-p #:como-numero #:como-texto #:iguales-p
 
-   ;; Numeros
+   ;; Numeros y booleanos
    #:normalizar-numero #:texto-de-numero #:escritura-de-numero
+   #:expresion-booleana-p #:campo-booleano-p #:verdadero-p #:como-booleano
+   #:cumple-en-fila #:normalizar-valor
    #:error-de-evaluacion #:mensaje-de-error))
