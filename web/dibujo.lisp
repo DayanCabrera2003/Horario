@@ -100,6 +100,14 @@ function controlDe(nombreColeccion, campo, fila, ref){
                     ? (v === '' ? '' : Number(v)) : v;
     actualizar();
   });
+  // Un campo del orden se reordena al confirmarlo ('change': al salir del
+  // control o pulsar Intro), no a cada tecla: reordenar vuelve a construir
+  // la pagina, y hacerlo mientras se escribe se llevaria el foco.
+  if ((ORDENES[nombreColeccion] || []).includes(campo.n)) {
+    control.addEventListener('change', () => {
+      if (reordenar(nombreColeccion)) actualizar();
+    });
+  }
   td.appendChild(control);
   const aviso = document.createElement('div');
   aviso.className = 'aviso';
@@ -412,6 +420,7 @@ function dibujarTabla(tabla, contenedor){
       const nueva = {__nueva: true};
       for (const c of tabla.campos) if (c.rol !== 'derivado') nueva[c.n] = '';
       D[tabla.coleccion].push(nueva);
+      reordenar(tabla.coleccion);
       const primero = tabla.campos.find(c => c.rol !== 'derivado');
       FOCO = primero ? 't|' + tabla.vista + '|' + (D[tabla.coleccion].length - 1) +
                        '|' + primero.n : null;
@@ -432,6 +441,35 @@ function dibujarTabla(tabla, contenedor){
     }
     seccion.appendChild(p);
   }
+}
+
+// --- El orden declarado de una coleccion ---
+//
+// El evaluador ve las filas en el orden que declara la coleccion, y VECINO
+// toma la fila anterior del arreglo: si el usuario anade una fila o cambia
+// un campo del orden, el arreglo se vuelve a ordenar con la misma
+// comparacion que NUCLEO::ORDENAR-FILAS (por el primer campo y, a igualdad,
+// por el siguiente; estable). Una fila con algun campo del orden vacio va al
+// final: es una fila que se esta escribiendo. Devuelve si cambio el orden.
+function reordenar(nombre){
+  const campos = ORDENES[nombre];
+  const filas = D[nombre];
+  if (!campos || !filas) return false;
+  const antes = filas.slice();
+  const incompleta = f => campos.some(c => VACIO(f[c]));
+  const ordenadas = filas.map((f, i) => ({f, i})).sort((a, b) => {
+    const ia = incompleta(a.f), ib = incompleta(b.f);
+    if (ia !== ib) return ia ? 1 : -1;
+    if (!ia) {
+      for (const c of campos) {
+        const r = compararSecciones(a.f[c], b.f[c]);
+        if (r !== 0) return r;
+      }
+    }
+    return a.i - b.i;
+  }).map(p => p.f);
+  filas.splice(0, filas.length, ...ordenadas);
+  return filas.some((f, i) => f !== antes[i]);
 }
 
 // --- La forma de la pagina ---
