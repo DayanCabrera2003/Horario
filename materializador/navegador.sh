@@ -11,8 +11,10 @@ PERFIL_NAVEGADOR=""
 
 cerrar_navegador() {
   if [ -n "$NAVEGADOR_PID" ]; then
-    kill "$NAVEGADOR_PID" 2>/dev/null
-    wait "$NAVEGADOR_PID" 2>/dev/null
+    # Con "set -e" en quien incluye este archivo, un kill o un wait que
+    # devuelven distinto de cero terminarian el guion entero: se toleran.
+    kill "$NAVEGADOR_PID" 2>/dev/null || true
+    wait "$NAVEGADOR_PID" 2>/dev/null || true
     NAVEGADOR_PID=""
   fi
   if [ -n "$PERFIL_NAVEGADOR" ]; then
@@ -22,8 +24,8 @@ cerrar_navegador() {
       pgrep -f -- "$PERFIL_NAVEGADOR" > /dev/null 2>&1 || break
       sleep 0.5
     done
-    pkill -f -- "$PERFIL_NAVEGADOR" 2>/dev/null
-    rm -rf "$PERFIL_NAVEGADOR" 2>/dev/null
+    pkill -f -- "$PERFIL_NAVEGADOR" 2>/dev/null || true
+    rm -rf "$PERFIL_NAVEGADOR" 2>/dev/null || true
     PERFIL_NAVEGADOR=""
   fi
 }

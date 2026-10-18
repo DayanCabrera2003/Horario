@@ -60,7 +60,7 @@ fi
 # que una escrita como texto: Lia entrega el 11 de octubre, despues del 10.
 case " $casos " in
   *" caso-notas "*)
-    python3 materializador/sonda_escritura.py salida/caso-notas.xlsx Estudiantes \
+    python3 materializador/sonda_escritura.py salida/caso-notas.xlsx Acta \
             H4=fecha:2026-10-11 -- K4=si || fallos=1 ;;
 esac
 
