@@ -6,7 +6,11 @@
 #      pagina web. Mas el oraculo del evaluador de referencia.
 #   3. Materializa el plano en un .xlsx de verdad.
 #   4. Pasa el .xlsx por LibreOffice, lo relee ya calculado, y comprueba que
-#      cada celda coincide con lo que dijo el evaluador.
+#      cada celda de cada hoja coincide con lo que dijo el evaluador; lee el
+#      texto plano por sus columnas; ejecuta el JavaScript de la pagina y la
+#      abre en un navegador para comparar lo que dibuja; y escribe en el
+#      libro y en la pagina como lo haria quien los usa.
+#   5. Repite todo con los casos de robustez (./demostrar-robustez.sh).
 #
 # El paso 4 es el que importa: demuestra a la vez que las formulas son validas
 # y que la arquitectura de Excel coincide con la semantica del lenguaje.
@@ -90,6 +94,16 @@ echo "Los dos destinos no comparten nada: uno evalua formulas A1 dentro de una"
 echo "rejilla, el otro ejecuta funciones sobre arreglos. Que los dos coincidan"
 echo "con el mismo evaluador es lo que hace comprobable la afirmacion de que la"
 echo "descripcion es independiente de la arquitectura."
+
+echo
+echo "#############################################################"
+echo "#  5.  Robustez: situaciones ajenas al corpus"
+echo "#############################################################"
+echo
+echo "Las mismas comprobaciones sobre los casos de pruebas/casos/: una lista de"
+echo "la compra, notas, una agenda, un inventario, horas trabajadas, prestamos y"
+echo "textos con signos raros. Ver ./demostrar-robustez.sh."
+./demostrar-robustez.sh || fallos=1
 
 echo
 if [ "$fallos" = "0" ]; then
