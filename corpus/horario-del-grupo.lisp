@@ -94,9 +94,9 @@
     :cuando (y (no (vacio? (de fila aula)))
                (existe otra :en casillas
                  :distinta-de fila
-                 :donde (y (= (de otra dia) (de fila dia))
-                           (= (de otra turno) (de fila turno))
-                           (= (de otra aula) (de fila aula)))))
+                 :donde (y (= dia (de fila dia))
+                           (= turno (de fila turno))
+                           (= aula (de fila aula)))))
     :sobre     (aula)
     :severidad problema
     :explica   "Ese local esta ocupado por otro grupo a esa hora")
