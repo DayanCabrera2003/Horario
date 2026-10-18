@@ -31,27 +31,71 @@ Horario del grupo - 10-4
   6      B      G      H   Lit-L  M    
   7      AL/AC                         
 
-Horario del profesor - Profesor de AL/AC en 10-3
-  Turno  L  M  MI    J  V
-  -----  -  -  ----  -  -
-  1                      
-  2                      
-  3                      
-  4                      
-  5                      
-  6                      
-  7            10-3      
+Horario del profesor - Profesor de M en 10-3
+  Turno  L     M  MI    J  V   
+  -----  ----  -  ----  -  ----
+  1                            
+  2               10-3         
+  3               10-3         
+  4                            
+  5                        10-3
+  6      10-3              10-3
+  7                            
 
-Horario del profesor - Profesor de AL/AC en 10-4
-  Turno  L     M  MI  J  V
-  -----  ----  -  --  -  -
-  1                       
-  2                       
-  3                       
-  4                       
-  5                       
-  6                       
-  7      10-4             
+Horario del profesor - Profesor de Lit-L en 10-3
+  Turno  L     M     MI  J     V
+  -----  ----  ----  --  ----  -
+  1                             
+  2                             
+  3                      10-3   
+  4      10-3  10-3      10-3   
+  5                             
+  6                             
+  7                             
+
+Horario del profesor - Profesor de F en 10-3
+  Turno  L  M  MI    J     V   
+  -----  -  -  ----  ----  ----
+  1                        10-3
+  2                  10-3      
+  3                            
+  4                            
+  5                            
+  6            10-3            
+  7                            
+
+Horario del profesor - Profesor de I en 10-3
+  Turno  L     M  MI  J     V   
+  -----  ----  -  --  ----  ----
+  1                             
+  2      10-3                   
+  3                             
+  4                         10-3
+  5                   10-3      
+  6                             
+  7                             
+
+Horario del profesor - Profesor de H en 10-3
+  Turno  L  M     MI    J     V
+  -----  -  ----  ----  ----  -
+  1         10-3               
+  2                            
+  3                            
+  4               10-3         
+  5                            
+  6                     10-3   
+  7                            
+
+Horario del profesor - Profesor de EF en 10-3
+  Turno  L     M  MI    J  V
+  -----  ----  -  ----  -  -
+  1      10-3     10-3      
+  2                         
+  3                         
+  4                         
+  5                         
+  6                         
+  7                         
 
 Horario del profesor - Profesor de B en 10-3
   Turno  L     M     MI  J  V
@@ -64,35 +108,35 @@ Horario del profesor - Profesor de B en 10-3
   6                          
   7                          
 
-Horario del profesor - Profesor de B en 10-4
-  Turno  L     M     MI  J  V
-  -----  ----  ----  --  -  -
-  1                          
-  2                          
-  3            10-4          
-  4                          
-  5                          
-  6      10-4                
-  7                          
+Horario del profesor - Profesor de G en 10-3
+  Turno  L  M     MI    J  V
+  -----  -  ----  ----  -  -
+  1                         
+  2                         
+  3                         
+  4                         
+  5         10-3  10-3      
+  6                         
+  7                         
 
-Horario del profesor - Profesor de CA en 10-3
-  Turno  L     M  MI  J  V
-  -----  ----  -  --  -  -
-  1                       
+Horario del profesor - Profesor de INF en 10-3
+  Turno  L  M  MI  J     V
+  -----  -  -  --  ----  -
+  1                10-3   
   2                       
   3                       
   4                       
-  5      10-3             
+  5                       
   6                       
   7                       
 
-Horario del profesor - Profesor de CA en 10-4
-  Turno  L     M  MI  J  V
-  -----  ----  -  --  -  -
+Horario del profesor - Profesor de Q en 10-3
+  Turno  L  M  MI  J  V   
+  -----  -  -  --  -  ----
   1                       
   2                       
-  3                       
-  4      10-4             
+  3                   10-3
+  4                       
   5                       
   6                       
   7                       
@@ -108,17 +152,6 @@ Horario del profesor - Profesor de CP en 10-3
   6                       
   7                       
 
-Horario del profesor - Profesor de CP en 10-4
-  Turno  L  M  MI    J  V
-  -----  -  -  ----  -  -
-  1            10-4      
-  2                      
-  3                      
-  4                      
-  5                      
-  6                      
-  7                      
-
 Horario del profesor - Profesor de DC en 10-3
   Turno  L  M  MI  J  V   
   -----  -  -  --  -  ----
@@ -130,181 +163,38 @@ Horario del profesor - Profesor de DC en 10-3
   6                       
   7                       
 
-Horario del profesor - Profesor de DC en 10-4
+Horario del profesor - Profesor de CA en 10-3
+  Turno  L     M  MI  J  V
+  -----  ----  -  --  -  -
+  1                       
+  2                       
+  3                       
+  4                       
+  5      10-3             
+  6                       
+  7                       
+
+Horario del profesor - Profesor de RD en 10-3
   Turno  L  M     MI  J  V
   -----  -  ----  --  -  -
   1                       
   2                       
   3                       
   4                       
-  5         10-4          
-  6                       
-  7                       
-
-Horario del profesor - Profesor de EF en 10-3
-  Turno  L     M  MI    J  V
-  -----  ----  -  ----  -  -
-  1      10-3     10-3      
-  2                         
-  3                         
-  4                         
-  5                         
-  6                         
-  7                         
-
-Horario del profesor - Profesor de EF en 10-4
-  Turno  L     M  MI    J  V
-  -----  ----  -  ----  -  -
-  1                         
-  2               10-4      
-  3      10-4               
-  4                         
-  5                         
-  6                         
-  7                         
-
-Horario del profesor - Profesor de F en 10-3
-  Turno  L  M  MI    J     V   
-  -----  -  -  ----  ----  ----
-  1                        10-3
-  2                  10-3      
-  3                            
-  4                            
-  5                            
-  6            10-3            
-  7                            
-
-Horario del profesor - Profesor de F en 10-4
-  Turno  L  M  MI    J     V   
-  -----  -  -  ----  ----  ----
-  1                  10-4      
-  2                            
-  3                        10-4
-  4                            
-  5            10-4            
-  6                            
-  7                            
-
-Horario del profesor - Profesor de G en 10-3
-  Turno  L  M     MI    J  V
-  -----  -  ----  ----  -  -
-  1                         
-  2                         
-  3                         
-  4                         
-  5         10-3  10-3      
-  6                         
-  7                         
-
-Horario del profesor - Profesor de G en 10-4
-  Turno  L  M     MI    J  V
-  -----  -  ----  ----  -  -
-  1                         
-  2                         
-  3                         
-  4               10-4      
-  5                         
-  6         10-4            
-  7                         
-
-Horario del profesor - Profesor de H en 10-3
-  Turno  L  M     MI    J     V
-  -----  -  ----  ----  ----  -
-  1         10-3               
-  2                            
-  3                            
-  4               10-3         
-  5                            
-  6                     10-3   
-  7                            
-
-Horario del profesor - Profesor de H en 10-4
-  Turno  L  M     MI    J     V
-  -----  -  ----  ----  ----  -
-  1                            
-  2                            
-  3                            
-  4         10-4               
-  5                     10-4   
-  6               10-4         
-  7                            
-
-Horario del profesor - Profesor de I en 10-3
-  Turno  L     M  MI  J     V   
-  -----  ----  -  --  ----  ----
-  1                             
-  2      10-3                   
-  3                             
-  4                         10-3
-  5                   10-3      
-  6                             
-  7                             
-
-Horario del profesor - Profesor de I en 10-4
-  Turno  L  M     MI  J     V   
-  -----  -  ----  --  ----  ----
-  1                             
-  2         10-4      10-4      
-  3                             
-  4                         10-4
-  5                             
-  6                             
-  7                             
-
-Horario del profesor - Profesor de INF en 10-3
-  Turno  L  M  MI  J     V
-  -----  -  -  --  ----  -
-  1                10-3   
-  2                       
-  3                       
-  4                       
   5                       
-  6                       
+  6         10-3          
   7                       
 
-Horario del profesor - Profesor de INF en 10-4
-  Turno  L  M  MI  J     V
-  -----  -  -  --  ----  -
-  1                       
-  2                       
-  3                       
-  4                10-4   
-  5                       
-  6                       
-  7                       
-
-Horario del profesor - Profesor de Lit-L en 10-3
-  Turno  L     M     MI  J     V
-  -----  ----  ----  --  ----  -
-  1                             
-  2                             
-  3                      10-3   
-  4      10-3  10-3      10-3   
-  5                             
-  6                             
-  7                             
-
-Horario del profesor - Profesor de Lit-L en 10-4
-  Turno  L  M     MI  J     V   
-  -----  -  ----  --  ----  ----
-  1         10-4            10-4
-  2                         10-4
-  3                             
-  4                             
-  5                             
-  6                   10-4      
-  7                             
-
-Horario del profesor - Profesor de M en 10-3
-  Turno  L     M  MI    J  V   
-  -----  ----  -  ----  -  ----
-  1                            
-  2               10-3         
-  3               10-3         
-  4                            
-  5                        10-3
-  6      10-3              10-3
-  7                            
+Horario del profesor - Profesor de AL/AC en 10-3
+  Turno  L  M  MI    J  V
+  -----  -  -  ----  -  -
+  1                      
+  2                      
+  3                      
+  4                      
+  5                      
+  6                      
+  7            10-3      
 
 Horario del profesor - Profesor de M en 10-4
   Turno  L     M  MI    J     V   
@@ -317,13 +207,90 @@ Horario del profesor - Profesor de M en 10-4
   6                           10-4
   7                               
 
-Horario del profesor - Profesor de Q en 10-3
-  Turno  L  M  MI  J  V   
-  -----  -  -  --  -  ----
+Horario del profesor - Profesor de Lit-L en 10-4
+  Turno  L  M     MI  J     V   
+  -----  -  ----  --  ----  ----
+  1         10-4            10-4
+  2                         10-4
+  3                             
+  4                             
+  5                             
+  6                   10-4      
+  7                             
+
+Horario del profesor - Profesor de F en 10-4
+  Turno  L  M  MI    J     V   
+  -----  -  -  ----  ----  ----
+  1                  10-4      
+  2                            
+  3                        10-4
+  4                            
+  5            10-4            
+  6                            
+  7                            
+
+Horario del profesor - Profesor de I en 10-4
+  Turno  L  M     MI  J     V   
+  -----  -  ----  --  ----  ----
+  1                             
+  2         10-4      10-4      
+  3                             
+  4                         10-4
+  5                             
+  6                             
+  7                             
+
+Horario del profesor - Profesor de H en 10-4
+  Turno  L  M     MI    J     V
+  -----  -  ----  ----  ----  -
+  1                            
+  2                            
+  3                            
+  4         10-4               
+  5                     10-4   
+  6               10-4         
+  7                            
+
+Horario del profesor - Profesor de EF en 10-4
+  Turno  L     M  MI    J  V
+  -----  ----  -  ----  -  -
+  1                         
+  2               10-4      
+  3      10-4               
+  4                         
+  5                         
+  6                         
+  7                         
+
+Horario del profesor - Profesor de B en 10-4
+  Turno  L     M     MI  J  V
+  -----  ----  ----  --  -  -
+  1                          
+  2                          
+  3            10-4          
+  4                          
+  5                          
+  6      10-4                
+  7                          
+
+Horario del profesor - Profesor de G en 10-4
+  Turno  L  M     MI    J  V
+  -----  -  ----  ----  -  -
+  1                         
+  2                         
+  3                         
+  4               10-4      
+  5                         
+  6         10-4            
+  7                         
+
+Horario del profesor - Profesor de INF en 10-4
+  Turno  L  M  MI  J     V
+  -----  -  -  --  ----  -
   1                       
   2                       
-  3                   10-3
-  4                       
+  3                       
+  4                10-4   
   5                       
   6                       
   7                       
@@ -339,15 +306,37 @@ Horario del profesor - Profesor de Q en 10-4
   6                       
   7                       
 
-Horario del profesor - Profesor de RD en 10-3
+Horario del profesor - Profesor de CP en 10-4
+  Turno  L  M  MI    J  V
+  -----  -  -  ----  -  -
+  1            10-4      
+  2                      
+  3                      
+  4                      
+  5                      
+  6                      
+  7                      
+
+Horario del profesor - Profesor de DC en 10-4
   Turno  L  M     MI  J  V
   -----  -  ----  --  -  -
   1                       
   2                       
   3                       
   4                       
+  5         10-4          
+  6                       
+  7                       
+
+Horario del profesor - Profesor de CA en 10-4
+  Turno  L     M  MI  J  V
+  -----  ----  -  --  -  -
+  1                       
+  2                       
+  3                       
+  4      10-4             
   5                       
-  6         10-3          
+  6                       
   7                       
 
 Horario del profesor - Profesor de RD en 10-4
@@ -360,6 +349,17 @@ Horario del profesor - Profesor de RD en 10-4
   5      10-4             
   6                       
   7                       
+
+Horario del profesor - Profesor de AL/AC en 10-4
+  Turno  L     M  MI  J  V
+  -----  ----  -  --  -  -
+  1                       
+  2                       
+  3                       
+  4                       
+  5                       
+  6                       
+  7      10-4             
 
 Horario del aula - Aula 10-3
   Turno  L     M     MI    J     V   
