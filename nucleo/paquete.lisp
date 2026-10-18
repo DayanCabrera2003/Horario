@@ -93,4 +93,7 @@
    #:evaluar #:valor-de-campo #:marcas-que-disparan #:evaluar-situacion
    #:explicacion-de-marca #:evaluar-en-fila #:parametro-llamado #:indice
    #:vacio-p #:como-numero #:como-texto #:iguales-p
+
+   ;; Numeros
+   #:normalizar-numero #:texto-de-numero #:escritura-de-numero
    #:error-de-evaluacion #:mensaje-de-error))
