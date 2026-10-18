@@ -1,7 +1,7 @@
 ;;;; La gestion del departamento: que profesor imparte que.
 ;;;;
 ;;;; Es el libro del generador de departamento del sistema anterior
-;;;; (departamento/, retirado en 30878a9), en su forma editable del
+;;;; (departamento/, retirado en 30854dc), en su forma editable del
 ;;;; 2026-09-07. El pedido original del tutor, del 8 de agosto: un documento
 ;;;; para decidir que profesor imparte que asignatura, y leer de esa decision
 ;;;; la carga de cada profesor y como va cubierta cada asignatura.

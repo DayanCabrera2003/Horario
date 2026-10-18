@@ -43,19 +43,27 @@
 ;;; Toda arquitectura materializa todo caso sin error
 ;;; ---------------------------------------------------------------------
 
+(defun descripciones-del-corpus ()
+  "Las seis descripciones del corpus, como (NOMBRE SITUACION DATOS)."
+  (loop for (nombre variable) in '(("PLAN-DEL-GRUPO" "DATOS-DEL-PLAN")
+                                   ("DEFENSAS-DE-TESIS" "DATOS-DE-LAS-DEFENSAS")
+                                   ("HORARIO-DEL-GRUPO" "DATOS-DEL-HORARIO")
+                                   ("DEPARTAMENTO" "DATOS-DEL-DEPARTAMENTO")
+                                   ("HORARIO-SAUL" "DATOS-DEL-SAUL")
+                                   ("SEDER" "DATOS-DEL-SEDER"))
+        collect (list nombre (situacion.lenguaje:situacion-llamada nombre)
+                      (symbol-value (find-symbol variable '#:situacion.corpus)))))
+
 (definir-prueba conformidad-todas-materializan
-    "Conformidad: las tres arquitecturas materializan las dos descripciones"
+    "Conformidad: las tres arquitecturas materializan las seis descripciones"
   (dolist (par (arquitecturas-disponibles))
-    (dolist (caso '(("PLAN-DEL-GRUPO" . situacion.corpus:datos-del-plan)
-                    ("DEFENSAS-DE-TESIS" . situacion.corpus:datos-de-las-defensas)))
-      (let ((s (situacion.lenguaje:situacion-llamada (car caso)))
-            (datos (symbol-value (cdr caso))))
-        (multiple-value-bind (salida informe)
-            (handler-case (materializar-en-cadena (cdr par) s datos)
-              (error (e) (values nil (format nil "~a" e))))
-          (comprobar (and salida (plusp (length salida)))
-                     "~a no pudo materializar ~a: ~a"
-                     (car par) (car caso) informe))))))
+    (loop for (nombre s datos) in (descripciones-del-corpus) do
+      (multiple-value-bind (salida informe)
+          (handler-case (materializar-en-cadena (cdr par) s datos)
+            (error (e) (values nil (format nil "~a" e))))
+        (comprobar (and salida (plusp (length salida)))
+                   "~a no pudo materializar ~a: ~a"
+                   (car par) nombre informe)))))
 
 ;;; ---------------------------------------------------------------------
 ;;; Toda arquitectura responde a toda capacidad que se le pide
@@ -82,20 +90,23 @@
     "Conformidad: lo emulado y lo degradado dice en que consiste"
   ;; Una emulacion sin su limite escrito es una promesa. El renglon que dice
   ;; \"no admite huecos\" es lo que separa un prototipo de algo usable.
+  ;; Se mira en las seis descripciones del corpus: cada una pide cosas
+  ;; distintas, y una nota que falte solo aparece donde se pide esa capacidad.
   (dolist (par (arquitecturas-disponibles))
-    (let ((s (situacion.lenguaje:situacion-llamada "PLAN-DEL-GRUPO")))
+    (loop for (nombre s datos) in (descripciones-del-corpus) do
       (multiple-value-bind (salida informe)
-          (materializar-en-cadena (cdr par) s situacion.corpus:datos-del-plan)
+          (materializar-en-cadena (cdr par) s datos)
         (declare (ignore salida))
         (dolist (entrada (protocolo:entradas-del-informe informe))
           (when (member (protocolo:entrada-de-informe-respuesta entrada)
                         '(:emula :degrada))
             (let ((nota (protocolo:entrada-de-informe-nota entrada)))
               (comprobar (and nota (stringp nota) (> (length nota) 20))
-                         "~a ~(~a~) ~(~a~) sin explicar en que consiste"
+                         "~a ~(~a~) ~(~a~) en ~a sin explicar en que consiste"
                          (car par)
                          (protocolo:entrada-de-informe-respuesta entrada)
-                         (protocolo:entrada-de-informe-capacidad entrada)))))))))
+                         (protocolo:entrada-de-informe-capacidad entrada)
+                         nombre))))))))
 
 ;;; ---------------------------------------------------------------------
 ;;; Las capacidades declaradas se cumplen en modo estricto
@@ -150,6 +161,11 @@
                 (protocolo:entrada-de-informe-respuesta e)))))
     (let ((excel (gethash (list "excel" 'protocolo:con-crecimiento) respuestas))
           (web (gethash (list "web" 'protocolo:con-crecimiento) respuestas)))
+      ;; Si una de las dos no pidiera el crecimiento, la prueba pasaria sin
+      ;; comprobar nada. El plan del grupo crece, asi que las dos tienen que
+      ;; responder.
+      (comprobar excel "la hoja de calculo no dice nada del crecimiento")
+      (comprobar web "la pagina no dice nada del crecimiento")
       (when (and excel web)
         (comprobar (eq excel :emula)
                    "la hoja de calculo tiene que EMULAR el crecimiento, con~@

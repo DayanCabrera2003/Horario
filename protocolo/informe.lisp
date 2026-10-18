@@ -5,8 +5,8 @@
 ;;;;
 ;;;; Es la evidencia que ninguna de las tres tesis anteriores tiene. Convierte
 ;;;; "el mecanismo de extension funciona" en algo que se ensena, y el renglon
-;;;; de limite de cada emulacion -"no admite huecos", "muestra como mucho seis
-;;;; filas relacionadas"- es la clase de detalle que hoy vive enterrado en un
+;;;; de limite de cada emulacion -"no admite huecos", "mas de 5 relacionadas
+;;;; no caben"- es la clase de detalle que hoy vive enterrado en un
 ;;;; comentario del corpus y que separa un prototipo de algo usable.
 
 (in-package #:situacion.protocolo)

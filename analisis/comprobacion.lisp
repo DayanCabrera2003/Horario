@@ -346,7 +346,7 @@
          (when (and ejes (< (length ejes) 3))
            (anotar :error
                    "La vista ~(~a~) declara una tabla cruzada a medias.~@
-                    Hacen falta las tres: :FILAS, :COLUMNAS y :CELDA."
+                    Hacen falta las tres: :FILAS, :COLUMNAS y :MUESTRA."
                    (nucleo:nombre vista))))
        ;; Los ejes de un cruce, mas el campo por el que se parte, tienen que
        ;; determinar la fila. Si no, dos filas distintas caen en la misma

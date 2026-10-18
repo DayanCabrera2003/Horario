@@ -7,8 +7,13 @@
 ;;;;
 ;;;; Comparense las dos traducciones del mismo nodo de busqueda por clave:
 ;;;;
-;;;;   hoja de calculo   IFERROR(VLOOKUP($B4,Tesis!$A$4:$F$23,2,FALSE),"")
-;;;;   pagina            (T.find(c => c.estudiante === f.estudiante) ?? {}).tutor ?? ""
+;;;;   hoja de calculo   INDEX('Tesis y sus tribunales'!$B$4:$B$7,
+;;;;                       MATCH(1,INDEX(EXACT('Tesis y sus tribunales'!$A$4:$A$7,$D4)*1,0),0))
+;;;;   pagina            PROY((D["tesis"].find(c => IG(V(c["estudiante"]),
+;;;;                       V(f["estudiante"]))) ?? null), "tutor", "")
+;;;;
+;;;; (Las dos, recortadas: la hoja envuelve la busqueda para dar vacio si no
+;;;; hay estudiante o no se encuentra.)
 ;;;;
 ;;;; La expresion del nucleo es la misma. Lo que cambia es todo lo demas, y
 ;;;; nada de lo que cambia subio nunca por encima del protocolo.

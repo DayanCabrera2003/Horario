@@ -153,8 +153,9 @@
                   collect (nombre-js (nucleo:nombre c)))))
 
 (defun escribir-derivaciones (a plan flujo)
-  "Una funcion por campo derivado. Se recalculan en cada render, que es la
-   forma mas simple de tener derivaciones vivas."
+  "Una funcion por campo derivado. La pagina las recalcula todas tras cada
+   cambio, hasta punto fijo, y ACTUALIZAR lleva los valores a lo dibujado
+   (web/dibujo.lisp)."
   (format flujo "~%const DERIV = {};~%")
   (dolist (coleccion (nucleo:colecciones (situacion plan)))
     (let ((ambito (ambito-de coleccion))

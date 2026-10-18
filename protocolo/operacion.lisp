@@ -84,8 +84,10 @@
             ~@
             Una operacion que no despacha sobre la arquitectura no tiene~@
             donde enganchar una segunda: es el fallo que dejo sin cerrar la~@
-            tesis de 2026 y que este trabajo se propone corregir. Ver~@
-            documentacion/tesis/02-ARQUITECTURA.md, seccion 5.3."
+            tesis de 2026 y que este trabajo se propone corregir. La regla:~@
+            el primer parametro de toda operacion es la arquitectura, y una~@
+            arquitectura nueva se anade escribiendo metodos que lo~@
+            especializan, sin tocar el nucleo, el protocolo ni las demas."
            nombre lambda-lista))
   `(progn
      (eval-when (:compile-toplevel :load-toplevel :execute)

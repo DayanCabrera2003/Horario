@@ -23,7 +23,7 @@
 ;;;; acepta, asi que la misma descripcion se puede compilar en tres modos y
 ;;;; obtener tres respuestas distintas sobre la misma arquitectura. Eso
 ;;;; convierte el mecanismo en algo medible: compilar los libros del corpus
-;;;; contra las cuatro arquitecturas en los tres modos es una tabla de
+;;;; contra las tres arquitecturas en los tres modos es una tabla de
 ;;;; resultados experimentales, y sale del diseno sin escribir nada mas.
 
 (in-package #:situacion.protocolo)
@@ -88,7 +88,10 @@
             ;; distintos en el texto plano- se llevaba el documento entero.
             ;; Las politicas estricta y solo-nativo siguen parando: sirven
             ;; precisamente para saber que cae entero dentro de un destino.
-            (when (or (eq *politica* :estricta)
+            ;; Una respuesta :CUMPLE no es una carencia, aunque la clase no
+            ;; herede la capacidad, y no para en ningun modo.
+            (when (or (and (eq *politica* :estricta)
+                           (not (eq respuesta :cumple)))
                       (and (eq *politica* :solo-nativo)
                            (member respuesta '(:emula :degrada :rechaza))))
               (error 'capacidad-no-disponible

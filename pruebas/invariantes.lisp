@@ -4,8 +4,8 @@
 ;;;; arquitectura" son las que se caen en las defensas. Aqui dejan de ser
 ;;;; afirmaciones.
 ;;;;
-;;;; De momento estan I1, I2 e I3, que son los que se pueden comprobar con lo
-;;;; que hay construido. I4 a I8 entran conforme haya de donde.
+;;;; Aqui estan I1, I2 e I3, que miran el codigo. I4 a I7, que miran lo que
+;;;; las arquitecturas producen, estan en pruebas/conformidad.lisp.
 
 (in-package #:situacion.pruebas)
 
@@ -253,8 +253,9 @@
 
 (definir-prueba i3-ninguna-arquitectura-ve-a-otra
     "I3: las arquitecturas dependen del protocolo y de nada mas"
-  ;; Todavia no hay arquitecturas; la prueba pasa en vacio a proposito, para
-  ;; que este escrita el dia que entre la primera y no haya que acordarse.
+  ;; Recorre las arquitecturas que existan. situacion/sql esta en la lista
+  ;; aunque todavia no exista, para que la prueba la vigile el dia que entre
+  ;; y no haya que acordarse.
   (let ((arquitecturas '("situacion/texto" "situacion/excel"
                          "situacion/web" "situacion/sql")))
     (dolist (a arquitecturas)

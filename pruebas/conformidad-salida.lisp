@@ -221,14 +221,7 @@
 (defun situaciones-de-conformidad ()
   "El corpus y los casos de robustez, como (NOMBRE SITUACION DATOS)."
   (append
-   (loop for (nombre variable) in '(("PLAN-DEL-GRUPO" "DATOS-DEL-PLAN")
-                                    ("DEFENSAS-DE-TESIS" "DATOS-DE-LAS-DEFENSAS")
-                                    ("HORARIO-DEL-GRUPO" "DATOS-DEL-HORARIO")
-                                    ("DEPARTAMENTO" "DATOS-DEL-DEPARTAMENTO")
-                                    ("HORARIO-SAUL" "DATOS-DEL-SAUL")
-                                    ("SEDER" "DATOS-DEL-SEDER"))
-         collect (list nombre (situacion.lenguaje:situacion-llamada nombre)
-                       (symbol-value (find-symbol variable '#:situacion.corpus))))
+   (descripciones-del-corpus)
    (loop for caso in situacion.casos:*casos*
          collect (list (situacion.casos:caso-prefijo caso)
                        (situacion.casos:caso-situacion caso)

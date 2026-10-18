@@ -339,7 +339,7 @@
           (cons "leyenda" (lista (leyenda-de plan hoja))))))
 
 (defun color-de-pestana (hoja)
-  "Azul si en la hoja se escribe a mano, gris si todo se calcula.
+  "Azul si en la hoja se escribe a mano, azul claro si todo se calcula.
 
    Sale del rol de campo, no de una decision aparte. Es el mismo criterio que
    usan los libros del corpus."
@@ -655,8 +655,10 @@
 (defmethod protocolo:emitir-marca ((a excel) marca ambito plan)
   "Una marca es una regla de formato condicional sobre el rango de su alcance.
 
-   El color sale de la paleta de esta arquitectura, por severidad. La marca
-   no conoce ningun color: declara un significado y lo grave que es."
+   El color sale de la paleta de esta arquitectura, +TONOS+ en
+   excel/presentacion.lisp: un tono propio para cada marca, dentro de la
+   familia de su severidad. La marca no conoce ningun color: declara un
+   significado y lo grave que es."
   (list (cons "rango" (rango-de-alcance *hoja* (nucleo:alcance marca)))
         (cons "estado" (string-downcase (symbol-name (nucleo:nombre marca))))
         (cons "severidad" (string-downcase (symbol-name (nucleo:severidad marca))))

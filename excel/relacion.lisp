@@ -17,19 +17,20 @@
 ;;;;                     misma clase de excel/plan.lisp- para que
 ;;;;                     COLUMNA-DE, CELDA, RANGO-DE-COLUMNA y ENTRECOMILLAR
 ;;;;                     funcionen igual que en cualquier otro sitio. Es lo
-;;;;                     que BUSCARV y COUNTIF consultan.
+;;;;                     que consultan las busquedas INDEX/MATCH y el
+;;;;                     conteo.
 ;;;;
 ;;;;   El bloque legible   por cada fila padre, una linea de cabecera con su
 ;;;;                       clave y CAPACIDAD-DE-DETALLE lineas reservadas con
-;;;;                       BUSCARV sobre la clave numerada. Si hay mas
+;;;;                       INDEX/MATCH exacto sobre la clave numerada. Si hay mas
 ;;;;                       relacionadas que reserva, la ultima linea escribe
 ;;;;                       un aviso en vez de una busqueda mas. Los bloques
 ;;;;                       se apilan verticalmente, en el orden de la hoja
 ;;;;                       padre.
 ;;;;
 ;;;; La celda de ASIGNACIONES en la hoja de origen no intenta mostrar la
-;;;; lista -no le cabe-: muestra un conteo en vivo con COUNTIF sobre la
-;;;; columna __clave__ de la tabla cruda (ver excel/formula.lisp), que apunta
+;;;; lista -no le cabe-: muestra un conteo en vivo con SUMPRODUCT y EXACT
+;;;; sobre la columna __clave__ de la tabla cruda (ver excel/formula.lisp), que apunta
 ;;;; a que el detalle esta aqui.
 
 (in-package #:situacion.excel)

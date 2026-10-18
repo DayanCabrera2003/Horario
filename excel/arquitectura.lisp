@@ -1,8 +1,10 @@
 ;;;; La arquitectura de hoja de calculo.
 ;;;;
-;;;; Cumple casi todo de forma nativa, y las dos cosas que no cumple son las
-;;;; interesantes: el crecimiento y el conteo de distintos. Las dos las emula,
-;;;; y las dos las emula con maquinaria que en una pagina web no haria ninguna
+;;;; Cumple de forma nativa lo que una hoja de calculo es -rejilla, entrada,
+;;;; recalculo, color, busqueda- y emula lo demas: el crecimiento, el conteo
+;;;; de distintos, la relacion uno a muchos, la tabla cruzada, la particion y
+;;;; el filtro de una vista, la casilla en conflicto y la agrupacion. Casi
+;;;; todo eso lo emula con maquinaria que en una pagina web no haria ninguna
 ;;;; falta.
 ;;;;
 ;;;; Esa inversion es el mejor argumento disponible de que la jerarquia de

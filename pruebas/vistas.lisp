@@ -497,3 +497,24 @@
   (let ((nombre (situacion.excel::nombre-de-pestana "Horario" "Profesor de AL/AC")))
     (comprobar (not (find-if (lambda (c) (find c "[]:*?/\\")) nombre))
                "el nombre ~s lleva un signo que Excel no admite" nombre)))
+
+;;; Una tabla cruzada a medias: el mensaje tiene que nombrar las opciones
+;;; que existen. Hasta el 2026-10-18 pedia :CELDA, que no es una opcion del
+;;; lenguaje; la que falta aqui es :MUESTRA.
+(situacion.lenguaje:defsituacion cruzada-a-medias (:etiqueta "Cruzada a medias")
+  (coleccion casillas
+    (:etiqueta "Casillas")
+    (:clave dia turno)
+    (campo dia   :rol fijo :etiqueta "Dia")
+    (campo turno :rol fijo :etiqueta "Turno"))
+  (vista rejilla :de casillas :etiqueta "Horario" :filas turno :columnas dia))
+
+(definir-prueba vista-cruzada-a-medias-nombra-muestra
+    "Vistas: el error de una tabla cruzada a medias pide :MUESTRA, no :CELDA"
+  (let ((textos (mapcar #'analisis:texto-de-problema
+                        (errores-de (situacion.lenguaje:situacion-llamada
+                                     "CRUZADA-A-MEDIAS")))))
+    (comprobar (some (lambda (e) (search ":MUESTRA" e)) textos)
+               "el error tiene que pedir :MUESTRA: ~s" textos)
+    (comprobar (notany (lambda (e) (search ":CELDA" e)) textos)
+               "el error no puede pedir :CELDA, que no existe: ~s" textos)))

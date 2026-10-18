@@ -80,7 +80,9 @@
   (:documentation
    "Construye el plan de ARQUITECTURA para SITUACION.
 
-    Devuelve (VALUES PLAN INFORME).
+    Devuelve el PLAN. El informe de conformidad no lo devuelve esta
+    operacion: lo acumula CON-INFORME mientras se planifica y se emite, y lo
+    devuelve MATERIALIZAR.
 
     El plan es un objeto cuya forma pertenece por completo a la
     arquitectura: el de Excel decide que hoja, que columna y que fila ocupa
