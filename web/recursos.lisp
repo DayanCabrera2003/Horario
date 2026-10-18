@@ -163,6 +163,23 @@ function huellaDe(){
   return partes.join('|');
 }
 
+// --- Marcas y estado de una fila ---
+function marcasDe(nombreColeccion, fila){
+  return MARCAS.filter(m => m.coleccion === nombreColeccion)
+               .filter(m => { try { return VERDAD(m.cond(fila)); } catch(e){ return false; } });
+}
+
+function explicacionDe(m, fila){
+  try { return m.explica ? T(m.explica(fila)) : m.leyenda; }
+  catch(e){ return m.leyenda; }
+}
+
+// El estado de una fila en palabras: el mismo texto que escriben el texto
+// plano y la hoja de calculo (NUCLEO:TEXTO-DE-ESTADO).
+function estadoDe(nombreColeccion, fila){
+  return marcasDe(nombreColeccion, fila).map(m => explicacionDe(m, fila)).join('; ');
+}
+
 function recalcularTodo(){
   let antes = huellaDe();
   for (let pasada = 0; pasada < TOPE_DE_PASADAS; pasada++) {

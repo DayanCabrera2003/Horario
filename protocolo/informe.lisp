@@ -22,6 +22,27 @@
     (push (hacer-entrada respuesta capacidad nota) (cdr *informe*)))
   respuesta)
 
+(defun rebajar-en-informe (capacidad detalle respuesta nota)
+  "Corrige la entrada del informe en curso que respondio a CAPACIDAD con una
+   nota que contiene DETALLE: pasa a valer RESPUESTA, con NOTA.
+
+   Existe porque una arquitectura puede declarar que cumple una capacidad y
+   descubrir, al emitir un nodo concreto, que para ese nodo no puede: la
+   hoja de calculo cumple el marcado textual, pero una explicacion que no
+   sabe traducir a formula lo degrada. El informe tiene que decirlo de ese
+   nodo, no mantener el \"cumple\" que anoto al principio. Si no hay tal
+   entrada, se anade una."
+  (when *informe*
+    (let ((entrada (find-if (lambda (e)
+                              (and (eq (entrada-de-informe-capacidad e) capacidad)
+                                   (search detalle (or (entrada-de-informe-nota e) ""))))
+                            (cdr *informe*))))
+      (if entrada
+          (setf (entrada-de-informe-respuesta entrada) respuesta
+                (entrada-de-informe-nota entrada) nota)
+          (anotar-en-informe respuesta capacidad nota))))
+  respuesta)
+
 (defmacro con-informe ((arquitectura) &body cuerpo)
   "Ejecuta CUERPO acumulando un informe de conformidad.
 

@@ -99,4 +99,5 @@
    #:normalizar-numero #:texto-de-numero #:escritura-de-numero
    #:expresion-booleana-p #:campo-booleano-p #:verdadero-p #:como-booleano
    #:cumple-en-fila #:normalizar-valor
+   #:texto-de-estado #:nombre-legible-de-marca
    #:error-de-evaluacion #:mensaje-de-error))

@@ -34,6 +34,11 @@
            "Las columnas de clave compuesta que esta arquitectura anade a la
             hoja, en el orden en que se pidieron. Van detras de las columnas
             declaradas. Solo CLAVE-COMPUESTA-DE escribe aqui.")
+   (columna-de-estado :accessor columna-de-estado :initform nil
+                      :documentation
+                      "La letra de la columna de estado, que escribe en palabras
+                       que marcas disparan en cada fila, o NIL si la coleccion
+                       no tiene marcas. Va justo detras de los campos.")
    (distintos :accessor distintos :initform '()
               :documentation
               "Las columnas auxiliares que marcan la primera aparicion de cada
@@ -139,6 +144,12 @@
 (defun hoja-de (plan nombre-de-coleccion)
   (find nombre-de-coleccion (hojas plan) :key (lambda (h) (nucleo:nombre (coleccion h)))))
 
+(defun marca-de-esta-hoja-p (marca coleccion)
+  (if (nucleo:coleccion marca)
+      (eq (nucleo:coleccion marca) (nucleo:nombre coleccion))
+      (every (lambda (c) (nucleo:campo-llamado coleccion c))
+             (nucleo:alcance marca))))
+
 (defun nombre-de-coleccion (coleccion)
   "El nombre interno de COLECCION tal como lo escribe el oraculo. Es la
    identidad con que el plano dice de que coleccion es una hoja."
@@ -172,7 +183,9 @@
 (defun siguiente-columna-libre (hoja)
   "La primera columna de HOJA que no ocupa ni un campo declarado ni una
    columna anadida por esta arquitectura."
-  (letra-de-columna (+ (length (columnas hoja)) (length (claves hoja))
+  (letra-de-columna (+ (length (columnas hoja))
+                       (if (columna-de-estado hoja) 1 0)
+                       (length (claves hoja))
                        (length (distintos hoja)))))
 
 (defun clave-compuesta-de (hoja partes &optional filtro)
@@ -261,6 +274,11 @@
                               :rango-nombrado (nombre-de-rango coleccion))))
     (dolist (campo campos)
       (protocolo:planificar-campo a campo coleccion plan))
+    ;; La columna de estado, si alguna marca senala esta coleccion: es la
+    ;; realizacion del marcado textual en esta arquitectura.
+    (when (some (lambda (m) (marca-de-esta-hoja-p m coleccion))
+                (nucleo:marcas (situacion plan)))
+      (setf (columna-de-estado hoja) (letra-de-columna (length campos))))
     hoja))
 
 (defun nombre-de-rango (coleccion)

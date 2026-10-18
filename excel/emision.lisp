@@ -261,14 +261,17 @@
           ;; Que coleccion es: el verificador empareja por esto con el
           ;; oraculo, nunca por las etiquetas de las columnas.
           (cons "coleccion" (nombre-de-coleccion (coleccion hoja)))
+          (cons "estado" (or (columna-de-estado hoja) :false))
           (cons "fila_encabezado" (fila-encabezado hoja))
           (cons "fila_primera" (fila-primera hoja))
           (cons "capacidad" (capacidad hoja))
           (cons "color_pestana" (color-de-pestana hoja))
           (cons "encabezados" (lista (append (encabezados-de hoja)
+                                             (encabezado-de-estado hoja)
                                              (encabezados-de-claves hoja))))
           (cons "celdas" (lista (celdas-de a plan hoja)))
           (cons "formulas" (lista (append (formulas-de a plan hoja)
+                                          (formulas-de-estado a plan hoja)
                                           (formulas-de-claves a plan hoja))))
           (cons "editables" (lista (rangos-editables hoja)))
           (cons "validaciones" (lista (validaciones-de a plan hoja)))
@@ -536,12 +539,6 @@
         (cons "severidad" (string-downcase (symbol-name (nucleo:severidad marca))))
         (cons "formula" (condicion-excel a (nucleo:condicion marca) ambito plan))
         (cons "relleno" (relleno-de (nucleo:severidad marca)))))
-
-(defun marca-de-esta-hoja-p (marca coleccion)
-  (if (nucleo:coleccion marca)
-      (eq (nucleo:coleccion marca) (nucleo:nombre coleccion))
-      (every (lambda (c) (nucleo:campo-llamado coleccion c))
-             (nucleo:alcance marca))))
 
 (defun rango-de-alcance (hoja campos)
   (format nil "~{~a~^ ~}"

@@ -145,6 +145,7 @@
                (:file "relacion")
                (:file "agregados")
                (:file "particion-en-archivo")
+               (:file "estado")
                (:file "emision")))
 
 (defsystem "situacion/web"

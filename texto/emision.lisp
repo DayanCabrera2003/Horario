@@ -319,27 +319,14 @@
           (nucleo:etiqueta vista) (nucleo:es-entrada vista)))
 
 (defun texto-del-estado (a plan coleccion fila)
-  "El estado de una fila, en palabras.
-
-   Se prefiere la explicacion de la marca si la tiene, porque esta escrita
-   para leerse; si no la tiene, se escribe el nombre del estado. Ese nombre
-   es el significado que declara la marca, no un color, y por eso aqui se
-   puede escribir tal cual."
+  "El estado de una fila, en palabras: la explicacion de cada marca que
+   dispara, o su nombre si no la trae. Es NUCLEO:TEXTO-DE-ESTADO, el mismo
+   texto que escriben la hoja de calculo y la pagina."
   (declare (ignore a))
-  (let ((disparadas (cdr fila)))
-    (if (null disparadas)
-        ""
-        (let* ((situacion (situacion plan))
-               (marcas (remove-if-not (lambda (m) (member (nucleo:nombre m) disparadas))
-                                      (nucleo:marcas situacion)))
-               (fila-real (fila-del-entorno plan coleccion fila)))
-          (format nil "~{~a~^; ~}"
-                  (mapcar (lambda (m)
-                            (or (and fila-real
-                                     (nucleo:explicacion-de-marca (entorno plan)
-                                                                  fila-real m))
-                                (string-downcase (symbol-name (nucleo:nombre m)))))
-                          marcas))))))
+  (let ((fila-real (fila-del-entorno plan coleccion fila)))
+    (if fila-real
+        (nucleo:texto-de-estado (entorno plan) fila-real)
+        "")))
 
 (defun fila-del-entorno (plan coleccion fila-evaluada)
   "La fila del entorno que corresponde a una fila ya evaluada.

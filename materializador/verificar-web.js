@@ -31,7 +31,7 @@ function extraerScript(html) {
 function quitarLaParteDeDibujo(js) {
   // El script termina llamando a construir(), que toca el DOM. Se corta ahi: lo
   // que interesa son los datos, las derivaciones, las marcas y los dominios.
-  const marca = '\nfunction marcasDe(';
+  const marca = '\n// === Dibujo de la pagina ===';
   const corte = js.indexOf(marca);
   return corte > 0 ? js.slice(0, corte) : js;
 }
@@ -76,6 +76,7 @@ function main(argv) {
   // global, asi que los valores se recogen evaluando su nombre en el contexto.
   const D = vm.runInContext('D', contexto);
   const MARCAS = vm.runInContext('MARCAS', contexto);
+  const estadoDe = vm.runInContext('estadoDe', contexto);
 
   let comprobadas = 0;
   const fallos = [];
@@ -90,6 +91,15 @@ function main(argv) {
       const valores = Array.isArray(envoltura) ? envoltura[0] : envoltura;
       const fila = filas[i];
       if (!fila) { fallos.push(`${coleccion}[${i}] no existe en la pagina`); return; }
+      // El estado: el texto de las marcas que disparan, como el evaluador.
+      if (Array.isArray(envoltura) && envoltura.length > 2) {
+        comprobadas++;
+        const real = estadoDe(coleccion, fila);
+        if (real !== envoltura[2]) {
+          fallos.push(`${coleccion}[${i}] estado esperado ${JSON.stringify(envoltura[2])}` +
+                      `  obtenido ${JSON.stringify(real)}`);
+        }
+      }
       for (const [campo, valor] of Object.entries(valores)) {
         const real = normalizar(fila[campo]);
         const esp = normalizar(valor);

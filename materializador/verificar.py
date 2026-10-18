@@ -116,6 +116,19 @@ def verificar_coleccion(hoja_plan, hoja, filas_esperadas):
             if not iguales(real, esperado_v):
                 fallos.append("{}!{}{}  esperado {!r}  obtenido {!r}".format(
                     hoja.title, letra, fila, esperado_v, real))
+    # La columna de estado: lo que dicen las marcas que disparan, en palabras.
+    estado = hoja_plan.get("estado")
+    if estado:
+        for i, envoltura in enumerate(filas_esperadas):
+            if not isinstance(envoltura, list) or len(envoltura) < 3:
+                continue
+            fila = hoja_plan["fila_primera"] + i
+            real = normalizar(hoja["{}{}".format(estado, fila)].value)
+            esperado_v = normalizar(envoltura[2])
+            comprobadas += 1
+            if not iguales(real, esperado_v):
+                fallos.append("{}!{}{}  estado esperado {!r}  obtenido {!r}".format(
+                    hoja.title, estado, fila, esperado_v, real))
     return comprobadas, fallos
 
 

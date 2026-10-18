@@ -534,6 +534,22 @@
       (como-texto (evaluar (explicacion marca) ambito entorno
                            (list (cons (nombrar "fila") fila)))))))
 
+(defun nombre-legible-de-marca (marca)
+  "El nombre de MARCA para leerlo: en minusculas y con espacios en vez de
+   guiones. Es lo que se escribe cuando la marca no trae explicacion."
+  (string-downcase (substitute #\Space #\- (symbol-name (nombre marca)))))
+
+(defun texto-de-estado (entorno fila)
+  "El estado de FILA en palabras: la explicacion de cada marca que dispara,
+   o su nombre si no trae explicacion, separadas por punto y coma.
+
+   Es lo que escriben las tres arquitecturas en su columna de estado, y lo
+   que el oraculo dice que tienen que escribir."
+  (format nil "~{~a~^; ~}"
+          (mapcar (lambda (m) (or (explicacion-de-marca entorno fila m)
+                                  (nombre-legible-de-marca m)))
+                  (marcas-que-disparan entorno fila))))
+
 ;;; ---------------------------------------------------------------------
 ;;; Evaluacion completa
 ;;; ---------------------------------------------------------------------

@@ -31,19 +31,9 @@
 (in-package #:situacion.web)
 
 (defparameter +render-js+ "
-function marcasDe(nombreColeccion, fila){
-  return MARCAS.filter(m => m.coleccion === nombreColeccion)
-               .filter(m => { try { return !!m.cond(fila); } catch(e){ return false; } });
-}
-
-function explicacionDe(m, fila){
-  try { return m.explica ? T(m.explica(fila)) : m.nombre.replace(/-/g, ' '); }
-  catch(e){ return m.nombre.replace(/-/g, ' '); }
-}
-
-function estadoDe(nombreColeccion, fila){
-  return marcasDe(nombreColeccion, fila).map(m => explicacionDe(m, fila)).join('; ');
-}
+// === Dibujo de la pagina ===
+// (materializador/verificar-web.js corta el programa aqui: lo de arriba es el
+// calculo, que se compara con el evaluador; lo de abajo toca el DOM.)
 
 // Las celdas que dependen de los datos, cada una con su funcion de puesta al
 // dia. Se rellena en construir() y se recorre en actualizar().
