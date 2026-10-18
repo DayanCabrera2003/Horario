@@ -93,10 +93,23 @@
    seria el modelo de la hoja de calculo colandose en el lenguaje.
 
    Fuera de la hoja no hay fila: el resultado es el vacio, que en aritmetica
-   vale 0 porque cada operando pasa por la coercion numerica."
+   vale 0 porque cada operando pasa por la coercion numerica.
+
+   Con :MISMO (fase 2, hueco C3) la fila de al lado solo cuenta si tiene los
+   mismos valores en esos campos, comparados con EXACT como cualquier
+   igualdad. Como :MISMO es un prefijo del orden, el grupo esta contiguo y
+   no hace falta buscar."
   (declare (ignore a ambito plan))
   (let* ((desplazamiento (if (eq (nucleo:direccion vecino) :anterior) -1 1))
          (fila (+ *fila* desplazamiento)))
     (if (or (< fila (fila-primera *hoja*)) (> fila (fila-ultima *hoja*)))
         (texto-de-literal nil)
-        (celda *hoja* (nucleo:campo proyeccion) fila))))
+        (let ((valor (celda *hoja* (nucleo:campo proyeccion) fila)))
+          (if (null (nucleo:mismos vecino))
+              valor
+              (format nil "IF(AND(~{~a~^,~}),~a,\"\")"
+                      (loop for campo in (nucleo:mismos vecino)
+                            collect (format nil "EXACT(~a&\"\",~a&\"\")"
+                                            (celda *hoja* campo fila)
+                                            (celda *hoja* campo *fila*)))
+                      valor))))))
