@@ -63,17 +63,19 @@
       (dolist (v (nucleo:vistas situacion))
         (format flujo "~a~%" (protocolo:emitir-vista a v plan)))
       (format flujo "~%"))
-    ;; Primero las vistas cruzadas: son la forma en que el usuario piensa el
-    ;; problema, y la tabla plana de la que salen va despues.
-    ;;
-    ;; Una vista partida es la misma tabla repetida, una vez por seccion. Sin
-    ;; particion, SECCIONES-DE devuelve (NIL) y el recorrido es el mismo.
+    ;; Las vistas en el orden en que se declararon: una rejilla por seccion
+    ;; si es cruzada, una tabla si es de lista. Despues, las colecciones que
+    ;; ninguna vista de lista presenta, que es donde estan sus datos
+    ;; (nucleo/tablas.lisp).
     (dolist (vista (nucleo:vistas situacion))
-      (when (nucleo:cruzada-p vista)
-        (dolist (valor (secciones-de plan vista))
-          (escribir-cruzada a plan vista flujo valor))))
-    (dolist (coleccion (nucleo:colecciones situacion))
-      (escribir-coleccion a plan coleccion flujo))))
+      (if (nucleo:cruzada-p vista)
+          (dolist (valor (secciones-de plan vista))
+            (escribir-cruzada a plan vista flujo valor))
+          (escribir-coleccion a plan
+                              (nucleo:coleccion-llamada situacion (nucleo:fuente vista))
+                              flujo (nucleo:etiqueta vista) (nucleo:agrupacion vista))))
+    (dolist (coleccion (nucleo:colecciones-sin-vista-de-lista situacion))
+      (escribir-coleccion a plan coleccion flujo (nucleo:etiqueta coleccion) nil))))
 
 (defun secciones-de (plan vista)
   "Los valores por los que se parte VISTA, ordenados, o (NIL) si no se parte.
@@ -135,8 +137,9 @@
    hacia antes."
   (format nil "~{~a~^ / ~}"
           (loop for f in filas-en-la-casilla
-                collect (nucleo:como-texto
-                         (nucleo:valor-de-campo (entorno plan) f campo-celda)))))
+                collect (en-una-linea
+                         (nucleo:como-texto
+                          (nucleo:valor-de-campo (entorno plan) f campo-celda))))))
 
 (defun escribir-cruzada (a plan vista flujo &optional valor-de-seccion)
   "La vista cruzada, como rejilla de texto alineada.
@@ -157,11 +160,14 @@
          (columnas (nucleo:valores-de-eje (entorno plan) vista
                                           (nucleo:eje-de-columnas vista)))
          (campo-celda (nucleo:campo-llamado coleccion (nucleo:lo-que-se-muestra vista)))
-         (encabezados (cons (string-capitalize
-                             (symbol-name (nucleo:eje-de-filas vista)))
-                            (mapcar #'nucleo:como-texto columnas)))
+         (campo-filas (nucleo:campo-llamado coleccion (nucleo:eje-de-filas vista)))
+         (encabezados (cons (if campo-filas
+                                (nucleo:etiqueta campo-filas)
+                                (string-capitalize (symbol-name (nucleo:eje-de-filas vista))))
+                            (mapcar (lambda (c) (en-una-linea (nucleo:como-texto c)))
+                                    columnas)))
          (celdas (loop for vf in filas
-                       collect (cons (nucleo:como-texto vf)
+                       collect (cons (en-una-linea (nucleo:como-texto vf))
                                      (loop for vc in columnas
                                            collect (texto-de-la-casilla
                                                     plan vista
@@ -175,35 +181,6 @@
       (format flujo "~a~%" (raya anchos))
       (dolist (c celdas) (escribir-fila flujo c anchos)))
     (format flujo "~%")))
-
-(defun campo-de-agrupacion (plan coleccion)
-  "El campo por el que se agrupa esta coleccion, si alguna vista lo dice.
-
-   La agrupacion se declara en la VISTA y no en la coleccion, porque es una
-   decision de presentacion. Aqui se busca al reves: la tabla que se esta
-   escribiendo es la de una coleccion, y hay que ver si alguna vista suya
-   pidio agruparla."
-  (let ((vista (find-if (lambda (v)
-                          (and (eq (nucleo:fuente v) (nucleo:nombre coleccion))
-                               (nucleo:agrupacion v)))
-                        (nucleo:vistas (situacion plan)))))
-    (when vista (nucleo:agrupacion vista))))
-
-(defun agrupar-filas (filas campo)
-  "FILAS repartidas por el valor de CAMPO, como lista de (VALOR . FILAS).
-
-   Los grupos salen en orden de aparicion, y dentro de cada uno las filas
-   conservan el suyo. No se ordena por el valor: el orden de una coleccion lo
-   declara ella, y agrupar no puede cambiarlo a escondidas."
-  (let ((grupos '()))
-    (dolist (fila filas)
-      (let* ((valor (cdr (assoc campo (car fila))))
-             (grupo (assoc valor grupos :test #'nucleo:iguales-p)))
-        (if grupo
-            (push fila (cdr grupo))
-            (push (cons valor (list fila)) grupos))))
-    (loop for (valor . suyas) in (nreverse grupos)
-          collect (cons valor (nreverse suyas)))))
 
 (defun texto-de-valor (plan valor)
   "Como se escribe en una celda un valor ya calculado.
@@ -219,15 +196,24 @@
                                           collect (nucleo:como-texto
                                                    (nucleo:valor-de-campo
                                                     (entorno plan) fila campo))))))
-      (nucleo:como-texto valor)))
+      (en-una-linea (nucleo:como-texto valor))))
 
-(defun escribir-coleccion (a plan coleccion flujo)
+(defun en-una-linea (texto)
+  "TEXTO sin saltos de linea: una celda de una tabla alineada es una linea.
+   Un salto de linea dentro de un valor partia la fila en dos."
+  (substitute-if #\Space (lambda (c) (member c '(#\Newline #\Return #\Tab))) texto))
+
+(defun escribir-coleccion (a plan coleccion flujo titulo agrupacion)
+  "La tabla de COLECCION con TITULO, agrupada por AGRUPACION si no es NIL:
+   un renglon de cabecera por grupo y debajo sus filas. La tabla es la misma
+   agrupada o no; lo que cambia es que se puede leer."
   (let* ((nombre (nucleo:nombre coleccion))
          (filas (rest (assoc nombre (evaluado plan))))
          (campos (nucleo:campos coleccion))
          ;; La columna de estado es la degradacion del marcado visual: donde
          ;; una hoja de calculo pondria un relleno, aqui va una palabra.
-         (encabezados (append (mapcar #'nucleo:etiqueta campos) (list "Estado")))
+         (encabezados (append (mapcar #'nucleo:etiqueta campos)
+                              (list (rotulo-de-estado coleccion))))
          (celdas (loop for fila in filas
                        collect (append
                                 (loop for campo in campos
@@ -235,34 +221,30 @@
                                                plan
                                                (cdr (assoc (nucleo:nombre campo)
                                                            (car fila)))))
-                                (list (texto-del-estado a plan coleccion fila)))))
-         (anchos (calcular-anchos encabezados celdas))
-         (agrupacion (campo-de-agrupacion plan coleccion)))
-    (format flujo "~a~%" (nucleo:etiqueta coleccion))
+                                (list (en-una-linea
+                                       (texto-del-estado a plan coleccion fila))))))
+         (anchos (calcular-anchos encabezados celdas)))
+    (format flujo "~a~%" titulo)
     (escribir-fila flujo encabezados anchos)
     (format flujo "~a~%" (raya anchos))
-    (if (null agrupacion)
-        (dolist (c celdas) (escribir-fila flujo c anchos))
-        ;; Agrupada: un renglon de cabecera por valor, y debajo sus filas.
-        ;; La tabla es la misma; lo que cambia es que se puede leer.
-        (loop for (valor . suyas) in (agrupar-filas filas agrupacion)
-              do (format flujo "  ~a~%" (nucleo:como-texto valor))
-                 (dolist (fila suyas)
-                   (escribir-fila flujo
-                                  (append
-                                   (loop for campo in campos
-                                         collect (texto-de-valor
-                                                  plan
-                                                  (cdr (assoc (nucleo:nombre campo)
-                                                              (car fila)))))
-                                   (list (texto-del-estado a plan coleccion fila)))
-                                  anchos))))
+    (loop for (indice . cabecera)
+            in (nucleo:filas-en-orden-de-presentacion (entorno plan) nombre agrupacion)
+          do (when cabecera
+               (format flujo "  ~a~%" (en-una-linea (nucleo:como-texto cabecera))))
+             (escribir-fila flujo (nth indice celdas) anchos))
     ;; Los dominios de entrada, al pie: la degradacion del desplegable.
     (dolist (campo campos)
       (when (and (eq (nucleo:rol campo) :entrada) (nucleo:dominio campo))
         (format flujo "~%  ~a~%"
-                (protocolo:emitir-entrada a campo (nucleo:hacer-ambito) plan))))
+                (en-una-linea
+                 (protocolo:emitir-entrada a campo (nucleo:hacer-ambito) plan)))))
     (format flujo "~%")))
+
+(defun rotulo-de-estado (coleccion)
+  "\"Estado\", o \"Avisos\" si ya hay un campo con esa etiqueta."
+  (if (find "Estado" (nucleo:campos coleccion) :key #'nucleo:etiqueta :test #'string-equal)
+      "Avisos"
+      "Estado"))
 
 (defmethod protocolo:emitir-marca ((a texto) marca ambito plan)
   "Sin color, una marca es la palabra que la nombra.

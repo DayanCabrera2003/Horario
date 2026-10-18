@@ -41,7 +41,8 @@
                (:file "booleanos")
                (:file "evaluador")
                (:file "forma")
-               (:file "ejes")))
+               (:file "ejes")
+               (:file "tablas")))
 
 ;;; El protocolo depende del nucleo y de nada mas. En particular NO depende
 ;;; del lenguaje: el contrato de extension se define contra el dominio, no
@@ -202,4 +203,5 @@
   :pathname "demostracion/"
   :serial t
   :components ((:file "demostracion")
-               (:file "cruces")))
+               (:file "cruces")
+               (:file "vistas")))

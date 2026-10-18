@@ -103,4 +103,8 @@
 
    ;; Ejes y secciones de una vista cruzada
    #:filas-que-presenta #:valores-de-eje #:secciones-de-vista
+
+   ;; Que tablas se dibujan
+   #:vistas-de-lista #:vistas-de-lista-de #:vista-de-datos
+   #:colecciones-sin-vista-de-lista #:filas-en-orden-de-presentacion
    #:error-de-evaluacion #:mensaje-de-error))

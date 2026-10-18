@@ -65,6 +65,10 @@
                                (ruta (format nil "~a-cruces.json" prefijo)))
     (format t "Generado salida/~a-cruces.json  (oraculo de las tablas cruzadas)~%"
             prefijo)
+    (escribir-vistas-esperadas situacion datos
+                               (ruta (format nil "~a-vistas.json" prefijo)))
+    (format t "Generado salida/~a-vistas.json  (oraculo de las tablas de lista)~%"
+            prefijo)
 
     ;; --- pagina web ---
     (multiple-value-bind (destino informe)

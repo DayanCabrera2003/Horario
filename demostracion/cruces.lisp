@@ -50,10 +50,13 @@
         (loop for (seccion . suyas)
                 in (agrupar-por entorno filas (nucleo:secciones vista))
               collect (list (cons "seccion" (nucleo:como-texto seccion))
+                            (cons "titulo" (format nil "~a - ~a" (nucleo:etiqueta vista)
+                                                   (nucleo:como-texto seccion)))
                             (cons "casillas"
                                   (situacion.excel::lista
                                    (casillas-de entorno vista suyas)))))
         (list (list (cons "seccion" "")
+                    (cons "titulo" (nucleo:etiqueta vista))
                     (cons "casillas"
                           (situacion.excel::lista
                            (casillas-de entorno vista filas))))))))

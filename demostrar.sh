@@ -42,6 +42,14 @@ for f in plan-del-grupo defensas-de-tesis horario-del-grupo departamento horario
 done
 
 echo
+echo "Texto plano: se leen sus tablas y sus rejillas por el ancho de sus columnas"
+echo "y se compara cada celda con el evaluador."
+for f in plan-del-grupo defensas-de-tesis horario-del-grupo departamento horario-saul seder; do
+  python3 materializador/verificar-texto.py "salida/$f.txt" "salida/$f-esperado.json" \
+          "salida/$f-vistas.json" "salida/$f-cruces.json" || fallos=1
+done
+
+echo
 echo "Pagina web: se ejecuta el JavaScript que emitio la arquitectura y se"
 echo "comparan los valores que calcula."
 if command -v node >/dev/null 2>&1; then

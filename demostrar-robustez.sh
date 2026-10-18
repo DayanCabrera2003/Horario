@@ -37,6 +37,8 @@ for f in $casos; do
   python3 materializador/verificar.py "salida/$f-plano.json" \
           "salida/$f-esperado.json" "salida/$f.xlsx" "salida/$f-cruces.json" || fallos=1
   node materializador/verificar-web.js "salida/$f.html" "salida/$f-esperado.json" || fallos=1
+  python3 materializador/verificar-texto.py "salida/$f.txt" "salida/$f-esperado.json" \
+          "salida/$f-vistas.json" "salida/$f-cruces.json" || fallos=1
 done
 
 # Cada pagina, en un navegador de verdad: se escribe sin perder el foco.
