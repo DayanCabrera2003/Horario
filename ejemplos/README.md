@@ -4,9 +4,9 @@ Las situaciones que se fueron pidiendo, escritas en el lenguaje, cada una
 junto a lo que produce. Los resultados ya están generados en
 [`resultados/`](resultados/): se pueden abrir sin instalar nada.
 
-Para leer una descripción no hace falta más que el archivo `.lisp`. La
-sintaxis completa está en la sección 5 de
-[`../docs/GUIA-DEL-LENGUAJE.md`](../docs/GUIA-DEL-LENGUAJE.md).
+Para leer una descripción no hace falta más que el archivo `.lisp`: cada
+construcción está comentada donde se usa, y `corpus/plan-del-grupo.lisp` es
+la más corta para empezar.
 
 ## Las descripciones
 
@@ -110,13 +110,13 @@ se verifican con `./explorar.sh`. Las descripciones nuevas de la auditoría del
 2026-10-17 (compras, notas, agenda, inventario, horas, préstamos, textos con
 signos raros) están en `pruebas/casos/` y las verifica `./demostrar.sh`.
 
-| Dominio | Descripción | Veredicto | Informe |
-|---|---|---|---|
-| Control de existencias de un almacén | [`exploracion/inventario.lisp`](../exploracion/inventario.lisp) | cabe forzado | [informe](../docs/alcance/inventario.md) |
-| Evaluación de un curso | [`exploracion/notas.lisp`](../exploracion/notas.lisp) | cabe a medias | [informe](../docs/alcance/notas.md) |
-| Presupuesto y ejecución de un proyecto | [`exploracion/presupuesto.lisp`](../exploracion/presupuesto.lisp) | cabe a medias | [informe](../docs/alcance/presupuesto.md) |
-| Torneo de eliminación directa | [`exploracion/torneo.lisp`](../exploracion/torneo.lisp) | cabe a medias | [informe](../docs/alcance/torneo.md) |
-| Cuadrante de turnos de guardia | [`exploracion/turnos.lisp`](../exploracion/turnos.lisp) | cabe a medias | [informe](../docs/alcance/turnos.md) |
+| Dominio | Descripción | Veredicto |
+|---|---|---|
+| Control de existencias de un almacén | [`exploracion/inventario.lisp`](../exploracion/inventario.lisp) | cabe forzado |
+| Evaluación de un curso | [`exploracion/notas.lisp`](../exploracion/notas.lisp) | cabe a medias |
+| Presupuesto y ejecución de un proyecto | [`exploracion/presupuesto.lisp`](../exploracion/presupuesto.lisp) | cabe a medias |
+| Torneo de eliminación directa | [`exploracion/torneo.lisp`](../exploracion/torneo.lisp) | cabe a medias |
+| Cuadrante de turnos de guardia | [`exploracion/turnos.lisp`](../exploracion/turnos.lisp) | cabe a medias |
 
 ## Regenerar los resultados
 

@@ -15,8 +15,6 @@ Por dónde empezar:
 - **[`ejemplos/`](ejemplos/README.md)** — las situaciones de la facultad
   escritas en el lenguaje, cada una junto al Excel, la página web y el texto
   que produce, ya generados para abrirlos sin instalar nada.
-- **[`docs/`](docs/README.md)** — la documentación: la guía del lenguaje, el
-  porqué, el diseño y el borrador de la tesis.
 
 ## Pruébalo
 
@@ -87,7 +85,6 @@ demostracion/      el guion que genera todo
 materializador/    Python y Node: plano a .xlsx, los verificadores (libro,
                    texto, calculo y dibujo de la pagina) y las sondas de uso
 ejemplos/          indice de las descripciones, con sus resultados ya generados
-docs/              la documentacion publicada
 exploracion/       experimentos: cinco dominios ajenos y el primer Saul Delgado
 ```
 

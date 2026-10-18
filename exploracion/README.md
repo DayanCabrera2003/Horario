@@ -16,9 +16,6 @@ ejecutados de verdad para ver que se podia expresar y que no.
 | `torneo.lisp` | Torneo de eliminacion directa | CABE-A-MEDIAS |
 | `turnos.lisp` | Cuadrante de turnos de guardia | CABE-A-MEDIAS |
 
-Los informes completos, con lo que se pudo expresar, lo que no y por que, estan
-en [`docs/alcance/`](../docs/alcance/README.md).
-
 Y uno mas que no es ajeno al corpus: `saul.lisp`, el primer intento con el
 horario del preuniversitario Saul Delgado, con datos inventados. Se conserva
 como experimento. La descripcion que vale es `corpus/horario-saul.lisp`, con
