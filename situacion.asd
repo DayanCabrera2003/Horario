@@ -125,6 +125,7 @@
                (:file "orden-compuesto")
                (:file "claves-pegadas")
                (:file "decimales")
+               (:file "derivadas")
                (:file "ejecutar"))
   :perform (test-op (op system)
                     (uiop:symbol-call :situacion.pruebas :ejecutar)))
