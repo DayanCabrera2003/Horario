@@ -150,23 +150,20 @@
     ;; se dice de otra forma que todas las arquitecturas entienden: cada par
     ;; profesor-asignatura cuenta una vez, en la primera fila donde aparece.
     ;;
-    ;; El CODIGO va declarado despues del PAR a proposito: la hoja de calculo
-    ;; busca con BUSCARV, que solo devuelve columnas a la derecha de la que
-    ;; compara. Es el unico sitio de la descripcion donde el orden de los
-    ;; campos importa, y es una limitacion conocida de esa arquitectura.
-    (campo par :rol derivado :etiqueta "Par"
-           (si (o (vacio? (de fila profesor)) (vacio? (de fila asignatura)))
-               ""
-               (texto (de fila profesor) "|" (de fila asignatura))))
+    ;; La primera fila del par se busca por los dos campos. Hasta el
+    ;; 2026-10-17 se buscaba por un campo PAR que los pegaba con "|", porque
+    ;; la hoja de calculo solo buscaba por una igualdad (fase 2, hueco C2).
     (campo codigo :rol derivado :etiqueta "Codigo"
            (texto (de fila asignatura) " " (de fila tipo) " " (de fila grupo)))
     (campo primera-del-par :rol derivado :etiqueta "Primera del par"
-           (si (= (de fila par) "")
+           (si (o (vacio? (de fila profesor)) (vacio? (de fila asignatura)))
                ""
-               (el codigo de (la-fila-de asignacion :donde (= par (de fila par)))
+               (el codigo de (la-fila-de asignacion
+                               :donde (y (= profesor (de fila profesor))
+                                         (= asignatura (de fila asignatura))))
                    :si-no "")))
     (campo primera :rol derivado :tipo entero :etiqueta "Cuenta"
-           (si (y (no (= (de fila par) ""))
+           (si (y (no (= (de fila primera-del-par) ""))
                   (= (de fila primera-del-par) (de fila codigo)))
                1
                0))

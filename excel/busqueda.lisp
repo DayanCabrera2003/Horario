@@ -27,7 +27,8 @@
 
 (defun igualdad-simple (condicion)
   "Si CONDICION es (= <campo de la candidata> <expresion de fuera>), devuelve
-   (VALUES CAMPO EXPRESION). Si no, NIL."
+   (VALUES CAMPO EXPRESION). Si no, NIL, y la busqueda se traduce con el
+   producto de factores."
   (when (and (typep condicion 'nucleo:aplicacion)
              (string= (symbol-name (nucleo:operador condicion)) "=")
              (= 2 (length (nucleo:argumentos condicion))))
@@ -40,19 +41,27 @@
   "La formula que da en que posicion de HOJA-DESTINO esta la primera fila
    que cumple la condicion de BUSQUEDA, o #N/A si no hay ninguna.
 
-   La condicion de una busqueda es una igualdad sobre un campo; las demas
-   formas se rechazan con un mensaje claro (la busqueda por varios campos es
-   un hueco conocido, ver GUIA-DEL-LENGUAJE 11.2)."
+   Si varias filas cumplen, MATCH da la primera en orden de hoja, que es la
+   misma que da el evaluador: las filas se escriben en el orden de
+   NUCLEO:FILAS-DE y el evaluador devuelve la primera de ese orden.
+
+   Una igualdad sobre un campo, el caso de casi todo el corpus, conserva su
+   formula de siempre: un vector de EXACT sobre la columna de la clave. Toda
+   otra condicion -dos campos, VACIO?, una comparacion- es un MATCH sobre el
+   producto de los factores de la condicion, los mismos que usan CUANTAS y
+   EXISTE (existencia.lisp): asi una condicion significa lo mismo en una
+   busqueda que en un agregado (fase 2, hueco C2)."
   (multiple-value-bind (campo-clave expresion) (igualdad-simple (nucleo:condicion busqueda))
-    (unless campo-clave
-      (error "Esta hoja de calculo busca por una igualdad sobre un campo.~@
-              La condicion de la busqueda en ~(~a~) es mas complicada."
-             (nucleo:coleccion busqueda)))
-    (let* ((rango-clave (rango-de-columna hoja-destino campo-clave :con-hoja t))
-           (valor (operando-de-igualdad a expresion ambito plan))
-           (existencia (factor-de-existencia plan hoja-destino)))
-      (format nil "MATCH(1,INDEX(EXACT(~a,~a)*1~@[*~a~],0),0)"
-              rango-clave valor existencia))))
+    (if campo-clave
+        (let* ((rango-clave (rango-de-columna hoja-destino campo-clave :con-hoja t))
+               (valor (operando-de-igualdad a expresion ambito plan))
+               (existencia (factor-de-existencia plan hoja-destino)))
+          (format nil "MATCH(1,INDEX(EXACT(~a,~a)*1~@[*~a~],0),0)"
+                  rango-clave valor existencia))
+        (format nil "MATCH(1,INDEX(1~{*~a~},0),0)"
+                (factores-del-recorrido a (nucleo:variable busqueda)
+                                        (nucleo:condicion busqueda)
+                                        hoja-destino ambito plan)))))
 
 (defun emitir-busqueda (a proyeccion busqueda ambito plan)
   "Una busqueda por clave, con su valor por defecto.

@@ -47,12 +47,12 @@
     (:datos (("M" "Matematica" 5 "no" "" ""))))
 
   ;; Quien da cada asignatura a cada grupo. El enunciado dice que viene dado.
-  ;; La CLAVE es grupo y asignatura juntos, escritos en un solo campo: la
-  ;; hoja de calculo busca por una sola igualdad.
+  ;; La clave es compuesta, grupo y asignatura. Hasta el 2026-10-17 los dos
+  ;; iban pegados con "#" en un campo CLAVE, porque la hoja de calculo solo
+  ;; buscaba por una igualdad (fase 2, hueco C2).
   (coleccion plan-por-grupo
     (:etiqueta "Plan por grupo")
-    (:clave clave)
-    (campo clave    :rol fijo :etiqueta "Clave")
+    (:clave grupo abrev)
     (campo grupo    :rol fijo :etiqueta "Grupo")
     (campo abrev    :rol fijo :etiqueta "Abrev")
     (campo profesor :rol fijo :etiqueta "Profesor")                   ; SUPUESTO
@@ -67,7 +67,7 @@
                                        (= asignatura (de fila abrev)))))
     (campo faltan :rol derivado :tipo entero :etiqueta "Faltan"
            (- (de fila frecuencia) (de fila asignadas)))
-    (:datos (("10-3#M" "10-3" "M" "Profesor de M en 10-3"))))
+    (:datos (("10-3" "M" "Profesor de M en 10-3"))))
 
   ;; Las dos disposiciones sobre los profesores que usan las reglas.
   (coleccion profesores
@@ -78,12 +78,11 @@
     (campo vive-lejos :rol fijo :etiqueta "Vive lejos")               ; SUPUESTO
     (:datos (("Profesor de M en 10-3" "no" "no"))))
 
-  ;; Que dias asiste cada profesor contratado, con la clave profesor#dia.
+  ;; Que dias asiste cada profesor contratado.
   ;; Hoy no hay contratados (SUPUESTO), asi que no hay filas.
   (coleccion disponibilidad
     (:etiqueta "Dias que asisten los contratados")
-    (:clave clave)
-    (campo clave    :rol fijo :etiqueta "Clave")
+    (:clave profesor dia)
     (campo profesor :rol fijo :etiqueta "Profesor")
     (campo dia      :rol fijo :etiqueta "Dia")
     (campo asiste   :rol fijo :etiqueta "Asiste"))
@@ -106,11 +105,10 @@
            (el nombre de (la-fila-de asignaturas
                            :donde (= abrev (de fila asignatura)))
                :si-no ""))
-    (campo clave-plan :rol derivado :etiqueta "Grupo#Asignatura"
-           (texto (de fila grupo) "#" (de fila asignatura)))
     (campo profesor :rol derivado :etiqueta "Profesor"
            (el profesor de (la-fila-de plan-por-grupo
-                             :donde (= clave (de fila clave-plan)))
+                             :donde (y (= grupo (de fila grupo))
+                                       (= abrev (de fila asignatura))))
                :si-no ""))
     (campo local :rol derivado :etiqueta "Local de la asignatura"
            (el local de (la-fila-de asignaturas
@@ -142,11 +140,10 @@
            (el vive-lejos de (la-fila-de profesores
                                :donde (= nombre (de fila profesor)))
                :si-no "no"))
-    (campo clave-asistencia :rol derivado :etiqueta "Profesor#Dia"
-           (texto (de fila profesor) "#" (de fila dia)))
     (campo profesor-asiste-hoy :rol derivado :etiqueta "Asiste hoy"
            (el asiste de (la-fila-de disponibilidad
-                           :donde (= clave (de fila clave-asistencia)))
+                           :donde (y (= profesor (de fila profesor))
+                                     (= dia (de fila dia))))
                :si-no "no"))
 
     ;; Reglas 3 y 4: la misma asignatura otra vez el mismo dia en el mismo
@@ -416,8 +413,7 @@
          (cons (funcall n "plan-por-grupo")
                (loop for (grupo . nil) in +grupos-del-saul+
                      append (loop for (abrev) in +asignaturas-del-saul+
-                                  collect (fila "clave" (format nil "~a#~a" grupo abrev)
-                                                "grupo" grupo "abrev" abrev
+                                  collect (fila "grupo" grupo "abrev" abrev
                                                 "profesor" (profesor-supuesto grupo abrev)))))
          (cons (funcall n "profesores")
                (loop for p in profesores

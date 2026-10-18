@@ -395,7 +395,7 @@ marca, un dominio o un filtro de vista:
 | `(suma campo de coleccion [:donde ...])` | Suma de un campo — **solo un campo, no una expresión**, ver sección 11 |
 | `(minimo campo de coleccion [:donde ...])` / `(maximo ...)` | Mínimo / máximo |
 | `(cuantas-distintas campo de coleccion [:donde ...])` | Conteo de valores distintos de un campo |
-| `(la-fila-de coleccion :donde ...)` | Búsqueda de una fila. La condición puede mencionar varios campos a la vez: la clave compuesta sale sin sintaxis adicional — en el núcleo. En Excel no siempre, ver sección 11 |
+| `(la-fila-de coleccion :donde ...)` | Búsqueda de una fila. La condición puede mencionar varios campos a la vez: la clave compuesta sale sin sintaxis adicional, en las tres arquitecturas desde el 2026-10-17 (C2). **Si varias filas cumplen, devuelve la primera en el orden de la colección** (su `:orden` si lo declara, si no el de los datos); la hoja de cálculo y la página escriben las filas en ese mismo orden y dan la misma |
 | `(el campo de <búsqueda> [:si-no valor])` | Proyecta un campo de la fila encontrada; `:si-no` por defecto es `""` y no es un adorno: es la mitad del concepto |
 | `(existe v :en coleccion :donde ... [:distinta-de w])` | Cuantificador existencial; `:distinta-de` excluye explícitamente la propia fila |
 | `(comparten a b (campo1 campo2 ...))` | Cierto si dos filas comparten algún valor en esos campos — azúcar sobre una disyunción de igualdades |
@@ -1149,16 +1149,15 @@ arreglo:**
 
 **Ya seguro, aunque sigue siendo manual:**
 
-3. **El núcleo promete más de lo que Excel cumple en las claves
-   compuestas** — sigue siendo cierto: una búsqueda cuya condición no es una
-   sola igualdad no tiene traducción en Excel. **Desde el 2026-10-17 ya no
-   detiene la generación**: la celda dice "(no disponible en esta
-   arquitectura)" y el informe de conformidad dice "rechaza" con el motivo
-   (`excel/busqueda.lisp`). Cerrarlo es el hueco C2 de la fase 2. La
-   técnica de repuesto (clave concatenada a mano, `campo1 + "#" + campo2`,
-   ya usada en `horarios/hoja_grupo.py:291` y en `excel/relacion.lisp` para
-   las relaciones uno-a-muchos) sigue siendo manual: automatizarla sería una
-   comodidad del compilador, no una corrección.
+3. ~~**El núcleo promete más de lo que Excel cumple en las claves
+   compuestas.**~~ **Resuelto el 2026-10-17 (fase 2, C2).** En la hoja de
+   cálculo, una búsqueda cuya condición no es una igualdad sobre un campo es
+   un `MATCH` sobre el producto de los factores de la condición, los mismos
+   que usan `cuantas` y `existe` (`excel/busqueda.lisp`,
+   `excel/existencia.lisp`), así que una condición significa lo mismo en una
+   búsqueda que en un agregado. La igualdad sobre un campo conserva su
+   fórmula. Las claves pegadas a mano con `"#"` o `"|"` desaparecieron del
+   corpus (Saúl, SEDER, departamento).
 
 ### 11.3 Lo que sí resultó ser una sorpresa positiva
 
@@ -1209,8 +1208,8 @@ descripción, lo que cambia es esto:
   artefacto y en el informe, y el resto del artefacto sale igual.
 
 Lo que sigue faltando de verdad, como construcción del lenguaje, queda para
-una segunda fase, con una nota de diseño por hueco antes de escribir código: orden y dominio de los ejes (C1), búsqueda por
-varios campos en Excel (C2), orden compuesto y vecino dentro de una partición
+una segunda fase, con una nota de diseño por hueco antes de escribir código: orden y dominio de los ejes (C1, hecho el 2026-10-17), búsqueda por
+varios campos en Excel (C2, hecho el 2026-10-17), orden compuesto y vecino dentro de una partición
 (C3), formato numérico (C6), marca por campo (C7), sintaxis única de `:donde`
 (C4) y documentar `:una-fila-por` (C8; hoy hay que volver a declarar el campo
 agrupador en la colección derivada).

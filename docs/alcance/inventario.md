@@ -1,5 +1,12 @@
 <!-- Informe generado por el experimento de alcance del 2026-09-21. -->
 
+> **Nota del 2026-10-17.** Este informe es un registro del 2026-09-21 y se
+> deja como estaba. Los errores de la hoja de cálculo que cita sobre
+> condiciones que no son una igualdad ya no existen: los agregados con
+> cualquier condición se traducen desde la fase 1 de robustez y las búsquedas
+> por varios campos desde la fase 2 (C2). Estado vigente: GUIA-DEL-LENGUAJE,
+> sección 11.
+
 > **ESTADO PREVIO AL ARREGLO.** Este informe describe el sistema tal como estaba
 > ANTES de los cambios que el propio experimento motivo. Varios de los defectos
 > que reporta ya no se reproducen: se corrigieron esa misma noche. Se conserva

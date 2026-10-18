@@ -35,8 +35,9 @@
     "Comparacion exacta: LA-FILA-DE no usa BUSCARV y un campo en blanco da blanco"
   (let* ((plano (plano-de (situacion.lenguaje:situacion-llamada "HORARIO-SAUL")
                           situacion.corpus:datos-del-saul))
-         (formula (formula-de-celda (hoja-de-coleccion plano "casillas") "H4")))
-    (comprobar formula "no hay formula en Casillas!H4 (local de la asignatura)")
+         (hoja (hoja-de-coleccion plano "casillas"))
+         (formula (formula-de-celda hoja (celda-de-campo hoja "local" 4))))
+    (comprobar formula "no hay formula en la columna del local de la asignatura")
     (when formula
       (comprobar (not (search "VLOOKUP" formula))
                  "BUSCARV no distingue mayusculas: ~a" formula)
