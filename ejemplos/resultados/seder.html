@@ -64,17 +64,17 @@ D["anos"] = [
   {"id": "FIS-2", "carrera": "Fisica", "semana": "par"}
 ];
 D["disponibles"] = [
-  {"clave": "CC-1#10 a.m.", "ano": "CC-1", "horario": "10 a.m."},
-  {"clave": "CC-1#11 a.m.", "ano": "CC-1", "horario": "11 a.m."},
-  {"clave": "CC-2#11 a.m.", "ano": "CC-2", "horario": "11 a.m."},
-  {"clave": "CC-2#3 p.m.", "ano": "CC-2", "horario": "3 p.m."},
-  {"clave": "MAT-1#10 a.m.", "ano": "MAT-1", "horario": "10 a.m."},
-  {"clave": "MAT-2#10 a.m.", "ano": "MAT-2", "horario": "10 a.m."},
-  {"clave": "MAT-2#11 a.m.", "ano": "MAT-2", "horario": "11 a.m."},
-  {"clave": "MAT-2#3 p.m.", "ano": "MAT-2", "horario": "3 p.m."},
-  {"clave": "FIS-1#11 a.m.", "ano": "FIS-1", "horario": "11 a.m."},
-  {"clave": "FIS-1#3 p.m.", "ano": "FIS-1", "horario": "3 p.m."},
-  {"clave": "FIS-2#3 p.m.", "ano": "FIS-2", "horario": "3 p.m."}
+  {"ano": "CC-1", "horario": "10 a.m."},
+  {"ano": "CC-1", "horario": "11 a.m."},
+  {"ano": "CC-2", "horario": "11 a.m."},
+  {"ano": "CC-2", "horario": "3 p.m."},
+  {"ano": "MAT-1", "horario": "10 a.m."},
+  {"ano": "MAT-2", "horario": "10 a.m."},
+  {"ano": "MAT-2", "horario": "11 a.m."},
+  {"ano": "MAT-2", "horario": "3 p.m."},
+  {"ano": "FIS-1", "horario": "11 a.m."},
+  {"ano": "FIS-1", "horario": "3 p.m."},
+  {"ano": "FIS-2", "horario": "3 p.m."}
 ];
 D["brigadas"] = [
   {"brigada": "C111", "ano": "CC-1", "personas": 28, "profesor": "Prof. Alvarez", "horario": "10 a.m.", "instalacion": "Pista 1"},
@@ -248,8 +248,7 @@ DERIV["instalaciones"] = {
 DERIV["brigadas"] = {
   "semana": (f) => PROY((D["anos"].find(c => IG(V(c["id"]),V(f["ano"]))) ?? null), "semana", ""),
   "capacidad": (f) => PROY((D["instalaciones"].find(c => IG(V(c["nombre"]),V(f["instalacion"]))) ?? null), "capacidad", 0),
-  "clave-disponible": (f) => [V(f["ano"]), "#", V(f["horario"])].map(T).join(""),
-  "disponible": (f) => (VACIO(V(f["horario"])) ? "" : (IG(PROY((D["disponibles"].find(c => IG(V(c["clave"]),V(f["clave-disponible"]))) ?? null), "clave", ""),"") ? "no" : "si"))
+  "disponible": (f) => (VACIO(V(f["horario"])) ? "" : (IG(PROY((D["disponibles"].find(c => (IG(V(c["ano"]),V(f["ano"])) && IG(V(c["horario"]),V(f["horario"])))) ?? null), "horario", ""),"") ? "no" : "si"))
 };
 DERIV["franja"] = {
   "brigadas": (f) => D["brigadas"].filter(c => (IG(V(c["semana"]),V(f["semana"])) && IG(V(c["horario"]),V(f["horario"])))).length,
@@ -294,11 +293,11 @@ const VISTAS = [
 ];
 
 const TABLAS = [
-  {id: "t-reparto", vista: "reparto", titulo: "Reparto de brigadas", coleccion: "brigadas", crece: false, agrupa: null, columnaEstado: "Estado", campos: [{n: "brigada", e: "Brigada", rol: "fijo", tipo: "texto", clave: null}, {n: "ano", e: "Ano", rol: "fijo", tipo: "texto", clave: null}, {n: "personas", e: "Personas", rol: "fijo", tipo: "entero", clave: null}, {n: "profesor", e: "Profesor", rol: "fijo", tipo: "texto", clave: null}, {n: "horario", e: "Horario", rol: "entrada", tipo: "texto", clave: null}, {n: "instalacion", e: "Instalacion", rol: "entrada", tipo: "texto", clave: null}, {n: "semana", e: "Semana", rol: "derivado", tipo: "texto", clave: null}, {n: "capacidad", e: "Capacidad", rol: "derivado", tipo: "entero", clave: null}, {n: "clave-disponible", e: "Ano#Horario", rol: "derivado", tipo: "texto", clave: null}, {n: "disponible", e: "Horario disponible", rol: "derivado", tipo: "texto", clave: null}]},
+  {id: "t-reparto", vista: "reparto", titulo: "Reparto de brigadas", coleccion: "brigadas", crece: false, agrupa: null, columnaEstado: "Estado", campos: [{n: "brigada", e: "Brigada", rol: "fijo", tipo: "texto", clave: null}, {n: "ano", e: "Ano", rol: "fijo", tipo: "texto", clave: null}, {n: "personas", e: "Personas", rol: "fijo", tipo: "entero", clave: null}, {n: "profesor", e: "Profesor", rol: "fijo", tipo: "texto", clave: null}, {n: "horario", e: "Horario", rol: "entrada", tipo: "texto", clave: null}, {n: "instalacion", e: "Instalacion", rol: "entrada", tipo: "texto", clave: null}, {n: "semana", e: "Semana", rol: "derivado", tipo: "texto", clave: null}, {n: "capacidad", e: "Capacidad", rol: "derivado", tipo: "entero", clave: null}, {n: "disponible", e: "Horario disponible", rol: "derivado", tipo: "texto", clave: null}]},
   {id: "t-locales", vista: "locales", titulo: "Instalaciones", coleccion: "instalaciones", crece: false, agrupa: null, columnaEstado: "Estado", campos: [{n: "nombre", e: "Instalacion", rol: "fijo", tipo: "texto", clave: null}, {n: "capacidad", e: "Capacidad", rol: "fijo", tipo: "entero", clave: null}, {n: "brigadas", e: "Brigadas", rol: "derivado", tipo: "entero", clave: null}, {n: "menos-cargada", e: "La que menos tiene", rol: "derivado", tipo: "entero", clave: null}]},
   {id: "t-casillas", vista: "casillas", titulo: "Brigadas por horario", coleccion: "franja", crece: false, agrupa: null, columnaEstado: "Estado", campos: [{n: "semana", e: "Semana", rol: "fijo", tipo: "texto", clave: null}, {n: "horario", e: "Horario", rol: "fijo", tipo: "texto", clave: null}, {n: "brigadas", e: "Brigadas", rol: "derivado", tipo: "entero", clave: null}, {n: "menos-cargada", e: "La que menos tiene", rol: "derivado", tipo: "entero", clave: null}]},
   {id: "t-declaraciones", vista: "declaraciones", titulo: "Anos de carrera", coleccion: "anos", crece: false, agrupa: null, columnaEstado: "Estado", campos: [{n: "id", e: "Ano", rol: "fijo", tipo: "texto", clave: null}, {n: "carrera", e: "Carrera", rol: "fijo", tipo: "texto", clave: null}, {n: "semana", e: "Semana", rol: "fijo", tipo: "texto", clave: null}]},
-  {id: "t-disponibles", vista: "disponibles", titulo: "Horarios disponibles por ano", coleccion: "disponibles", crece: false, agrupa: null, columnaEstado: "Estado", campos: [{n: "clave", e: "Clave", rol: "fijo", tipo: "texto", clave: null}, {n: "ano", e: "Ano", rol: "fijo", tipo: "texto", clave: null}, {n: "horario", e: "Horario", rol: "fijo", tipo: "texto", clave: null}]}
+  {id: "t-disponibles", vista: "disponibles", titulo: "Horarios disponibles por ano", coleccion: "disponibles", crece: false, agrupa: null, columnaEstado: "Estado", campos: [{n: "ano", e: "Ano", rol: "fijo", tipo: "texto", clave: null}, {n: "horario", e: "Horario", rol: "fijo", tipo: "texto", clave: null}]}
 ];
 
 const CRUCES = [
