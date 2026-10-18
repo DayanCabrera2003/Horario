@@ -230,5 +230,5 @@
                               (campo a :rol fijo)
                               (campo x :rol derivado
                                      (de (anterior fila :donde (= a 1)) a)))))
-               "(anterior fila :donde ...) deberia rechazarse: el vecino no~@
-                sabe particionar y antes el :DONDE se descartaba en silencio")))
+               "(anterior fila :donde ...) deberia rechazarse: el vecino de un~@
+                grupo se pide con :MISMO, y antes el :DONDE se descartaba en silencio")))
