@@ -77,6 +77,7 @@
    Las colecciones que declaran orden se ordenan aqui, y es el unico sitio
    donde se hace: a partir de este punto, la fila siguiente es la siguiente
    de la lista, sin que nadie tenga que volver a pensar en el orden."
+  (comprobar-datos situacion datos)
   (let ((tablas (make-hash-table :test #'eq))
         (entorno nil))
     (setf entorno (make-instance 'entorno :situacion situacion :tablas tablas))
@@ -87,7 +88,8 @@
                          (filas-derivadas coleccion entorno)
                          (cdr (assoc (nombre coleccion) datos))))
              (filas (loop for cruda in crudas
-                          collect (hacer-fila coleccion (tabla-de-valores cruda)))))
+                          collect (hacer-fila coleccion
+                                              (tabla-de-valores (normalizar-valores cruda))))))
         ;; ORDEN es el nombre del campo, no el objeto: se guarda asi porque
         ;; el lenguaje lo escribe como simbolo y resolverlo a objeto seria
         ;; trabajo del analisis, no del evaluador.
@@ -96,6 +98,38 @@
         (loop for f in filas for i from 0 do (setf (indice f) i))
         (setf (gethash (nombre coleccion) tablas) filas)))
     entorno))
+
+(defun comprobar-datos (situacion datos)
+  "Falla con un mensaje claro si DATOS traen algo que SITUACION no declara.
+
+   Antes se buscaba cada coleccion con ASSOC y lo que no casaba se tiraba en
+   silencio: un error al escribir el nombre de una coleccion o de un campo
+   dejaba la tabla vacia y todo seguia en verde. Asi se pudrieron los
+   experimentos de exploracion/, que internaban los nombres en otro paquete
+   y llevaban semanas generando tablas vacias sin que nadie lo viera."
+  (dolist (par datos)
+    (let* ((nombre (car par))
+           (coleccion (coleccion-llamada situacion nombre)))
+      (unless coleccion
+        (fallar "Los datos traen la coleccion ~a, y la situacion ~a no declara~@
+                 ninguna con ese nombre. Declara: ~{~(~a~)~^, ~}."
+                nombre (nombre situacion)
+                (mapcar #'nombre (colecciones situacion))))
+      (when (and (derivada-p coleccion) (some #'identity (cdr par)))
+        (fallar "Los datos traen filas para la coleccion ~a, que se deriva de~@
+                 otra (~s) y no admite datos escritos."
+                nombre (origen coleccion)))
+      (dolist (fila (cdr par))
+        (dolist (dato fila)
+          (let ((campo (campo-llamado coleccion (car dato))))
+            (cond ((null campo)
+                   (fallar "Una fila de ~a trae el campo ~a, que la coleccion no~@
+                            declara. Declara: ~{~(~a~)~^, ~}."
+                           nombre (car dato) (mapcar #'nombre (campos coleccion))))
+                  ((eq (rol campo) :derivado)
+                   (fallar "Una fila de ~a trae un valor para ~a, que es derivado:~@
+                            se calcula, no se escribe."
+                           nombre (car dato))))))))))
 
 (defun derivada-p (coleccion)
   "Cierto si las filas de COLECCION salen de otra coleccion en vez de
@@ -132,6 +166,18 @@
                 (destino (or (and (campo-llamado coleccion campo) campo)
                              (nombre (first (campos coleccion))))))
            (mapcar (lambda (v) (list (cons destino v))) valores)))))))
+
+(defun normalizar-valor (valor)
+  "VALOR tal como lo usa el evaluador: un numero como entero o doble, y el
+   verdadero de Lisp (T) como la cadena \"si\", que es como el lenguaje
+   representa un booleano (nucleo/booleanos.lisp)."
+  (cond ((eq valor t) "si")
+        ((numberp valor) (normalizar-numero valor))
+        (t valor)))
+
+(defun normalizar-valores (alist)
+  "Los valores de una fila de datos, normalizados con NORMALIZAR-VALOR."
+  (loop for (campo . valor) in alist collect (cons campo (normalizar-valor valor))))
 
 (defun tabla-de-valores (alist)
   (let ((tabla (make-hash-table :test #'eq)))
@@ -175,13 +221,15 @@
 
    Es coercion, no un tipo de fecha de verdad: no hay aritmetica de
    calendario. Sumar un dia a una fecha sigue sin poder decirse."
-  (cond ((realp valor) valor)
+  (cond ((realp valor) (normalizar-numero valor))
         ((vacio-p valor) 0)
         ((stringp valor)
          (or (fecha-como-numero valor)
              (hora-como-numero valor)
-             (let ((leido (ignore-errors (read-from-string valor))))
-               (if (realp leido) leido 0))))
+             (let ((leido (let ((*read-default-float-format* 'double-float)
+                                (*read-eval* nil))
+                            (ignore-errors (read-from-string valor)))))
+               (if (realp leido) (normalizar-numero leido) 0))))
         (t 0)))
 
 (defun digitos-p (cadena desde hasta)
@@ -217,15 +265,18 @@
       (when (and (<= 0 h 23) (<= 0 m 59)) (+ (* 60 h) m)))))
 
 (defun como-texto (valor)
+  "VALOR escrito para que lo lea una persona. Los numeros, con la regla de
+   presentacion de nucleo/numeros.lisp; el verdadero de Lisp, \"si\"."
   (cond ((null valor) "")
         ((stringp valor) valor)
-        ((integerp valor) (format nil "~d" valor))
-        ((realp valor) (format nil "~a" valor))
+        ((realp valor) (texto-de-numero valor))
         ((eq valor t) "si")
         (t (princ-to-string valor))))
 
 (defun iguales-p (a b)
-  (cond ((and (realp a) (realp b)) (= a b))
+  (cond ((eq a t) (iguales-p "si" b))
+        ((eq b t) (iguales-p a "si"))
+        ((and (realp a) (realp b)) (= a b))
         ((and (vacio-p a) (vacio-p b)) t)
         ((or (vacio-p a) (vacio-p b)) nil)
         ((and (stringp a) (stringp b)) (string= a b))
@@ -255,8 +306,13 @@
          (setf (gethash nombre-de-campo (valores fila)) :calculando)
          (let* ((ambito (hacer-ambito :ligaduras (list (cons (nombrar "fila") coleccion))
                                       :actual 'fila))
-                (resultado (evaluar (expresion campo) ambito entorno
-                                    (list (cons (nombrar "fila") fila)))))
+                (crudo (evaluar (expresion campo) ambito entorno
+                                (list (cons (nombrar "fila") fila))))
+                ;; Un campo booleano vale "si" o "no", y cualquier numero es
+                ;; entero o doble: es lo que escriben las tres arquitecturas.
+                (resultado (if (campo-booleano-p campo)
+                               (como-booleano crudo)
+                               (normalizar-valor crudo))))
            (setf (gethash nombre-de-campo (valores fila)) resultado)
            resultado))
         ;; Fijo o de entrada sin rellenar.
@@ -284,13 +340,14 @@
 
 (defmethod evaluar ((e literal) ambito entorno ligaduras)
   (declare (ignore ambito entorno ligaduras))
-  (valor e))
+  (let ((v (valor e)))
+    (if (numberp v) (normalizar-numero v) v)))
 
 (defmethod evaluar ((e ref-parametro) ambito entorno ligaduras)
   (declare (ignore ambito ligaduras))
   (let ((p (parametro-llamado (situacion entorno) (nombre e))))
     (unless p (fallar "No hay ningun parametro llamado ~a" (nombre e)))
-    (valor p)))
+    (normalizar-valor (valor p))))
 
 (defmethod evaluar ((e ref-campo) ambito entorno ligaduras)
   (declare (ignore ambito))
@@ -317,21 +374,26 @@
                     (reduce #'- (mapcar #'n valores))
                     (- (n (first valores)))))
       ((es "*") (reduce #'* (mapcar #'n valores)))
+      ;; La division da siempre un doble, nunca un racional: 157/3 tiene que
+      ;; ser 52.333333333333336, que es lo que da la hoja de calculo y la
+      ;; pagina. Dividir por cero da vacio.
       ((es "/") (let ((divisor (n (second valores))))
-                  (if (zerop divisor) nil (/ (n (first valores)) divisor))))
+                  (if (zerop divisor)
+                      nil
+                      (/ (coerce (n (first valores)) 'double-float) divisor))))
       ((es "=") (iguales-p (first valores) (second valores)))
       ((es "/=") (not (iguales-p (first valores) (second valores))))
       ((es "<") (< (n (first valores)) (n (second valores))))
       ((es "<=") (<= (n (first valores)) (n (second valores))))
       ((es ">") (> (n (first valores)) (n (second valores))))
       ((es ">=") (>= (n (first valores)) (n (second valores))))
-      ((es "Y") (every #'identity valores))
-      ((es "O") (some #'identity valores))
-      ((es "NO") (not (first valores)))
+      ((es "Y") (every #'verdadero-p valores))
+      ((es "O") (and (some #'verdadero-p valores) t))
+      ((es "NO") (not (verdadero-p (first valores))))
       (t (fallar "Operador desconocido: ~a" operador)))))
 
 (defmethod evaluar ((e condicional) ambito entorno ligaduras)
-  (if (evaluar (prueba e) ambito entorno ligaduras)
+  (if (verdadero-p (evaluar (prueba e) ambito entorno ligaduras))
       (evaluar (entonces e) ambito entorno ligaduras)
       (evaluar (si-no e) ambito entorno ligaduras)))
 
@@ -359,8 +421,8 @@
       (remove-if-not
        (lambda (f)
          (or (null e-condicion)
-             (evaluar e-condicion interno entorno
-                      (cons (cons e-variable f) ligaduras))))
+             (verdadero-p (evaluar e-condicion interno entorno
+                                   (cons (cons e-variable f) ligaduras)))))
        (filas-de entorno e-coleccion)))))
 
 (defmethod evaluar ((e conjunto) ambito entorno ligaduras)
@@ -420,8 +482,8 @@
     (unless coleccion (fallar "No hay ninguna coleccion llamada ~a" (coleccion e)))
     (some (lambda (f)
             (and (not (eq f excluida))
-                 (evaluar (condicion e) interno entorno
-                          (cons (cons (variable e) f) ligaduras))))
+                 (verdadero-p (evaluar (condicion e) interno entorno
+                                       (cons (cons (variable e) f) ligaduras)))))
           (filas-de entorno (coleccion e)))))
 
 (defmethod evaluar ((e comparten) ambito entorno ligaduras)
@@ -469,7 +531,8 @@
       (when (marca-aplica-p m coleccion)
         (let ((ambito (hacer-ambito :ligaduras (list (cons (nombrar "fila") coleccion))
                                     :actual 'fila)))
-          (when (evaluar (condicion m) ambito entorno (list (cons (nombrar "fila") fila)))
+          (when (verdadero-p (evaluar (condicion m) ambito entorno
+                                      (list (cons (nombrar "fila") fila))))
             (push m resultado)))))))
 
 (defun marca-aplica-p (marca coleccion)
@@ -491,6 +554,11 @@
                                 :actual 'fila)))
       (evaluar expresion ambito entorno (list (cons (nombrar "fila") fila))))))
 
+(defun cumple-en-fila (entorno fila condicion)
+  "Si CONDICION, evaluada con FILA ligada, cuenta como verdadera. Es lo que
+   preguntan el filtro de una vista y cualquier otra condicion por fila."
+  (verdadero-p (evaluar-en-fila entorno fila condicion)))
+
 (defun explicacion-de-marca (entorno fila marca)
   "El texto de la explicacion de MARCA en FILA, o NIL si no tiene."
   (when (explicacion marca)
@@ -498,6 +566,22 @@
                                 :actual 'fila)))
       (como-texto (evaluar (explicacion marca) ambito entorno
                            (list (cons (nombrar "fila") fila)))))))
+
+(defun nombre-legible-de-marca (marca)
+  "El nombre de MARCA para leerlo: en minusculas y con espacios en vez de
+   guiones. Es lo que se escribe cuando la marca no trae explicacion."
+  (string-downcase (substitute #\Space #\- (symbol-name (nombre marca)))))
+
+(defun texto-de-estado (entorno fila)
+  "El estado de FILA en palabras: la explicacion de cada marca que dispara,
+   o su nombre si no trae explicacion, separadas por punto y coma.
+
+   Es lo que escriben las tres arquitecturas en su columna de estado, y lo
+   que el oraculo dice que tienen que escribir."
+  (format nil "~{~a~^; ~}"
+          (mapcar (lambda (m) (or (explicacion-de-marca entorno fila m)
+                                  (nombre-legible-de-marca m)))
+                  (marcas-que-disparan entorno fila))))
 
 ;;; ---------------------------------------------------------------------
 ;;; Evaluacion completa

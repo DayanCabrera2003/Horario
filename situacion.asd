@@ -37,7 +37,12 @@
                (:file "modelo")
                (:file "expresion")
                (:file "ambito")
-               (:file "evaluador")))
+               (:file "numeros")
+               (:file "booleanos")
+               (:file "evaluador")
+               (:file "forma")
+               (:file "ejes")
+               (:file "tablas")))
 
 ;;; El protocolo depende del nucleo y de nada mas. En particular NO depende
 ;;; del lenguaje: el contrato de extension se define contra el dominio, no
@@ -85,18 +90,34 @@
                 Depende de todo, y nada depende de ella. Es el unico sistema
                 que puede mirar dentro de los demas."
   :depends-on ("situacion/nucleo" "situacion/protocolo" "situacion/lenguaje"
-               "situacion/analisis" "situacion/corpus"
-               "situacion/texto" "situacion/excel" "situacion/web")
+               "situacion/analisis" "situacion/corpus" "situacion/casos"
+               "situacion/texto" "situacion/excel" "situacion/web"
+               "situacion/demostracion")
   :pathname "pruebas/"
   :serial t
   :components ((:file "paquete")
                (:file "marco")
+               (:file "ayudas-plano")
                (:file "invariantes")
                (:file "nucleo")
                (:file "alcance")
                (:file "conformidad")
                (:file "vistas")
                (:file "relacion")
+               (:file "verificacion")
+               (:file "comparacion-exacta")
+               (:file "nombres-de-hoja")
+               (:file "escapes")
+               (:file "numeros")
+               (:file "fechas")
+               (:file "web-dibujo")
+               (:file "ejes")
+               (:file "varias-vistas")
+               (:file "carencias")
+               (:file "conformidad-salida")
+               (:file "crecimiento")
+               (:file "datos")
+               (:file "presentacion")
                (:file "formula")
                (:file "particion-en-archivo")
                (:file "ejecutar"))
@@ -124,10 +145,18 @@
   :serial t
   :components ((:file "arquitectura")
                (:file "plan")
+               (:file "nombres")
+               (:file "listas")
                (:file "plano")
-               (:file "relacion")
-               (:file "particion-en-archivo")
                (:file "formula")
+               (:file "existencia")
+               (:file "busqueda")
+               (:file "relacion")
+               (:file "agregados")
+               (:file "particion-en-archivo")
+               (:file "estado")
+               (:file "presentacion")
+               (:file "vistas")
                (:file "emision")))
 
 (defsystem "situacion/web"
@@ -137,6 +166,7 @@
   :serial t
   :components ((:file "arquitectura")
                (:file "recursos")
+               (:file "dibujo")
                (:file "expresiones")
                (:file "emision")))
 
@@ -157,12 +187,29 @@
                (:file "horario-saul")
                (:file "seder")))
 
+(defsystem "situacion/casos"
+  :description "Casos de prueba de robustez: situaciones ajenas al corpus,
+                con datos y etiquetas que el corpus nunca tuvo. No son
+                corpus; los genera y verifica ./demostrar-robustez.sh."
+  :depends-on ("situacion/lenguaje")
+  :pathname "pruebas/casos/"
+  :serial t
+  :components ((:file "paquete")
+               (:file "compras")
+               (:file "notas")
+               (:file "agenda")
+               (:file "inventario")
+               (:file "horas")
+               (:file "biblioteca")
+               (:file "escapes")))
+
 (defsystem "situacion/demostracion"
   :description "Genera los artefactos de las tres arquitecturas a partir de
                 las mismas descripciones."
-  :depends-on ("situacion/corpus" "situacion/analisis"
+  :depends-on ("situacion/corpus" "situacion/casos" "situacion/analisis"
                "situacion/texto" "situacion/excel" "situacion/web")
   :pathname "demostracion/"
   :serial t
   :components ((:file "demostracion")
-               (:file "cruces")))
+               (:file "cruces")
+               (:file "vistas")))

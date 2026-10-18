@@ -16,7 +16,7 @@
 
 (defpackage #:situacion.demostracion
   (:use #:common-lisp)
-  (:export #:generar #:generar-todo))
+  (:export #:generar #:generar-todo #:generar-casos))
 
 (in-package #:situacion.demostracion)
 
@@ -65,6 +65,10 @@
                                (ruta (format nil "~a-cruces.json" prefijo)))
     (format t "Generado salida/~a-cruces.json  (oraculo de las tablas cruzadas)~%"
             prefijo)
+    (escribir-vistas-esperadas situacion datos
+                               (ruta (format nil "~a-vistas.json" prefijo)))
+    (format t "Generado salida/~a-vistas.json  (oraculo de las tablas de lista)~%"
+            prefijo)
 
     ;; --- pagina web ---
     (multiple-value-bind (destino informe)
@@ -94,22 +98,33 @@
    auxiliar, la pagina como una lista-, pero el numero es el mismo en todas y
    es lo que se puede comparar.
 
+   Cada fila sale como [valores, marcas, estado]: el estado es el texto que
+   las arquitecturas tienen que escribir en su columna de estado.
+
    Se reutiliza el serializador de la arquitectura de Excel porque es el que
    hay; no es una dependencia del nucleo, solo una comodidad de esta
    demostracion."
-  (let ((evaluado (nucleo:evaluar-situacion situacion datos))
-        (relaciones (campos-de-relacion situacion)))
+  (let* ((evaluado (nucleo:evaluar-situacion situacion datos))
+         (entorno (nucleo:hacer-entorno situacion datos))
+         (relaciones (campos-de-relacion situacion)))
     (situacion.excel::escribir-plano
      (loop for (coleccion . filas) in evaluado
+           for filas-del-entorno = (nucleo:filas-de entorno coleccion)
            collect (cons (string-downcase (symbol-name coleccion))
                          (or (loop for fila in filas
-                                   collect (cons (loop for (campo . valor) in (car fila)
-                                                       collect (cons (string-downcase
-                                                                      (symbol-name campo))
-                                                                     (if (member campo relaciones)
-                                                                         (length valor)
-                                                                         valor)))
-                                                 nil))
+                                   for fila-del-entorno in filas-del-entorno
+                                   collect (list
+                                            (loop for (campo . valor) in (car fila)
+                                                  collect (cons (string-downcase
+                                                                 (symbol-name campo))
+                                                                (if (member campo relaciones)
+                                                                    (length valor)
+                                                                    valor)))
+                                            (situacion.excel::lista
+                                             (mapcar (lambda (m)
+                                                       (string-downcase (symbol-name m)))
+                                                     (cdr fila)))
+                                            (nucleo:texto-de-estado entorno fila-del-entorno)))
                              :lista-vacia)))
      destino)))
 
@@ -134,3 +149,22 @@
            "seder")
   (format t "~&~%Todo en ~a~%" (truename +salida+))
   t)
+
+(defun generar-casos ()
+  "Genera los casos de prueba de robustez (pruebas/casos/), con el prefijo de
+   cada uno, igual que GENERAR-TODO genera el corpus.
+
+   Un caso que no se puede generar no detiene a los demas: se dice cual y
+   por que, y al final se devuelve NIL para que quien llame falle. Callarlo
+   haria que la bateria verificara solo los casos que si salieron."
+  (let ((fallidos '()))
+    (dolist (caso situacion.casos:*casos*)
+      (handler-case (generar (situacion.casos:caso-situacion caso)
+                             (situacion.casos:caso-datos caso)
+                             (situacion.casos:caso-prefijo caso))
+        (error (e)
+          (push (situacion.casos:caso-prefijo caso) fallidos)
+          (format t "~&FALLO AL GENERAR ~a: ~a~%" (situacion.casos:caso-prefijo caso) e))))
+    (format t "~&~%Casos: ~d registrados, ~d fallidos~@[ (~{~a~^, ~})~]~%"
+            (length situacion.casos:*casos*) (length fallidos) (reverse fallidos))
+    (null fallidos)))

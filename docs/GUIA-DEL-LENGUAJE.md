@@ -12,7 +12,9 @@ empieza aquí.
 
 **Fecha de esta guía: 2026-09-24, actualizada el 2026-10-07** (las
 descripciones del departamento, del Saúl Delgado con su horario real y del
-SEDER, y los errores que encontraron). Las citas de código son literales, con
+SEDER, y los errores que encontraron) **y el 2026-10-17** (la robustez de la
+generación: números, booleanos, fechas, nombres, escapes, varias vistas,
+verificación completa; el resumen está en la sección 11.4). Las citas de código son literales, con
 `archivo:línea`, verificadas contra el estado del repositorio en esa fecha.
 Donde una afirmación viene de un experimento hecho el 2026-09-21 (antes de
 varios arreglos posteriores) o del 2026-09-22 (cuando se cerraron dos huecos
@@ -75,8 +77,10 @@ Desde `Horario/`:
 
 | Comando | Qué hace, paso a paso |
 |---|---|
-| `./demostrar.sh` | (1) Carga `situacion/demostracion` en SBCL y genera los artefactos de las situaciones del corpus. (2) Convierte cada `*-plano.json` a `.xlsx` con `materializador/materializar.py`. (3) Verifica cada `.xlsx` abriéndolo con LibreOffice y comparando contra el evaluador de referencia. (4) Verifica cada página ejecutando su JavaScript con Node. Termina imprimiendo ok/fallo por artefacto |
-| `./ejecutar-pruebas.sh` | `sbcl --non-interactive --noinform --disable-debugger --no-userinit`, carga `situacion/pruebas` y llama a `ejecutar-y-salir`. 69 pruebas y 573 comprobaciones el 2026-10-13 |
+| `./demostrar.sh` | (1) Carga `situacion/demostracion` en SBCL y genera los artefactos de las situaciones del corpus y sus cuatro oráculos (valores, cruces, vistas). (2) Convierte cada `*-plano.json` a `.xlsx` con `materializador/materializar.py`. (3) Verifica cada `.xlsx` con LibreOffice, hoja por hoja y celda por celda, y busca errores de fórmula en el libro entero. (4) Lee el texto plano por sus columnas y lo compara. (5) Ejecuta el JavaScript de cada página con Node y la abre en Chromium para comparar lo que dibuja. (6) Escribe en el libro y en la página como lo haría quien los usa. (7) Llama a `./demostrar-robustez.sh`. Termina imprimiendo ok/fallo por artefacto |
+| `./ejecutar-pruebas.sh` | `sbcl --non-interactive --noinform --disable-debugger --no-userinit`, carga `situacion/pruebas` y llama a `ejecutar-y-salir`. 119 pruebas el 2026-10-17 (el número de comprobaciones varía con la caché de compilación) |
+| `./demostrar-robustez.sh` | Lo mismo que `./demostrar.sh` sobre los casos de `pruebas/casos/`: situaciones ajenas al corpus con etiquetas, valores, números, fechas y vistas que el corpus nunca tuvo |
+| `./explorar.sh` | Carga los experimentos de `exploracion/` y verifica todo lo que generan |
 | `./generar-demostracion.sh` | Solo el paso de generación, sin materializar ni verificar |
 | `python3 materializador/materializar.py <plano.json> <salida.xlsx>` | El paso de materialización a mano, sobre un plano ya generado |
 
@@ -294,6 +298,18 @@ se ejercitan `texto` (por defecto) y `entero`. No hay evidencia de que
 arquitecturas — verifica antes de depender de ellos para algo con fechas u
 horas (justo lo que necesitaría, por ejemplo, cualquier situación de
 horarios con fecha calendario en vez de solo "lunes"/"martes").
+
+**Actualizado el 2026-10-17: el plan `PLAN-TIPOS-FECHA-HORA-BOOLEANO.md`
+está implementado.** Un campo `:rol entrada :tipo booleano` sin dominio
+admite `"si"` y `"no"`; cada campo `:tipo fecha` o `:tipo hora` lleva una
+marca sintética que señala el valor escrito sin la forma `AAAA-MM-DD` o
+`HH:MM` (la web la cumple, Excel la degrada y lo dice); las columnas de fecha
+y hora llevan formato de celda en Excel y selector en la web; y la web y Excel
+comparan fechas y horas por su valor, como el evaluador, incluida una fecha
+tecleada de verdad en el libro. Un booleano es siempre la cadena `"si"` o
+`"no"`, y un campo derivado que es una comparación vale eso en las tres
+arquitecturas. Lo que sigue describe el estado del 2026-09-25, antes de esos
+cambios.
 
 **Verificado contra el código el 2026-09-25, y el resultado es más tajante
 que "no hay evidencia":**
@@ -615,7 +631,11 @@ arquitectura como primer parámetro — ver sección 4):
 
 ### Las capacidades componibles
 
-El código actual (2026-09-24) declara **19** capacidades. Eran 15
+El 2026-10-17 se añadió la vigésima, `con-validacion-de-forma` (la marca
+sintética de forma de una fecha o una hora: la web la cumple, Excel la
+degrada, el texto la cumple porque la calcula el evaluador).
+
+El código del 2026-09-24 declaraba **19** capacidades. Eran 15
 hasta que la vista particionada añadió cuatro más el 2026-09-22:
 
 `con-rejilla`, `con-derivacion-viva`, `con-derivacion-por-consulta`,
@@ -645,6 +665,15 @@ responde `:emula`, `:degrada` o `:rechaza`. El valor por defecto de
 `resolver-carencia`, sobre la clase raíz, es **`:rechaza`**: *"callar no
 puede significar 'algo saldrá'"*.
 
+**Desde el 2026-10-17, un rechazo no detiene la generación** con la política
+permisiva: `requerir` anota `:rechaza` en el informe y devuelve, y la
+arquitectura escribe `protocolo:+pieza-ausente+` —"(no disponible en esta
+arquitectura)"— en el sitio de lo pedido. Antes una sola construcción sin
+traducción se llevaba el documento entero. Si una arquitectura que declara
+cumplir una capacidad descubre que un nodo concreto no lo puede traducir (una
+explicación de marca sin traducción a fórmula), lo rebaja en el informe con
+`protocolo:rebajar-en-informe`. El informe no repite una entrada idéntica.
+
 La distinción entre emular y degradar, tal como la documenta el propio
 código: **se degrada cuando el resultado sigue cumpliendo el propósito por
 otra vía; se rechaza cuando el resultado parecería correcto y no lo sería.**
@@ -670,7 +699,7 @@ arquitectura.
 | | Texto | Excel | Web |
 |---|---|---|---|
 | Propósito | Forzar que haya dos arquitecturas desde el primer commit — la única salvaguarda real contra diseñar el protocolo mirando un solo destino | Documento de uso real, el que hoy ya usa Fernando | Demostrar que la misma descripción produce un artefacto con comportamiento vivo en un destino que no comparte nada con el primero — no pretende ser una aplicación de producción |
-| Capacidades nativas | 8 | 9 | 15 de 19 |
+| Capacidades nativas | 10 | 9 | 16 de 20 |
 | Lo más capaz que hace de forma nativa | Tabla cruzada, partición de vista, agrupación en vista, filtro de vista, casilla en conflicto, marcado textual, búsqueda por clave, orden declarado | Rejilla real, búsqueda por clave, derivación viva, entrada validada, dominio de entrada, orden declarado, marcado visual y textual, navegación | Todo lo de Excel salvo la rejilla, más tabla cruzada nativa, crecimiento, relación uno a muchos, partición de vista, agrupación y filtro de vista, casilla en conflicto y conteo de distintos |
 | Lo que NO tiene, deliberadamente | Rejilla, derivación viva/por consulta, entrada, dominio de entrada, marcado visual, crecimiento, agrupación (se degradan o emulan) | — | Rejilla (*"nunca fue un concepto del dominio"*), agrupación (emulada, fija al generar), derivación por consulta (degradada) |
 
@@ -682,18 +711,25 @@ que el protocolo no se diseñó mirando solo a Excel o solo a la web.
 **Excel.** Cada emulación tiene un truco concreto, documentado en el propio
 código:
 
-- **Tabla cruzada** — se fijan los dos ejes al generar, y se añade a la hoja
-  de datos una columna de clave compuesta resuelta con `INDICE`+`COINCIDIR`
-  (portable entre Excel y Calc, a diferencia de una fórmula matricial). Hay
-  una columna por clave distinta, no por vista: dos vistas cruzadas sobre la
-  misma colección que buscan por campos distintos tienen cada una la suya, y
-  si la vista lleva `:donde`, la clave queda vacía en las filas que no lo
-  cumplen.
+- **La igualdad es exacta** (desde el 2026-10-17) — `(= a b)` se compila a
+  `EXACT`, que distingue mayúsculas y no tiene comodines; las búsquedas son
+  `INDICE` sobre `COINCIDIR(1;INDICE(EXACT(...)*1;0);0)` y los agregados
+  `SUMAPRODUCTO` con `EXACT`, multiplicados por un factor de existencia para
+  que las filas de reserva no cuenten. Antes `CONTAR.SI`, `SUMAR.SI` y
+  `BUSCARV` sumaban "Frutas" al buscar "Frutas*" y confundían "Lácteos" con
+  "lácteos", y una búsqueda que encontraba un campo vacío devolvía 0.
+- **Tabla cruzada** — se fijan los dos ejes al generar, comunes a todas las
+  secciones de la vista, y se añade a la hoja de datos una columna oculta de
+  clave compuesta (partes unidas por el carácter 31 de ASCII, que no se puede
+  teclear) resuelta con `INDICE`+`COINCIDIR` exactos. Hay una columna por
+  clave distinta, no por vista, y si la vista lleva `:donde`, la clave queda
+  vacía en las filas que no lo cumplen. Las casillas se pintan con la marca
+  más grave de su fila.
 - **Relación uno a muchos** (`excel/relacion.lisp`) — una hoja auxiliar de
-  clave numerada (`Rosa#1`, `Rosa#2`...) más un bloque legible por fila
-  padre con un número fijo de líneas reservadas (`reserva-de-relacion`,
-  por defecto 5) y aviso si se desborda. La celda de origen lleva un
-  `COUNTIF` en vivo, no la lista completa.
+  clave numerada (la clave del padre y un número, unidos por caracteres de
+  control) más un bloque legible por fila padre con un número fijo de líneas
+  reservadas (`reserva-de-relacion`, por defecto 5) y aviso si se desborda.
+  La celda de origen lleva un conteo exacto en vivo, no la lista completa.
 - **Vista particionada como archivo aparte** (`excel/particion-en-archivo.lisp`,
   parámetro `:vistas-en-archivo`) — un `.xlsx` congelado por sección, sin
   pestaña en el libro principal. Congelado a propósito: nunca es `:entrada t`,
@@ -701,23 +737,41 @@ código:
 - **Casilla en conflicto** — pregunta cuántas filas cumplen la clave; si hay
   más de una, escribe la primera y anota `(+1)`, `(+2)`... nunca finge que
   hay solo una.
-- **Crecimiento** — N filas de reserva más un rango dimensionado. No admite
-  huecos en medio.
-- **Conteo de valores distintos** — columna auxiliar de "primera aparición",
-  porque `COUNTIF` no sabe contar únicos.
-- **Agrupación en vista** — se **degrada**, no se emula: sin cabecera por
-  grupo, porque en una rejilla la posición de la fila es el dato.
+- **Crecimiento** — N filas de reserva, con sus campos fijos y de entrada
+  desbloqueados (en una colección que crece, fijo quiere decir que lo
+  escribe quien crea la fila y después no cambia), más un rango
+  dimensionado. No admite huecos en medio.
+- **Conteo de valores distintos** — columna auxiliar oculta de "primera
+  aparición", comparada con `EXACT`.
+- **Agrupación en vista** — en la hoja de datos se **degrada**: sin cabecera
+  por grupo, porque en una rejilla la posición de la fila es el dato. Una
+  segunda vista de lista sobre la misma colección sale en una **hoja
+  derivada** de solo lectura, con las filas agrupadas y una cabecera por
+  grupo, que apunta a la hoja de datos: ahí se **emula**, con el orden fijado
+  al generar.
+- **Marcado textual** — una columna de estado detrás de los campos, con la
+  explicación de cada marca que dispara compilada a fórmula.
+- **Nombres de pestaña** (`excel/nombres.lisp`) — los decide la arquitectura
+  una sola vez, válidos y únicos, y siempre se citan entre apóstrofos. Las
+  pestañas de una vista partida comparten esquema: etiqueta y sección si
+  caben todas, si no las iniciales de la etiqueta.
+- **Desplegables** — sus valores van a una hoja oculta y la validación cita
+  el rango, así que valen comas y comillas.
 
-**Web.** El "recálculo vivo" real: la función `render()` se dispara en cada
-evento de entrada (`addEventListener('input', ...)`, `addEventListener('click', ...)`)
-y reevalúa la situación entera, no un grafo de dependencias incremental como
-en Excel — mismo resultado observable, mecanismo distinto. Comparación real
-del mismo nodo de búsqueda por clave, emitido a los dos destinos
-(`web/expresiones.lisp:1-13`):
+**Web.** El "recálculo vivo" real: cada evento de entrada recalcula la
+situación entera hasta punto fijo y pone al día en sitio lo que depende de los
+datos (`actualizar()`, en `web/dibujo.lisp`); solo cuando cambia la forma
+—una fila nueva, una sección o un valor de eje nuevos— vuelve a construir la
+página (`construir()`) y devuelve el foco al control que lo tenía. Hasta el
+2026-10-17 cada tecla redibujaba todo y no se podía escribir más de un
+carácter seguido. Las rejillas de una vista `:entrada t` son editables, cada
+vista es una sección con su ancla en un índice de navegación, y las fechas y
+horas se comparan como en el evaluador. Comparación real del mismo nodo de
+búsqueda por clave, emitido a los dos destinos:
 
 ```
-hoja de cálculo   IFERROR(VLOOKUP($B4,Tesis!$A$4:$F$23,2,FALSE),"")
-página            (T.find(c => c.estudiante === f.estudiante) ?? {}).tutor ?? ""
+hoja de cálculo   IF(ISNA(MATCH(1,INDEX(EXACT('Tesis'!$A$4:$A$7,$D4)*1,0),0)),"",...)
+página            PROY((D["tesis"].find(t => IG(V(t["estudiante"]),V(f["estudiante"]))) ?? null), "tutor", "")
 ```
 
 *"La expresión del núcleo es la misma. Lo que cambia es todo lo demás, y
@@ -1037,11 +1091,11 @@ arreglo:**
 **Ya seguro, aunque sigue siendo manual:**
 
 3. **El núcleo promete más de lo que Excel cumple en las claves
-   compuestas** — sigue siendo cierto (`BUSCARV`/`VLOOKUP` solo admite una
-   igualdad), pero **ya falla de forma segura**: una condición de búsqueda
-   que no sea una sola igualdad da un error claro de compilación
-   (`excel/formula.lisp`, `emitir-busqueda`), no una fórmula rota en
-   silencio — cumple el estándar que el protocolo se exige a sí mismo. La
+   compuestas** — sigue siendo cierto: una búsqueda cuya condición no es una
+   sola igualdad no tiene traducción en Excel. **Desde el 2026-10-17 ya no
+   detiene la generación**: la celda dice "(no disponible en esta
+   arquitectura)" y el informe de conformidad dice "rechaza" con el motivo
+   (`excel/busqueda.lisp`). Cerrarlo es el hueco C2 de la fase 2. La
    técnica de repuesto (clave concatenada a mano, `campo1 + "#" + campo2`,
    ya usada en `horarios/hoja_grupo.py:291` y en `excel/relacion.lisp` para
    las relaciones uno-a-muchos) sigue siendo manual: automatizarla sería una
@@ -1059,6 +1113,48 @@ arreglo:**
   necesita `vecino` en absoluto: basta aritmética sobre la propia clave
   (`(= (de otra dia) (+ (de fila dia) 1))`), y eso sobrevive intacto a las
   tres arquitecturas.
+
+### 11.4 Robustez del 2026-10-17
+
+Una auditoría del 2026-10-17 probó el lenguaje con descripciones nuevas de
+dominios ajenos al corpus y ninguna salió bien en las tres arquitecturas a la
+primera. El lenguaje alcanzaba para describirlas; lo que fallaba era la
+robustez de los destinos ante datos que el corpus nunca tuvo. Se corrigió todo
+ese mismo día, y esas descripciones quedaron como batería de regresión en
+`Horario/pruebas/casos/` (`./demostrar-robustez.sh`). Para quien escribe una
+descripción, lo que cambia es esto:
+
+- **Etiquetas**: cualquier texto vale como etiqueta de colección o de vista,
+  con guiones, apóstrofos, signos prohibidos o más de 31 caracteres: Excel
+  decide un nombre de pestaña válido y único y lo cita bien.
+- **Valores**: comas, comillas, `*`, `?`, `|`, saltos de línea, `<`, `=` al
+  principio, mayúsculas distintas: se comparan literalmente y se escriben
+  escapados en los tres destinos.
+- **Números**: enteros o dobles; la división da un doble y por cero da vacío;
+  se escriben con hasta 10 cifras significativas en los tres destinos.
+- **Booleanos**: `"si"` y `"no"`. En una condición cuenta como verdadero
+  `"si"`, el literal `t` o un número distinto de cero.
+- **Fechas y horas**: como dice el plan de tipos (sección 5.4).
+- **Varias vistas de lista** sobre la misma colección: cada una se dibuja con
+  su etiqueta y su agrupación (en Excel, como hoja derivada).
+- **Ejes**: todas las secciones de una vista cruzada tienen los mismos; si el
+  eje es el campo de `:orden` de la colección van en ese orden, si no en el
+  de primera aparición. Las secciones van ordenadas. Declarar el orden de un
+  eje es el hueco C1 de la fase 2.
+- **Datos**: una colección o un campo de los datos que la situación no
+  declara, o un valor para un campo derivado, es un error claro, no una tabla
+  vacía.
+- **`:crece`**: las filas nuevas se pueden escribir en la hoja de cálculo y en
+  la página, campos fijos incluidos.
+- **Carencias**: lo que un destino no puede hacer sale señalado en el
+  artefacto y en el informe, y el resto del artefacto sale igual.
+
+Lo que sigue faltando de verdad, como construcción del lenguaje, queda para
+una segunda fase, con una nota de diseño por hueco antes de escribir código: orden y dominio de los ejes (C1), búsqueda por
+varios campos en Excel (C2), orden compuesto y vecino dentro de una partición
+(C3), formato numérico (C6), marca por campo (C7), sintaxis única de `:donde`
+(C4) y documentar `:una-fila-por` (C8; hoy hay que volver a declarar el campo
+agrupador en la colección derivada).
 
 ---
 

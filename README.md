@@ -24,10 +24,14 @@ Por dónde empezar:
 ./demostrar.sh
 ```
 
-Toma las seis descripciones de `corpus/`, genera veinticuatro artefactos, los
-materializa y comprueba —con LibreOffice y con Node— que los dos destinos vivos
-calculan exactamente lo mismo que el evaluador de referencia. Tarda menos de un
-minuto.
+Toma las seis descripciones de `corpus/`, genera sus artefactos, los
+materializa y compara todo lo que producen con el evaluador de referencia:
+cada hoja del libro recalculada por LibreOffice, el texto plano leído por sus
+columnas, el cálculo de la página ejecutado con Node y lo que la página dibuja
+en un navegador sin pantalla. Después escribe en el libro y en la página como
+lo haría quien los usa, y repite todo con los casos de robustez de
+`pruebas/casos/`: situaciones ajenas al corpus con etiquetas, valores, números,
+fechas y vistas que el corpus nunca tuvo. Tarda alrededor de un minuto y medio.
 
 Lo que conviene abrir después:
 
@@ -39,12 +43,14 @@ xdg-open salida/departamento.xlsx          # reparte la carga y mira la cobertur
 xdg-open salida/horario-saul.html          # el horario real del Saul Delgado
 ```
 
-## Los cuatro comandos
+## Los comandos
 
 | Comando | Qué hace |
 |---|---|
-| `./demostrar.sh` | Todo: genera, materializa y verifica |
-| `./ejecutar-pruebas.sh` | 69 pruebas, 573 comprobaciones. Código 1 si algo falla |
+| `./demostrar.sh` | Todo: genera, materializa y verifica el corpus y los casos de robustez |
+| `./ejecutar-pruebas.sh` | 119 pruebas. Código 1 si algo falla |
+| `./demostrar-robustez.sh` | Solo los casos de robustez de `pruebas/casos/` |
+| `./explorar.sh` | Genera y verifica los experimentos de `exploracion/` |
 | `./generar-demostracion.sh` | Solo genera los artefactos |
 | `python3 materializador/materializar.py <plano.json> <salida.xlsx>` | Plano de libro a `.xlsx` |
 | `./ejemplos/actualizar.sh` | Regenera los resultados versionados de `ejemplos/` |
@@ -52,7 +58,8 @@ xdg-open salida/horario-saul.html          # el horario real del Saul Delgado
 ## Requisitos
 
 SBCL. Para el materializador, Python con openpyxl; para las verificaciones,
-LibreOffice y Node.
+LibreOffice, Node y Chromium (sin Chromium se saltan las comprobaciones de la
+página dibujada, y se dice).
 
 **El núcleo, el protocolo, el análisis y las pruebas no tienen ninguna
 dependencia.** Arrancan con un SBCL recién instalado y nada más, y eso es a
@@ -66,26 +73,28 @@ situacion.asd      declara los sistemas; su grafo de dependencias ES la prueba
                    de dos criterios de diseno
 
 nucleo/            el modelo semantico y el evaluador de referencia.
-                   24 nodos. No sabe que existe ninguna arquitectura
+                   25 nodos. No sabe que existe ninguna arquitectura
 lenguaje/          las macros: la sintaxis
 analisis/          las comprobaciones estaticas, sin arquitectura
-protocolo/         el contrato de extension: 13 operaciones, 19 capacidades
+protocolo/         el contrato de extension: 13 operaciones, 20 capacidades
 texto/             arquitectura de texto plano
 excel/             arquitectura de hoja de calculo
 web/               arquitectura de pagina con recalculo vivo
 corpus/            seis descripciones de situaciones reales
-pruebas/           invariantes, nucleo, alcance y conformidad
+pruebas/           invariantes, nucleo, alcance, conformidad y robustez
+pruebas/casos/     casos de robustez: situaciones ajenas al corpus
 demostracion/      el guion que genera todo
-materializador/    Python y Node: plano a .xlsx, y las dos verificaciones
+materializador/    Python y Node: plano a .xlsx, los verificadores (libro,
+                   texto, calculo y dibujo de la pagina) y las sondas de uso
 ejemplos/          indice de las descripciones, con sus resultados ya generados
 docs/              la documentacion publicada
 exploracion/       experimentos: cinco dominios ajenos y el primer Saul Delgado
 ```
 
-**10 147 líneas de Lisp** (con las pruebas), 387 de Python y 112 de
-JavaScript.
+**14 453 líneas de Lisp** (con las pruebas y los casos de robustez), 1 149 de
+Python y 450 de JavaScript.
 
-(`exploracion/` tiene 2 930 líneas más: son las descripciones de los
+(`exploracion/` tiene 2 935 líneas más: son las descripciones de los
 experimentos, no pertenecen a ningún sistema y no cuentan como código del
 trabajo. Tiene su propio README.)
 
@@ -137,9 +146,9 @@ Del informe de conformidad del horario del grupo, en una ejecución real:
 
 | | texto | excel | web |
 |---|---|---|---|
-| nativas | 7 | 17 | **18** |
+| nativas | 6 | 16 | **17** |
 | emuladas | 1 | 1 | 0 |
-| degradadas | 10 | 0 | 0 |
+| degradadas | 4 | 0 | 0 |
 
 La hoja de cálculo, que parece la más capaz, **emula** la tabla cruzada —fija los
 dos ejes al generar y se inventa una columna de clave compuesta— mientras que la
@@ -168,23 +177,21 @@ núcleo y las tres arquitecturas" a "tres ranuras y un método por destino".
 
 ## La evidencia
 
-`./demostrar.sh` termina comprobando, por los dos lados, que cada valor
-calculado coincide con el del evaluador de referencia del núcleo:
+`./demostrar.sh` compara cada valor que produce cada destino con el del
+evaluador de referencia del núcleo, y falla si una hoja del libro no se
+compara, si compara cero celdas o si alguna celda vale un error de fórmula.
+Del corpus, en una ejecución real:
 
-```
-  ok   plan-del-grupo.xlsx:      30 celdas evaluadas por LibreOffice
-  ok   defensas-de-tesis.xlsx:   52 celdas evaluadas por LibreOffice
-  ok   horario-del-grupo.xlsx:   24 celdas evaluadas por LibreOffice
-  ok   departamento.xlsx:       208 celdas evaluadas por LibreOffice
-  ok   horario-saul.xlsx:      1161 celdas evaluadas por LibreOffice
-  ok   seder.xlsx:              111 celdas evaluadas por LibreOffice
-  ok   plan-del-grupo.html:      48 valores del JavaScript emitido
-  ok   defensas-de-tesis.html:   60 valores del JavaScript emitido
-  ok   horario-del-grupo.html:  105 valores del JavaScript emitido
-  ok   departamento.html:       231 valores del JavaScript emitido
-  ok   horario-saul.html:      2915 valores del JavaScript emitido
-  ok   seder.html:              221 valores del JavaScript emitido
-```
+| | Libro (LibreOffice) | Texto | Cálculo de la página | Página dibujada |
+|---|---|---|---|---|
+| plan-del-grupo | 36 | 36 | 54 | 37 |
+| defensas-de-tesis | 56 | 60 | 68 | 62 |
+| horario-del-grupo | 96 | 103 | 121 | 107 |
+| departamento | 231 | 227 | 250 | 230 |
+| horario-saul | 3 585 | 3 630 | 3 210 | 3 639 |
+| seder | 237 | 254 | 256 | 261 |
+
+Y lo mismo con los nueve casos de robustez. Cero discrepancias.
 
 Los dos destinos no comparten nada: uno evalúa fórmulas A1 dentro de una
 rejilla, el otro ejecuta funciones sobre arreglos.

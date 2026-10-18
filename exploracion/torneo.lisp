@@ -133,7 +133,7 @@
                 :etiqueta "Cuadro del torneo"
                 :agrupada-por ronda))
 
-(defun n (s) (intern (string-upcase s) '#:situacion.nucleo))
+(defun n (s) (nucleo:nombrar s))
 
 (defparameter datos-del-torneo
   (list (cons (n "partidos")

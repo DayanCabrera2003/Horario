@@ -176,7 +176,7 @@
 ;;; ---------------------------------------------------------------------
 
 (defparameter datos-del-presupuesto
-  (let ((n (lambda (s) (intern (string-upcase s) '#:situacion.nucleo))))
+  (let ((n (lambda (s) (nucleo:nombrar s))))
     (list
      (cons (funcall n "partidas")
            (loop for (codigo concepto padre presupuestado)
@@ -224,7 +224,7 @@
   (vista unica :de apuntes :entrada t :etiqueta "Apuntes"))
 
 (defparameter datos-de-la-sonda
-  (let ((n (lambda (s) (intern (string-upcase s) '#:situacion.nucleo))))
+  (let ((n (lambda (s) (nucleo:nombrar s))))
     (list (cons (funcall n "apuntes")
                 (loop for (fecha importe) in '(("2026-01-15" 5800) ("2026-02-03" 200))
                       collect (list (cons (funcall n "fecha") fecha)

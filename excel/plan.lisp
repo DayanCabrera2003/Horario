@@ -14,7 +14,12 @@
 (in-package #:situacion.excel)
 
 (defclass hoja ()
-  ((nombre :accessor nombre :initarg :nombre)
+  ((nombre :accessor nombre :initarg :nombre
+           :documentation
+           "El nombre de la pestana. El definitivo lo fija
+            ASIGNAR-NOMBRES-DE-HOJA (excel/nombres.lisp) antes de emitir.")
+   (titulo :accessor titulo :initarg :titulo :initform nil
+           :documentation "El titulo completo, que va en la primera celda.")
    (coleccion :accessor coleccion :initarg :coleccion)
    (columnas :accessor columnas :initarg :columnas
              :documentation "Lista asociativa de nombre de campo a letra.")
@@ -28,7 +33,22 @@
            :documentation
            "Las columnas de clave compuesta que esta arquitectura anade a la
             hoja, en el orden en que se pidieron. Van detras de las columnas
-            declaradas. Solo CLAVE-COMPUESTA-DE escribe aqui."))
+            declaradas. Solo CLAVE-COMPUESTA-DE escribe aqui.")
+   (columna-de-estado :accessor columna-de-estado :initform nil
+                      :documentation
+                      "La letra de la columna de estado, que escribe en palabras
+                       que marcas disparan en cada fila, o NIL si la coleccion
+                       no tiene marcas. Va justo detras de los campos.")
+   (columna-de-nivel :accessor columna-de-nivel :initform nil
+                     :documentation
+                     "La letra de una columna oculta con la severidad mas alta de
+                      las marcas que disparan en cada fila (3, 2, 1 o 0), o NIL.
+                      La usan las rejillas para pintar sus casillas.")
+   (distintos :accessor distintos :initform '()
+              :documentation
+              "Las columnas auxiliares que marcan la primera aparicion de cada
+               valor de un campo, para contar valores distintos. Van detras
+               de las de clave. Solo COLUMNA-DE-DISTINTOS-DE escribe aqui."))
   (:documentation "Donde cae cada cosa de una coleccion dentro del libro."))
 
 (defclass clave-compuesta ()
@@ -54,8 +74,22 @@
     buscan por los mismos campos entre las mismas filas comparten columna;
     dos que difieren en los campos o en el filtro tienen cada una la suya."))
 
+(defclass columna-de-distintos ()
+  ((campo :accessor campo-de :initarg :campo
+          :documentation "El campo cuyos valores distintos se cuentan.")
+   (letra :accessor letra :initarg :letra
+          :documentation "La columna de la hoja donde se escribe."))
+  (:documentation
+   "Una columna que vale 1 en la fila donde un valor aparece por primera vez.
+    Sumarla da cuantos valores distintos hay. Es la emulacion del conteo de
+    distintos: una hoja de calculo no lo tiene sin formulas matriciales."))
+
 (defclass cruce ()
   ((vista :accessor vista :initarg :vista)
+   (nombre :accessor nombre :initarg :nombre :initform nil
+           :documentation "El nombre de su pestana, fijado por ASIGNAR-NOMBRES-DE-HOJA.")
+   (titulo :accessor titulo :initarg :titulo :initform nil
+           :documentation "El titulo completo de la pestana: vista y seccion.")
    (hoja-origen :accessor hoja-origen :initarg :hoja-origen)
    (seccion :accessor seccion :initarg :seccion :initform nil
             :documentation
@@ -86,6 +120,16 @@
                :documentation
                "Hojas que la arquitectura se inventa para emular lo que no
                 tiene. El lenguaje no las nombra nunca.")
+   (vistas-derivadas :accessor vistas-derivadas :initform '()
+                     :documentation
+                     "Las hojas derivadas de las vistas de lista que no son la
+                      de datos de su coleccion (excel/vistas.lisp).")
+   (listas :accessor listas :initform '()
+           :documentation
+           "Los valores de cada desplegable, como (VALORES . LETRA): la columna
+            de la hoja oculta de listas donde se escriben (excel/listas.lisp).")
+   (nombre-de-listas :accessor nombre-de-listas :initform nil
+                     :documentation "El nombre de la hoja de listas, si hace falta.")
    (archivos :accessor archivos :initarg :archivos :initform '()
              :documentation
              "Cruces de vistas en VISTAS-EN-ARCHIVO: uno por seccion, cada
@@ -108,6 +152,17 @@
 
 (defun hoja-de (plan nombre-de-coleccion)
   (find nombre-de-coleccion (hojas plan) :key (lambda (h) (nucleo:nombre (coleccion h)))))
+
+(defun marca-de-esta-hoja-p (marca coleccion)
+  (if (nucleo:coleccion marca)
+      (eq (nucleo:coleccion marca) (nucleo:nombre coleccion))
+      (every (lambda (c) (nucleo:campo-llamado coleccion c))
+             (nucleo:alcance marca))))
+
+(defun nombre-de-coleccion (coleccion)
+  "El nombre interno de COLECCION tal como lo escribe el oraculo. Es la
+   identidad con que el plano dice de que coleccion es una hoja."
+  (string-downcase (symbol-name (nucleo:nombre coleccion))))
 
 (defun columna-de (hoja nombre-de-campo)
   ;; :TEST #'EQUAL y no el EQL por defecto: la mayoria de las claves son
@@ -137,7 +192,11 @@
 (defun siguiente-columna-libre (hoja)
   "La primera columna de HOJA que no ocupa ni un campo declarado ni una
    columna anadida por esta arquitectura."
-  (letra-de-columna (+ (length (columnas hoja)) (length (claves hoja)))))
+  (letra-de-columna (+ (length (columnas hoja))
+                       (if (columna-de-estado hoja) 1 0)
+                       (if (columna-de-nivel hoja) 1 0)
+                       (length (claves hoja))
+                       (length (distintos hoja)))))
 
 (defun clave-compuesta-de (hoja partes &optional filtro)
   "La clave compuesta de HOJA que concatena PARTES en las filas que cumplen
@@ -157,8 +216,14 @@
         (setf (claves hoja) (append (claves hoja) (list nueva)))
         nueva)))
 
-(defun entrecomillar (nombre)
-  (if (find #\Space nombre) (format nil "'~a'" nombre) nombre))
+(defun columna-de-distintos-de (hoja campo)
+  "La columna de primera aparicion de CAMPO en HOJA, creandola si no existe."
+  (or (find campo (distintos hoja) :key #'campo-de)
+      (let ((nueva (make-instance 'columna-de-distintos
+                                  :campo campo
+                                  :letra (siguiente-columna-libre hoja))))
+        (setf (distintos hoja) (append (distintos hoja) (list nueva)))
+        nueva)))
 
 ;;; ---------------------------------------------------------------------
 ;;; Planificacion (fase 5)
@@ -219,6 +284,12 @@
                               :rango-nombrado (nombre-de-rango coleccion))))
     (dolist (campo campos)
       (protocolo:planificar-campo a campo coleccion plan))
+    ;; La columna de estado, si alguna marca senala esta coleccion: es la
+    ;; realizacion del marcado textual en esta arquitectura.
+    (when (some (lambda (m) (marca-de-esta-hoja-p m coleccion))
+                (nucleo:marcas (situacion plan)))
+      (setf (columna-de-estado hoja) (letra-de-columna (length campos))
+            (columna-de-nivel hoja) (letra-de-columna (1+ (length campos)))))
     hoja))
 
 (defun nombre-de-rango (coleccion)
@@ -262,19 +333,6 @@
 ;;; turno nuevo, no aparece una columna nueva.
 ;;; ---------------------------------------------------------------------
 
-(defun valores-distintos-en-filas (plan filas campo)
-  "Los valores que toma CAMPO en FILAS, sin repetir y en orden de aparicion."
-  (let ((vistos '()))
-    (dolist (f filas (nreverse vistos))
-      (let ((v (nucleo:valor-de-campo (entorno plan) f campo)))
-        (unless (or (nucleo:vacio-p v) (member v vistos :test #'nucleo:iguales-p))
-          (push v vistos))))))
-
-(defun valores-distintos-en (plan nombre-coleccion campo)
-  "Los valores que toma un campo en la coleccion entera."
-  (valores-distintos-en-filas
-   plan (nucleo:filas-de (entorno plan) nombre-coleccion) campo))
-
 (defun filas-presentables (plan vista)
   "Las filas que VISTA presenta: las de su coleccion que pasan su filtro.
 
@@ -283,13 +341,7 @@
    lista: la clave compuesta vuelve a preguntar el filtro en la hoja (ver
    CLAVE-COMPUESTA). La coleccion no se toca, asi que los agregados y las
    marcas siguen viendo las filas escondidas."
-  (let ((filas (nucleo:filas-de (entorno plan) (nucleo:fuente vista))))
-    (if (null (nucleo:filtro vista))
-        filas
-        (remove-if-not
-         (lambda (f) (nucleo:evaluar-en-fila (entorno plan) f
-                                             (nucleo:filtro vista)))
-         filas))))
+  (nucleo:filas-que-presenta (entorno plan) vista))
 
 (defun filas-de-la-seccion (plan vista valor)
   "Las filas de VISTA que caen en la seccion VALOR.
@@ -334,24 +386,21 @@
     ;; Un informe que repite cosas se lee peor y, sobre todo, deja de poder
     ;; contarse.
     (when hoja
-      (dolist (valor (if (nucleo:secciones vista)
-                         ;; Las secciones salen de las filas presentables: si
-                         ;; el filtro deja fuera a un profesor entero, no se
-                         ;; le fabrica una pestana vacia.
-                         (valores-distintos-en-filas
-                          plan (filas-presentables plan vista)
-                          (nucleo:secciones vista))
-                         (list nil)))
-        (let* ((filas (filas-de-la-seccion plan vista valor))
-               (cruce (make-instance
+      ;; Las secciones salen de las filas presentables, ordenadas: si el
+      ;; filtro deja fuera a un profesor entero, no se le fabrica una pestana
+      ;; vacia. Los ejes son los mismos para todas las secciones de la vista
+      ;; (nucleo/ejes.lisp), para que todas sus pestanas se lean igual.
+      (dolist (valor (nucleo:secciones-de-vista (entorno plan) vista))
+        (let* ((cruce (make-instance
                        'cruce
                        :vista vista
                        :hoja-origen hoja
                        :seccion valor
-                       :valores-de-fila (valores-distintos-en-filas
-                                         plan filas (nucleo:eje-de-filas vista))
-                       :valores-de-columna (valores-distintos-en-filas
-                                            plan filas (nucleo:eje-de-columnas vista))
+                       :valores-de-fila (nucleo:valores-de-eje
+                                         (entorno plan) vista (nucleo:eje-de-filas vista))
+                       :valores-de-columna (nucleo:valores-de-eje
+                                            (entorno plan) vista
+                                            (nucleo:eje-de-columnas vista))
                        ;; Todos los cruces de una vista buscan por la misma
                        ;; clave. Un cruce que sale en su propio archivo no
                        ;; busca nada, y no hace gastar una columna.

@@ -18,8 +18,40 @@
   "El informe que se esta construyendo, o NIL si no hay compilacion en curso.")
 
 (defun anotar-en-informe (respuesta capacidad nota)
-  (when *informe*
+  "Anota en el informe en curso que CAPACIDAD se resolvio con RESPUESTA.
+
+   Una entrada identica a otra ya anotada no se repite: una arquitectura
+   pide la capacidad de un nodo cada vez que lo emite, y un nodo se emite
+   una vez por fila. Sin esto, la validacion de forma de una fecha llenaba
+   el informe con cien lineas iguales."
+  (when (and *informe*
+             (not (find-if (lambda (e)
+                             (and (eq (entrada-de-informe-respuesta e) respuesta)
+                                  (eq (entrada-de-informe-capacidad e) capacidad)
+                                  (equal (entrada-de-informe-nota e) nota)))
+                           (cdr *informe*))))
     (push (hacer-entrada respuesta capacidad nota) (cdr *informe*)))
+  respuesta)
+
+(defun rebajar-en-informe (capacidad detalle respuesta nota)
+  "Corrige la entrada del informe en curso que respondio a CAPACIDAD con una
+   nota que contiene DETALLE: pasa a valer RESPUESTA, con NOTA.
+
+   Existe porque una arquitectura puede declarar que cumple una capacidad y
+   descubrir, al emitir un nodo concreto, que para ese nodo no puede: la
+   hoja de calculo cumple el marcado textual, pero una explicacion que no
+   sabe traducir a formula lo degrada. El informe tiene que decirlo de ese
+   nodo, no mantener el \"cumple\" que anoto al principio. Si no hay tal
+   entrada, se anade una."
+  (when *informe*
+    (let ((entrada (find-if (lambda (e)
+                              (and (eq (entrada-de-informe-capacidad e) capacidad)
+                                   (search detalle (or (entrada-de-informe-nota e) ""))))
+                            (cdr *informe*))))
+      (if entrada
+          (setf (entrada-de-informe-respuesta entrada) respuesta
+                (entrada-de-informe-nota entrada) nota)
+          (anotar-en-informe respuesta capacidad nota))))
   respuesta)
 
 (defmacro con-informe ((arquitectura) &body cuerpo)
@@ -45,6 +77,21 @@
       (let ((par (assoc (entrada-de-informe-respuesta e) cuenta)))
         (when par (incf (cdr par)))))))
 
+(defun nota-sangrada (nota)
+  "NOTA con sus lineas de continuacion alineadas debajo de la primera.
+
+   Las notas se escriben en el codigo como cadenas de varias lineas, con la
+   sangria del codigo; impresas tal cual, cada una salia con un margen
+   distinto. Aqui se quita esa sangria y cada linea siguiente empieza en la
+   columna de la nota."
+  (let ((lineas (loop with inicio = 0
+                      for fin = (position #\Newline nota :start inicio)
+                      collect (string-trim " " (subseq nota inicio (or fin (length nota))))
+                      while fin
+                      do (setf inicio (1+ fin)))))
+    (format nil (format nil "~~{~~a~~^~~%~a~~}" (make-string 40 :initial-element #\Space))
+            (remove "" lineas :test #'string=))))
+
 (defun escribir-informe (informe &optional (flujo *standard-output*))
   "Imprime el informe en un formato legible de un vistazo."
   (let* ((arquitectura (arquitectura-del-informe informe))
@@ -60,7 +107,7 @@
           (format flujo "  ~(~8a~) ~(~28a~) ~a~%"
                   (entrada-de-informe-respuesta e)
                   (entrada-de-informe-capacidad e)
-                  (or (entrada-de-informe-nota e) ""))))
+                  (nota-sangrada (or (entrada-de-informe-nota e) "")))))
     (format flujo "~a~%" raya)
     (format flujo "  ~d nativas, ~d emuladas, ~d degradadas, ~d rechazadas~%"
             (cdr (assoc :cumple resumen)) (cdr (assoc :emula resumen))

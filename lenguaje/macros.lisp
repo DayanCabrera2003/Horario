@@ -73,7 +73,13 @@
     (declare (ignore cabeza))
     (multiple-value-bind (opciones resto) (partir-opciones cola)
       (let* ((rol (como-clave (opcion opciones :rol 'nucleo::fijo)))
-             (dominio (opcion opciones :dominio))
+             (tipo (como-clave (opcion opciones :tipo 'nucleo::texto)))
+             (dominio (or (opcion opciones :dominio)
+                          ;; Plan aprobado de tipos, seccion 3: un booleano
+                          ;; que escribe el usuario solo admite "si" o "no",
+                          ;; como cualquier otro campo con dominio.
+                          (when (and (eq rol :entrada) (eq tipo :booleano))
+                            '(uno-de "si" "no"))))
              (expresion (first resto)))
         (when (and (eq rol :derivado) (null expresion))
           (error "El campo ~a es derivado y no dice como se calcula." nombre))
@@ -87,7 +93,7 @@
         `(nucleo:hacer-campo
           :nombre ',(normalizar nombre)
           :etiqueta ,(opcion opciones :etiqueta (string-capitalize (symbol-name nombre)))
-          :tipo ,(como-clave (opcion opciones :tipo 'nucleo::texto))
+          :tipo ,tipo
           :rol ,rol
           :opcional ,(opcion opciones :opcional nil)
           :dominio ,(when dominio (compilar-expresion dominio))
@@ -132,15 +138,45 @@
                               :de (normalizar (palabra-clave-de f :de)))))
           ((eq (first f) :una-sola-fila) (setf origen '(:una-sola-fila)))
           (t (error "No se como leer ~s dentro de la coleccion ~a" f nombre))))
-      `(nucleo:hacer-coleccion
-        :nombre ',(normalizar nombre)
-        :etiqueta ,etiqueta
-        :campos (list ,@(nreverse campos))
-        :clave ',clave
-        :orden ',orden
-        :crecimiento ,crecimiento
-        :origen ',origen
-        :datos ',datos))))
+      (values
+       `(nucleo:hacer-coleccion
+         :nombre ',(normalizar nombre)
+         :etiqueta ,etiqueta
+         :campos (list ,@(nreverse campos))
+         :clave ',clave
+         :orden ',orden
+         :crecimiento ,crecimiento
+         :origen ',origen
+         :datos ',datos)
+       (marcas-de-forma nombre cuerpo)))))
+
+(defun marcas-de-forma (coleccion cuerpo)
+  "Las marcas sinteticas de forma invalida para los campos :TIPO FECHA y
+   :TIPO HORA del CUERPO de COLECCION, como formas fuente de MARCA.
+
+   Plan aprobado de tipos, seccion 4.2: senalan el valor escrito que no
+   tiene la forma AAAA-MM-DD o HH:MM. Advierten, o son un problema si el
+   campo declara :AL-VIOLAR IMPEDIR. Llevan :EN explicito para no chocar con
+   otra coleccion que tenga un campo del mismo nombre."
+  (loop for f in cuerpo
+        when (cabeza-es f "CAMPO")
+          append (multiple-value-bind (opciones) (partir-opciones (cddr f))
+                   (let ((tipo (como-clave (opcion opciones :tipo 'nucleo::texto)))
+                         (campo (second f)))
+                     (when (member tipo '(:fecha :hora))
+                       (list
+                        `(marca ,(intern (format nil "~a-FORMA-INVALIDA" (symbol-name campo)))
+                                :en ,coleccion
+                                :sobre (,campo)
+                                :cuando (y (no (vacio? (de fila ,campo)))
+                                           (forma-invalida ,campo))
+                                :severidad ,(if (eq (como-clave (opcion opciones :al-violar
+                                                                        'nucleo::advertir))
+                                                    :impedir)
+                                                'problema 'advertencia)
+                                :explica ,(if (eq tipo :fecha)
+                                              "La fecha no tiene la forma AAAA-MM-DD"
+                                              "La hora no tiene la forma HH:MM"))))))))
 
 ;;; ---------------------------------------------------------------------
 ;;; Marcas
@@ -219,7 +255,10 @@
     (dolist (forma cuerpo)
       (cond
         ((cabeza-es forma "PARAMETRO") (push (compilar-parametro forma) parametros))
-        ((cabeza-es forma "COLECCION") (push (compilar-coleccion forma) colecciones))
+        ((cabeza-es forma "COLECCION")
+         (multiple-value-bind (coleccion sinteticas) (compilar-coleccion forma)
+           (push coleccion colecciones)
+           (dolist (m sinteticas) (push (compilar-marca m) marcas))))
         ((cabeza-es forma "MARCA") (push (compilar-marca forma) marcas))
         ((cabeza-es forma "VISTA") (push (compilar-vista forma) vistas))
         (t (error "No se como leer ~s dentro de DEFSITUACION ~a."

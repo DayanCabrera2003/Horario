@@ -21,12 +21,31 @@ lenguaje. Ninguna de las tres tesis anteriores de la linea presenta evidencia
 de que las formulas que genera se evaluen; la de 2026 lo afirma y lo respalda
 con capturas de pantalla, que es lo mas lejos que se llego.
 
-Las tablas cruzadas no son colecciones y el oraculo de valores no las
-describe. Se comprueban aparte, contra el oraculo de cruces, si se pasa: ver
-verificar_cruces.py.
+CADA HOJA DICE QUE ES
+
+El plano marca cada hoja con su identidad: "coleccion" en las hojas de datos,
+"cruce" en las tablas cruzadas, "relacion" en las auxiliares de una relacion
+uno a muchos, "vista" en las hojas derivadas de una vista de lista y
+"auxiliar" en las hojas de apoyo que no muestran datos. Se empareja por esa
+identidad, nunca por los nombres de las columnas: emparejar por nombres hizo
+que la hoja principal del horario del Saul -la que lleva columnas de clave
+anadidas- se saltara en silencio hasta el 2026-10-17.
+
+CUANDO FALLA
+
+  - Una celda no coincide con el oraculo.
+  - Una coleccion del oraculo no tiene hoja, o una hoja no tiene identidad.
+  - Una hoja con filas en el oraculo no compara ninguna celda.
+  - Cualquier celda del libro, este o no en el oraculo, vale un error de
+    formula (#VALUE!, #NAME?, #REF!, #N/A, #DIV/0!...).
+
+Las tablas cruzadas se comprueban contra el oraculo de cruces
+(verificar_cruces.py), las relaciones contra el de valores
+(verificar_relaciones.py) y las hojas derivadas contra los de valores y
+vistas (verificar_vistas.py).
 
 Uso:
-    python3 verificar.py <plano.json> <esperado.json> <libro.xlsx> [<cruces.json>]
+    python3 verificar.py <plano.json> <esperado.json> <libro.xlsx> [<cruces.json> [<vistas.json>]]
 """
 
 import json
@@ -37,9 +56,12 @@ import tempfile
 from pathlib import Path
 
 from openpyxl import load_workbook
-from openpyxl.utils import get_column_letter
 
+from comparar import iguales, normalizar
 from verificar_cruces import verificar_cruces
+from verificar_errores import errores_del_libro
+from verificar_relaciones import verificar_relacion
+from verificar_vistas import verificar_vista
 
 
 def recalcular_con_libreoffice(xlsx):
@@ -60,119 +82,147 @@ def recalcular_con_libreoffice(xlsx):
 
 
 def columnas_de(hoja_plan):
-    """De nombre interno de campo a letra de columna.
-
-    Se usa el nombre interno y no la etiqueta visible: emparejar por etiqueta
-    es adivinar, y adivinar da falsos positivos (la etiqueta "Asignatura"
-    casaria con el campo "asignadas").
-    """
+    """De nombre interno de campo a letra de columna, para los campos que
+    declara la descripcion. Las columnas que anade la arquitectura (las de
+    clave, que empiezan por "__") no estan en el oraculo."""
     columnas = {}
     for enc in hoja_plan.get("encabezados") or []:
+        if enc["campo"].startswith("__"):
+            continue
         letra = "".join(c for c in enc["celda"] if c.isalpha())
         columnas[enc["campo"]] = letra
     return columnas
 
 
-def normalizar(valor):
-    if valor is None:
-        return ""
-    if isinstance(valor, bool):
-        return valor
-    if isinstance(valor, (int, float)):
-        return float(valor)
-    texto = str(valor).strip()
-    if texto == "":
-        return ""
-    try:
-        return float(texto)
-    except ValueError:
-        return texto
+def valores_de_fila(envoltura):
+    """Los valores de una fila del oraculo, que viene como [valores, marcas]
+    o como el diccionario de valores a secas."""
+    return envoltura[0] if isinstance(envoltura, list) else envoltura
 
 
-def verificar(plano_path, esperado_path, xlsx_path, cruces_path=None):
+def verificar_coleccion(hoja_plan, hoja, filas_esperadas):
+    """Compara la hoja de datos de una coleccion con sus filas del oraculo.
+
+    Devuelve (comprobadas, fallos)."""
+    columnas = columnas_de(hoja_plan)
+    comprobadas = 0
+    fallos = []
+    for i, envoltura in enumerate(filas_esperadas):
+        fila_valores = valores_de_fila(envoltura)
+        fila = hoja_plan["fila_primera"] + i
+        for campo, letra in columnas.items():
+            if campo not in fila_valores:
+                continue
+            real = normalizar(hoja["{}{}".format(letra, fila)].value)
+            esperado_v = normalizar(fila_valores[campo])
+            comprobadas += 1
+            if not iguales(real, esperado_v):
+                fallos.append("{}!{}{}  esperado {!r}  obtenido {!r}".format(
+                    hoja.title, letra, fila, esperado_v, real))
+    # La columna de estado: lo que dicen las marcas que disparan, en palabras.
+    estado = hoja_plan.get("estado")
+    if estado:
+        for i, envoltura in enumerate(filas_esperadas):
+            if not isinstance(envoltura, list) or len(envoltura) < 3:
+                continue
+            fila = hoja_plan["fila_primera"] + i
+            real = normalizar(hoja["{}{}".format(estado, fila)].value)
+            esperado_v = normalizar(envoltura[2])
+            comprobadas += 1
+            if not iguales(real, esperado_v):
+                fallos.append("{}!{}{}  estado esperado {!r}  obtenido {!r}".format(
+                    hoja.title, estado, fila, esperado_v, real))
+    return comprobadas, fallos
+
+
+def verificar(plano_path, esperado_path, xlsx_path, cruces_path=None, vistas_path=None):
+    """Compara el libro recalculado con los oraculos.
+
+    Devuelve (comprobadas, fallos, por_hoja), donde POR_HOJA es una lista de
+    (nombre de hoja, celdas comparadas)."""
     plano = json.loads(Path(plano_path).read_text(encoding="utf-8"))
     esperado = json.loads(Path(esperado_path).read_text(encoding="utf-8"))
     cruces = (json.loads(Path(cruces_path).read_text(encoding="utf-8"))
               if cruces_path else None)
+    vistas = (json.loads(Path(vistas_path).read_text(encoding="utf-8"))
+              if vistas_path else None)
 
     recalculado, temporal = recalcular_con_libreoffice(xlsx_path)
     try:
         libro = load_workbook(recalculado, data_only=True)
-
-        comprobadas = 0
         fallos = []
+        por_hoja = []
+        colecciones_vistas = set()
 
         for hoja_plan in plano["hojas"]:
-            nombre = hoja_plan["nombre"][:31]
+            nombre = hoja_plan["nombre"]
             if nombre not in libro.sheetnames:
                 fallos.append("falta la hoja {!r}".format(nombre))
                 continue
             hoja = libro[nombre]
-            columnas = columnas_de(hoja_plan)
 
-            # Las etiquetas visibles son la unica via que tenemos desde aqui
-            # para emparejar columna con campo, porque el plano no lleva el
-            # nombre interno: es informacion del dominio y no tiene por que
-            # bajar hasta aqui.
-            clave = _clave_de_coleccion(esperado, hoja_plan, columnas)
-            if clave is None:
+            if "coleccion" in hoja_plan:
+                coleccion = hoja_plan["coleccion"]
+                colecciones_vistas.add(coleccion)
+                if coleccion not in esperado:
+                    fallos.append("{}: el oraculo no trae la coleccion {!r}".format(
+                        nombre, coleccion))
+                    continue
+                n, f = verificar_coleccion(hoja_plan, hoja, esperado[coleccion])
+                if esperado[coleccion] and n == 0:
+                    f.append("{}: no se comparo ninguna celda".format(nombre))
+            elif "relacion" in hoja_plan:
+                n, f = verificar_relacion(hoja_plan, hoja, esperado)
+            elif "vista" in hoja_plan:
+                n, f = verificar_vista(hoja_plan, hoja, esperado, vistas)
+            elif "cruce" in hoja_plan:
+                # Las tablas cruzadas se comprueban todas juntas mas abajo.
                 continue
-            filas_esperadas = esperado[clave]
+            elif "auxiliar" in hoja_plan:
+                por_hoja.append((nombre, "auxiliar"))
+                continue
+            else:
+                fallos.append("{}: la hoja no dice que es".format(nombre))
+                continue
+            por_hoja.append((nombre, n))
+            fallos.extend(f)
 
-            for i, envoltura in enumerate(filas_esperadas):
-                fila_valores = envoltura[0] if isinstance(envoltura, list) else envoltura
-                fila = hoja_plan["fila_primera"] + i
-                for campo, letra in columnas.items():
-                    if campo not in fila_valores:
-                        continue
-                    real = normalizar(hoja["{}{}".format(letra, fila)].value)
-                    esperado_v = normalizar(fila_valores[campo])
-                    comprobadas += 1
-                    if real != esperado_v:
-                        fallos.append(
-                            "{}!{}{}  esperado {!r}  obtenido {!r}".format(
-                                nombre, letra, fila, esperado_v, real))
+        for coleccion in esperado:
+            if coleccion not in colecciones_vistas:
+                fallos.append("la coleccion {!r} no tiene hoja en el libro".format(
+                    coleccion))
 
         if cruces is not None:
-            en_cruces, fallos_de_cruces = verificar_cruces(
-                plano, cruces, libro, normalizar)
-            comprobadas += en_cruces
-            fallos.extend(fallos_de_cruces)
+            for nombre, n, f in verificar_cruces(plano, cruces, libro, normalizar):
+                por_hoja.append((nombre, n))
+                fallos.extend(f)
+        elif any("cruce" in h for h in plano["hojas"]):
+            fallos.append("el libro tiene tablas cruzadas y no se paso el oraculo de cruces")
 
-        return comprobadas, fallos
+        fallos.extend("error de formula en " + e for e in errores_del_libro(libro))
+        comprobadas = sum(n for _, n in por_hoja if isinstance(n, int))
+        return comprobadas, fallos, por_hoja
     finally:
         shutil.rmtree(temporal, ignore_errors=True)
 
 
-def _clave_de_coleccion(esperado, hoja_plan, columnas):
-    """Empareja la hoja con la coleccion del oraculo.
-
-    Se hace por numero de campos y por que los nombres encajen; es una
-    heuristica de esta herramienta de verificacion, no del sistema.
-    """
-    for clave, filas in esperado.items():
-        if not filas:
-            continue
-        primera = filas[0][0] if isinstance(filas[0], list) else filas[0]
-        if set(primera.keys()) == set(columnas.keys()):
-            return clave
-    return None
-
-
 def main(argv):
-    if len(argv) not in (4, 5):
+    if len(argv) not in (4, 5, 6):
         print(__doc__)
         return 2
-    comprobadas, fallos = verificar(*argv[1:])
+    comprobadas, fallos, por_hoja = verificar(*argv[1:])
     nombre = Path(argv[3]).name
+    detalle = "\n".join("        {:<34} {}".format(h, n) for h, n in por_hoja)
     if fallos:
         print("FALLA  {}: {} celdas comprobadas, {} discrepancias"
               .format(nombre, comprobadas, len(fallos)))
-        for f in fallos[:20]:
+        for f in fallos[:25]:
             print("   " + f)
+        print(detalle)
         return 1
     print("  ok   {}: {} celdas evaluadas por LibreOffice coinciden con el "
           "evaluador de referencia".format(nombre, comprobadas))
+    print(detalle)
     return 0
 
 

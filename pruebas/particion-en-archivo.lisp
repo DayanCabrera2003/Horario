@@ -100,15 +100,16 @@
            (ruta-julia (situacion.excel::ruta-de-archivo destino "Julia"))
            (rosa (leer-archivo ruta-rosa))
            (julia (leer-archivo ruta-julia)))
-      ;; Rosa: un solo turno (1), lunes -> su unico grupo, 10-A.
+      ;; Todas las secciones comparten los ejes de la vista entera
+      ;; (nucleo/ejes.lisp): turno 1 y turno 2, en el orden en que aparecen
+      ;; en los datos. Rosa solo da el turno 1, lunes, a 10-A.
       (comprobar (string= "10-A" (valor-de-celda-en-json rosa "B4"))
                  "el archivo de Rosa deberia mostrar 10-A en turno 1, lunes")
-      ;; Julia: dos turnos, en el orden en que aparecen en los datos -turno 2
-      ;; primero, turno 1 despues- cada uno con su propio grupo.
-      (comprobar (string= "10-A" (valor-de-celda-en-json julia "B4"))
-                 "el archivo de Julia deberia mostrar 10-A en su primera fila (turno 2)")
-      (comprobar (string= "10-B" (valor-de-celda-en-json julia "B5"))
-                 "el archivo de Julia deberia mostrar 10-B en su segunda fila (turno 1)"))))
+      ;; Julia da el turno 1 a 10-B y el turno 2 a 10-A.
+      (comprobar (string= "10-B" (valor-de-celda-en-json julia "B4"))
+                 "el archivo de Julia deberia mostrar 10-B en su primera fila (turno 1)")
+      (comprobar (string= "10-A" (valor-de-celda-en-json julia "B5"))
+                 "el archivo de Julia deberia mostrar 10-A en su segunda fila (turno 2)"))))
 
 ;;; ---------------------------------------------------------------------
 ;;; La casilla en conflicto, tambien en el camino congelado

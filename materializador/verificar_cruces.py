@@ -19,6 +19,9 @@ Lo llama verificar.py, con el libro ya recalculado por LibreOffice.
 """
 
 
+from comparar import iguales
+
+
 def texto_de_casilla(valores):
     """Lo que la hoja de calculo ensena en una casilla con esos valores.
 
@@ -58,15 +61,16 @@ def verificar_cruces(plano, cruces, libro, normalizar):
     esperado antes de compararlos; se recibe para que las dos comprobaciones
     usen exactamente el mismo criterio.
 
-    Devuelve (comprobadas, fallos).
+    Devuelve una lista de (nombre de pestana, casillas comparadas, fallos),
+    con una entrada al final para los cuadrantes del oraculo que no tienen
+    pestana.
     """
     esperados = {}
     for vista in cruces:
         for cuadrante in vista["cuadrantes"]:
             esperados[(vista["vista"], cuadrante["seccion"])] = cuadrante["casillas"]
 
-    comprobadas = 0
-    fallos = []
+    resultado = []
     vistos = set()
 
     for hoja_plan in plano["hojas"]:
@@ -74,8 +78,11 @@ def verificar_cruces(plano, cruces, libro, normalizar):
         if not identidad:
             continue
         clave = (identidad["vista"], identidad["seccion"])
-        nombre = hoja_plan["nombre"][:31]
+        nombre = hoja_plan["nombre"]
         vistos.add(clave)
+        comprobadas = 0
+        fallos = []
+        resultado.append((nombre, 0, fallos))
         if clave not in esperados:
             fallos.append("la pestana {!r} no corresponde a ningun cuadrante "
                           "del oraculo".format(nombre))
@@ -99,7 +106,7 @@ def verificar_cruces(plano, cruces, libro, normalizar):
                 esperado = normalizar(texto_de_casilla(casillas.get(posicion, [])))
                 real = normalizar(hoja["{}{}".format(letra, numero)].value)
                 comprobadas += 1
-                if real != esperado:
+                if not iguales(real, esperado):
                     fallos.append(
                         "{}!{}{}  esperado {!r}  obtenido {!r}".format(
                             nombre, letra, numero, esperado, real))
@@ -108,10 +115,12 @@ def verificar_cruces(plano, cruces, libro, normalizar):
             if posicion not in en_los_ejes:
                 fallos.append("{}: la casilla {!r} del oraculo no esta en "
                               "los ejes de la pestana".format(nombre, posicion))
+        if casillas and comprobadas == 0:
+            fallos.append("{}: no se comparo ninguna casilla".format(nombre))
+        resultado[-1] = (nombre, comprobadas, fallos)
 
-    for clave in esperados:
-        if clave not in vistos:
-            fallos.append("la vista {!r}, seccion {!r}, no tiene pestana "
-                          "en el libro".format(*clave))
-
-    return comprobadas, fallos
+    sin_pestana = ["la vista {!r}, seccion {!r}, no tiene pestana en el libro"
+                   .format(*clave) for clave in esperados if clave not in vistos]
+    if sin_pestana:
+        resultado.append(("(cuadrantes sin pestana)", 0, sin_pestana))
+    return resultado

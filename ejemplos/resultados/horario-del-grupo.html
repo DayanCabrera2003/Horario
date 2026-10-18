@@ -35,12 +35,17 @@ button { font:inherit; padding:5px 12px; margin-top:8px; cursor:pointer;
          border:1px solid #bbb; border-radius:3px; background:#fff; }
 button:hover { background:#f0f0ee; }
 .aviso { color:#a5402a; font-size:12px; }
+.indice { display:flex; flex-wrap:wrap; gap:6px 14px; margin:0 0 20px; font-size:14px; }
+.indice a, a.arriba { color:#2f5597; }
+a.arriba { display:inline-block; margin-top:8px; font-size:12px; }
+h3 { font-size:15px; margin:18px 0 6px; font-weight:600; }
 @media (max-width:520px) { th, td { padding:5px 7px; } }
 </style>
 </head>
 <body>
-<h1>Horario del grupo D111</h1>
+<h1 id="arriba">Horario del grupo D111</h1>
 <p class="nota">Escribe en las casillas: lo calculado y las marcas se actualizan solos.</p>
+<nav id="indice" class="indice"></nav>
 <div id="app"></div>
 <script>
 const D = {};
@@ -70,23 +75,68 @@ const CRECEN = [];
 
 // --- Coercion, identica a la del evaluador de referencia del nucleo ---
 function VACIO(x){ return x === null || x === undefined || x === ''; }
+// Una fecha AAAA-MM-DD vale su dia juliano y una hora HH:MM sus minutos desde
+// medianoche, exactamente como en nucleo/evaluador.lisp (FECHA-COMO-NUMERO y
+// HORA-COMO-NUMERO). Antes se usaba parseFloat, y '2026-10-12' y '2026-10-10'
+// valian los dos 2026: comparar dos fechas del mismo ano daba siempre falso.
+function FECHANUM(s){
+  const m = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.exec(s);
+  if (!m) return null;
+  const anio = +m[1], mes = +m[2], dia = +m[3];
+  if (mes < 1 || mes > 12 || dia < 1 || dia > 31) return null;
+  const a = Math.floor((14 - mes) / 12), y = anio + 4800 - a, mm = mes + 12 * a - 3;
+  return dia + Math.floor((153 * mm + 2) / 5) + 365 * y + Math.floor(y / 4)
+         - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+}
+function HORANUM(s){
+  const m = /^([0-9]{2}):([0-9]{2})$/.exec(s);
+  if (!m) return null;
+  const h = +m[1], mi = +m[2];
+  return (h <= 23 && mi <= 59) ? 60 * h + mi : null;
+}
+function ESFECHA(s){ return FECHANUM(s) !== null; }
+function ESHORA(s){ return HORANUM(s) !== null; }
+// Un texto vale su numero si lo es entero (Number, no parseFloat: '12abc' no
+// es 12 para el evaluador), o su fecha o su hora; si no, 0.
 function N(x){ if (typeof x === 'number') return x;
-               if (VACIO(x)) return 0;
-               const n = parseFloat(x); return isNaN(n) ? 0 : n; }
-function T(x){ if (x === null || x === undefined) return '';
+               if (VACIO(x) || x === false) return 0;
+               if (x === true) return 0;
+               const s = String(x);
+               const f = FECHANUM(s); if (f !== null) return f;
+               const h = HORANUM(s); if (h !== null) return h;
+               const n = Number(s.trim()); return isNaN(n) ? 0 : n; }
+// Un numero se ensena con hasta 10 cifras significativas, sin ceros a la
+// derecha: la misma regla que nucleo/numeros.lisp (TEXTO-DE-NUMERO).
+function NUMTXT(x){ if (Number.isInteger(x)) return String(x);
+                    if (!isFinite(x)) return '';
+                    return String(Number(x.toPrecision(10))); }
+function T(x){ if (x === null || x === undefined || x === false) return '';
                if (x === true) return 'si';
+               if (typeof x === 'number') return NUMTXT(x);
                return String(x); }
-function IG(a,b){ if (VACIO(a) && VACIO(b)) return true;
+// Un booleano del lenguaje es la cadena 'si' o 'no' (nucleo/booleanos.lisp).
+// VERDAD dice si un valor cuenta como verdadero en una condicion; BOOL lo
+// convierte en 'si' o 'no'.
+function VERDAD(x){ return x === true || x === 'si' || (typeof x === 'number' && x !== 0); }
+function BOOL(x){ return VERDAD(x) ? 'si' : 'no'; }
+// Dividir por cero da vacio, como en el evaluador.
+function DIV(a, b){ const d = N(b); return d === 0 ? '' : N(a) / d; }
+function IG(a,b){ if (a === true) a = 'si'; if (b === true) b = 'si';
+                  if (a === false) a = ''; if (b === false) b = '';
+                  if (VACIO(a) && VACIO(b)) return true;
                   if (VACIO(a) || VACIO(b)) return false;
                   if (typeof a === 'number' || typeof b === 'number') return N(a) === N(b);
                   return String(a) === String(b); }
 function V(x){ return x === undefined ? '' : x; }
 
 // --- Busqueda por clave con su valor por defecto ---
+// El valor por defecto es para cuando la fila no existe. Si existe y su campo
+// esta vacio, el resultado es vacio: es lo que dice el evaluador de
+// referencia, y lo que hace la hoja de calculo. Antes se devolvia el valor
+// por defecto tambien en ese caso, y la pagina discrepaba de las otras dos.
 function PROY(fila, campo, pordefecto){
   if (!fila) return pordefecto;
-  const v = fila[campo];
-  return VACIO(v) ? pordefecto : v;
+  return V(fila[campo]);
 }
 
 // --- Dos filas comparten algun valor en esos campos ---
@@ -138,6 +188,23 @@ function huellaDe(){
   return partes.join('|');
 }
 
+// --- Marcas y estado de una fila ---
+function marcasDe(nombreColeccion, fila){
+  return MARCAS.filter(m => m.coleccion === nombreColeccion)
+               .filter(m => { try { return VERDAD(m.cond(fila)); } catch(e){ return false; } });
+}
+
+function explicacionDe(m, fila){
+  try { return m.explica ? T(m.explica(fila)) : m.leyenda; }
+  catch(e){ return m.leyenda; }
+}
+
+// El estado de una fila en palabras: el mismo texto que escriben el texto
+// plano y la hoja de calculo (NUCLEO:TEXTO-DE-ESTADO).
+function estadoDe(nombreColeccion, fila){
+  return marcasDe(nombreColeccion, fila).map(m => explicacionDe(m, fila)).join('; ');
+}
+
 function recalcularTodo(){
   let antes = huellaDe();
   for (let pasada = 0; pasada < TOPE_DE_PASADAS; pasada++) {
@@ -158,13 +225,13 @@ DERIV["casillas"] = {
 };
 
 const MARCAS = [
-  {nombre: "aula-ocupada", coleccion: "casillas", clase: "problema", campos: ["aula"],
+  {nombre: "aula-ocupada", leyenda: "aula ocupada", coleccion: "casillas", clase: "problema", campos: ["aula"],
    cond: (f) => ((!VACIO(V(f["aula"]))) && D["casillas"].some(o => o !== f && (IG(V(o["dia"]),V(f["dia"])) && IG(V(o["turno"]),V(f["turno"])) && IG(V(o["aula"]),V(f["aula"]))))),
    explica: (f) => "Ese local esta ocupado por otro grupo a esa hora"},
-  {nombre: "asignatura-excedida", coleccion: "casillas", clase: "advertencia", campos: ["asignatura", "nombre", "faltan"],
+  {nombre: "asignatura-excedida", leyenda: "asignatura excedida", coleccion: "casillas", clase: "advertencia", campos: ["asignatura", "nombre", "faltan"],
    cond: (f) => ((!VACIO(V(f["asignatura"]))) && (N(V(f["faltan"])) < N(0))),
    explica: (f) => [(N((N(0) - N(V(f["faltan"])))) === 1 ? "Sobra" : "Sobran"), " ", (N(0) - N(V(f["faltan"]))), " ", (N((N(0) - N(V(f["faltan"])))) === 1 ? "turno" : "turnos")].map(T).join("")},
-  {nombre: "casilla-libre", coleccion: "casillas", clase: "informativa", campos: ["asignatura"],
+  {nombre: "casilla-libre", leyenda: "casilla libre", coleccion: "casillas", clase: "informativa", campos: ["asignatura"],
    cond: (f) => VACIO(V(f["asignatura"])),
    explica: (f) => "Turno sin asignar"}
 ];
@@ -179,27 +246,35 @@ const VISTAS = [
   {nombre: "plan", titulo: "Plan de la carrera", coleccion: "asignaturas", entrada: false}
 ];
 
-const ESQUEMA = [
-  {nombre: "asignaturas", etiqueta: "Asignaturas", crece: false, agrupa: null, campos: [{n: "abrev", e: "Abrev", rol: "fijo", tipo: "texto", clave: null}, {n: "nombre", e: "Asignatura", rol: "fijo", tipo: "texto", clave: null}, {n: "frecuencia", e: "Frec", rol: "fijo", tipo: "entero", clave: null}]},
-  {nombre: "aulas", etiqueta: "Aulas", crece: false, agrupa: null, campos: [{n: "aula", e: "Aula", rol: "fijo", tipo: "texto", clave: null}]},
-  {nombre: "casillas", etiqueta: "Casillas", crece: false, agrupa: null, campos: [{n: "dia", e: "Dia", rol: "fijo", tipo: "texto", clave: null}, {n: "turno", e: "Turno", rol: "fijo", tipo: "texto", clave: null}, {n: "asignatura", e: "Asignatura", rol: "entrada", tipo: "texto", clave: null}, {n: "aula", e: "Aula", rol: "entrada", tipo: "texto", clave: null}, {n: "nombre", e: "Nombre", rol: "derivado", tipo: "texto", clave: null}, {n: "puestos", e: "Puestos", rol: "derivado", tipo: "entero", clave: null}, {n: "faltan", e: "Faltan", rol: "derivado", tipo: "entero", clave: null}]}
+const TABLAS = [
+  {id: "t-detalle", vista: "detalle", titulo: "Casilla por casilla", coleccion: "casillas", crece: false, agrupa: null, columnaEstado: "Estado", campos: [{n: "dia", e: "Dia", rol: "fijo", tipo: "texto", clave: null}, {n: "turno", e: "Turno", rol: "fijo", tipo: "texto", clave: null}, {n: "asignatura", e: "Asignatura", rol: "entrada", tipo: "texto", clave: null}, {n: "aula", e: "Aula", rol: "entrada", tipo: "texto", clave: null}, {n: "nombre", e: "Nombre", rol: "derivado", tipo: "texto", clave: null}, {n: "puestos", e: "Puestos", rol: "derivado", tipo: "entero", clave: null}, {n: "faltan", e: "Faltan", rol: "derivado", tipo: "entero", clave: null}]},
+  {id: "t-plan", vista: "plan", titulo: "Plan de la carrera", coleccion: "asignaturas", crece: false, agrupa: null, columnaEstado: "Estado", campos: [{n: "abrev", e: "Abrev", rol: "fijo", tipo: "texto", clave: null}, {n: "nombre", e: "Asignatura", rol: "fijo", tipo: "texto", clave: null}, {n: "frecuencia", e: "Frec", rol: "fijo", tipo: "entero", clave: null}]},
+  {id: "t-aulas", vista: "aulas", titulo: "Aulas", coleccion: "aulas", crece: false, agrupa: null, columnaEstado: "Estado", campos: [{n: "aula", e: "Aula", rol: "fijo", tipo: "texto", clave: null}]}
 ];
 
 const CRUCES = [
-  {titulo: "Horario semanal", coleccion: "casillas", ejeFilas: "turno", ejeColumnas: "dia", celda: "asignatura", secciones: null, filtro: null}
+  {id: "c-rejilla", titulo: "Horario semanal", coleccion: "casillas", ejeFilas: "turno", etiquetaFilas: "Turno", ejeColumnas: "dia", celda: "asignatura", campoCelda: {n: "asignatura", e: "Asignatura", rol: "entrada", tipo: "texto", clave: null}, entrada: true, orden: "turno", secciones: null, filtro: null}
 ];
 
-function marcasDe(nombreColeccion, fila){
-  return MARCAS.filter(m => m.coleccion === nombreColeccion)
-               .filter(m => { try { return !!m.cond(fila); } catch(e){ return false; } });
-}
+const ORDEN = [
+  {tipo: 'cruce', indice: 0},
+  {tipo: 'tabla', indice: 0},
+  {tipo: 'tabla', indice: 1},
+  {tipo: 'tabla', indice: 2}
+];
 
-// --- Tabla cruzada: los valores de un campo van en el eje de columnas ---
-//
-// El numero de columnas sale de los DATOS, no de la declaracion. En una
-// pagina eso no cuesta nada: se recalcula al dibujar, y si aparece un valor
-// nuevo aparece una columna nueva. En una hoja de calculo, lo mismo mueve el
-// direccionamiento entero, y por eso alli es una emulacion con coste.
+// === Dibujo de la pagina ===
+// (materializador/verificar-web.js corta el programa aqui: lo de arriba es el
+// calculo, que se compara con el evaluador; lo de abajo toca el DOM.)
+
+// Las celdas que dependen de los datos, cada una con su funcion de puesta al
+// dia. Se rellena en construir() y se recorre en actualizar().
+let ACTUALIZADORES = [];
+let FIRMA = null;
+
+function registrar(f){ ACTUALIZADORES.push(f); f(); }
+
+// Los valores distintos de un campo, en orden de primera aparicion.
 function distintosDe(filas, campo){
   const vistos = [];
   for (const f of filas) {
@@ -209,29 +284,204 @@ function distintosDe(filas, campo){
   return vistos;
 }
 
-// Una vista partida es la misma tabla repetida, una vez por valor. Los
-// valores salen de los DATOS al dibujar: si manana aparece un grupo nuevo,
-// aparece una tabla nueva sin volver a generar nada. Es la misma propiedad
-// que hace que aqui las columnas de un cruce sean gratis, y es justo lo que
-// a una hoja de calculo le cuesta una emulacion.
-function dibujarCruce(cruce, app){
-  const filasDelDato = D[cruce.coleccion] || [];
+// --- Controles de entrada ---
+//
+// Un control se crea una vez y escribe en la fila que le toca. Si el mismo
+// dato se ve en otro sitio (una rejilla y su tabla), el otro control se pone
+// al dia en actualizar(), salvo el que tiene el foco: a ese no se le toca.
+let SECUENCIA = 0;
+function controlDe(nombreColeccion, campo, fila, ref){
+  const td = document.createElement('td');
+  td.className = 'entrada';
+  const clave = nombreColeccion + '.' + campo.n;
+  const dominio = DOMINIOS[clave];
+  let control;
+  if (dominio && dominio.bloquea) {
+    control = document.createElement('select');
+    const vacia = document.createElement('option');
+    vacia.value = ''; vacia.textContent = '';
+    control.appendChild(vacia);
+    for (const v of dominio.valores()) {
+      const o = document.createElement('option');
+      o.value = T(v); o.textContent = T(v);
+      control.appendChild(o);
+    }
+  } else {
+    control = document.createElement('input');
+    if (campo.tipo === 'entero' || campo.tipo === 'numero') control.type = 'number';
+    // Plan aprobado de tipos, seccion 4.1: un selector de verdad.
+    if (campo.tipo === 'fecha') control.type = 'date';
+    if (campo.tipo === 'hora') control.type = 'time';
+    if (dominio) {
+      const lista = document.createElement('datalist');
+      lista.id = 'lista_' + (++SECUENCIA);
+      for (const v of dominio.valores()) {
+        const o = document.createElement('option');
+        o.value = T(v);
+        lista.appendChild(o);
+      }
+      control.setAttribute('list', lista.id);
+      td.appendChild(lista);
+    }
+  }
+  control.dataset.ref = ref;
+  control.setAttribute('aria-label', campo.e);
+  control.addEventListener('input', e => {
+    const v = e.target.value;
+    fila[campo.n] = (campo.tipo === 'entero' || campo.tipo === 'numero')
+                    ? (v === '' ? '' : Number(v)) : v;
+    actualizar();
+  });
+  td.appendChild(control);
+  const aviso = document.createElement('div');
+  aviso.className = 'aviso';
+  td.appendChild(aviso);
+  registrar(() => {
+    const actual = T(fila[campo.n]);
+    const fuera = dominio && !VACIO(fila[campo.n]) &&
+                  !dominio.valores().some(v => IG(v, fila[campo.n]));
+    // Un desplegable que bloquea no puede ensenar un valor que no esta entre
+    // sus opciones: el que ya venia en los datos se veria vacio. Se le anade
+    // como opcion, para que se vea y se pueda corregir.
+    if (control.tagName === 'SELECT' && fuera &&
+        !Array.from(control.options).some(o => o.value === actual)) {
+      const o = document.createElement('option');
+      o.value = actual; o.textContent = actual;
+      control.appendChild(o);
+    }
+    if (document.activeElement !== control) control.value = actual;
+    aviso.textContent = fuera ? 'no está en la lista' : '';
+  });
+  return td;
+}
+
+// --- Tabla cruzada ---
+//
+// Los dos ejes y las secciones salen de los DATOS: si aparece un valor
+// nuevo, cambia la forma y construir() lo dibuja. Todas las secciones de una
+// vista comparten los mismos ejes, para que se lean igual.
+function filasDelCruce(cruce){
+  const todas = D[cruce.coleccion] || [];
   // El filtro esconde filas de la PRESENTACION y no toca D: los agregados y
-  // las marcas siguen viendo la coleccion entera. Se evalua en cada render,
-  // asi que una fila que deja de cumplirlo desaparece sola.
-  const todas = cruce.filtro ? filasDelDato.filter(f => !!cruce.filtro(f))
-                             : filasDelDato;
-  const secciones = cruce.secciones ? distintosDe(todas, cruce.secciones) : [null];
-  for (const s of secciones) {
-    const filas = s === null ? todas
-                             : todas.filter(f => IG(f[cruce.secciones], s));
-    dibujarUnaTabla(cruce, filas, s, app);
+  // las marcas siguen viendo la coleccion entera.
+  return cruce.filtro ? todas.filter(f => VERDAD(cruce.filtro(f))) : todas;
+}
+
+function seccionesDe(cruce, filas){
+  if (!cruce.secciones) return [null];
+  return distintosDe(filas, cruce.secciones).sort(compararSecciones);
+}
+
+// La misma comparacion que NUCLEO::MENOR-P: numeros por su valor, fechas y
+// horas por su valor, textos por sus caracteres.
+function compararSecciones(a, b){
+  if (typeof a === 'number' && typeof b === 'number') return a - b;
+  if (typeof a === 'string' && typeof b === 'string') {
+    const fa = FECHANUM(a), fb = FECHANUM(b);
+    if (fa !== null && fb !== null) return fa - fb;
+    const ha = HORANUM(a), hb = HORANUM(b);
+    if (ha !== null && hb !== null) return ha - hb;
+    return a < b ? -1 : (a > b ? 1 : 0);
+  }
+  return 0;
+}
+
+function ejesDe(cruce, filas){
+  return {filas: ordenarEje(distintosDe(filas, cruce.ejeFilas), cruce.ejeFilas, cruce),
+          columnas: ordenarEje(distintosDe(filas, cruce.ejeColumnas), cruce.ejeColumnas, cruce)};
+}
+
+// Si el eje es el campo por el que la coleccion declara orden, sus valores
+// van en ese orden; si no, en el de primera aparicion.
+function ordenarEje(valores, campo, cruce){
+  if (cruce.orden !== campo) return valores;
+  return valores.slice().sort(compararSecciones);
+}
+
+function dibujarCruce(cruce, indiceCruce, app){
+  const filas = filasDelCruce(cruce);
+  const ejes = ejesDe(cruce, filas);
+  for (const s of seccionesDe(cruce, filas)) {
+    const suyas = s === null ? filas : filas.filter(f => IG(f[cruce.secciones], s));
+    dibujarUnaRejilla(cruce, indiceCruce, suyas, ejes, s, app);
   }
 }
 
+function dibujarUnaRejilla(cruce, indiceCruce, filas, ejes, valorDeSeccion, contenedor){
+  const seccion = document.createElement('section');
+  const titulo = document.createElement('h3');
+  titulo.textContent = valorDeSeccion === null
+    ? cruce.titulo
+    : cruce.titulo + ' - ' + T(valorDeSeccion);
+  seccion.appendChild(titulo);
+
+  const envoltura = document.createElement('div');
+  envoltura.className = 'envoltura';
+  const t = document.createElement('table');
+  const thead = document.createElement('thead');
+  const trh = document.createElement('tr');
+  const esquina = document.createElement('th');
+  esquina.textContent = cruce.etiquetaFilas;
+  trh.appendChild(esquina);
+  for (const c of ejes.columnas) {
+    const th = document.createElement('th');
+    th.textContent = T(c);
+    trh.appendChild(th);
+  }
+  thead.appendChild(trh);
+  t.appendChild(thead);
+
+  const campoCelda = cruce.campoCelda;
+  const tbody = document.createElement('tbody');
+  for (const vf of ejes.filas) {
+    const tr = document.createElement('tr');
+    const th = document.createElement('th');
+    th.textContent = T(vf);
+    tr.appendChild(th);
+    for (const vc of ejes.columnas) {
+      // TODAS las que caen ahi, no la primera. Son varias cuando la vista
+      // declaro unica-salvo: entonces el choque existe y hay que ensenarlo.
+      const enLaCasilla = filas.filter(f => IG(f[cruce.ejeFilas], vf) &&
+                                            IG(f[cruce.ejeColumnas], vc));
+      let td;
+      if (cruce.entrada && campoCelda && campoCelda.rol === 'entrada' &&
+          enLaCasilla.length === 1) {
+        // Una vista de entrada deja escribir en la casilla, si la casilla
+        // es de una sola fila.
+        td = controlDe(cruce.coleccion, campoCelda, enLaCasilla[0],
+                       'c|' + indiceCruce + '|' + T(valorDeSeccion) + '|' + T(vf) + '|' + T(vc));
+      } else {
+        td = document.createElement('td');
+        const celda = td;
+        registrar(() => {
+          celda.textContent = enLaCasilla.map(f => T(f[cruce.celda])).join(' / ');
+        });
+      }
+      const marcada = td;
+      registrar(() => {
+        // Las marcas de las filas que caen en la casilla la tinen.
+        marcada.classList.remove('problema', 'advertencia', 'informativa');
+        for (const fila of enLaCasilla) {
+          const suyas = marcasDe(cruce.coleccion, fila);
+          if (suyas.length) { marcada.classList.add(suyas[0].clase); break; }
+        }
+      });
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+  t.appendChild(tbody);
+  envoltura.appendChild(t);
+  seccion.appendChild(envoltura);
+  contenedor.appendChild(seccion);
+}
+
+// --- Tabla de una coleccion ---
+
 // Las filas en el orden en que se van a MOSTRAR, cada una con el indice que
-// ocupa en D y, si empieza un grupo, la cabecera que va encima. Sin campo de
-// agrupacion es la identidad: mismas filas, mismo orden, sin cabeceras.
+// ocupa en D y, si empieza un grupo, la cabecera que va encima. Agrupar es
+// solo de presentacion: D no se toca, y la fila anterior sigue significando
+// lo mismo. En una hoja de calculo no se puede separar las dos cosas.
 function ordenarParaMostrar(filas, campo){
   const pares = filas.map((fila, indice) => ({fila, indice, cabecera: null}));
   if (!campo) return pares;
@@ -251,231 +501,203 @@ function ordenarParaMostrar(filas, campo){
   return salida;
 }
 
-function dibujarUnaTabla(cruce, filas, valorDeSeccion, app){
-  const ejeF = distintosDe(filas, cruce.ejeFilas);
-  const ejeC = distintosDe(filas, cruce.ejeColumnas);
-
-  const seccion = document.createElement('section');
-  const titulo = document.createElement('h2');
-  titulo.textContent = valorDeSeccion === null
-    ? cruce.titulo
-    : cruce.titulo + ' - ' + T(valorDeSeccion);
-  seccion.appendChild(titulo);
+function dibujarTabla(tabla, contenedor){
+  const seccion = contenedor;
 
   const envoltura = document.createElement('div');
   envoltura.className = 'envoltura';
   const t = document.createElement('table');
-
+  const thead = document.createElement('thead');
   const trh = document.createElement('tr');
-  const esquina = document.createElement('th');
-  esquina.textContent = cruce.ejeFilas;
-  trh.appendChild(esquina);
-  for (const c of ejeC) {
+  for (const c of tabla.campos) {
     const th = document.createElement('th');
-    th.textContent = T(c);
+    th.textContent = c.e;
     trh.appendChild(th);
   }
-  const thead = document.createElement('thead');
+  const thEstado = document.createElement('th');
+  thEstado.textContent = tabla.columnaEstado;
+  trh.appendChild(thEstado);
   thead.appendChild(trh);
   t.appendChild(thead);
 
   const tbody = document.createElement('tbody');
-  for (const vf of ejeF) {
+  ordenarParaMostrar(D[tabla.coleccion], tabla.agrupa).forEach(par => {
+    const fila = par.fila, indice = par.indice;
+    if (par.cabecera !== null) {
+      const trg = document.createElement('tr');
+      const tdg = document.createElement('td');
+      tdg.className = 'grupo';
+      tdg.colSpan = tabla.campos.length + 1;
+      tdg.textContent = T(par.cabecera);
+      trg.appendChild(tdg);
+      tbody.appendChild(trg);
+    }
     const tr = document.createElement('tr');
-    const th = document.createElement('th');
-    th.textContent = T(vf);
-    tr.appendChild(th);
-    for (const vc of ejeC) {
-      // TODAS las que caen ahi, no la primera. Normalmente es una, porque
-      // los ejes determinan la fila y el analisis lo exige. Son varias
-      // cuando la vista declaro unica-salvo: entonces el choque existe y hay
-      // que ensenarlo en vez de elegir uno y callarse.
-      const enLaCasilla = filas.filter(f => IG(f[cruce.ejeFilas], vf) &&
-                                            IG(f[cruce.ejeColumnas], vc));
-      const td = document.createElement('td');
-      td.textContent = enLaCasilla.map(f => T(f[cruce.celda])).join(' / ');
-      // Las marcas de las filas que caen en el cruce tinen la celda.
-      for (const fila of enLaCasilla) {
-        const suyas = marcasDe(cruce.coleccion, fila);
-        if (suyas.length) { td.classList.add(suyas[0].clase); break; }
+    for (const c of tabla.campos) {
+      // El rol decide que se dibuja: de entrada es un control; fijo, texto,
+      // salvo en una fila que el usuario anadio, donde lo escribe el; y
+      // derivado, texto que se pone al dia.
+      const escribible = c.rol === 'entrada' || (c.rol === 'fijo' && fila.__nueva);
+      let td;
+      if (escribible) {
+        td = controlDe(tabla.coleccion, c, fila,
+                       't|' + tabla.vista + '|' + indice + '|' + c.n);
+      } else {
+        td = document.createElement('td');
+        td.className = c.rol;
+        const celda = td;
+        registrar(() => {
+          celda.textContent = c.clave
+            // Relacion uno a muchos: cada fila relacionada por su clave.
+            ? (fila[c.n] || []).map(r => c.clave.map(k => T(r[k])).join(' ')).join(', ')
+            : T(fila[c.n]);
+        });
       }
+      const marcada = td;
+      registrar(() => {
+        // La marca senala los campos que declara su alcance.
+        marcada.classList.remove('problema', 'advertencia', 'informativa');
+        const suyas = marcasDe(tabla.coleccion, fila).filter(m => m.campos.includes(c.n));
+        if (suyas.length) marcada.classList.add(suyas[0].clase);
+      });
       tr.appendChild(td);
     }
+    const tdEstado = document.createElement('td');
+    tdEstado.className = 'estado';
+    registrar(() => { tdEstado.textContent = estadoDe(tabla.coleccion, fila); });
+    tr.appendChild(tdEstado);
     tbody.appendChild(tr);
-  }
+  });
   t.appendChild(tbody);
   envoltura.appendChild(t);
   seccion.appendChild(envoltura);
-  app.appendChild(seccion);
-}
 
-function render(){
-  recalcularTodo();
-  const app = document.getElementById('app');
-  app.innerHTML = '';
-
-  if (typeof CRUCES !== 'undefined') for (const c of CRUCES) dibujarCruce(c, app);
-
-  if (RECALCULO_INCOMPLETO) {
-    const aviso = document.createElement('p');
-    aviso.className = 'aviso';
-    aviso.textContent = 'Los valores calculados no acabaron de estabilizarse. ' +
-      'Puede haber una dependencia circular entre filas.';
-    app.appendChild(aviso);
+  // Crecer es nativo aqui: un boton. La fila nueva lleva controles para sus
+  // campos fijos y de entrada: en una coleccion que crece, fijo quiere decir
+  // que lo escribe quien crea la fila.
+  if (tabla.crece) {
+    const boton = document.createElement('button');
+    boton.textContent = '+ Añadir fila';
+    boton.addEventListener('click', () => {
+      const nueva = {__nueva: true};
+      for (const c of tabla.campos) if (c.rol !== 'derivado') nueva[c.n] = '';
+      D[tabla.coleccion].push(nueva);
+      const primero = tabla.campos.find(c => c.rol !== 'derivado');
+      FOCO = primero ? 't|' + tabla.vista + '|' + (D[tabla.coleccion].length - 1) +
+                       '|' + primero.n : null;
+      construir();
+    });
+    seccion.appendChild(boton);
   }
 
-  for (const tabla of ESQUEMA) {
+  const leyenda = MARCAS.filter(m => m.coleccion === tabla.coleccion);
+  if (leyenda.length) {
+    const p = document.createElement('p');
+    p.className = 'leyenda';
+    for (const m of leyenda) {
+      const s = document.createElement('span');
+      s.className = m.clase;
+      s.textContent = m.leyenda;
+      p.appendChild(s);
+    }
+    seccion.appendChild(p);
+  }
+}
+
+// --- La forma de la pagina ---
+//
+// Todo lo que, si cambia, obliga a construir de nuevo: las secciones y los
+// ejes de cada rejilla, cuantas filas hay y en que orden se muestran.
+function firma(){
+  const partes = [];
+  for (const c of CRUCES) {
+    const filas = filasDelCruce(c);
+    const ejes = ejesDe(c, filas);
+    partes.push(JSON.stringify([seccionesDe(c, filas), ejes.filas, ejes.columnas,
+                                filas.length]));
+  }
+  for (const t of TABLAS) {
+    partes.push(JSON.stringify(ordenarParaMostrar(D[t.coleccion], t.agrupa)
+                               .map(p => [p.indice, p.cabecera])));
+  }
+  return partes.join('|');
+}
+
+let FOCO = null;
+
+function construir(){
+  recalcularTodo();
+  const activo = document.activeElement;
+  const ref = FOCO || (activo && activo.dataset ? activo.dataset.ref : null);
+  const seleccion = (activo && typeof activo.selectionStart === 'number')
+    ? [activo.selectionStart, activo.selectionEnd] : null;
+  FOCO = null;
+  ACTUALIZADORES = [];
+  const app = document.getElementById('app');
+  app.textContent = '';
+  dibujarVistas(app);
+  if (RECALCULO_INCOMPLETO) avisarRecalculoIncompleto(app);
+  FIRMA = firma();
+  if (ref) {
+    const vuelta = Array.from(app.querySelectorAll('[data-ref]'))
+                        .find(x => x.dataset.ref === ref);
+    if (vuelta) {
+      vuelta.focus();
+      if (seleccion && typeof vuelta.setSelectionRange === 'function') {
+        try { vuelta.setSelectionRange(seleccion[0], seleccion[1]); } catch(e) {}
+      }
+    }
+  }
+}
+
+function avisarRecalculoIncompleto(app){
+  const aviso = document.createElement('p');
+  aviso.className = 'aviso';
+  aviso.textContent = 'Los valores calculados no acabaron de estabilizarse. ' +
+    'Puede haber una dependencia circular entre filas.';
+  app.insertBefore(aviso, app.firstChild);
+}
+
+function actualizar(){
+  recalcularTodo();
+  if (firma() !== FIRMA) { construir(); return; }
+  for (const f of ACTUALIZADORES) f();
+}
+
+// Cada vista es una seccion con su titulo, un ancla para el indice y un
+// enlace para volver arriba. El indice de la pagina es la navegacion: un
+// enlace por vista, en el orden en que se declararon.
+function dibujarVistas(app){
+  const indice = document.getElementById('indice');
+  if (indice) {
+    indice.textContent = '';
+    for (const o of ORDEN) {
+      const v = o.tipo === 'cruce' ? CRUCES[o.indice] : TABLAS[o.indice];
+      const a = document.createElement('a');
+      a.href = '#' + v.id;
+      a.textContent = v.titulo;
+      indice.appendChild(a);
+    }
+  }
+  for (const o of ORDEN) {
+    const v = o.tipo === 'cruce' ? CRUCES[o.indice] : TABLAS[o.indice];
     const seccion = document.createElement('section');
+    seccion.id = v.id;
     const titulo = document.createElement('h2');
-    titulo.textContent = tabla.etiqueta;
+    titulo.textContent = v.titulo;
     seccion.appendChild(titulo);
-
-    const envoltura = document.createElement('div');
-    envoltura.className = 'envoltura';
-    const t = document.createElement('table');
-
-    const thead = document.createElement('thead');
-    const trh = document.createElement('tr');
-    for (const c of tabla.campos) {
-      const th = document.createElement('th');
-      th.textContent = c.e;
-      trh.appendChild(th);
-    }
-    const thEstado = document.createElement('th');
-    thEstado.textContent = 'Estado';
-    trh.appendChild(thEstado);
-    thead.appendChild(trh);
-    t.appendChild(thead);
-
-    const tbody = document.createElement('tbody');
-    // Agrupar es SOLO de presentacion: el arreglo D no se toca. Sus indices
-    // siguen siendo los mismos, que es lo que usan los controles de entrada
-    // para escribir de vuelta, y lo que hace que la fila anterior siga
-    // significando lo mismo. En una hoja de calculo no se puede separar las
-    // dos cosas, porque alli la posicion de la fila ES el dato.
-    ordenarParaMostrar(D[tabla.nombre], tabla.agrupa).forEach(par => {
-      const fila = par.fila, indice = par.indice;
-      if (par.cabecera !== null) {
-        const trg = document.createElement('tr');
-        const tdg = document.createElement('td');
-        tdg.className = 'grupo';
-        tdg.colSpan = tabla.campos.length + 1;
-        tdg.textContent = T(par.cabecera);
-        trg.appendChild(tdg);
-        tbody.appendChild(trg);
-      }
-      const disparadas = marcasDe(tabla.nombre, fila);
-      const tr = document.createElement('tr');
-
-      for (const c of tabla.campos) {
-        const td = document.createElement('td');
-        td.className = c.rol;
-        // El rol decide que se dibuja. Es el mismo hecho del dominio que en
-        // la hoja de calculo decide el bloqueo y el color de la pestana.
-        if (c.rol === 'entrada') {
-          const clave = tabla.nombre + '.' + c.n;
-          const dominio = DOMINIOS[clave];
-          let control;
-          if (dominio) {
-            const valores = dominio.valores();
-            if (dominio.bloquea) {
-              control = document.createElement('select');
-              const vacia = document.createElement('option');
-              vacia.value = ''; vacia.textContent = '';
-              control.appendChild(vacia);
-              for (const v of valores) {
-                const o = document.createElement('option');
-                o.value = v; o.textContent = v;
-                control.appendChild(o);
-              }
-            } else {
-              // Avisa sin bloquear, como los desplegables del corpus.
-              control = document.createElement('input');
-              const lista = document.createElement('datalist');
-              lista.id = 'dl_' + tabla.nombre + '_' + c.n + '_' + indice;
-              for (const v of valores) {
-                const o = document.createElement('option');
-                o.value = v;
-                lista.appendChild(o);
-              }
-              control.setAttribute('list', lista.id);
-              td.appendChild(lista);
-              if (!VACIO(fila[c.n]) && !valores.some(v => IG(v, fila[c.n]))) {
-                const aviso = document.createElement('div');
-                aviso.className = 'aviso';
-                aviso.textContent = 'no esta en la lista';
-                td.appendChild(aviso);
-              }
-            }
-          } else {
-            control = document.createElement('input');
-            if (c.tipo === 'entero' || c.tipo === 'numero') control.type = 'number';
-          }
-          control.value = fila[c.n] ?? '';
-          control.addEventListener('input', e => {
-            const v = e.target.value;
-            fila[c.n] = (c.tipo === 'entero' || c.tipo === 'numero')
-                        ? (v === '' ? '' : Number(v)) : v;
-            render();
-          });
-          td.insertBefore(control, td.firstChild);
-        } else if (c.clave) {
-          // Relacion uno a muchos: cada fila relacionada por su clave.
-          td.textContent = (fila[c.n] || [])
-            .map(r => c.clave.map(k => T(r[k])).join(' ')).join(', ');
-        } else {
-          td.textContent = T(fila[c.n]);
-        }
-        // La marca senala los campos que declara su alcance.
-        const suyas = disparadas.filter(m => m.campos.includes(c.n));
-        if (suyas.length) td.classList.add(suyas[0].clase);
-        tr.appendChild(td);
-      }
-
-      const tdEstado = document.createElement('td');
-      tdEstado.className = 'estado';
-      tdEstado.textContent = disparadas.map(m => {
-        try { return m.explica ? m.explica(fila) : m.nombre.replace(/-/g, ' '); }
-        catch(e){ return m.nombre.replace(/-/g, ' '); }
-      }).join('; ');
-      tr.appendChild(tdEstado);
-      tbody.appendChild(tr);
-    });
-    t.appendChild(tbody);
-    envoltura.appendChild(t);
-    seccion.appendChild(envoltura);
-
-    // Crecer es nativo aqui: un boton. En la hoja de calculo hace falta
-    // reservar filas y definir un rango que se dimensione con lo escrito.
-    if (tabla.crece) {
-      const boton = document.createElement('button');
-      boton.textContent = '+ Anadir fila';
-      boton.addEventListener('click', () => {
-        const nueva = {};
-        for (const c of tabla.campos) if (c.rol !== 'derivado') nueva[c.n] = '';
-        D[tabla.nombre].push(nueva);
-        render();
-      });
-      seccion.appendChild(boton);
-    }
-
-    const leyenda = MARCAS.filter(m => m.coleccion === tabla.nombre);
-    if (leyenda.length) {
-      const p = document.createElement('p');
-      p.className = 'leyenda';
-      for (const m of leyenda) {
-        const s = document.createElement('span');
-        s.className = m.clase;
-        s.textContent = m.nombre.replace(/-/g, ' ');
-        p.appendChild(s);
-      }
-      seccion.appendChild(p);
-    }
+    if (o.tipo === 'cruce') dibujarCruce(v, o.indice, seccion);
+    else dibujarTabla(v, seccion);
+    const arriba = document.createElement('a');
+    arriba.href = '#arriba';
+    arriba.className = 'arriba';
+    arriba.textContent = 'volver arriba';
+    seccion.appendChild(arriba);
     app.appendChild(seccion);
   }
 }
 
-render();
+construir();
 </script>
 </body>
 </html>

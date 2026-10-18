@@ -17,11 +17,45 @@
 
 (defvar *plan* nil "Plan en curso. Interno de esta arquitectura.")
 
+(defun js-cadena (texto)
+  "TEXTO como literal de cadena de JavaScript valido, con las reglas de JSON.
+
+   Se escapan las comillas, la barra invertida, los saltos de linea y todos
+   los caracteres de control, ademas de \"</\" (que dentro de un <script>
+   cerraria el bloque) y los separadores de linea de Unicode. Antes se
+   escribia con la sintaxis de cadena de Lisp, que deja pasar el salto de
+   linea: un dato con dos lineas dejaba la pagina entera en blanco."
+  (with-output-to-string (s)
+    (write-char #\" s)
+    (loop for i from 0 below (length texto)
+          for c = (char texto i)
+          do (case c
+               (#\" (write-string "\\\"" s))
+               (#\\ (write-string "\\\\" s))
+               (#\Newline (write-string "\\n" s))
+               (#\Return (write-string "\\r" s))
+               (#\Tab (write-string "\\t" s))
+               (#\/ (if (and (plusp i) (char= (char texto (1- i)) #\<))
+                        (write-string "\\/" s)
+                        (write-char c s)))
+               (t (if (or (< (char-code c) 32)
+                          (= (char-code c) #x2028) (= (char-code c) #x2029))
+                      (format s "\\u~4,'0x" (char-code c))
+                      (write-char c s)))))
+    (write-char #\" s)))
+
+(defun js (flujo argumento &optional dos-puntos arroba)
+  "Directiva de FORMAT (~/situacion.web::js/) que escribe ARGUMENTO como
+   cadena de JavaScript con JS-CADENA. Sustituye a ~S, que escribia con la
+   sintaxis de Lisp."
+  (declare (ignore dos-puntos arroba))
+  (write-string (js-cadena (princ-to-string argumento)) flujo))
+
 (defun js-literal (valor)
   (cond ((null valor) "\"\"")
         ((eq valor t) "true")
-        ((realp valor) (format nil "~a" valor))
-        (t (format nil "~s" (princ-to-string valor)))))
+        ((realp valor) (nucleo:escritura-de-numero valor))
+        (t (js-cadena (princ-to-string valor)))))
 
 (defun js-variable (simbolo)
   "El nombre de la variable de fila en JavaScript.
@@ -32,10 +66,10 @@
   (string-downcase (subseq (symbol-name simbolo) 0 1)))
 
 (defun js-coleccion (nombre)
-  (format nil "D[~s]" (string-downcase (symbol-name nombre))))
+  (format nil "D[~/situacion.web::js/]" (string-downcase (symbol-name nombre))))
 
 (defun js-campo (nombre)
-  (format nil "[~s]" (string-downcase (symbol-name nombre))))
+  (format nil "[~/situacion.web::js/]" (string-downcase (symbol-name nombre))))
 
 (defmethod protocolo:emitir-expresion ((a web) (e nucleo:literal) ambito plan)
   (declare (ignore ambito plan))
@@ -49,6 +83,13 @@
   (declare (ignore ambito))
   (let ((p (nucleo:parametro-llamado (situacion plan) (nucleo:nombre e))))
     (js-literal (and p (nucleo:valor p)))))
+
+(defun js-condicion (a e ambito plan)
+  "E traducida para usarla como condicion. Si por su forma ya es verdadero o
+   falso, tal cual; si no -un campo que vale \"si\" o \"no\", un numero-,
+   pasa por VERDAD, que la juzga como el evaluador (NUCLEO:VERDADERO-P)."
+  (let ((js (protocolo:emitir-expresion a e ambito plan)))
+    (if (nucleo:expresion-booleana-p e) js (format nil "VERDAD(~a)" js))))
 
 (defparameter +operadores-js+
   '(("+" . "+") ("-" . "-") ("*" . "*") ("/" . "/")
@@ -65,11 +106,16 @@
          (partes (mapcar (lambda (x) (protocolo:emitir-expresion a x ambito plan))
                          (nucleo:argumentos e)))
          (js (cdr (assoc op +operadores-js+ :test #'string=))))
+    (flet ((condiciones ()
+             (mapcar (lambda (x) (js-condicion a x ambito plan)) (nucleo:argumentos e))))
     (cond
       ;; Con tres o mas operandos, un solo JS entre el primero y el segundo
       ;; dejaba fuera al resto en silencio: (+ a b c) emitia (N(a) + N(b)).
       ;; Cada operando se envuelve en N(...) por separado -no el acumulado-,
       ;; para no terminar coaccionando a numero una subcadena ya compuesta.
+      ;; Dividir por cero da vacio, no Infinity.
+      ((string= op "/")
+       (reduce (lambda (x y) (format nil "DIV(~a, ~a)" x y)) partes))
       ((member op +aritmeticos-js+ :test #'string=)
        (format nil "(~{N(~a)~^ ~a ~})"
                (loop for (parte . resto) on partes
@@ -82,14 +128,14 @@
        (format nil "(N(~a) ~a N(~a))" (first partes) js (second partes)))
       ((string= op "=") (format nil "IG(~a,~a)" (first partes) (second partes)))
       ((string= op "/=") (format nil "(!IG(~a,~a))" (first partes) (second partes)))
-      ((string= op "Y") (format nil "(~{~a~^ && ~})" partes))
-      ((string= op "O") (format nil "(~{~a~^ || ~})" partes))
-      ((string= op "NO") (format nil "(!~a)" (first partes)))
-      (t (error "Operador sin traduccion a JavaScript: ~a" op)))))
+      ((string= op "Y") (format nil "(~{~a~^ && ~})" (condiciones)))
+      ((string= op "O") (format nil "(~{~a~^ || ~})" (condiciones)))
+      ((string= op "NO") (format nil "(!~a)" (first (condiciones))))
+      (t (error "Operador sin traduccion a JavaScript: ~a" op))))))
 
 (defmethod protocolo:emitir-expresion ((a web) (e nucleo:condicional) ambito plan)
   (format nil "(~a ? ~a : ~a)"
-          (protocolo:emitir-expresion a (nucleo:prueba e) ambito plan)
+          (js-condicion a (nucleo:prueba e) ambito plan)
           (protocolo:emitir-expresion a (nucleo:entonces e) ambito plan)
           (protocolo:emitir-expresion a (nucleo:si-no e) ambito plan)))
 
@@ -113,9 +159,10 @@
 
 (defun js-filtro (a expresion variable ambito plan)
   "El cuerpo de un filter sobre la coleccion recorrida."
+  (declare (ignore variable))
   (if (null expresion)
       "true"
-      (protocolo:emitir-expresion a expresion ambito plan)))
+      (js-condicion a expresion ambito plan)))
 
 (defmethod protocolo:emitir-expresion ((a web) (e nucleo:conjunto) ambito plan)
   (format nil "[...new Set(~a.filter(~a => ~a).map(~a => V(~a~a)).filter(x => !VACIO(x)))]"
@@ -162,7 +209,7 @@
 
 (defmethod protocolo:emitir-expresion ((a web) (e nucleo:proyeccion) ambito plan)
   (let ((fuente (nucleo:sobre e)))
-    (format nil "PROY(~a, ~s, ~a)"
+    (format nil "PROY(~a, ~/situacion.web::js/, ~a)"
             (protocolo:emitir-expresion a fuente ambito plan)
             (string-downcase (symbol-name (nucleo:campo e)))
             (if (nucleo:por-defecto e)
@@ -176,11 +223,11 @@
             (if (nucleo:distinta-de e)
                 (format nil "~a !== ~a && " v (js-variable (nucleo:distinta-de e)))
                 "")
-            (protocolo:emitir-expresion a (nucleo:condicion e) ambito plan))))
+            (js-condicion a (nucleo:condicion e) ambito plan))))
 
 (defmethod protocolo:emitir-expresion ((a web) (e nucleo:comparten) ambito plan)
   (declare (ignore ambito plan))
-  (format nil "COMPARTEN(~a, ~a, [~{~s~^, ~}])"
+  (format nil "COMPARTEN(~a, ~a, [~{~/situacion.web::js/~^, ~}])"
           (js-variable (nucleo:variable-a e))
           (js-variable (nucleo:variable-b e))
           (mapcar (lambda (c) (string-downcase (symbol-name c))) (nucleo:campos e))))
@@ -195,3 +242,15 @@
             (js-coleccion (nucleo:nombre coleccion))
             (js-variable (nucleo:variable e))
             (if (eq (nucleo:direccion e) :anterior) -1 1))))
+
+(defmethod protocolo:emitir-expresion ((a web) (e nucleo:forma-invalida) ambito plan)
+  "Una expresion regular con la misma forma que exige el evaluador: AAAA-MM-DD
+   con mes y dia en rango, o HH:MM con hora y minutos en rango."
+  (declare (ignore plan))
+  (protocolo:requerir a 'protocolo:con-validacion-de-forma e
+                      :detalle (format nil "la forma de ~(~a~)" (nucleo:campo e)))
+  (let* ((coleccion (nucleo:coleccion-de-variable ambito (nucleo:variable e)))
+         (tipo (nucleo:tipo-de-forma coleccion (nucleo:campo e))))
+    (format nil "(!~a(T(V(~a~a))))"
+            (if (eq tipo :hora) "ESHORA" "ESFECHA")
+            (js-variable (nucleo:variable e)) (js-campo (nucleo:campo e)))))

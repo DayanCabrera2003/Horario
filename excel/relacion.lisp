@@ -45,6 +45,8 @@
 
 (defclass hoja-de-detalle ()
   ((campo :accessor campo :initarg :campo)
+   (hoja-padre :accessor hoja-padre :initarg :hoja-padre
+               :documentation "La hoja de la coleccion que declara la relacion.")
    (hoja-objetivo :accessor hoja-objetivo :initarg :hoja-objetivo
                   :documentation "La hoja de la coleccion RELACIONADA, si tiene.")
    (tabla-cruda :accessor tabla-cruda :initarg :tabla-cruda
@@ -54,6 +56,11 @@
                  cualquier otra hoja del libro. Columna A es __CLAVE__ (el
                  texto \"Rosa#1\", \"Rosa#2\", ...); el resto son los campos
                  de la coleccion objetivo, en su orden de declaracion.")
+   (legibles :accessor legibles :initarg :legibles
+             :documentation
+             "La clave de cada fila padre escrita para leerse, en el mismo
+              orden que BLOQUES. La de BLOQUES es la interna, con separadores
+              que no se pueden teclear.")
    (bloques :accessor bloques :initarg :bloques
             :documentation
             "Lista de (CLAVE-PADRE . FILAS), una entrada por fila padre, en
@@ -64,33 +71,41 @@
   (:documentation "Geometria de una relacion uno-a-muchos, ya resuelta."))
 
 (defun clave-de-fila (coleccion entorno fila)
-  "El valor de la clave de FILA, como texto. Junta con '#' si es compuesta."
-  (format nil "~{~a~^#~}"
-          (mapcar (lambda (c) (nucleo:como-texto (nucleo:valor-de-campo entorno fila c)))
-                  (nucleo:clave coleccion))))
+  "La clave de FILA como lista de textos, uno por campo de la clave."
+  (mapcar (lambda (c) (nucleo:como-texto (nucleo:valor-de-campo entorno fila c)))
+          (nucleo:clave coleccion)))
+
+(defun clave-legible (coleccion entorno fila)
+  "La clave de FILA para que la lea una persona: sus campos separados por
+   espacios. Es lo que encabeza cada bloque legible."
+  (format nil "~{~a~^ ~}" (clave-de-fila coleccion entorno fila)))
+
+(defun clave-numerada (partes i)
+  "La clave de la I-esima relacionada de la fila padre cuya clave son PARTES,
+   como fragmento de formula: las partes unidas por el caracter 31 de ASCII,
+   el caracter 30 y el numero.
+
+   Los separadores son caracteres de control porque no se pueden teclear en
+   una celda: antes se unian con \"#\", y una clave que llevara \"#\" se
+   confundia con otra. Por la misma razon no se pueden escribir como valor de
+   celda -el formato del archivo no los admite-, y la clave va como formula."
+  (format nil "~{~a~^&CHAR(31)&~}&CHAR(30)&~a"
+          (mapcar #'cadena-excel partes) (cadena-excel (format nil "~d" i))))
 
 (defun formula-de-clave (hoja fila coleccion)
   "La clave de FILA (un numero de fila de HOJA), como fragmento de formula:
    cada campo de (NUCLEO:CLAVE COLECCION) por su referencia de celda, unidos
-   con '&\"#\"&'. Es el mismo separador y los mismos campos que CLAVE-DE-FILA
-   usa para escribir la clave numerada en la tabla cruda -tienen que
-   coincidir campo a campo, o el COUNTIF de EMITIR-EXPRESION sobre
-   RELACIONADAS (excel/formula.lisp) busca con un prefijo mas corto que la
-   clave real y, con una clave compuesta, cuenta las relacionadas de OTRA
-   fila padre que comparta solo el primer campo.
-
-   Analogo a FORMULA-DE-CLAVE-COMPUESTA (excel/emision.lisp), que hace lo
-   mismo para la seccion y los dos ejes de una tabla cruzada."
-  (format nil "~{~a~^&\"#\"&~}"
+   con el mismo separador que CLAVE-DE-FILA. Tienen que coincidir campo a
+   campo, o el conteo de EMITIR-EXPRESION sobre RELACIONADAS
+   (excel/agregados.lisp) busca con otra clave que la escrita en la tabla
+   cruda."
+  (format nil "~{~a~^&CHAR(31)&~}"
           (mapcar (lambda (c) (celda hoja c fila)) (nucleo:clave coleccion))))
 
-(defun nombre-de-hoja-de-detalle (campo)
-  "El nombre de la pestana auxiliar de una relacion.
-
-   Excel no admite nombres de hoja de mas de 31 caracteres; es la misma
-   restriccion de formato que NOMBRE-DE-PESTANA resuelve para los cruces."
-  (let ((completo (format nil "Detalle - ~a" (nucleo:etiqueta campo))))
-    (if (> (length completo) 31) (subseq completo 0 31) completo)))
+(defun titulo-de-detalle (campo)
+  "El titulo de la pestana auxiliar de una relacion. Su nombre, valido y
+   unico, lo saca de aqui ASIGNAR-NOMBRES-DE-HOJA (excel/nombres.lisp)."
+  (format nil "Detalle - ~a" (nucleo:etiqueta campo)))
 
 (defun construir-tabla-cruda (campo hoja-objetivo bloques)
   "La tabla cruda: __clave__ mas los campos de la coleccion objetivo, una
@@ -105,7 +120,7 @@
                               :initial-value 0)))
     (make-instance
      'hoja
-     :nombre (nombre-de-hoja-de-detalle campo)
+     :nombre (titulo-de-detalle campo)
      :coleccion coleccion-objetivo
      :columnas columnas
      :fila-encabezado 3
@@ -127,47 +142,38 @@
              (nucleo:coleccion expr) (nucleo:nombre campo)))
     (let ((bloques (loop for fila-padre in filas-padre
                          collect (cons (clave-de-fila coleccion-padre (entorno plan) fila-padre)
-                                       (nucleo:evaluar-en-fila (entorno plan) fila-padre expr)))))
+                                       (nucleo:evaluar-en-fila (entorno plan) fila-padre expr))))
+          (legibles (loop for fila-padre in filas-padre
+                          collect (clave-legible coleccion-padre (entorno plan) fila-padre))))
       (make-instance
        'hoja-de-detalle
        :campo campo
+       :hoja-padre hoja-padre
        :hoja-objetivo hoja-objetivo
        :tabla-cruda (construir-tabla-cruda campo hoja-objetivo bloques)
-       :bloques bloques))))
+       :bloques bloques
+       :legibles legibles))))
 
 (defun capacidad-de-detalle (a detalle)
   (declare (ignore detalle))
   (reserva-de-relacion a))
 
 ;;; ---------------------------------------------------------------------
-;;; Direccionamiento propio de la tabla cruda
+;;; La busqueda en la tabla cruda
 ;;; ---------------------------------------------------------------------
 
-(defun rango-de-tabla-cruda (tabla-cruda desde-columna)
-  "El rectangulo que BUSCARV necesita dentro de la tabla cruda: desde
-   DESDE-COLUMNA (indice de columna, empezando en cero) hasta la ultima de
-   sus COLUMNAS, por todas sus filas.
-
-   Analogo a RANGO-DE-TABLA (excel/formula.lisp), pero sobre las columnas
-   propias de la tabla cruda en vez de los campos de una coleccion del
-   nucleo: esta hoja no corresponde a ninguna coleccion declarada, es
-   maquinaria que esta arquitectura se inventa."
-  (let* ((primera (letra-de-columna desde-columna))
-         (ultima (letra-de-columna (1- (length (columnas tabla-cruda))))))
-    (format nil "~a!$~a$~d:$~a$~d"
-            (entrecomillar (nombre tabla-cruda))
-            primera (fila-primera tabla-cruda)
-            ultima (fila-ultima tabla-cruda))))
-
-(defun formula-de-detalle (tabla-cruda clave-numerada indice-objetivo)
-  "BUSCARV con guarda de ausencia, sobre la clave numerada de la tabla
-   cruda. INDICE-OBJETIVO es la posicion del campo (desde cero) dentro de
-   los campos de la coleccion objetivo; en la tabla cruda va una columna mas
-   a la derecha, porque la primera es __clave__."
-  (format nil "IFERROR(VLOOKUP(~s,~a,~d,FALSE),\"\")"
-          clave-numerada
-          (rango-de-tabla-cruda tabla-cruda 0)
-          (+ indice-objetivo 2)))
+(defun formula-de-detalle (tabla-cruda clave campo-objetivo)
+  "La busqueda exacta de CAMPO-OBJETIVO en la fila de la tabla cruda cuya
+   clave numerada es CLAVE (un fragmento de formula). Sin esa fila, vacio;
+   con la fila y el campo en blanco, vacio y no 0."
+  (let* ((posicion (format nil "MATCH(1,INDEX(EXACT(~a,~a)*1,0),0)"
+                           (rango-de-columna tabla-cruda "__clave__" :con-hoja t)
+                           clave))
+         (en-la-fila (format nil "INDEX(~a,~a)"
+                             (rango-de-columna tabla-cruda campo-objetivo :con-hoja t)
+                             posicion)))
+    (format nil "IF(ISNA(~a),\"\",IF(ISBLANK(~a),\"\",~a))"
+            posicion en-la-fila en-la-fila)))
 
 ;;; ---------------------------------------------------------------------
 ;;; El bloque legible
@@ -214,13 +220,9 @@
         (fila (fila-primera (tabla-cruda detalle))))
     (dolist (bloque (bloques detalle))
       (destructuring-bind (clave-padre . filas-relacionadas) bloque
+        (declare (ignore clave-padre))
         (loop for fila-rel in filas-relacionadas
-              for i from 1
-              do (push (list (cons "celda" (format nil "~a~d"
-                                                    (columna-de tabla-cruda "__clave__") fila))
-                            (cons "valor" (format nil "~a#~d" clave-padre i)))
-                       resultado)
-                 (dolist (campo-obj campos-objetivo)
+              do (dolist (campo-obj campos-objetivo)
                    (push (list (cons "celda" (format nil "~a~d"
                                                      (columna-de tabla-cruda (nucleo:nombre campo-obj))
                                                      fila))
@@ -230,12 +232,30 @@
                  (incf fila))))
     (nreverse resultado)))
 
-(defun celdas-de-cabeceras-legibles (bloques-legibles col-legible)
-  "El texto de la clave del padre, en la cabecera de cada bloque legible."
-  (loop for (clave fila-cabecera) in bloques-legibles
+(defun formulas-de-claves-de-tabla-cruda (detalle)
+  "La clave numerada de cada fila de la tabla cruda, como formula: una por
+   cada par (padre, relacionada), en el mismo orden que los bloques."
+  (let* ((tabla-cruda (tabla-cruda detalle))
+         (fila (fila-primera tabla-cruda))
+         (resultado '()))
+    (loop for (partes . filas-relacionadas) in (bloques detalle)
+          do (loop for nil in filas-relacionadas
+                   for i from 1
+                   do (push (list (cons "celda" (format nil "~a~d"
+                                                        (columna-de tabla-cruda "__clave__")
+                                                        fila))
+                                  (cons "formula" (format nil "=~a" (clave-numerada partes i))))
+                            resultado)
+                      (incf fila)))
+    (nreverse resultado)))
+
+(defun celdas-de-cabeceras-legibles (detalle bloques-legibles col-legible)
+  "La clave del padre escrita para leerse, en la cabecera de cada bloque."
+  (loop for (nil fila-cabecera) in bloques-legibles
+        for legible in (legibles detalle)
         collect (list (cons "celda" (format nil "~a~d" (letra-de-columna col-legible)
                                             fila-cabecera))
-                      (cons "valor" clave))))
+                      (cons "valor" legible))))
 
 (defun celdas-de-avisos-legibles (bloques-legibles capacidad col-legible)
   "El aviso '(+N mas)' en la ultima linea reservada de un bloque que
@@ -255,7 +275,6 @@
         append (loop for i from 1 to capacidad
                      unless (and (= i capacidad) (> (length filas) capacidad))
                        append (loop for campo-obj in campos-objetivo
-                                    for indice from 0
                                     for col from col-legible
                                     collect
                                     (list (cons "celda" (format nil "~a~d" (letra-de-columna col)
@@ -264,8 +283,24 @@
                                                 (format nil "=~a"
                                                         (formula-de-detalle
                                                          tabla-cruda
-                                                         (format nil "~a#~d" clave i)
-                                                         indice))))))))
+                                                         (clave-numerada clave i)
+                                                         (nucleo:nombre campo-obj)))))))))
+
+(defun identidad-de-relacion (detalle bloques-legibles capacidad col-legible ancho)
+  "De que relacion es la hoja auxiliar, y donde esta cada bloque legible.
+
+   El verificador no puede adivinarlo por el nombre de la pestana: con esto
+   compara cuantas lineas ocupadas tiene cada bloque con lo que el oraculo
+   dice que trae la relacion en esa fila padre, en el mismo orden."
+  (list (cons "coleccion" (nombre-de-coleccion (coleccion (hoja-padre detalle))))
+        (cons "campo" (string-downcase (symbol-name (nucleo:nombre (campo detalle)))))
+        (cons "columna" (letra-de-columna col-legible))
+        (cons "ancho" ancho)
+        (cons "capacidad" capacidad)
+        (cons "bloques" (lista (loop for (nil fila-cabecera) in bloques-legibles
+                                     for clave in (legibles detalle)
+                                     collect (list (cons "clave" clave)
+                                                   (cons "fila" fila-cabecera)))))))
 
 (defun plano-de-detalle (a plan detalle)
   "El plano de la hoja auxiliar de una relacion: la tabla cruda de clave
@@ -291,11 +326,15 @@
          (encabezados (append (encabezados-de-tabla-cruda tabla-cruda campos-objetivo fila-encabezado)
                               (encabezados-legibles campos-objetivo col-legible fila-encabezado)))
          (celdas (append (celdas-de-tabla-cruda plan detalle campos-objetivo)
-                         (celdas-de-cabeceras-legibles bloques-legibles col-legible)
+                         (celdas-de-cabeceras-legibles detalle bloques-legibles col-legible)
                          (celdas-de-avisos-legibles bloques-legibles capacidad col-legible)))
-         (formulas (formulas-legibles tabla-cruda bloques-legibles capacidad
-                                      col-legible campos-objetivo)))
+         (formulas (append (formulas-de-claves-de-tabla-cruda detalle)
+                           (formulas-legibles tabla-cruda bloques-legibles capacidad
+                                              col-legible campos-objetivo))))
     (list (cons "nombre" (nombre tabla-cruda))
+          (cons "titulo" (titulo tabla-cruda))
+          (cons "relacion" (identidad-de-relacion detalle bloques-legibles capacidad
+                                                  col-legible n-objetivo))
           (cons "fila_encabezado" fila-encabezado)
           (cons "fila_primera" fila-primera)
           (cons "capacidad" (max (capacidad tabla-cruda) (1+ (- fila-final-legible fila-primera))))

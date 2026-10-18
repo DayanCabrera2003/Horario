@@ -49,6 +49,7 @@ FUENTE_ENCABEZADO = Font(bold=True, color="FFFFFF")
 RELLENO_ENCABEZADO = PatternFill("solid", fgColor="44546A")
 LADO_FINO = Side(style="thin", color="BFBFBF")
 BORDE = Border(left=LADO_FINO, right=LADO_FINO, top=LADO_FINO, bottom=LADO_FINO)
+RELLENO_DE_GRUPO = PatternFill("solid", fgColor="EEF2F8")
 
 
 def materializar(plano, destino):
@@ -56,14 +57,19 @@ def materializar(plano, destino):
     libro = Workbook()
     libro.remove(libro.active)
 
+    usados = set()
     for hoja_plan in plano["hojas"]:
-        hoja = libro.create_sheet(_nombre_valido(hoja_plan["nombre"]))
+        hoja = libro.create_sheet(_nombre_comprobado(hoja_plan["nombre"], usados))
+        if hoja_plan.get("oculta"):
+            hoja.sheet_state = "hidden"
         _escribir_encabezados(hoja, hoja_plan)
         _escribir_celdas(hoja, hoja_plan)
         _escribir_formulas(hoja, hoja_plan)
         _aplicar_formatos_condicionales(hoja, hoja_plan)
         _aplicar_validaciones(hoja, hoja_plan)
+        _aplicar_formatos_de_celda(hoja, hoja_plan)
         _escribir_leyenda(hoja, hoja_plan)
+        _resaltar_filas_de_grupo(hoja, hoja_plan)
         _aplicar_presentacion(hoja, hoja_plan)
         _proteger(hoja, hoja_plan)
         _registrar_rangos(libro, hoja, hoja_plan)
@@ -72,12 +78,34 @@ def materializar(plano, destino):
     return destino
 
 
-def _nombre_valido(nombre):
-    """Los nombres de hoja tienen tope de 31 caracteres y prohiben algunos
-    signos. Es una restriccion del formato, no del dominio, y por eso se
-    resuelve aqui."""
-    limpio = "".join(c for c in nombre if c not in "[]:*?/\\")
-    return limpio[:31] or "Hoja"
+class NombreDeHojaInvalido(ValueError):
+    """El plano trae un nombre de hoja que el formato no admite."""
+
+
+def _nombre_comprobado(nombre, usados):
+    """Comprueba que NOMBRE es un nombre de hoja admisible y no repetido.
+
+    Aqui no se arregla nada. El nombre lo decide la arquitectura de Excel
+    (excel/nombres.lisp), y es el mismo que citan las formulas: si este
+    programa lo recortara o lo cambiara, las formulas apuntarian a una hoja
+    que no existe. Eso paso con "Dias que asisten los contratados" hasta el
+    2026-10-17. Un nombre invalido es un fallo del plano, y se dice."""
+    problema = None
+    if not nombre:
+        problema = "esta vacio"
+    elif len(nombre) > 31:
+        problema = "tiene mas de 31 caracteres"
+    elif any(c in nombre for c in "[]:*?/\\"):
+        problema = "lleva un signo que el formato prohibe"
+    elif nombre[0] == "'" or nombre[-1] == "'":
+        problema = "empieza o acaba por apostrofo"
+    elif nombre.lower() in usados:
+        problema = "se repite"
+    if problema:
+        raise NombreDeHojaInvalido(
+            "El plano trae la hoja {!r}, cuyo nombre {}.".format(nombre, problema))
+    usados.add(nombre.lower())
+    return nombre
 
 
 def _escribir_encabezados(hoja, plan):
@@ -88,13 +116,23 @@ def _escribir_encabezados(hoja, plan):
         celda.fill = RELLENO_ENCABEZADO
         celda.alignment = Alignment(horizontal="center", vertical="center")
     titulo = hoja["A1"]
-    titulo.value = plan["nombre"]
+    titulo.value = plan.get("titulo") or plan["nombre"]
     titulo.font = Font(bold=True, size=13)
 
 
 def _escribir_celdas(hoja, plan):
+    """Los valores escritos. Son datos, nunca formulas: un texto que empieza
+    por "=" se escribe como texto y con el prefijo de comilla, igual que los
+    que empiezan por "+", "-" o "@", para que al editarlo no se convierta en
+    formula. Antes "=1+1" se guardaba como formula y valia 2."""
     for item in plan.get("celdas") or []:
-        hoja[item["celda"]] = item["valor"]
+        celda = hoja[item["celda"]]
+        valor = item["valor"]
+        celda.value = valor
+        if isinstance(valor, str):
+            celda.data_type = "s"
+            if valor[:1] in ("=", "+", "-", "@"):
+                celda.quotePrefix = True
 
 
 def _escribir_formulas(hoja, plan):
@@ -117,6 +155,20 @@ def _aplicar_formatos_condicionales(hoja, plan):
             hoja.conditional_formatting.add(rango, regla)
 
 
+FORMATOS_DE_CELDA = {"fecha": "YYYY-MM-DD", "hora": "HH:MM"}
+
+
+def _aplicar_formatos_de_celda(hoja, plan):
+    """El formato de fecha u hora de las columnas que lo declaran. Solo
+    cambia como se ve un numero de serie: un texto ISO sigue siendo texto."""
+    for item in plan.get("formatos_de_celda") or []:
+        formato = FORMATOS_DE_CELDA[item["formato"]]
+        minc, minr, maxc, maxr = range_boundaries(item["rango"])
+        for fila in hoja.iter_rows(min_row=minr, max_row=maxr, min_col=minc, max_col=maxc):
+            for celda in fila:
+                celda.number_format = formato
+
+
 def _aplicar_validaciones(hoja, plan):
     """El desplegable de cada campo con dominio.
 
@@ -125,10 +177,9 @@ def _aplicar_validaciones(hoja, plan):
     decision del dominio, no de Excel.
     """
     for item in plan.get("validaciones") or []:
-        valores = item.get("valores") or []
-        if not valores:
+        formula = item.get("lista")
+        if not formula:
             continue
-        formula = '"{}"'.format(",".join(str(v).replace('"', "") for v in valores))
         dv = DataValidation(
             type="list",
             formula1=formula,
@@ -157,6 +208,14 @@ def _escribir_leyenda(hoja, plan):
         hoja.cell(row=fila + i, column=2, value=item["texto"])
 
 
+def _resaltar_filas_de_grupo(hoja, plan):
+    """Las cabeceras de grupo de una hoja derivada, en negrita y con fondo."""
+    for fila in plan.get("filas_de_grupo") or []:
+        celda = hoja.cell(row=fila, column=1)
+        celda.font = Font(bold=True)
+        celda.fill = RELLENO_DE_GRUPO
+
+
 def _aplicar_presentacion(hoja, plan):
     primera, ultima = plan["fila_primera"], plan["fila_primera"] + plan["capacidad"] - 1
     encabezado = plan["fila_encabezado"]
@@ -167,14 +226,42 @@ def _aplicar_presentacion(hoja, plan):
         for celda in fila:
             celda.border = BORDE
 
+    # Los anchos los calcula la arquitectura sobre las etiquetas y los
+    # valores (excel/presentacion.lisp). Antes se median aqui sobre el texto
+    # de la celda, que en una columna calculada es la formula: todas salian
+    # al tope aunque valieran "no". Solo las hojas sin anchos en el plano
+    # caen en la medida de lo escrito.
+    anchos = plan.get("anchos") or {}
     for col in range(1, n_columnas + 1):
         letra = get_column_letter(col)
+        if letra in anchos:
+            hoja.column_dimensions[letra].width = anchos[letra]
+            continue
         ancho = max(
             [len(str(hoja.cell(row=r, column=col).value or ""))
-             for r in range(encabezado, min(ultima, primera + 30) + 1)]
+             for r in range(encabezado, min(ultima, primera + 30) + 1)
+             if not str(hoja.cell(row=r, column=col).value or "").startswith("=")]
             + [10]
         )
-        hoja.column_dimensions[letra].width = min(ancho + 3, 42)
+        hoja.column_dimensions[letra].width = min(ancho + 3, 40)
+    for letra, ancho in anchos.items():
+        hoja.column_dimensions[letra].width = ancho
+
+    # Las columnas auxiliares (claves compuestas, primera aparicion, nivel de
+    # las marcas) no son para leer.
+    for letra in plan.get("columnas_ocultas") or []:
+        hoja.column_dimensions[letra].hidden = True
+
+    # Una pagina de ancho, apaisada si la hoja es ancha: una rejilla de cinco
+    # dias no puede imprimirse con un dia por pagina.
+    impresion = plan.get("impresion")
+    if impresion:
+        if impresion.get("horizontal"):
+            hoja.page_setup.orientation = "landscape"
+        if impresion.get("ajustar_ancho"):
+            hoja.sheet_properties.pageSetUpPr.fitToPage = True
+            hoja.page_setup.fitToWidth = 1
+            hoja.page_setup.fitToHeight = 0
 
     # Inmoviliza el encabezado para que no se pierda al bajar.
     hoja.freeze_panes = hoja.cell(row=primera, column=1)
@@ -200,11 +287,10 @@ def _proteger(hoja, plan):
 
 
 def _registrar_rangos(libro, hoja, plan):
+    """Los rangos con nombre, tal como los trae el plano: su referencia ya
+    cita la hoja por su nombre definitivo."""
     for item in plan.get("rangos_nombrados") or []:
-        referencia = item["referencia"].replace(
-            "{}!".format(plan["nombre"]), "{}!".format(hoja.title)
-        )
-        libro.defined_names.add(DefinedName(item["nombre"], attr_text=referencia))
+        libro.defined_names.add(DefinedName(item["nombre"], attr_text=item["referencia"]))
 
 
 def main(argv):

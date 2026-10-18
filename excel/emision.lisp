@@ -7,32 +7,15 @@
 
 (in-package #:situacion.excel)
 
-(defparameter +paleta+
-  '((:problema    . "FFC7CE")
-    (:advertencia . "FFEB9C")
-    (:informativa . "DDEBF7"))
-  "De severidad a relleno.
-
-   Es una opcion de esta arquitectura, no del lenguaje. La marca declara un
-   significado y una severidad; que el problema se vea rojo es una decision
-   de como se pinta una hoja de calculo, y otra arquitectura puede decidir
-   otra cosa sin tocar ninguna descripcion.
-
-   Que este aqui y no en el nodo de la marca es la correccion del hallazgo
-   sobre 2026: alli la definicion 3.8 decia que la regla tenia color, el nodo
-   no lo tenia, y el backend lo asignaba por orden de aparicion.")
-
-(defun relleno-de (severidad)
-  (or (cdr (assoc severidad +paleta+)) "EEEEEE"))
-
 (defmethod protocolo:materializar ((a excel) situacion datos destino)
   (protocolo:con-informe (a)
-    (dolist (r (protocolo:requerimientos situacion))
-      (destructuring-bind (capacidad nodo detalle) r
-        (protocolo:requerir a capacidad nodo :detalle detalle)))
-    (let ((plan (protocolo:planificar a situacion)))
-      (setf (entorno plan) (nucleo:hacer-entorno situacion datos))
-      (protocolo:emitir a plan destino))))
+    (let ((*situacion* situacion))
+      (dolist (r (protocolo:requerimientos situacion))
+        (destructuring-bind (capacidad nodo detalle) r
+          (protocolo:requerir a capacidad nodo :detalle detalle)))
+      (let ((plan (protocolo:planificar a situacion)))
+        (setf (entorno plan) (nucleo:hacer-entorno situacion datos))
+        (protocolo:emitir a plan destino)))))
 
 (defmethod protocolo:emitir ((a excel) plan destino)
   ;; CONSTRUIR-PLANO resuelve (ARCHIVOS PLAN) como efecto lateral de recorrer
@@ -44,6 +27,10 @@
   destino)
 
 (defun construir-plano (a plan)
+  (let ((*campos-rechazados* '()))
+    (armar-plano a plan)))
+
+(defun armar-plano (a plan)
   ;; Las vistas se planifican antes de emitir: pueden reordenar las hojas y,
   ;; si son cruzadas, anaden geometria propia.
   ;; Antes que nada, las hojas se redimensionan con las filas que de verdad
@@ -53,17 +40,27 @@
     (when (nucleo:cruzada-p vista) (planificar-cruces a vista plan))
     (protocolo:planificar-vista a vista plan))
   (setf (cruces plan) (nreverse (cruces plan)))
+  ;; Las columnas auxiliares del conteo de distintos se reparten antes de
+  ;; emitir ninguna hoja: una hoja puede contar los distintos de otra que se
+  ;; emite antes que ella, y su columna tiene que existir ya.
+  (reservar-columnas-de-distintos plan)
   ;; Los cruces de una vista en VISTAS-EN-ARCHIVO (H2) tambien se acumularon
   ;; con PUSH dentro de PLANIFICAR-CRUCES, por la misma razon que CRUCES.
   (setf (archivos plan) (nreverse (archivos plan)))
   ;; La hoja auxiliar de cada relacion uno-a-muchos (H4), antes que
   ;; PLANO-DE-HOJA: EMITIR-EXPRESION sobre RELACIONADAS (excel/formula.lisp)
   ;; necesita encontrar su hoja auxiliar en (AUXILIARES PLAN) para escribir
-  ;; el COUNTIF de la hoja de origen.
+  ;; el conteo de la hoja de origen.
   (dolist (hoja (hojas plan))
     (dolist (campo (campos-de-relacion (coleccion hoja)))
       (push (planificar-detalle a plan hoja campo) (auxiliares plan))))
   (setf (auxiliares plan) (nreverse (auxiliares plan)))
+  ;; Las vistas de lista que no son la de datos de su coleccion salen como
+  ;; hojas derivadas (excel/vistas.lisp).
+  (planificar-vistas-derivadas plan)
+  ;; Los nombres de pestana se fijan aqui, una vez y antes de emitir ninguna
+  ;; formula: son los que citan las formulas y los rangos con nombre.
+  (asignar-nombres-de-hoja plan)
   (list (cons "libro" (nucleo:etiqueta (situacion plan)))
         ;; Una vista en VISTAS-EN-ARCHIVO (H2) no vive en este libro: no
         ;; tiene pestana aqui, y su "hoja" en el indice apuntaria -de forma
@@ -75,28 +72,42 @@
                                (remove-if (lambda (v) (member (nucleo:nombre v)
                                                               (vistas-en-archivo a)))
                                           (nucleo:vistas (situacion plan))))))
-        (cons "hojas" (let ((cruces (mapcar (lambda (c) (plano-de-cruce a plan c))
-                                            (cruces plan)))
-                            (resto (append
+        (cons "hojas" (let ((hojas (append
+                                    (mapcar (lambda (c) (plano-de-cruce a plan c))
+                                            (cruces plan))
                                     (mapcar (lambda (h) (plano-de-hoja a plan h))
                                             (hojas plan))
+                                    (mapcar (lambda (d) (plano-de-vista-derivada plan d))
+                                            (vistas-derivadas plan))
                                     (mapcar (lambda (d) (plano-de-detalle a plan d))
                                             (auxiliares plan)))))
-                        ;; Solo se renombran pestanas de cruce: nadie las
-                        ;; cita en una formula. Las hojas de datos si se
-                        ;; citan, y conservan su nombre.
-                        (lista (append (renombrar-sin-repetir cruces resto)
-                                       resto))))))
+                        ;; La hoja de listas va al final: se llena mientras se
+                        ;; emiten los desplegables de las demas.
+                        (lista (if (nombre-de-listas plan)
+                                   (append hojas (list (plano-de-listas plan)))
+                                   hojas))))))
 
-(defun renombrar-sin-repetir (cruces resto)
-  "Los planos de CRUCES con nombres que no se repiten entre ellos ni con
-   los de RESTO."
-  (flet ((nombre (plano) (cdr (assoc "nombre" plano :test #'string=))))
-    (mapcar (lambda (plano nuevo)
-              (cons (cons "nombre" nuevo)
-                    (remove "nombre" plano :key #'car :test #'string=)))
-            cruces
-            (nombres-unicos (mapcar #'nombre cruces) (mapcar #'nombre resto)))))
+(defun reservar-columnas-de-distintos (plan)
+  "Una columna de primera aparicion por cada campo cuyos valores distintos
+   cuenta alguna expresion de la situacion sin condicion. Con condicion no
+   hay columna: esa forma se rechaza al emitirla (excel/agregados.lisp)."
+  (flet ((mirar (expresion)
+           (when expresion
+             (nucleo:recorrer-expresion
+              expresion
+              (lambda (e)
+                (when (and (typep e 'nucleo:agregado)
+                           (eq (nucleo:operacion e) :distintas)
+                           (null (nucleo:condicion e)))
+                  (let ((hoja (hoja-de plan (nucleo:coleccion e))))
+                    (when hoja (columna-de-distintos-de hoja (nucleo:campo e))))))))))
+    (let ((situacion (situacion plan)))
+      (dolist (coleccion (nucleo:colecciones situacion))
+        (dolist (campo (nucleo:campos coleccion))
+          (mirar (nucleo:expresion campo))))
+      (dolist (marca (nucleo:marcas situacion))
+        (mirar (nucleo:condicion marca))
+        (mirar (nucleo:explicacion marca))))))
 
 (defun plano-de-cruce (a plan cruce)
   "La hoja de la tabla cruzada, con sus dos ejes fijados y sus busquedas.
@@ -149,7 +160,8 @@
                                                    cruce rango-valor rango-clave
                                                    f (letra-de-columna i) fila-enc)))))))
     (declare (ignore coleccion))
-    (list (cons "nombre" (nombre-de-pestana (nucleo:etiqueta vista) (seccion cruce)))
+    (list (cons "nombre" (nombre cruce))
+          (cons "titulo" (titulo cruce))
           (cons "cruce" (identidad-de-cruce cruce))
           (cons "fila_encabezado" fila-enc)
           (cons "fila_primera" fila-ini)
@@ -158,11 +170,41 @@
           (cons "encabezados" (lista encabezados))
           (cons "celdas" (lista celdas))
           (cons "formulas" (lista formulas))
+          (cons "anchos" (anchos-de-cruce plan cruce))
+          (cons "impresion" (impresion t))
           (cons "editables" :lista-vacia)
           (cons "validaciones" :lista-vacia)
-          (cons "formatos_condicionales" :lista-vacia)
+          (cons "formatos_condicionales" (lista (marcas-de-la-rejilla cruce fila-ini fila-enc)))
           (cons "rangos_nombrados" :lista-vacia)
           (cons "leyenda" :lista-vacia))))
+
+(defun marcas-de-la-rejilla (cruce fila-ini fila-enc)
+  "Las reglas que pintan las casillas de una rejilla con la severidad mas
+   alta de las marcas de la fila que cae en ella. La leen de la columna de
+   nivel de la hoja de origen. Antes las marcas no pintaban las rejillas: la
+   pagina si, la hoja de calculo no."
+  (let ((hoja (hoja-origen cruce)))
+    (when (and (columna-de-nivel hoja) (clave cruce)
+               (valores-de-fila cruce) (valores-de-columna cruce))
+      (let* ((origen (entrecomillar (nombre hoja)))
+             (rango (lambda (letra) (format nil "~a!$~a$~d:$~a$~d" origen letra
+                                            (fila-primera hoja) letra (fila-ultima hoja))))
+             (clave (format nil "~@[~a&CHAR(31)&~]$A~d&CHAR(31)&B$~d"
+                            (when (seccion cruce)
+                              (cadena-excel (nucleo:como-texto (seccion cruce))))
+                            fila-ini fila-enc))
+             (nivel (format nil "IFERROR(INDEX(~a,MATCH(1,INDEX(EXACT(~a,~a)*1,0),0)),0)"
+                            (funcall rango (columna-de-nivel hoja))
+                            (funcall rango (letra (clave cruce))) clave))
+             (casillas (format nil "B~d:~a~d" fila-ini
+                               (letra-de-columna (length (valores-de-columna cruce)))
+                               (+ fila-ini (length (valores-de-fila cruce)) -1))))
+        (loop for (severidad . numero) in +niveles+
+              collect (list (cons "rango" casillas)
+                            (cons "estado" (string-downcase (symbol-name severidad)))
+                            (cons "severidad" (string-downcase (symbol-name severidad)))
+                            (cons "formula" (format nil "~a=~d" nivel numero))
+                            (cons "relleno" (relleno-de-severidad severidad))))))))
 
 (defun identidad-de-cruce (cruce)
   "De que vista y de que seccion es la pestana de CRUCE.
@@ -193,87 +235,25 @@
 
    La busqueda pregunta ademas si lo encontrado esta vacio. INDICE sobre una
    celda en blanco devuelve cero, no blanco, y sin la pregunta un turno libre
-   se leeria como un 0 en el cuadrante."
-  (let* ((clave (format nil "~@[\"~a\"&\"|\"&~]$A~d&\"|\"&~a$~d"
+   se leeria como un 0 en el cuadrante.
+
+   La coincidencia es EXACT, no COINCIDIR a secas: COINCIDIR no distingue
+   mayusculas y lee \"*\" y \"?\" como comodines, y una sala llamada
+   \"Sala*\" ensenaba la reunion de \"Sala Azul\"."
+  (let* ((clave (format nil "~@[~a&CHAR(31)&~]$A~d&CHAR(31)&~a$~d"
                         (when (seccion cruce)
-                          (nucleo:como-texto (seccion cruce)))
+                          (cadena-excel (nucleo:como-texto (seccion cruce))))
                         fila columna fila-enc))
-         (encontrado (format nil "INDEX(~a,MATCH(~a,~a,0))"
-                             rango-valor clave rango-clave))
-         (busqueda (format nil "IFERROR(IF(~a=\"\",\"\",~a),\"\")"
-                           encontrado encontrado)))
+         (coincide (format nil "EXACT(~a,~a)" rango-clave clave))
+         (posicion (format nil "MATCH(1,INDEX(~a*1,0),0)" coincide))
+         (encontrado (format nil "INDEX(~a,~a)" rango-valor posicion))
+         (busqueda (format nil "IF(ISNA(~a),\"\",IF(ISBLANK(~a),\"\",~a))"
+                           posicion encontrado encontrado)))
     (if (null (nucleo:conflicto (vista cruce)))
         (format nil "=~a" busqueda)
-        (format nil "=IF(COUNTIF(~a,~a)>1,~a&\" (+\"&(COUNTIF(~a,~a)-1)&\")\",~a)"
-                rango-clave clave
-                busqueda
-                rango-clave clave
-                busqueda))))
-
-(defconstant +largo-de-pestana+ 31
-  "Excel no admite nombres de hoja de mas de 31 caracteres.")
-
-(defun recortar (texto largo)
-  (if (> (length texto) largo) (subseq texto 0 largo) texto))
-
-(defun sin-signos-prohibidos (texto)
-  "TEXTO sin los signos que Excel no admite en un nombre de hoja. Se quitan
-   aqui, y no al crear el archivo, para que el plano diga el mismo nombre
-   que tendra la hoja."
-  (remove-if (lambda (c) (find c "[]:*?/\\")) texto))
-
-(defun nombre-de-pestana (etiqueta seccion)
-  "El nombre de la pestana de un cruce, con su seccion si la tiene.
-
-   Excel no admite nombres de hoja de mas de 31 caracteres. Es una
-   restriccion del formato de salida, asi que se resuelve aqui y ni el
-   lenguaje ni el protocolo se enteran.
-
-   Cuando no cabe, se sacrifica la etiqueta de la vista y no la seccion: la
-   seccion es lo que distingue una pestana de otra. Recortar el nombre
-   entero por la derecha dejaba todas las secciones de una vista con el
-   mismo nombre."
-  (if (null seccion)
-      (recortar (sin-signos-prohibidos etiqueta) +largo-de-pestana+)
-      (let* ((etiqueta (sin-signos-prohibidos etiqueta))
-             (texto (sin-signos-prohibidos (nucleo:como-texto seccion)))
-             (completo (format nil "~a - ~a" etiqueta texto))
-             (sitio (- +largo-de-pestana+ (length texto) (length " - "))))
-        (if (<= (length completo) +largo-de-pestana+)
-            completo
-            ;; Cabe el principio de la etiqueta, cortado por palabras
-            ;; enteras: "Horario - Profesor de H en 10-3", nunca "Horari".
-            (let ((prefijo (palabras-que-caben etiqueta sitio)))
-              (if (string= prefijo "")
-                  (recortar texto +largo-de-pestana+)
-                  (format nil "~a - ~a" prefijo texto)))))))
-
-(defun palabras-que-caben (texto largo)
-  "Las primeras palabras enteras de TEXTO que caben en LARGO caracteres."
-  (if (<= (length texto) largo)
-      texto
-      (let ((corte (and (plusp largo)
-                        (position #\Space texto :end (1+ largo) :from-end t))))
-        (if corte (string-right-trim " " (subseq texto 0 corte)) ""))))
-
-(defun nombres-unicos (nombres ocupados)
-  "Cada nombre de NOMBRES, cambiado lo justo para no repetir ninguno de
-   OCUPADOS ni de los anteriores, sin pasar de 31 caracteres. Si dos
-   secciones solo se distinguen despues del caracter 31, la segunda lleva
-   \" (2)\" al final en vez de llamarse igual que la primera."
-  (let ((usados (copy-list ocupados)))
-    (loop for nombre in nombres
-          collect (let ((elegido nombre))
-                    (loop for n from 2
-                          while (member elegido usados :test #'string-equal)
-                          do (let ((sufijo (format nil " (~d)" n)))
-                               (setf elegido
-                                     (concatenate 'string
-                                                  (recortar nombre (- +largo-de-pestana+
-                                                                      (length sufijo)))
-                                                  sufijo))))
-                    (push elegido usados)
-                    elegido))))
+        (let ((cuantas (format nil "SUMPRODUCT(1*~a)" coincide)))
+          (format nil "=IF(~a>1,~a&\" (+\"&(~a-1)&\")\",~a)"
+                  cuantas busqueda cuantas busqueda)))))
 
 (defmethod protocolo:planificar-vista ((a excel) vista plan)
   "Una vista se materializa como la hoja de su coleccion.
@@ -288,28 +268,47 @@
   plan)
 
 (defmethod protocolo:emitir-vista ((a excel) vista plan)
-  "El nombre visible de la pestana y si es por donde se entra."
-  (let ((hoja (hoja-de plan (nucleo:fuente vista))))
+  "El nombre visible de la pestana de VISTA y si es por donde se entra: su
+   hoja derivada, la primera de sus pestanas cruzadas, o la hoja de datos."
+  (let ((derivada (find vista (vistas-derivadas plan) :key #'vista))
+        (cruce (find vista (cruces plan) :key #'vista))
+        (hoja (hoja-de plan (nucleo:fuente vista))))
     (list (cons "vista" (string-downcase (symbol-name (nucleo:nombre vista))))
           (cons "titulo" (nucleo:etiqueta vista))
-          (cons "hoja" (if hoja (nombre hoja) ""))
+          (cons "hoja" (cond (derivada (nombre derivada))
+                             (cruce (nombre cruce))
+                             (hoja (nombre hoja))
+                             (t "")))
           (cons "es_entrada" (if (nucleo:es-entrada vista) t :false)))))
 
 (defun plano-de-hoja (a plan hoja)
   (let ((*hoja* hoja))
     (declare (special *hoja*))
     (list (cons "nombre" (nombre hoja))
+          (cons "titulo" (titulo hoja))
+          ;; Que coleccion es: el verificador empareja por esto con el
+          ;; oraculo, nunca por las etiquetas de las columnas.
+          (cons "coleccion" (nombre-de-coleccion (coleccion hoja)))
+          (cons "estado" (or (columna-de-estado hoja) :false))
           (cons "fila_encabezado" (fila-encabezado hoja))
           (cons "fila_primera" (fila-primera hoja))
           (cons "capacidad" (capacidad hoja))
           (cons "color_pestana" (color-de-pestana hoja))
           (cons "encabezados" (lista (append (encabezados-de hoja)
+                                             (encabezado-de-estado hoja)
+                                             (encabezado-de-nivel hoja)
                                              (encabezados-de-claves hoja))))
           (cons "celdas" (lista (celdas-de a plan hoja)))
           (cons "formulas" (lista (append (formulas-de a plan hoja)
+                                          (formulas-de-estado a plan hoja)
+                                          (formulas-de-nivel a plan hoja)
                                           (formulas-de-claves a plan hoja))))
-          (cons "editables" (lista (rangos-editables hoja)))
+          (cons "anchos" (anchos-de-hoja plan hoja))
+          (cons "columnas_ocultas" (lista (columnas-ocultas hoja)))
+          (cons "impresion" (impresion (> (length (nucleo:campos (coleccion hoja))) 6)))
+          (cons "editables" (lista (rangos-editables plan hoja)))
           (cons "validaciones" (lista (validaciones-de a plan hoja)))
+          (cons "formatos_de_celda" (lista (formatos-de-celda hoja)))
           (cons "formatos_condicionales" (lista (formatos-de a plan hoja)))
           (cons "rangos_nombrados" (lista (rangos-nombrados-de hoja)))
           (cons "leyenda" (lista (leyenda-de plan hoja))))))
@@ -331,18 +330,28 @@
                       (cons "texto" (nucleo:etiqueta campo)))))
 
 (defun encabezados-de-claves (hoja)
-  "El encabezado de cada columna de clave compuesta de HOJA.
+  "El encabezado de cada columna auxiliar de HOJA: las de clave compuesta y
+   las de primera aparicion.
 
-   Dice que campos concatena: con mas de una clave en la hoja, un rotulo
+   Dice que contiene: con mas de una columna auxiliar en la hoja, un rotulo
    igual para todas no deja saber cual es cual."
-  (loop for clave in (claves hoja)
-        for i from 1
-        collect (list (cons "celda" (format nil "~a~d" (letra clave)
-                                            (fila-encabezado hoja)))
-                      (cons "campo" (format nil "__clave~d__" i))
-                      (cons "rol" "derivado")
-                      (cons "texto" (format nil "(clave ~{~(~a~)~^|~}~:[~;, filtrada~])"
-                                            (partes clave) (filtro clave))))))
+  (append
+   (loop for clave in (claves hoja)
+         for i from 1
+         collect (list (cons "celda" (format nil "~a~d" (letra clave)
+                                             (fila-encabezado hoja)))
+                       (cons "campo" (format nil "__clave~d__" i))
+                       (cons "rol" "derivado")
+                       (cons "texto" (format nil "(clave ~{~(~a~)~^|~}~:[~;, filtrada~])"
+                                             (partes clave) (filtro clave)))))
+   (loop for columna in (distintos hoja)
+         for i from 1
+         collect (list (cons "celda" (format nil "~a~d" (letra columna)
+                                             (fila-encabezado hoja)))
+                       (cons "campo" (format nil "__distintos~d__" i))
+                       (cons "rol" "derivado")
+                       (cons "texto" (format nil "(primera vez de ~(~a~))"
+                                             (campo-de columna)))))))
 
 (defun formulas-de-claves (a plan hoja)
   "Las columnas de clave compuesta de HOJA, fila por fila.
@@ -351,20 +360,29 @@
    todos a la vez. Es maquinaria que el lenguaje no nombra: la inventa esta
    arquitectura porque no tiene busqueda por clave compuesta. En una pagina
    no hace ninguna falta."
-  (loop for clave in (claves hoja)
-        append (loop for i from 0 below (capacidad hoja)
-                     for f = (+ (fila-primera hoja) i)
-                     collect (list (cons "celda" (format nil "~a~d" (letra clave) f))
-                                   (cons "formula"
-                                         (formula-de-clave-compuesta a plan hoja clave f))))))
+  (append
+   (loop for clave in (claves hoja)
+         append (loop for i from 0 below (capacidad hoja)
+                      for f = (+ (fila-primera hoja) i)
+                      collect (list (cons "celda" (format nil "~a~d" (letra clave) f))
+                                    (cons "formula"
+                                          (formula-de-clave-compuesta a plan hoja clave f)))))
+   (loop for columna in (distintos hoja)
+         append (loop for i from 0 below (capacidad hoja)
+                      for f = (+ (fila-primera hoja) i)
+                      collect (list (cons "celda" (format nil "~a~d" (letra columna) f))
+                                    (cons "formula"
+                                          (formula-de-primera-aparicion plan hoja columna f)))))))
 
 (defun formula-de-clave-compuesta (a plan hoja clave fila)
-  "La clave compuesta de una fila: sus partes separadas por una barra.
+  "La clave compuesta de una fila: sus partes separadas por el caracter 31
+   de ASCII, que no se puede teclear en una celda. Con una barra, un valor
+   que llevara una barra podia confundirse con otro.
 
    Si la clave lleva filtro, la fila que no lo cumple se queda con la clave
    vacia. El filtro se pregunta en la hoja y no al generar: una fila que
    deja de cumplirlo sale de su casilla sin regenerar el libro."
-  (let ((partes (format nil "~{~a~^&\"|\"&~}"
+  (let ((partes (format nil "~{~a~^&CHAR(31)&~}"
                         (loop for parte in (partes clave)
                               collect (celda hoja parte fila)))))
     (if (null (filtro clave))
@@ -372,8 +390,7 @@
         (let ((*fila* fila)
               (*hoja* hoja))
           (format nil "=IF(~a,~a,\"\")"
-                  (protocolo:emitir-expresion a (filtro clave)
-                                              (ambito-de (coleccion hoja)) plan)
+                  (condicion-excel a (filtro clave) (ambito-de (coleccion hoja)) plan)
                   partes)))))
 
 (defun celdas-de (a plan hoja)
@@ -424,10 +441,40 @@
                                    (format nil "=~a"
                                            (con-guarda-de-fila
                                             a coleccion hoja ambito plan
-                                            (protocolo:emitir-expresion
-                                             a (nucleo:expresion campo) ambito plan)))))
+                                            (formula-del-campo a campo ambito plan)))))
                        resultado))))
     (nreverse resultado)))
+
+(defun formula-del-campo (a campo ambito plan)
+  "La formula de un campo derivado. Un campo booleano vale \"si\" o \"no\",
+   nunca VERDADERO o FALSO: es lo que escriben el texto y la pagina.
+
+   Si la expresion no tiene traduccion a esta hoja de calculo, la celda dice
+   que la pieza no esta disponible y el informe lo anota como rechazo, con
+   el motivo. Antes la generacion entera se detenia."
+  (handler-case
+      (if (nucleo:campo-booleano-p campo)
+          (format nil "IF(~a,\"si\",\"no\")"
+                  (condicion-excel a (nucleo:expresion campo) ambito plan))
+          (protocolo:emitir-expresion a (nucleo:expresion campo) ambito plan))
+    (error (e)
+      (rechazar-campo campo e)
+      (cadena-excel protocolo:+pieza-ausente+))))
+
+(defvar *campos-rechazados* nil
+  "Los campos cuyo rechazo ya se anoto en esta emision: una formula por fila
+   no puede llenar el informe con el mismo rechazo cien veces.")
+
+(defun rechazar-campo (campo condicion)
+  "Anota, una sola vez por campo, que CAMPO no tiene traduccion."
+  (unless (member campo *campos-rechazados*)
+    (push campo *campos-rechazados*)
+    (protocolo:rebajar-en-informe
+     'protocolo:con-derivacion-viva
+     (format nil "~(~a~) se recalcula" (nucleo:nombre campo))
+     :rechaza
+     (format nil "~(~a~) no tiene traduccion a esta hoja de calculo: ~a"
+             (nucleo:nombre campo) condicion))))
 
 (defun con-guarda-de-fila (a coleccion hoja ambito plan formula)
   "Envuelve una formula para que no muestre nada en una fila todavia vacia.
@@ -437,26 +484,59 @@
    no tiene filas vacias- y por eso se resuelve aqui y el lenguaje no lo
    menciona."
   (declare (ignore ambito plan))
-  (let ((clave (or (first (nucleo:clave coleccion))
-                   (nucleo:nombre (first (nucleo:campos coleccion))))))
-    (if (eq (nucleo:crecimiento coleccion) :crece)
-        (format nil "IF(~a=\"\",\"\",~a)" (celda hoja clave *fila*) formula)
-        formula)))
+  (if (eq (nucleo:crecimiento coleccion) :crece)
+      ;; La fila existe en cuanto tiene escrito algun campo de su clave, no
+      ;; solo el primero: una clave compuesta se puede empezar a escribir por
+      ;; cualquiera de sus campos.
+      (format nil "IF(AND(~{~a=\"\"~^,~}),\"\",~a)"
+              (mapcar (lambda (c) (celda hoja c *fila*)) (campos-de-existencia coleccion))
+              formula)
+      formula))
 
 (defun ambito-de (coleccion)
   (nucleo:hacer-ambito
    :ligaduras (list (cons (nucleo:nombrar "fila") coleccion))
    :actual (nucleo:nombrar "fila")))
 
-(defun rangos-editables (hoja)
+(defun rangos-editables (plan hoja)
   "Los rangos donde el usuario puede escribir.
 
-   Salen del rol de campo. Todo lo demas queda bloqueado al proteger la hoja,
-   que es lo que impide borrar una formula sin querer."
-  (loop for campo in (nucleo:campos-de-rol (coleccion hoja) :entrada)
-        collect (format nil "~a~d:~a~d"
-                        (columna-de hoja (nucleo:nombre campo)) (fila-primera hoja)
-                        (columna-de hoja (nucleo:nombre campo)) (fila-ultima hoja))))
+   Salen del rol de campo. Los campos de entrada, en todas las filas. Los
+   fijos de una coleccion que crece, en las filas de reserva: en una
+   coleccion que crece, fijo quiere decir que lo escribe quien crea la fila
+   y despues no cambia. Antes quedaban bloqueados, y no habia forma de
+   anadir una fila sin desproteger la hoja. Todo lo demas queda bloqueado
+   al proteger la hoja, que es lo que impide borrar una formula sin querer."
+  (let ((coleccion (coleccion hoja)))
+    (append
+     (loop for campo in (nucleo:campos-de-rol coleccion :entrada)
+           collect (format nil "~a~d:~a~d"
+                           (columna-de hoja (nucleo:nombre campo)) (fila-primera hoja)
+                           (columna-de hoja (nucleo:nombre campo)) (fila-ultima hoja)))
+     (when (eq (nucleo:crecimiento coleccion) :crece)
+       (let ((primera-de-reserva (+ (fila-primera hoja) (filas-reales plan hoja))))
+         (when (<= primera-de-reserva (fila-ultima hoja))
+           (loop for campo in (nucleo:campos-de-rol coleccion :fijo)
+                 collect (format nil "~a~d:~a~d"
+                                 (columna-de hoja (nucleo:nombre campo)) primera-de-reserva
+                                 (columna-de hoja (nucleo:nombre campo)) (fila-ultima hoja)))))))))
+
+(defun formatos-de-celda (hoja)
+  "El formato de fecha u hora de cada campo fijo o de entrada con ese tipo.
+
+   Plan aprobado de tipos, seccion 4.1: por rango de columna entero, de la
+   primera fila a la ultima de la capacidad, como las validaciones. Asi lo
+   tiene tambien una fila de reserva que el usuario todavia no ha escrito, y
+   una fecha tecleada de verdad se ve como fecha y no como un numero."
+  (loop for campo in (nucleo:campos (coleccion hoja))
+        when (and (member (nucleo:tipo campo) '(:fecha :hora))
+                  (member (nucleo:rol campo) '(:fijo :entrada)))
+          collect (let ((letra (columna-de hoja (nucleo:nombre campo))))
+                    (list (cons "rango" (format nil "~a~d:~a~d"
+                                                letra (fila-primera hoja)
+                                                letra (fila-ultima hoja)))
+                          (cons "formato" (string-downcase
+                                           (symbol-name (nucleo:tipo campo))))))))
 
 (defun validaciones-de (a plan hoja)
   "El desplegable de cada campo de entrada con dominio.
@@ -477,11 +557,15 @@
    :AL-VIOLAR ADVERTIR se traduce a un aviso no bloqueante e :IMPEDIR a uno
    que si bloquea. La diferencia la declara el lenguaje porque es del dominio."
   (declare (ignore ambito))
-  (let ((letra (columna-de *hoja* (nucleo:nombre campo))))
+  (let ((letra (columna-de *hoja* (nucleo:nombre campo)))
+        (valores (valores-del-dominio a plan campo)))
     (list (cons "rango" (format nil "~a~d:~a~d" letra (fila-primera *hoja*)
                                 letra (fila-ultima *hoja*)))
           (cons "tipo" "lista")
-          (cons "valores" (valores-del-dominio a plan campo))
+          ;; Los valores van a una hoja oculta y la validacion cita su rango:
+          ;; escritos dentro de la validacion, una coma partia un valor en dos.
+          (cons "lista" (if valores (registrar-lista plan valores) :false))
+          (cons "valores" (lista (mapcar #'nucleo:como-texto valores)))
           (cons "bloquea" (if (eq (nucleo:al-violar campo) :impedir) t :false)))))
 
 (defun valores-del-dominio (a plan campo)
@@ -491,8 +575,10 @@
    que significa un conjunto. El backend no tiene que distinguir entre
    (los x de y) y (uno-de \"a\" \"b\"): los dos son expresiones de conjunto."
   (declare (ignore a))
+  ;; Los valores se dejan como son: un numero sigue siendo numero en la
+  ;; lista, para que coincida con el numero que el usuario teclee.
   (handler-case
-      (mapcar #'nucleo:como-texto
+      (mapcar #'nucleo:normalizar-numero
               (nucleo:evaluar (nucleo:dominio campo) (nucleo:hacer-ambito)
                               (entorno plan) '()))
     (error () '())))
@@ -508,9 +594,19 @@
          (ambito (ambito-de coleccion)))
     (loop for marca in (nucleo:marcas (situacion plan))
           when (marca-de-esta-hoja-p marca coleccion)
-            collect (let ((*fila* (fila-primera hoja))
-                          (*hoja* hoja))
-                      (protocolo:emitir-marca a marca ambito plan)))))
+            append (let ((*fila* (fila-primera hoja))
+                         (*hoja* hoja))
+                     ;; Una condicion sin traduccion no pinta nada, y el
+                     ;; informe lo dice de esa marca; el resto del libro sale.
+                     (handler-case (list (protocolo:emitir-marca a marca ambito plan))
+                       (error (e)
+                         (protocolo:rebajar-en-informe
+                          'protocolo:con-marcado-visual
+                          (string-downcase (symbol-name (nucleo:nombre marca)))
+                          :rechaza
+                          (format nil "la condicion de ~(~a~) no tiene traduccion a~@
+                                       esta hoja de calculo: ~a" (nucleo:nombre marca) e))
+                         '()))))))
 
 (defmethod protocolo:emitir-marca ((a excel) marca ambito plan)
   "Una marca es una regla de formato condicional sobre el rango de su alcance.
@@ -520,15 +616,8 @@
   (list (cons "rango" (rango-de-alcance *hoja* (nucleo:alcance marca)))
         (cons "estado" (string-downcase (symbol-name (nucleo:nombre marca))))
         (cons "severidad" (string-downcase (symbol-name (nucleo:severidad marca))))
-        (cons "formula" (protocolo:emitir-expresion
-                         a (nucleo:condicion marca) ambito plan))
-        (cons "relleno" (relleno-de (nucleo:severidad marca)))))
-
-(defun marca-de-esta-hoja-p (marca coleccion)
-  (if (nucleo:coleccion marca)
-      (eq (nucleo:coleccion marca) (nucleo:nombre coleccion))
-      (every (lambda (c) (nucleo:campo-llamado coleccion c))
-             (nucleo:alcance marca))))
+        (cons "formula" (condicion-excel a (nucleo:condicion marca) ambito plan))
+        (cons "relleno" (relleno-de-marca plan marca))))
 
 (defun rango-de-alcance (hoja campos)
   (format nil "~{~a~^ ~}"
@@ -567,7 +656,5 @@
   (let ((coleccion (coleccion hoja)))
     (loop for marca in (nucleo:marcas (situacion plan))
           when (marca-de-esta-hoja-p marca coleccion)
-            collect (list (cons "relleno" (relleno-de (nucleo:severidad marca)))
-                          (cons "texto" (string-downcase
-                                         (substitute #\Space #\-
-                                                     (symbol-name (nucleo:nombre marca)))))))))
+            collect (list (cons "relleno" (relleno-de-marca plan marca))
+                          (cons "texto" (texto-de-leyenda marca))))))

@@ -25,6 +25,16 @@ como experimento. La descripcion que vale es `corpus/horario-saul.lisp`, con
 el horario real del centro; sus resultados estan en
 [`ejemplos/`](../ejemplos/README.md).
 
+**Se generan y se verifican con `./explorar.sh`**, desde la raiz del
+repositorio. Durante semanas dejaron de funcionar sin que nadie lo viera:
+internaban los nombres de los datos en el paquete `situacion.nucleo`, que el
+nucleo ya no usaba, y el evaluador tiraba esos datos en silencio, asi que
+salian tablas vacias y la verificacion daba "ok" con cero celdas. Desde el
+2026-10-17 los datos se nombran con `nucleo:nombrar`, el nucleo falla si los
+datos traen algo que la situacion no declara, y `./explorar.sh` carga todos los
+experimentos, falla si alguno no carga y verifica todo lo que generan contra el
+evaluador de referencia.
+
 **Se conservan a proposito.** Son la evidencia de un metodo de validacion
 distinto de la bateria de pruebas: una bateria comprueba lo que ya se sabe;
 describir un dominio nuevo comprueba lo que no. Encontro tres fallos que las
@@ -32,3 +42,9 @@ pruebas no habian encontrado.
 
 Estan escritos contra el estado del sistema ANTES de los arreglos que ellos
 mismos motivaron, asi que algunos ya no reproducen el problema que reportan.
+Los cuatro fallos que seguian abiertos el 2026-10-17 (el acumulado con
+`(anterior fila)` que daba `#VALUE!` en la hoja de calculo, la division que
+daba `45/2`, el `:si-no` de la pagina con una fila que existe sin valor y el
+emparejamiento de hojas del torneo B en el verificador) estan arreglados, y
+`./explorar.sh` lo comprueba. La sonda del orden compuesto de `turnos.lisp`
+guarda ahora el mensaje con que el lenguaje lo rechaza.

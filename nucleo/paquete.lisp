@@ -79,6 +79,7 @@
    #:existe #:hacer-existe #:distinta-de
    #:comparten #:hacer-comparten #:variable-a #:variable-b
    #:vecino #:hacer-vecino #:direccion
+   #:forma-invalida #:hacer-forma-invalida #:tipo-de-forma
 
    ;; Ambitos
    #:ambito #:hacer-ambito #:ligaduras #:actual
@@ -93,4 +94,17 @@
    #:evaluar #:valor-de-campo #:marcas-que-disparan #:evaluar-situacion
    #:explicacion-de-marca #:evaluar-en-fila #:parametro-llamado #:indice
    #:vacio-p #:como-numero #:como-texto #:iguales-p
+
+   ;; Numeros y booleanos
+   #:normalizar-numero #:texto-de-numero #:escritura-de-numero
+   #:expresion-booleana-p #:campo-booleano-p #:verdadero-p #:como-booleano
+   #:cumple-en-fila #:normalizar-valor
+   #:texto-de-estado #:nombre-legible-de-marca
+
+   ;; Ejes y secciones de una vista cruzada
+   #:filas-que-presenta #:valores-de-eje #:secciones-de-vista
+
+   ;; Que tablas se dibujan
+   #:vistas-de-lista #:vistas-de-lista-de #:vista-de-datos
+   #:colecciones-sin-vista-de-lista #:filas-en-orden-de-presentacion
    #:error-de-evaluacion #:mensaje-de-error))

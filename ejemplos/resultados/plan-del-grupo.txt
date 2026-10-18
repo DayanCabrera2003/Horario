@@ -1,7 +1,7 @@
 Plan de asignaturas del grupo D111
 ==================================
 
-Asignaturas
+Plan del grupo
   Abrev  Asignatura                       Frec  Asignadas  Faltan  Estado       
   -----  -------------------------------  ----  ---------  ------  -------------
   AL     Algebra Lineal                   3     3          0       completa     

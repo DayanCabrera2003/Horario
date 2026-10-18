@@ -50,15 +50,20 @@
                 no RECHAZA")))
 
 (definir-prueba con-relacion-uno-a-muchos-produce-formula-real
-    "H4: la celda de la relacion lleva un COUNTIF, no el resultado de REQUERIR"
+    "H4: la celda de la relacion lleva un conteo exacto, no el resultado de REQUERIR"
   (let ((destino "/tmp/carga-de-profesores-plano.json"))
     (protocolo:materializar (situacion.excel:hacer-excel) (situacion-de-carga)
                             *datos-de-carga* destino)
     (let ((contenido (with-open-file (f destino)
                        (let ((s (make-string (file-length f)))) (read-sequence s f) s))))
-      (comprobar (search "COUNTIF" contenido)
-                 "la celda de ASIGNACIONES tiene que llevar una formula COUNTIF~@
-                  real, no lo que devuelva REQUERIR"))))
+      ;; Un conteo exacto por prefijo de la clave numerada, y no CONTAR.SI con
+      ;; comodin: ese confundia mayusculas y leia como comodin un "*" que
+      ;; estuviera en la clave (auditoria del 2026-10-17).
+      (comprobar (search "SUMPRODUCT(1*EXACT(LEFT(" contenido)
+                 "la celda de ASIGNACIONES tiene que llevar un conteo exacto~@
+                  real, no lo que devuelva REQUERIR")
+      (comprobar (not (search "COUNTIF" contenido))
+                 "la celda de ASIGNACIONES no puede contar con CONTAR.SI"))))
 
 (definir-prueba con-reserva-de-relacion-no-positiva-se-rechaza
     "H4: RESERVA-DE-RELACION 0 o negativa senala error, no un plano corrupto"

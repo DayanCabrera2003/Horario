@@ -658,6 +658,15 @@ enumerar destinos.
 `con-crecimiento` al implementarlo, porque es precisamente la que sostiene el
 argumento de la inversión de capacidades y no tenía columna propia.
 
+*Nota del 2026-10-17:* el código declara hoy **veinte** (`protocolo/capacidades.lisp`).
+Después de las doce entraron la búsqueda por clave, la tabla cruzada, la
+agrupación, la partición, el filtro y la agrupación de una vista, la casilla en
+conflicto y, el 2026-10-17, `con-validacion-de-forma` (la marca sintética que
+señala una fecha o una hora mal escrita: la web la cumple, la hoja de cálculo
+la degrada, el texto la cumple porque la calcula el evaluador). El texto plano
+declara también, desde ese día, el conteo de distintos: lo calcula el
+evaluador al generar. El bloque de abajo es el diseño original.
+
 ```lisp
 ;;; La raiz. Todo destino es una arquitectura.
 (defclass arquitectura () ())
@@ -799,6 +808,24 @@ Esas tres políticas, aplicadas a los tres libros del corpus y a las cuatro
 arquitecturas, son una tabla de resultados experimentales, y salen gratis del
 diseño.
 
+**Qué pasa con un rechazo (2026-10-17).** Con la política permisiva, un
+rechazo **no detiene la generación**: `requerir` lo anota y devuelve
+`:rechaza`, y la arquitectura pone en el sitio de lo pedido la constante del
+protocolo `+pieza-ausente+` ("(no disponible en esta arquitectura)"). El
+artefacto sale entero, con la pieza ausente señalada, y el informe dice cuál y
+por qué. Antes una sola construcción sin traducción —un conteo de distintos en
+el texto plano, una búsqueda por dos campos en la hoja de cálculo— se llevaba
+el documento entero. Las políticas estricta y solo-nativo siguen parando:
+sirven precisamente para saber qué cae entero dentro de un destino.
+
+**Rebajar un "cumple" para un nodo (2026-10-17).** Una arquitectura declara
+sus capacidades por clase, y el informe anota `cumple` al empezar a
+materializar. Pero puede descubrir al emitir un nodo concreto que para ese no
+puede: la hoja de calculo cumple el marcado textual, y una explicación que no
+sabe traducir a fórmula lo degrada. Para eso está
+`protocolo:rebajar-en-informe`, que corrige la entrada de ese nodo en vez de
+dejar un "cumple" falso.
+
 ### 7.3 El informe de conformidad
 
 Cada reinicio tomado deja una línea:
@@ -816,6 +843,11 @@ emula     coleccion citaciones :crece           20 filas de reserva; el
 -----------------------------------------------------------------------
 4 nativas, 1 emulada, 0 degradadas, 0 rechazadas
 ```
+
+Una entrada idéntica a otra (misma respuesta, capacidad y nota) no se repite:
+una arquitectura pide la capacidad de un nodo cada vez que lo emite, y un nodo
+se emite una vez por fila. Las notas de varias líneas se alinean bajo la
+primera.
 
 **Ese informe es la evidencia que 2026 no tenía.** Convierte "el mecanismo de
 extensión funciona" en algo que se enseña, y el renglón de límite de la emulación
@@ -1148,6 +1180,20 @@ corre solo los casos correspondientes en modo estricto, y el resto en modo
 permisivo para comprobar que **degrada o rechaza de forma declarada** en vez de
 fallar en silencio. Una arquitectura es conforme si: pasa en estricto todo lo que
 declara, y para lo que no declara emite una respuesta de las cuatro con su nota.
+
+**La conformidad se comprueba en la salida real (2026-10-17).** La auditoría
+de ese día encontró tres capacidades que una arquitectura declaraba y su
+salida no tenía: el marcado textual en la hoja de cálculo, la navegación en la
+página y la agrupación de una segunda vista. Desde entonces
+`pruebas/conformidad-salida.lisp` tiene, para cada arquitectura y cada
+capacidad que declara, una comprobación sobre lo que produce, y exige que cada
+línea "cumple" del informe muestre su evidencia en el corpus y en los casos de
+robustez. Y la verificación de punta a punta compara todo lo que se produce:
+cada hoja del libro (por su identidad, no por sus columnas), el texto plano
+leído por columnas, el cálculo de la página y lo que la página dibuja en un
+navegador, con cuatro oráculos del núcleo (valores con su estado, rejillas,
+tablas de lista) y dos sondas de uso (escribir en la página sin perder el
+foco; escribir en el libro una fila nueva o una fecha de verdad).
 
 **Por qué importa que sea un artefacto y no una promesa.** Es la mitad de la
 pregunta científica. Si Fernando implementa Emacs y pasa la suite sin tocar el

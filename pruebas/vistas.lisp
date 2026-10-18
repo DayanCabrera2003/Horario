@@ -393,8 +393,11 @@
                             "la pestana ~s busca en la columna ~a de ~s, y ahi~@
                              no hay ninguna clave" pestana columna origen)
                  (when clave
+                   ;; Las partes van unidas por el caracter 31 de ASCII, que
+                   ;; no se puede teclear: con una barra, un valor que la
+                   ;; llevara se confundia con otro.
                    (comprobar (string= clave
-                                       (format nil "=~{~a~^&\"|\"&~}" partes))
+                                       (format nil "=~{~a~^&CHAR(31)&~}" partes))
                               "la pestana ~s busca en una clave que no es la~@
                                suya: ~a" pestana clave)))))))
 

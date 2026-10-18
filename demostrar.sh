@@ -6,7 +6,11 @@
 #      pagina web. Mas el oraculo del evaluador de referencia.
 #   3. Materializa el plano en un .xlsx de verdad.
 #   4. Pasa el .xlsx por LibreOffice, lo relee ya calculado, y comprueba que
-#      cada celda coincide con lo que dijo el evaluador.
+#      cada celda de cada hoja coincide con lo que dijo el evaluador; lee el
+#      texto plano por sus columnas; ejecuta el JavaScript de la pagina y la
+#      abre en un navegador para comparar lo que dibuja; y escribe en el
+#      libro y en la pagina como lo haria quien los usa.
+#   5. Repite todo con los casos de robustez (./demostrar-robustez.sh).
 #
 # El paso 4 es el que importa: demuestra a la vez que las formulas son validas
 # y que la arquitectura de Excel coincide con la semantica del lenguaje.
@@ -38,8 +42,22 @@ fallos=0
 for f in plan-del-grupo defensas-de-tesis horario-del-grupo departamento horario-saul seder; do
   python3 materializador/verificar.py "salida/$f-plano.json" \
           "salida/$f-esperado.json" "salida/$f.xlsx" \
-          "salida/$f-cruces.json" || fallos=1
+          "salida/$f-cruces.json" "salida/$f-vistas.json" || fallos=1
 done
+
+echo
+echo "Texto plano: se leen sus tablas y sus rejillas por el ancho de sus columnas"
+echo "y se compara cada celda con el evaluador."
+for f in plan-del-grupo defensas-de-tesis horario-del-grupo departamento horario-saul seder; do
+  python3 materializador/verificar-texto.py "salida/$f.txt" "salida/$f-esperado.json" \
+          "salida/$f-vistas.json" "salida/$f-cruces.json" || fallos=1
+done
+
+echo
+echo "Libro usado: se escribe una asignatura nueva en una fila de reserva del"
+echo "plan del grupo, se recalcula y se comprueba que la fila calcula."
+python3 materializador/sonda_escritura.py salida/plan-del-grupo.xlsx "Plan del grupo" \
+        A10=X B10=Nueva C10=3 D10=1 -- E10=2 || fallos=1
 
 echo
 echo "Pagina web: se ejecuta el JavaScript que emitio la arquitectura y se"
@@ -54,10 +72,38 @@ else
 fi
 
 echo
+echo "Pagina dibujada: se abre cada pagina en un navegador sin pantalla, se"
+echo "compara cada tabla y cada rejilla que se ve con el evaluador, se teclea en"
+echo "un control y se comprueba que no pierde el foco ni salta ningun error."
+. materializador/navegador.sh
+if arrancar_navegador; then
+  for f in plan-del-grupo defensas-de-tesis horario-del-grupo departamento horario-saul seder; do
+    aparece=""
+    [ "$f" = "horario-saul" ] && aparece="no está en la lista"
+    node materializador/verificar-dom.js "$PUERTO_NAVEGADOR" "salida/$f.html" \
+         "salida/$f-esperado.json" "salida/$f-vistas.json" "salida/$f-cruces.json" || fallos=1
+    node materializador/sonda-foco.js "$PUERTO_NAVEGADOR" "salida/$f.html" "$aparece" || fallos=1
+  done
+  cerrar_navegador
+else
+  echo "  (no hay Chromium; esta comprobacion se salta)"
+fi
+
+echo
 echo "Los dos destinos no comparten nada: uno evalua formulas A1 dentro de una"
 echo "rejilla, el otro ejecuta funciones sobre arreglos. Que los dos coincidan"
 echo "con el mismo evaluador es lo que hace comprobable la afirmacion de que la"
 echo "descripcion es independiente de la arquitectura."
+
+echo
+echo "#############################################################"
+echo "#  5.  Robustez: situaciones ajenas al corpus"
+echo "#############################################################"
+echo
+echo "Las mismas comprobaciones sobre los casos de pruebas/casos/: una lista de"
+echo "la compra, notas, una agenda, un inventario, horas trabajadas, prestamos y"
+echo "textos con signos raros. Ver ./demostrar-robustez.sh."
+./demostrar-robustez.sh || fallos=1
 
 echo
 if [ "$fallos" = "0" ]; then

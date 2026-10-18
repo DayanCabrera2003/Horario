@@ -158,7 +158,7 @@
 ;;; ---------------------------------------------------------------------
 
 (defparameter datos-de-notas
-  (let ((n (lambda (s) (intern (string-upcase s) '#:situacion.nucleo))))
+  (let ((n (lambda (s) (nucleo:nombrar s))))
     (list
      (cons (funcall n "evaluaciones")
            (loop for (nombre peso) in '(("Parcial 1" 25) ("Parcial 2" 25)

@@ -13,22 +13,7 @@ Horario semanal
   T2     L      IP      AL       
   T3            AM               
 
-Asignaturas
-  Abrev  Asignatura               Frec  Estado
-  -----  -----------------------  ----  ------
-  AL     Algebra Lineal           3           
-  L      Logica                   2           
-  IP     Intro a la Programacion  2           
-  AM     Analisis Matematico      2           
-
-Aulas
-  Aula    Estado
-  ------  ------
-  Aula 7        
-  Aula 8        
-  Lab 1         
-
-Casillas
+Casilla por casilla
   Dia        Turno  Asignatura  Aula    Nombre                   Puestos  Faltan  Estado           
   ---------  -----  ----------  ------  -----------------------  -------  ------  -----------------
   lunes      T1     AL          Aula 8  Algebra Lineal           4        -1      Sobra 1 turno    
@@ -44,4 +29,19 @@ Casillas
   Asignatura admite: AL, L, IP, AM
 
   Aula admite: Aula 7, Aula 8, Lab 1
+
+Plan de la carrera
+  Abrev  Asignatura               Frec  Estado
+  -----  -----------------------  ----  ------
+  AL     Algebra Lineal           3           
+  L      Logica                   2           
+  IP     Intro a la Programacion  2           
+  AM     Analisis Matematico      2           
+
+Aulas
+  Aula    Estado
+  ------  ------
+  Aula 7        
+  Aula 8        
+  Lab 1         
 
