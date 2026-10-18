@@ -77,6 +77,21 @@
       (let ((par (assoc (entrada-de-informe-respuesta e) cuenta)))
         (when par (incf (cdr par)))))))
 
+(defun nota-sangrada (nota)
+  "NOTA con sus lineas de continuacion alineadas debajo de la primera.
+
+   Las notas se escriben en el codigo como cadenas de varias lineas, con la
+   sangria del codigo; impresas tal cual, cada una salia con un margen
+   distinto. Aqui se quita esa sangria y cada linea siguiente empieza en la
+   columna de la nota."
+  (let ((lineas (loop with inicio = 0
+                      for fin = (position #\Newline nota :start inicio)
+                      collect (string-trim " " (subseq nota inicio (or fin (length nota))))
+                      while fin
+                      do (setf inicio (1+ fin)))))
+    (format nil (format nil "~~{~~a~~^~~%~a~~}" (make-string 40 :initial-element #\Space))
+            (remove "" lineas :test #'string=))))
+
 (defun escribir-informe (informe &optional (flujo *standard-output*))
   "Imprime el informe en un formato legible de un vistazo."
   (let* ((arquitectura (arquitectura-del-informe informe))
@@ -92,7 +107,7 @@
           (format flujo "  ~(~8a~) ~(~28a~) ~a~%"
                   (entrada-de-informe-respuesta e)
                   (entrada-de-informe-capacidad e)
-                  (or (entrada-de-informe-nota e) ""))))
+                  (nota-sangrada (or (entrada-de-informe-nota e) "")))))
     (format flujo "~a~%" raya)
     (format flujo "  ~d nativas, ~d emuladas, ~d degradadas, ~d rechazadas~%"
             (cdr (assoc :cumple resumen)) (cdr (assoc :emula resumen))
