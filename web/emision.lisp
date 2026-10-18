@@ -61,6 +61,19 @@
 
 (defun nombre-js (simbolo) (string-downcase (symbol-name simbolo)))
 
+(defun html-escapar (texto)
+  "TEXTO escapado para escribirlo dentro de un elemento HTML. Una etiqueta
+   como \"Precios <IVA>\" se colaba como un elemento de verdad."
+  (with-output-to-string (s)
+    (loop for c across texto
+          do (case c
+               (#\& (write-string "&amp;" s))
+               (#\< (write-string "&lt;" s))
+               (#\> (write-string "&gt;" s))
+               (#\" (write-string "&quot;" s))
+               (#\' (write-string "&#39;" s))
+               (t (write-char c s))))))
+
 ;;; ---------------------------------------------------------------------
 ;;; La pagina
 ;;; ---------------------------------------------------------------------
@@ -70,10 +83,10 @@
     (format flujo "<!DOCTYPE html>~%<html lang=\"es\">~%<head>~%")
     (format flujo "<meta charset=\"utf-8\">~%")
     (format flujo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">~%")
-    (format flujo "<title>~a</title>~%" (nucleo:etiqueta situacion))
+    (format flujo "<title>~a</title>~%" (html-escapar (nucleo:etiqueta situacion)))
     (format flujo "<style>~%~a</style>~%" +estilos+)
     (format flujo "</head>~%<body>~%")
-    (format flujo "<h1>~a</h1>~%" (nucleo:etiqueta situacion))
+    (format flujo "<h1>~a</h1>~%" (html-escapar (nucleo:etiqueta situacion)))
     (format flujo "<p class=\"nota\">Escribe en las casillas: lo calculado y las ~
                marcas se actualizan solos.</p>~%")
     (format flujo "<div id=\"app\"></div>~%")
@@ -91,7 +104,7 @@
   (declare (ignore a))
   (format flujo "const D = {};~%")
   (dolist (coleccion (nucleo:colecciones (situacion plan)))
-    (format flujo "D[~s] = [~%" (nombre-js (nucleo:nombre coleccion)))
+    (format flujo "D[~/situacion.web::js/] = [~%" (nombre-js (nucleo:nombre coleccion)))
     (let ((filas (nucleo:filas-de (entorno plan) (nucleo:nombre coleccion))))
       (loop for fila in filas
             for primera = t then nil
@@ -99,7 +112,7 @@
                (format flujo "  {~{~a~^, ~}}"
                        (loop for campo in (nucleo:campos coleccion)
                              unless (eq (nucleo:rol campo) :derivado)
-                               collect (format nil "~s: ~a"
+                               collect (format nil "~/situacion.web::js/: ~a"
                                                (nombre-js (nucleo:nombre campo))
                                                (js-literal
                                                 (gethash (nucleo:nombre campo)
@@ -108,7 +121,7 @@
   ;; Filas en blanco para que la coleccion pueda crecer. En una pagina esto
   ;; no hace falta -basta un boton- y por eso aqui se declara como cumplida y
   ;; no como emulada.
-  (format flujo "const CRECEN = [~{~s~^, ~}];~%"
+  (format flujo "const CRECEN = [~{~/situacion.web::js/~^, ~}];~%"
           (loop for c in (nucleo:colecciones (situacion plan))
                 when (eq (nucleo:crecimiento c) :crece)
                   collect (nombre-js (nucleo:nombre c)))))
@@ -121,11 +134,11 @@
     (let ((ambito (ambito-de coleccion))
           (derivados (nucleo:campos-de-rol coleccion :derivado)))
       (when derivados
-        (format flujo "DERIV[~s] = {~%" (nombre-js (nucleo:nombre coleccion)))
+        (format flujo "DERIV[~/situacion.web::js/] = {~%" (nombre-js (nucleo:nombre coleccion)))
         (loop for campo in derivados
               for primera = t then nil
               do (unless primera (format flujo ",~%"))
-                 (format flujo "  ~s: (f) => ~a"
+                 (format flujo "  ~/situacion.web::js/: (f) => ~a"
                          (nombre-js (nucleo:nombre campo))
                          (protocolo:emitir-expresion a (nucleo:expresion campo)
                                                      ambito plan)))
@@ -153,7 +166,7 @@
                                                  (nucleo:nombre
                                                   (coleccion-de-la-marca
                                                    marca (situacion plan)))))))
-    (format nil "  {nombre: ~s, coleccion: ~s, clase: ~s, campos: [~{~s~^, ~}],~%   cond: (f) => ~a,~%   explica: ~a}"
+    (format nil "  {nombre: ~/situacion.web::js/, coleccion: ~/situacion.web::js/, clase: ~/situacion.web::js/, campos: [~{~/situacion.web::js/~^, ~}],~%   cond: (f) => ~a,~%   explica: ~a}"
             (nombre-js (nucleo:nombre marca))
             (nombre-js (nucleo:nombre coleccion))
             (or (cdr (assoc (nucleo:severidad marca) +paleta-web+)) "informativa")
@@ -183,7 +196,7 @@
 (defmethod protocolo:emitir-vista ((a web) vista plan)
   "Una vista es una seccion de la pagina, con su titulo."
   (declare (ignore plan))
-  (format nil "  {nombre: ~s, titulo: ~s, coleccion: ~s, entrada: ~a}"
+  (format nil "  {nombre: ~/situacion.web::js/, titulo: ~/situacion.web::js/, coleccion: ~/situacion.web::js/, entrada: ~a}"
           (nombre-js (nucleo:nombre vista))
           (nucleo:etiqueta vista)
           (nombre-js (nucleo:fuente vista))
@@ -219,7 +232,7 @@
   (dolist (coleccion (nucleo:colecciones (situacion plan)))
     (dolist (campo (nucleo:campos-de-rol coleccion :entrada))
       (when (nucleo:dominio campo)
-        (format flujo "DOMINIOS[~s] = ~a;~%"
+        (format flujo "DOMINIOS[~/situacion.web::js/] = ~a;~%"
                 (format nil "~a.~a" (nombre-js (nucleo:nombre coleccion))
                         (nombre-js (nucleo:nombre campo)))
                 (protocolo:emitir-entrada a campo (ambito-de coleccion) plan)))))
@@ -234,7 +247,7 @@
    nombrar cada fila relacionada en vez de imprimir el objeto."
   (let ((expresion (nucleo:expresion campo)))
     (if (typep expresion 'nucleo:relacionadas)
-        (format nil "[~{~s~^, ~}]"
+        (format nil "[~{~/situacion.web::js/~^, ~}]"
                 (mapcar #'nombre-js
                         (nucleo:clave (nucleo:coleccion-llamada
                                        (situacion plan)
@@ -251,14 +264,14 @@
   (loop for coleccion in (nucleo:colecciones (situacion plan))
         for primera = t then nil
         do (unless primera (format flujo ",~%"))
-           (format flujo "  {nombre: ~s, etiqueta: ~s, crece: ~a, agrupa: ~a, campos: [~{~a~^, ~}]}"
+           (format flujo "  {nombre: ~/situacion.web::js/, etiqueta: ~/situacion.web::js/, crece: ~a, agrupa: ~a, campos: [~{~a~^, ~}]}"
                    (nombre-js (nucleo:nombre coleccion))
                    (nucleo:etiqueta coleccion)
                    (if (eq (nucleo:crecimiento coleccion) :crece) "true" "false")
                    (let ((campo (campo-de-agrupacion plan coleccion)))
-                     (if campo (format nil "~s" (nombre-js campo)) "null"))
+                     (if campo (format nil "~/situacion.web::js/" (nombre-js campo)) "null"))
                    (loop for campo in (nucleo:campos coleccion)
-                         collect (format nil "{n: ~s, e: ~s, rol: ~s, tipo: ~s, clave: ~a}"
+                         collect (format nil "{n: ~/situacion.web::js/, e: ~/situacion.web::js/, rol: ~/situacion.web::js/, tipo: ~/situacion.web::js/, clave: ~a}"
                                          (nombre-js (nucleo:nombre campo))
                                          (nucleo:etiqueta campo)
                                          (string-downcase (symbol-name (nucleo:rol campo)))
@@ -273,7 +286,7 @@
   (format flujo "~%const CRUCES = [~%~{~a~^,~%~}~%];~%"
           (loop for vista in (nucleo:vistas (situacion plan))
                 when (nucleo:cruzada-p vista)
-                  collect (format nil "  {titulo: ~s, coleccion: ~s, ejeFilas: ~s, ejeColumnas: ~s, celda: ~s, secciones: ~a, filtro: ~a}"
+                  collect (format nil "  {titulo: ~/situacion.web::js/, coleccion: ~/situacion.web::js/, ejeFilas: ~/situacion.web::js/, ejeColumnas: ~/situacion.web::js/, celda: ~/situacion.web::js/, secciones: ~a, filtro: ~a}"
                                   (nucleo:etiqueta vista)
                                   (nombre-js (nucleo:fuente vista))
                                   (nombre-js (nucleo:eje-de-filas vista))
@@ -284,7 +297,7 @@
                                   ;; si manana aparece un grupo nuevo, aparece
                                   ;; una tabla nueva sin regenerar nada.
                                   (if (nucleo:secciones vista)
-                                      (format nil "~s" (nombre-js (nucleo:secciones vista)))
+                                      (format nil "~/situacion.web::js/" (nombre-js (nucleo:secciones vista)))
                                       "null")
                                   ;; El filtro va como FUNCION, no como lista de
                                   ;; filas: se reevalua en cada render, asi que

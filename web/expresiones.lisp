@@ -17,11 +17,45 @@
 
 (defvar *plan* nil "Plan en curso. Interno de esta arquitectura.")
 
+(defun js-cadena (texto)
+  "TEXTO como literal de cadena de JavaScript valido, con las reglas de JSON.
+
+   Se escapan las comillas, la barra invertida, los saltos de linea y todos
+   los caracteres de control, ademas de \"</\" (que dentro de un <script>
+   cerraria el bloque) y los separadores de linea de Unicode. Antes se
+   escribia con la sintaxis de cadena de Lisp, que deja pasar el salto de
+   linea: un dato con dos lineas dejaba la pagina entera en blanco."
+  (with-output-to-string (s)
+    (write-char #\" s)
+    (loop for i from 0 below (length texto)
+          for c = (char texto i)
+          do (case c
+               (#\" (write-string "\\\"" s))
+               (#\\ (write-string "\\\\" s))
+               (#\Newline (write-string "\\n" s))
+               (#\Return (write-string "\\r" s))
+               (#\Tab (write-string "\\t" s))
+               (#\/ (if (and (plusp i) (char= (char texto (1- i)) #\<))
+                        (write-string "\\/" s)
+                        (write-char c s)))
+               (t (if (or (< (char-code c) 32)
+                          (= (char-code c) #x2028) (= (char-code c) #x2029))
+                      (format s "\\u~4,'0x" (char-code c))
+                      (write-char c s)))))
+    (write-char #\" s)))
+
+(defun js (flujo argumento &optional dos-puntos arroba)
+  "Directiva de FORMAT (~/situacion.web::js/) que escribe ARGUMENTO como
+   cadena de JavaScript con JS-CADENA. Sustituye a ~S, que escribia con la
+   sintaxis de Lisp."
+  (declare (ignore dos-puntos arroba))
+  (write-string (js-cadena (princ-to-string argumento)) flujo))
+
 (defun js-literal (valor)
   (cond ((null valor) "\"\"")
         ((eq valor t) "true")
-        ((realp valor) (format nil "~a" valor))
-        (t (format nil "~s" (princ-to-string valor)))))
+        ((realp valor) (nucleo:escritura-de-numero valor))
+        (t (js-cadena (princ-to-string valor)))))
 
 (defun js-variable (simbolo)
   "El nombre de la variable de fila en JavaScript.
@@ -32,10 +66,10 @@
   (string-downcase (subseq (symbol-name simbolo) 0 1)))
 
 (defun js-coleccion (nombre)
-  (format nil "D[~s]" (string-downcase (symbol-name nombre))))
+  (format nil "D[~/situacion.web::js/]" (string-downcase (symbol-name nombre))))
 
 (defun js-campo (nombre)
-  (format nil "[~s]" (string-downcase (symbol-name nombre))))
+  (format nil "[~/situacion.web::js/]" (string-downcase (symbol-name nombre))))
 
 (defmethod protocolo:emitir-expresion ((a web) (e nucleo:literal) ambito plan)
   (declare (ignore ambito plan))
@@ -162,7 +196,7 @@
 
 (defmethod protocolo:emitir-expresion ((a web) (e nucleo:proyeccion) ambito plan)
   (let ((fuente (nucleo:sobre e)))
-    (format nil "PROY(~a, ~s, ~a)"
+    (format nil "PROY(~a, ~/situacion.web::js/, ~a)"
             (protocolo:emitir-expresion a fuente ambito plan)
             (string-downcase (symbol-name (nucleo:campo e)))
             (if (nucleo:por-defecto e)
@@ -180,7 +214,7 @@
 
 (defmethod protocolo:emitir-expresion ((a web) (e nucleo:comparten) ambito plan)
   (declare (ignore ambito plan))
-  (format nil "COMPARTEN(~a, ~a, [~{~s~^, ~}])"
+  (format nil "COMPARTEN(~a, ~a, [~{~/situacion.web::js/~^, ~}])"
           (js-variable (nucleo:variable-a e))
           (js-variable (nucleo:variable-b e))
           (mapcar (lambda (c) (string-downcase (symbol-name c))) (nucleo:campos e))))
