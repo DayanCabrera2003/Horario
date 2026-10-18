@@ -202,7 +202,8 @@
                (:file "inventario")
                (:file "horas")
                (:file "biblioteca")
-               (:file "escapes")))
+               (:file "escapes")
+               (:file "guardias")))
 
 (defsystem "situacion/demostracion"
   :description "Genera los artefactos de las tres arquitecturas a partir de
