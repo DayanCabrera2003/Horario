@@ -114,6 +114,7 @@
                (:file "ejes")
                (:file "varias-vistas")
                (:file "carencias")
+               (:file "conformidad-salida")
                (:file "formula")
                (:file "particion-en-archivo")
                (:file "ejecutar"))
