@@ -288,12 +288,14 @@
 (defun campo-js (plan campo)
   "La descripcion de CAMPO para la pagina: nombre, etiqueta, rol, tipo y, si
    es una relacion uno a muchos, la clave de las filas relacionadas."
-  (format nil "{n: ~/situacion.web::js/, e: ~/situacion.web::js/, rol: ~/situacion.web::js/, tipo: ~/situacion.web::js/, clave: ~a}"
+  (format nil "{n: ~/situacion.web::js/, e: ~/situacion.web::js/, rol: ~/situacion.web::js/, tipo: ~/situacion.web::js/, clave: ~a~@[, dec: ~d~]}"
           (nombre-js (nucleo:nombre campo))
           (nucleo:etiqueta campo)
           (string-downcase (symbol-name (nucleo:rol campo)))
           (string-downcase (symbol-name (or (nucleo:tipo campo) :texto)))
-          (clave-relacionada plan campo)))
+          (clave-relacionada plan campo)
+          ;; Los decimales que el campo declara (fase 2, hueco C6).
+          (nucleo:decimales campo)))
 
 (defun columna-de-estado (coleccion)
   "El rotulo de la columna de estado de COLECCION: \"Estado\", o \"Avisos\" si

@@ -128,6 +128,9 @@
        (format nil "(N(~a) ~a N(~a))" (first partes) js (second partes)))
       ((string= op "=") (format nil "IG(~a,~a)" (first partes) (second partes)))
       ((string= op "/=") (format nil "(!IG(~a,~a))" (first partes) (second partes)))
+      ;; (redondear E N), con el empate alejandose de cero (recursos.lisp).
+      ((string= op "REDONDEAR")
+       (format nil "REDONDEAR(~a, ~d)" (first partes) (nucleo:valor (second (nucleo:argumentos e)))))
       ((string= op "Y") (format nil "(~{~a~^ && ~})" (condiciones)))
       ((string= op "O") (format nil "(~{~a~^ || ~})" (condiciones)))
       ((string= op "NO") (format nil "(!~a)" (first (condiciones))))

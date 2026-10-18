@@ -292,7 +292,7 @@ function dibujarUnaRejilla(cruce, indiceCruce, filas, ejes, valorDeSeccion, cont
         td = document.createElement('td');
         const celda = td;
         registrar(() => {
-          celda.textContent = enLaCasilla.map(f => T(f[cruce.celda])).join(' / ');
+          celda.textContent = enLaCasilla.map(f => TC(f[cruce.celda], cruce.campoCelda)).join(' / ');
         });
       }
       const marcada = td;
@@ -388,7 +388,7 @@ function dibujarTabla(tabla, contenedor){
           celda.textContent = c.clave
             // Relacion uno a muchos: cada fila relacionada por su clave.
             ? (fila[c.n] || []).map(r => c.clave.map(k => T(r[k])).join(' ')).join(', ')
-            : T(fila[c.n]);
+            : TC(fila[c.n], c);
         });
       }
       const marcada = td;
