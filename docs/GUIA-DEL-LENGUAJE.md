@@ -460,11 +460,13 @@ Ejemplo con concordancia numérica en la explicación,
 (vista NOMBRE :de COLECCION
               [:etiqueta "..."]
               [:entrada t]
-              [:secciones CAMPO]
+              [:secciones EJE]
               [:agrupada-por CAMPO]
               [:donde EXPRESION-BOOLEANA]          ; filtro de presentación
               [:unica-salvo NOMBRE-DE-MARCA]
-              [:filas CAMPO :columnas CAMPO :muestra CAMPO])   ; tabla cruzada
+              [:filas EJE :columnas EJE :muestra CAMPO])   ; tabla cruzada
+
+;; EJE es CAMPO, o (CAMPO :dominio CONJUNTO) desde el 2026-10-17
 ```
 
 `:de` es obligatorio. Nota de nombres: la palabra clave que se escribe es
@@ -489,8 +491,11 @@ nombres de los slots internos del modelo, no lo que escribe el autor.
   marca es lo que se declara aquí. El caso real que lo ejercita es el
   horario de Saúl Delgado por profesor (sección 11.6):
   ```lisp
-  (vista por-profesor :de casillas :filas turno :columnas dia :muestra grupo
-                      :secciones profesor
+  (vista por-profesor :de casillas :etiqueta "Horario del profesor"
+                      :filas     (turno :dominio (uno-de 1 2 3 4 5 6 7))
+                      :columnas  (dia :dominio (uno-de "L" "M" "MI" "J" "V"))
+                      :muestra grupo
+                      :secciones (profesor :dominio (los nombre de profesores))
                       :unica-salvo profesor-colisiona)
   ```
   Declararlo sin que haga falta es solo aviso; que sobre parte de la clave sin
@@ -516,8 +521,62 @@ Ejemplo real, la vista de tabla cruzada del corpus
 ```lisp
 (vista rejilla :de casillas :entrada t
                :etiqueta "Horario semanal"
-               :filas turno :columnas dia :muestra asignatura)
+               :filas    (turno :dominio (uno-de "T1" "T2" "T3"))
+               :columnas (dia :dominio (uno-de "lunes" "martes" "miercoles"))
+               :muestra asignatura)
 ```
+
+**El dominio de un eje (2026-10-17, fase 2, hueco C1).** Escrito solo con
+el nombre del campo, un eje saca sus valores de los datos: los que toma el
+campo en las filas que la vista presenta, comunes a todas las secciones, en
+el orden de primera aparición (o en el `:orden` de la colección si el eje es
+ese campo); las secciones, ordenadas por su valor. Eso tiene tres
+consecuencias que el lenguaje no podía evitar: un valor que todavía no
+aparece no tiene fila ni columna (y en la hoja de cálculo, que fija la
+rejilla al generar, lo que se escriba después no se ve en ninguna tabla); el
+orden de un texto depende de qué fila venga antes; y una sección sin filas no
+tiene rejilla.
+
+Cada eje (`:filas`, `:columnas`) y las `:secciones` admiten por eso la forma
+larga `(CAMPO :dominio CONJUNTO)`, donde `CONJUNTO` se escribe exactamente
+como el `:dominio` de un campo de entrada: `(uno-de ...)` o
+`(los CAMPO de COLECCION [:donde ...])`. Entonces los valores del eje son
+**los del dominio, todos y en su orden**, aparezcan o no en los datos (con
+`los`, en el orden de las filas de esa colección). Un valor de los datos que
+no esté en el dominio no se esconde: va al final (en orden de aparición en un
+eje, ordenado en las secciones) y se avisa con el texto *"Valores fuera del
+dominio declarado en <vista>: <campo>: <valores>."*, que sale debajo de la
+vista en el texto y en la página, y como entrada `aviso` (que no cuenta en
+el resumen) en el informe de conformidad de las tres arquitecturas. En la
+hoja de cálculo el valor ajeno tiene su fila o su columna al final.
+
+Ejemplo real, `corpus/seder.lisp`:
+
+```lisp
+(vista ocupacion :de brigadas :etiqueta "Ocupacion de instalaciones"
+                 :filas     (instalacion :dominio (los nombre de instalaciones))
+                 :columnas  (horario :dominio (uno-de "10 a.m." "11 a.m." "3 p.m."))
+                 :muestra brigada
+                 :secciones (semana :dominio (uno-de "par" "impar"))
+                 :unica-salvo instalacion-ocupada)
+```
+
+Tres cosas que conviene saber al usarlo:
+
+- El dominio va **siempre en la vista**, explícito. Un campo de entrada que
+  ya declara `:dominio` no se lo pasa al eje solo, y en un campo `fijo`
+  `:dominio` sigue siendo error.
+- En una rejilla de entrada, una columna del dominio sin filas debajo **no se
+  puede rellenar**: no hay casilla que escribir. Por eso
+  `corpus/horario-del-grupo.lisp` declara solo los días y turnos que tienen
+  casillas.
+- En la hoja de cálculo un dominio escrito con `uno-de` sale completo; uno
+  leído de una colección que crece con `(los ...)` se fija al generar, como
+  cualquier eje (lo dice la nota de `con-tabla-cruzada` del informe). En la
+  página sigue vivo.
+
+Una forma larga mal escrita (`(dia :rango ...)`, `(dia :dominio "L")`) es
+error de compilación con un mensaje que enseña la forma admitida.
 
 **Aviso de uso importante:** `:muestra` solo admite **un campo**, nunca una
 expresión. Si necesitas que la celda muestre dos datos a la vez (por

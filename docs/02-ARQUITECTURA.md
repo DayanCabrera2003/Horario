@@ -844,6 +844,13 @@ emula     coleccion citaciones :crece           20 filas de reserva; el
 4 nativas, 1 emulada, 0 degradadas, 0 rechazadas
 ```
 
+Además de las cuatro respuestas hay una quinta, `aviso` (2026-10-17), que
+no cuenta en el resumen porque no dice cómo resolvió la arquitectura una
+capacidad sino que los datos no encajan con lo que declara la descripción:
+hoy, valores que caen fuera del dominio declarado de un eje. La anota
+`protocolo:anotar-avisos-de-los-datos`, a la que llaman las tres
+arquitecturas al materializar, así que sale igual en los tres informes.
+
 Una entrada idéntica a otra (misma respuesta, capacidad y nota) no se repite:
 una arquitectura pide la capacidad de un nodo cada vez que lo emite, y un nodo
 se emite una vez por fila. Las notas de varias líneas se alinean bajo la
@@ -1276,6 +1283,21 @@ abstracción de ese caso. Es, otra vez, el error de 2026. *Coste:* el primer
 protocolo estará mal y habrá que rehacerlo cuando el segundo backend lo falsee.
 Se asume y se planifica: por eso la rebanada vertical lleva dos backends desde el
 principio.
+
+**D10 — El dominio de un eje se declara en la vista (2026-10-17, fase 2,
+C1).** Los ejes de una tabla cruzada salen de los datos salvo que la vista
+escriba `(CAMPO :dominio CONJUNTO)`; entonces son los del dominio, en su
+orden, más los valores ajenos al final, con aviso. La regla vive solo en
+`nucleo/ejes.lisp` (texto y Excel la llaman; la página la repite en
+JavaScript con el mismo texto de aviso) y el oráculo de cruces lleva los
+ejes de cada cuadrante para que los tres verificadores comprueben que las
+filas y columnas vacías existen. *Alternativas descartadas:* permitir
+`:dominio` en campos fijos y que el eje lo herede (cambia una regla vigente
+—un dominio dice qué puede escribir el usuario— y hace que el aspecto de una
+vista dependa de algo declarado lejos de ella); que un eje herede solo el
+dominio de un campo de entrada (cambiaría la salida del corpus sin tocar su
+descripción, y es más difícil de defender que una declaración explícita).
+*Coste:* el dominio de los días se repite en las tres vistas del Saúl.
 
 ---
 
