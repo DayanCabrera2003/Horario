@@ -66,14 +66,16 @@
 
    Con condicion no hay traduccion honesta: la columna auxiliar no sabe
    aplicarla. Se pide la capacidad y el mecanismo de carencias decide."
-  (protocolo:requerir a 'protocolo:con-conteo-de-distintos e
-                      :detalle (format nil "cuantos valores distintos toma ~(~a~)"
-                                       (nucleo:campo e)))
-  (let ((columna (columna-de-distintos-de hoja-destino (nucleo:campo e))))
-    (format nil "SUM(~a!$~a$~d:$~a$~d)"
-            (entrecomillar (nombre hoja-destino))
-            (letra columna) (fila-primera hoja-destino)
-            (letra columna) (fila-ultima hoja-destino))))
+  (if (eq (protocolo:requerir a 'protocolo:con-conteo-de-distintos e
+                               :detalle (format nil "cuantos valores distintos toma ~(~a~)"
+                                                (nucleo:campo e)))
+          :rechaza)
+      (cadena-excel protocolo:+pieza-ausente+)
+      (let ((columna (columna-de-distintos-de hoja-destino (nucleo:campo e))))
+        (format nil "SUM(~a!$~a$~d:$~a$~d)"
+                (entrecomillar (nombre hoja-destino))
+                (letra columna) (fila-primera hoja-destino)
+                (letra columna) (fila-ultima hoja-destino)))))
 
 (defun formula-de-primera-aparicion (plan hoja columna fila)
   "Si el valor de la fila FILA aparece por primera vez en su columna: 1 o 0.

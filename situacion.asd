@@ -113,6 +113,7 @@
                (:file "web-dibujo")
                (:file "ejes")
                (:file "varias-vistas")
+               (:file "carencias")
                (:file "formula")
                (:file "particion-en-archivo")
                (:file "ejecutar"))

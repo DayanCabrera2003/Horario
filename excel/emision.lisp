@@ -45,6 +45,10 @@
   destino)
 
 (defun construir-plano (a plan)
+  (let ((*campos-rechazados* '()))
+    (armar-plano a plan)))
+
+(defun armar-plano (a plan)
   ;; Las vistas se planifican antes de emitir: pueden reordenar las hojas y,
   ;; si son cruzadas, anaden geometria propia.
   ;; Antes que nada, las hojas se redimensionan con las filas que de verdad
@@ -426,11 +430,34 @@
 
 (defun formula-del-campo (a campo ambito plan)
   "La formula de un campo derivado. Un campo booleano vale \"si\" o \"no\",
-   nunca VERDADERO o FALSO: es lo que escriben el texto y la pagina."
-  (if (nucleo:campo-booleano-p campo)
-      (format nil "IF(~a,\"si\",\"no\")"
-              (condicion-excel a (nucleo:expresion campo) ambito plan))
-      (protocolo:emitir-expresion a (nucleo:expresion campo) ambito plan)))
+   nunca VERDADERO o FALSO: es lo que escriben el texto y la pagina.
+
+   Si la expresion no tiene traduccion a esta hoja de calculo, la celda dice
+   que la pieza no esta disponible y el informe lo anota como rechazo, con
+   el motivo. Antes la generacion entera se detenia."
+  (handler-case
+      (if (nucleo:campo-booleano-p campo)
+          (format nil "IF(~a,\"si\",\"no\")"
+                  (condicion-excel a (nucleo:expresion campo) ambito plan))
+          (protocolo:emitir-expresion a (nucleo:expresion campo) ambito plan))
+    (error (e)
+      (rechazar-campo campo e)
+      (cadena-excel protocolo:+pieza-ausente+))))
+
+(defvar *campos-rechazados* nil
+  "Los campos cuyo rechazo ya se anoto en esta emision: una formula por fila
+   no puede llenar el informe con el mismo rechazo cien veces.")
+
+(defun rechazar-campo (campo condicion)
+  "Anota, una sola vez por campo, que CAMPO no tiene traduccion."
+  (unless (member campo *campos-rechazados*)
+    (push campo *campos-rechazados*)
+    (protocolo:rebajar-en-informe
+     'protocolo:con-derivacion-viva
+     (format nil "~(~a~) se recalcula" (nucleo:nombre campo))
+     :rechaza
+     (format nil "~(~a~) no tiene traduccion a esta hoja de calculo: ~a"
+             (nucleo:nombre campo) condicion))))
 
 (defun con-guarda-de-fila (a coleccion hoja ambito plan formula)
   "Envuelve una formula para que no muestre nada en una fila todavia vacia.
@@ -537,9 +564,19 @@
          (ambito (ambito-de coleccion)))
     (loop for marca in (nucleo:marcas (situacion plan))
           when (marca-de-esta-hoja-p marca coleccion)
-            collect (let ((*fila* (fila-primera hoja))
-                          (*hoja* hoja))
-                      (protocolo:emitir-marca a marca ambito plan)))))
+            append (let ((*fila* (fila-primera hoja))
+                         (*hoja* hoja))
+                     ;; Una condicion sin traduccion no pinta nada, y el
+                     ;; informe lo dice de esa marca; el resto del libro sale.
+                     (handler-case (list (protocolo:emitir-marca a marca ambito plan))
+                       (error (e)
+                         (protocolo:rebajar-en-informe
+                          'protocolo:con-marcado-visual
+                          (string-downcase (symbol-name (nucleo:nombre marca)))
+                          :rechaza
+                          (format nil "la condicion de ~(~a~) no tiene traduccion a~@
+                                       esta hoja de calculo: ~a" (nucleo:nombre marca) e))
+                         '()))))))
 
 (defmethod protocolo:emitir-marca ((a excel) marca ambito plan)
   "Una marca es una regla de formato condicional sobre el rango de su alcance.

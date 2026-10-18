@@ -97,16 +97,22 @@
   ;; ignorando el :DONDE por completo -da igual que el numero resultante
   ;; coincida o no con el correcto en este caso concreto: lo que se prueba
   ;; aqui es que Excel se niegue en vez de fingir que aplico el filtro.
+  ;;
+  ;; Desde el 2026-10-17 un rechazo no detiene la generacion: el informe dice
+  ;; RECHAZA con su motivo y la celda dice que la pieza no esta disponible.
   (let ((s (situacion.lenguaje:situacion-llamada "INVENTARIO-DISTINTOS")))
-    (handler-case
-        (progn
-          (materializar-en-cadena (situacion.excel:hacer-excel)
-                                  s *datos-inventario-distintos*)
-          (comprobar nil
-                     "Excel materializo CUANTAS-DISTINTAS con :DONDE sin quejarse;~@
-                      tenia que rechazar: no hay formula portable que aplique el~@
-                      filtro, y fingir una da un numero que no es el que se pide"))
-      (protocolo:capacidad-no-disponible () (comprobar t)))))
+    (multiple-value-bind (plano informe)
+        (materializar-en-cadena (situacion.excel:hacer-excel) s *datos-inventario-distintos*)
+      (let ((entrada (find 'protocolo:con-conteo-de-distintos
+                           (protocolo:entradas-del-informe informe)
+                           :key #'protocolo:entrada-de-informe-capacidad
+                           :from-end t)))
+        (comprobar (and entrada (eq (protocolo:entrada-de-informe-respuesta entrada) :rechaza))
+                   "el informe tiene que decir RECHAZA para el conteo de distintos con :DONDE")
+        (comprobar (search protocolo:+pieza-ausente+ plano)
+                   "la celda tiene que decir que la pieza no esta disponible")
+        (comprobar (not (search "SUMPRODUCT((" plano))
+                   "no se puede emitir un conteo que ignore el filtro")))))
 
 ;;; ---------------------------------------------------------------------
 ;;; PLURAL en la web: el singular y el plural son expresiones, no valores.

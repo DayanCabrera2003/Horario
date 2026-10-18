@@ -75,7 +75,7 @@
    #:con-informe #:informe-vacio #:escribir-informe #:resumen-de-informe
    #:entradas-del-informe #:arquitectura-del-informe
    #:entrada-de-informe-respuesta #:entrada-de-informe-capacidad
-   #:entrada-de-informe-nota #:rebajar-en-informe
+   #:entrada-de-informe-nota #:rebajar-en-informe #:+pieza-ausente+
 
    ;; Planificacion de alto nivel
    #:materializar

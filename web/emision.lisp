@@ -152,11 +152,22 @@
                          (nombre-js (nucleo:nombre campo))
                          ;; Un campo booleano vale "si" o "no", nunca true o
                          ;; false: es lo que escriben las otras dos.
-                         (let ((js (protocolo:emitir-expresion
-                                    a (nucleo:expresion campo) ambito plan)))
-                           (if (nucleo:campo-booleano-p campo)
-                               (format nil "BOOL(~a)" js)
-                               js))))
+                         (handler-case
+                             (let ((js (protocolo:emitir-expresion
+                                        a (nucleo:expresion campo) ambito plan)))
+                               (if (nucleo:campo-booleano-p campo)
+                                   (format nil "BOOL(~a)" js)
+                                   js))
+                           ;; Sin traduccion: la celda lo dice, el informe
+                           ;; anota el rechazo, y la pagina sale entera.
+                           (error (e)
+                             (protocolo:rebajar-en-informe
+                              'protocolo:con-derivacion-viva
+                              (format nil "~(~a~) se recalcula" (nucleo:nombre campo))
+                              :rechaza
+                              (format nil "~(~a~) no tiene traduccion a la pagina: ~a"
+                                      (nucleo:nombre campo) e))
+                             (js-cadena protocolo:+pieza-ausente+)))))
         (format flujo "~%};~%")))))
 
 (defun escribir-marcas (a plan flujo)

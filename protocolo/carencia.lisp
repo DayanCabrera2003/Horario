@@ -70,7 +70,8 @@
 
    Es el unico camino por el que una arquitectura declara que necesita algo.
    Cumplir, emular, degradar o rechazar se decide aqui, se anota en el
-   informe, y el backend sigue sabiendo con que se ha quedado."
+   informe, y el backend sigue sabiendo con que se ha quedado: si la
+   respuesta es :RECHAZA, pone +PIEZA-AUSENTE+ en el sitio de lo pedido."
   (if (cumple-p arquitectura capacidad)
       (anotar-en-informe :cumple capacidad detalle)
       (progn
@@ -80,14 +81,24 @@
         (multiple-value-bind (respuesta nota)
             (resolver-carencia arquitectura capacidad nodo)
           (let ((nota (or nota detalle)))
-            (when (or (eq respuesta :rechaza)
-                      (eq *politica* :estricta)
+            ;; Una carencia rechazada NO aborta la generacion con la politica
+            ;; permisiva: se anota en el informe y quien la pidio pone en el
+            ;; artefacto la pieza ausente, senalada. Antes se senalaba un
+            ;; error, y una sola construccion sin traduccion -contar valores
+            ;; distintos en el texto plano- se llevaba el documento entero.
+            ;; Las politicas estricta y solo-nativo siguen parando: sirven
+            ;; precisamente para saber que cae entero dentro de un destino.
+            (when (or (eq *politica* :estricta)
                       (and (eq *politica* :solo-nativo)
-                           (member respuesta '(:emula :degrada))))
+                           (member respuesta '(:emula :degrada :rechaza))))
               (error 'capacidad-no-disponible
                      :capacidad capacidad :arquitectura arquitectura
                      :detalle nota))
             (anotar-en-informe respuesta capacidad nota))))))
+
+(defparameter +pieza-ausente+ "(no disponible en esta arquitectura)"
+  "Lo que escribe una arquitectura en el sitio de una pieza que ha rechazado.
+   El informe de conformidad dice cual es y por que.")
 
 ;;; Respuesta por defecto: si una arquitectura no dice que hacer con una
 ;;; carencia, se rechaza. Callar no puede significar "algo saldra".
