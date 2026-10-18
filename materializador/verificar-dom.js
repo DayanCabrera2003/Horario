@@ -125,6 +125,21 @@ function compararRejilla(vista, cuadrante, fallos) {
   for (const clave of casillas.keys()) {
     if (!vistas.has(clave)) fallos.push(`${cuadrante.titulo}: la casilla ${clave.replace('\u0001', ', ')} no esta en la rejilla`);
   }
+  // Los ejes, en su orden: con un dominio declarado hay filas y columnas sin
+  // ninguna casilla ocupada, y solo asi se comprueba que estan.
+  if (cuadrante.filas) {
+    const filasLeidas = JSON.stringify(vista.filas.map(f => f.celdas[0]));
+    const filasEsperadas = JSON.stringify(cuadrante.filas.map(texto));
+    comprobadas++;
+    if (filasLeidas !== filasEsperadas) {
+      fallos.push(`${cuadrante.titulo}: las filas son ${filasLeidas} y el oraculo dice ${filasEsperadas}`);
+    }
+    const columnasEsperadas = JSON.stringify((cuadrante.columnas || []).map(texto));
+    comprobadas++;
+    if (JSON.stringify(columnas) !== columnasEsperadas) {
+      fallos.push(`${cuadrante.titulo}: las columnas son ${JSON.stringify(columnas)} y el oraculo dice ${columnasEsperadas}`);
+    }
+  }
   return comprobadas;
 }
 

@@ -154,6 +154,20 @@ def verificar_rejilla(lineas, cuadrante):
     for posicion in casillas:
         if posicion not in vistas:
             fallos.append("{}: la casilla {!r} no esta en la rejilla".format(titulo, posicion))
+    # Los ejes, en su orden: con un dominio declarado hay filas y columnas
+    # sin ninguna casilla ocupada, y solo asi se comprueba que estan.
+    if "filas" in cuadrante:
+        leidas = [celdas_de(lineas[k], columnas)[0] for k in range(i + 3, j)]
+        esperadas = [texto_de_valor(v) for v in cuadrante["filas"] or []]
+        comprobadas += 1
+        if leidas != esperadas:
+            fallos.append("{}: las filas son {!r} y el oraculo dice {!r}".format(
+                titulo, leidas, esperadas))
+        esperadas = [texto_de_valor(v) for v in cuadrante["columnas"] or []]
+        comprobadas += 1
+        if encabezados[1:] != esperadas:
+            fallos.append("{}: las columnas son {!r} y el oraculo dice {!r}".format(
+                titulo, encabezados[1:], esperadas))
     return comprobadas, fallos
 
 

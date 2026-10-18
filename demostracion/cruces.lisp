@@ -44,22 +44,39 @@
                                                          vista))))))))
 
 (defun cuadrantes-de (entorno vista)
-  "Un cuadrante por seccion de VISTA, o uno solo si no se parte."
-  (let ((filas (nucleo:filas-que-presenta entorno vista)))
+  "Un cuadrante por seccion de VISTA, o uno solo si no se parte.
+
+   Las secciones y los ejes son los del nucleo (nucleo/ejes.lisp), en su
+   orden: con un dominio declarado hay secciones sin filas -una sala en la
+   que nadie hace guardia- y filas y columnas vacias, y el oraculo tiene que
+   decir que existen para que los verificadores lo comprueben."
+  (let* ((filas (nucleo:filas-que-presenta entorno vista))
+         (ejes (list (cons "filas" (situacion.excel::lista
+                                    (nucleo:valores-de-eje entorno vista
+                                                           (nucleo:eje-de-filas vista))))
+                     (cons "columnas" (situacion.excel::lista
+                                       (nucleo:valores-de-eje entorno vista
+                                                              (nucleo:eje-de-columnas vista)))))))
     (if (nucleo:secciones vista)
-        (loop for (seccion . suyas)
-                in (agrupar-por entorno filas (nucleo:secciones vista))
-              collect (list (cons "seccion" (nucleo:como-texto seccion))
-                            (cons "titulo" (format nil "~a - ~a" (nucleo:etiqueta vista)
-                                                   (nucleo:como-texto seccion)))
-                            (cons "casillas"
-                                  (situacion.excel::lista
-                                   (casillas-de entorno vista suyas)))))
-        (list (list (cons "seccion" "")
-                    (cons "titulo" (nucleo:etiqueta vista))
-                    (cons "casillas"
-                          (situacion.excel::lista
-                           (casillas-de entorno vista filas))))))))
+        (loop for seccion in (nucleo:secciones-de-vista entorno vista)
+              for suyas = (remove-if-not
+                           (lambda (f) (nucleo:iguales-p
+                                        (nucleo:valor-de-campo entorno f (nucleo:secciones vista))
+                                        seccion))
+                           filas)
+              collect (list* (cons "seccion" (nucleo:como-texto seccion))
+                             (cons "titulo" (format nil "~a - ~a" (nucleo:etiqueta vista)
+                                                    (nucleo:como-texto seccion)))
+                             (cons "casillas"
+                                   (situacion.excel::lista
+                                    (casillas-de entorno vista suyas)))
+                             ejes))
+        (list (list* (cons "seccion" "")
+                     (cons "titulo" (nucleo:etiqueta vista))
+                     (cons "casillas"
+                           (situacion.excel::lista
+                            (casillas-de entorno vista filas)))
+                     ejes)))))
 
 (defun escribir-cruces-esperados (situacion datos destino)
   "Lo que tiene que haber en cada casilla de cada vista cruzada, segun el
