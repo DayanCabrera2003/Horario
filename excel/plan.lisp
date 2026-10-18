@@ -109,6 +109,11 @@
 (defun hoja-de (plan nombre-de-coleccion)
   (find nombre-de-coleccion (hojas plan) :key (lambda (h) (nucleo:nombre (coleccion h)))))
 
+(defun nombre-de-coleccion (coleccion)
+  "El nombre interno de COLECCION tal como lo escribe el oraculo. Es la
+   identidad con que el plano dice de que coleccion es una hoja."
+  (string-downcase (symbol-name (nucleo:nombre coleccion))))
+
 (defun columna-de (hoja nombre-de-campo)
   ;; :TEST #'EQUAL y no el EQL por defecto: la mayoria de las claves son
   ;; simbolos internados (donde EQUAL se comporta como EQ, sin cambiar nada),

@@ -299,6 +299,9 @@
   (let ((*hoja* hoja))
     (declare (special *hoja*))
     (list (cons "nombre" (nombre hoja))
+          ;; Que coleccion es: el verificador empareja por esto con el
+          ;; oraculo, nunca por las etiquetas de las columnas.
+          (cons "coleccion" (nombre-de-coleccion (coleccion hoja)))
           (cons "fila_encabezado" (fila-encabezado hoja))
           (cons "fila_primera" (fila-primera hoja))
           (cons "capacidad" (capacidad hoja))

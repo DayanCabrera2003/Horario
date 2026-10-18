@@ -45,6 +45,8 @@
 
 (defclass hoja-de-detalle ()
   ((campo :accessor campo :initarg :campo)
+   (hoja-padre :accessor hoja-padre :initarg :hoja-padre
+               :documentation "La hoja de la coleccion que declara la relacion.")
    (hoja-objetivo :accessor hoja-objetivo :initarg :hoja-objetivo
                   :documentation "La hoja de la coleccion RELACIONADA, si tiene.")
    (tabla-cruda :accessor tabla-cruda :initarg :tabla-cruda
@@ -131,6 +133,7 @@
       (make-instance
        'hoja-de-detalle
        :campo campo
+       :hoja-padre hoja-padre
        :hoja-objetivo hoja-objetivo
        :tabla-cruda (construir-tabla-cruda campo hoja-objetivo bloques)
        :bloques bloques))))
@@ -267,6 +270,21 @@
                                                          (format nil "~a#~d" clave i)
                                                          indice))))))))
 
+(defun identidad-de-relacion (detalle bloques-legibles capacidad col-legible ancho)
+  "De que relacion es la hoja auxiliar, y donde esta cada bloque legible.
+
+   El verificador no puede adivinarlo por el nombre de la pestana: con esto
+   compara cuantas lineas ocupadas tiene cada bloque con lo que el oraculo
+   dice que trae la relacion en esa fila padre, en el mismo orden."
+  (list (cons "coleccion" (nombre-de-coleccion (coleccion (hoja-padre detalle))))
+        (cons "campo" (string-downcase (symbol-name (nucleo:nombre (campo detalle)))))
+        (cons "columna" (letra-de-columna col-legible))
+        (cons "ancho" ancho)
+        (cons "capacidad" capacidad)
+        (cons "bloques" (lista (loop for (clave fila-cabecera) in bloques-legibles
+                                     collect (list (cons "clave" clave)
+                                                   (cons "fila" fila-cabecera)))))))
+
 (defun plano-de-detalle (a plan detalle)
   "El plano de la hoja auxiliar de una relacion: la tabla cruda de clave
    numerada y, junto a ella, un bloque legible apilado por cada fila padre.
@@ -296,6 +314,8 @@
          (formulas (formulas-legibles tabla-cruda bloques-legibles capacidad
                                       col-legible campos-objetivo)))
     (list (cons "nombre" (nombre tabla-cruda))
+          (cons "relacion" (identidad-de-relacion detalle bloques-legibles capacidad
+                                                  col-legible n-objetivo))
           (cons "fila_encabezado" fila-encabezado)
           (cons "fila_primera" fila-primera)
           (cons "capacidad" (max (capacidad tabla-cruda) (1+ (- fila-final-legible fila-primera))))

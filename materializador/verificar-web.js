@@ -46,6 +46,17 @@ function normalizar(v) {
   return Number.isNaN(n) ? String(v) : n;
 }
 
+// Dos valores normalizados son iguales si son el mismo texto, o numeros que
+// difieren en menos de una parte en mil millones: el mismo criterio que
+// materializador/comparar.py, por la misma razon (cuantas cifras se escriben
+// no es semantica).
+function iguales(a, b) {
+  if (typeof a === 'number' && typeof b === 'number') {
+    return Math.abs(a - b) <= Math.max(1e-12, 1e-9 * Math.max(Math.abs(a), Math.abs(b)));
+  }
+  return a === b;
+}
+
 function main(argv) {
   if (argv.length !== 4) {
     console.log('Uso: node verificar-web.js <pagina.html> <esperado.json>');
@@ -72,6 +83,9 @@ function main(argv) {
   for (const [coleccion, filasEsperadas] of Object.entries(esperado)) {
     const filas = D[coleccion];
     if (!filas) { fallos.push(`la pagina no trae la coleccion ${coleccion}`); continue; }
+    if (filas.length !== filasEsperadas.length) {
+      fallos.push(`${coleccion}: la pagina tiene ${filas.length} filas y el oraculo ${filasEsperadas.length}`);
+    }
     filasEsperadas.forEach((envoltura, i) => {
       const valores = Array.isArray(envoltura) ? envoltura[0] : envoltura;
       const fila = filas[i];
@@ -80,7 +94,7 @@ function main(argv) {
         const real = normalizar(fila[campo]);
         const esp = normalizar(valor);
         comprobadas++;
-        if (real !== esp) {
+        if (!iguales(real, esp)) {
           fallos.push(`${coleccion}[${i}].${campo}  esperado ${JSON.stringify(esp)}` +
                       `  obtenido ${JSON.stringify(real)}`);
         }
@@ -99,6 +113,10 @@ function main(argv) {
   }
 
   const nombre = argv[2].split('/').pop();
+  const filasDelOraculo = Object.values(esperado).reduce((s, f) => s + f.length, 0);
+  if (filasDelOraculo > 0 && comprobadas === 0) {
+    fallos.push('no se comparo ningun valor');
+  }
   if (fallos.length) {
     console.log(`FALLA  ${nombre}: ${comprobadas} comprobaciones, ${fallos.length} discrepancias`);
     fallos.slice(0, 20).forEach(f => console.log('   ' + f));
