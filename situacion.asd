@@ -108,6 +108,7 @@
                (:file "escapes")
                (:file "numeros")
                (:file "fechas")
+               (:file "web-dibujo")
                (:file "formula")
                (:file "particion-en-archivo")
                (:file "ejecutar"))
@@ -153,6 +154,7 @@
   :serial t
   :components ((:file "arquitectura")
                (:file "recursos")
+               (:file "dibujo")
                (:file "expresiones")
                (:file "emision")))
 

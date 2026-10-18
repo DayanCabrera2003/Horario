@@ -97,7 +97,8 @@
     (escribir-marcas a plan flujo)
     (escribir-dominios a plan flujo)
     (escribir-render a plan flujo)
-    (format flujo "~%render();~%</script>~%</body>~%</html>~%")))
+    (write-string +render-js+ flujo)
+    (format flujo "~%construir();~%</script>~%</body>~%</html>~%")))
 
 (defun escribir-datos (a plan flujo)
   "Los datos conocidos, como objeto de JavaScript."
@@ -171,8 +172,9 @@
                                                  (nucleo:nombre
                                                   (coleccion-de-la-marca
                                                    marca (situacion plan)))))))
-    (format nil "  {nombre: ~/situacion.web::js/, coleccion: ~/situacion.web::js/, clase: ~/situacion.web::js/, campos: [~{~/situacion.web::js/~^, ~}],~%   cond: (f) => ~a,~%   explica: ~a}"
+    (format nil "  {nombre: ~/situacion.web::js/, leyenda: ~/situacion.web::js/, coleccion: ~/situacion.web::js/, clase: ~/situacion.web::js/, campos: [~{~/situacion.web::js/~^, ~}],~%   cond: (f) => ~a,~%   explica: ~a}"
             (nombre-js (nucleo:nombre marca))
+            (substitute #\Space #\- (nombre-js (nucleo:nombre marca)))
             (nombre-js (nucleo:nombre coleccion))
             (or (cdr (assoc (nucleo:severidad marca) +paleta-web+)) "informativa")
             (mapcar #'nombre-js (nucleo:alcance marca))
@@ -259,30 +261,42 @@
                                        (nucleo:coleccion expresion)))))
         "null")))
 
+(defun campo-js (plan campo)
+  "La descripcion de CAMPO para la pagina: nombre, etiqueta, rol, tipo y, si
+   es una relacion uno a muchos, la clave de las filas relacionadas."
+  (format nil "{n: ~/situacion.web::js/, e: ~/situacion.web::js/, rol: ~/situacion.web::js/, tipo: ~/situacion.web::js/, clave: ~a}"
+          (nombre-js (nucleo:nombre campo))
+          (nucleo:etiqueta campo)
+          (string-downcase (symbol-name (nucleo:rol campo)))
+          (string-downcase (symbol-name (or (nucleo:tipo campo) :texto)))
+          (clave-relacionada plan campo)))
+
+(defun columna-de-estado (coleccion)
+  "El rotulo de la columna de estado de COLECCION: \"Estado\", o \"Avisos\" si
+   ya hay un campo con esa etiqueta y se leerian dos columnas iguales."
+  (if (find "Estado" (nucleo:campos coleccion) :key #'nucleo:etiqueta :test #'string-equal)
+      "Avisos"
+      "Estado"))
+
 (defun escribir-render (a plan flujo)
-  "La tabla y sus controles.
+  "Las tablas y las rejillas que dibuja la pagina.
 
    El rol de campo decide aqui exactamente lo mismo que en la hoja de
    calculo, con otra realizacion: de entrada es un control, derivado es texto
    de solo lectura, fijo es texto. Un solo hecho del dominio, dos destinos."
-  (format flujo "~%const ESQUEMA = [~%")
+  (format flujo "~%const TABLAS = [~%")
   (loop for coleccion in (nucleo:colecciones (situacion plan))
         for primera = t then nil
         do (unless primera (format flujo ",~%"))
-           (format flujo "  {nombre: ~/situacion.web::js/, etiqueta: ~/situacion.web::js/, crece: ~a, agrupa: ~a, campos: [~{~a~^, ~}]}"
+           (format flujo "  {vista: ~/situacion.web::js/, titulo: ~/situacion.web::js/, coleccion: ~/situacion.web::js/, crece: ~a, agrupa: ~a, columnaEstado: ~/situacion.web::js/, campos: [~{~a~^, ~}]}"
                    (nombre-js (nucleo:nombre coleccion))
                    (nucleo:etiqueta coleccion)
+                   (nombre-js (nucleo:nombre coleccion))
                    (if (eq (nucleo:crecimiento coleccion) :crece) "true" "false")
                    (let ((campo (campo-de-agrupacion plan coleccion)))
                      (if campo (format nil "~/situacion.web::js/" (nombre-js campo)) "null"))
-                   (loop for campo in (nucleo:campos coleccion)
-                         collect (format nil "{n: ~/situacion.web::js/, e: ~/situacion.web::js/, rol: ~/situacion.web::js/, tipo: ~/situacion.web::js/, clave: ~a}"
-                                         (nombre-js (nucleo:nombre campo))
-                                         (nucleo:etiqueta campo)
-                                         (string-downcase (symbol-name (nucleo:rol campo)))
-                                         (string-downcase (symbol-name
-                                                           (or (nucleo:tipo campo) :texto)))
-                                         (clave-relacionada plan campo)))))
+                   (columna-de-estado coleccion)
+                   (mapcar (lambda (c) (campo-js plan c)) (nucleo:campos coleccion))))
   (format flujo "~%];~%")
   ;; Las vistas cruzadas. Una pagina no tiene direcciones que repartir, asi
   ;; que el numero de columnas puede depender del contenido sin que eso
@@ -291,30 +305,36 @@
   (format flujo "~%const CRUCES = [~%~{~a~^,~%~}~%];~%"
           (loop for vista in (nucleo:vistas (situacion plan))
                 when (nucleo:cruzada-p vista)
-                  collect (format nil "  {titulo: ~/situacion.web::js/, coleccion: ~/situacion.web::js/, ejeFilas: ~/situacion.web::js/, ejeColumnas: ~/situacion.web::js/, celda: ~/situacion.web::js/, secciones: ~a, filtro: ~a}"
-                                  (nucleo:etiqueta vista)
-                                  (nombre-js (nucleo:fuente vista))
-                                  (nombre-js (nucleo:eje-de-filas vista))
-                                  (nombre-js (nucleo:eje-de-columnas vista))
-                                  (nombre-js (nucleo:lo-que-se-muestra vista))
-                                  ;; El campo por el que se parte, o null. La
-                                  ;; pagina calcula las secciones al dibujar:
-                                  ;; si manana aparece un grupo nuevo, aparece
-                                  ;; una tabla nueva sin regenerar nada.
-                                  (if (nucleo:secciones vista)
-                                      (format nil "~/situacion.web::js/" (nombre-js (nucleo:secciones vista)))
-                                      "null")
-                                  ;; El filtro va como FUNCION, no como lista de
-                                  ;; filas: se reevalua en cada render, asi que
-                                  ;; si el usuario escribe algo que hace que una
-                                  ;; fila deje de cumplirlo, desaparece sola.
-                                  (if (nucleo:filtro vista)
-                                      (format nil "(f) => ~a"
-                                              (js-condicion
-                                               a (nucleo:filtro vista)
-                                               (ambito-de (nucleo:coleccion-llamada
-                                                           (situacion plan)
-                                                           (nucleo:fuente vista)))
-                                               plan))
-                                      "null"))))
-  (write-string +render-js+ flujo))
+                  collect (escribir-cruce a plan vista))))
+
+(defun escribir-cruce (a plan vista)
+  "La descripcion de una vista cruzada para la pagina."
+  (let* ((coleccion (nucleo:coleccion-llamada (situacion plan) (nucleo:fuente vista)))
+         (campo-celda (nucleo:campo-llamado coleccion (nucleo:lo-que-se-muestra vista)))
+         (campo-filas (nucleo:campo-llamado coleccion (nucleo:eje-de-filas vista))))
+    (format nil "  {titulo: ~/situacion.web::js/, coleccion: ~/situacion.web::js/, ejeFilas: ~/situacion.web::js/, etiquetaFilas: ~/situacion.web::js/, ejeColumnas: ~/situacion.web::js/, celda: ~/situacion.web::js/, campoCelda: ~a, entrada: ~a, orden: ~a, secciones: ~a, filtro: ~a}"
+            (nucleo:etiqueta vista)
+            (nombre-js (nucleo:fuente vista))
+            (nombre-js (nucleo:eje-de-filas vista))
+            (if campo-filas (nucleo:etiqueta campo-filas)
+                (string-capitalize (symbol-name (nucleo:eje-de-filas vista))))
+            (nombre-js (nucleo:eje-de-columnas vista))
+            (nombre-js (nucleo:lo-que-se-muestra vista))
+            (if campo-celda (campo-js plan campo-celda) "null")
+            (if (nucleo:es-entrada vista) "true" "false")
+            (if (nucleo:orden coleccion)
+                (format nil "~/situacion.web::js/" (nombre-js (nucleo:orden coleccion)))
+                "null")
+            ;; El campo por el que se parte, o null. La pagina calcula las
+            ;; secciones al dibujar: si manana aparece un grupo nuevo,
+            ;; aparece una tabla nueva sin regenerar nada.
+            (if (nucleo:secciones vista)
+                (format nil "~/situacion.web::js/" (nombre-js (nucleo:secciones vista)))
+                "null")
+            ;; El filtro va como FUNCION, no como lista de filas: se reevalua
+            ;; en cada puesta al dia, asi que si el usuario escribe algo que
+            ;; hace que una fila deje de cumplirlo, desaparece sola.
+            (if (nucleo:filtro vista)
+                (format nil "(f) => ~a"
+                        (js-condicion a (nucleo:filtro vista) (ambito-de coleccion) plan))
+                "null"))))

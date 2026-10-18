@@ -29,7 +29,7 @@ function extraerScript(html) {
 }
 
 function quitarLaParteDeDibujo(js) {
-  // El script termina llamando a render(), que toca el DOM. Se corta ahi: lo
+  // El script termina llamando a construir(), que toca el DOM. Se corta ahi: lo
   // que interesa son los datos, las derivaciones, las marcas y los dominios.
   const marca = '\nfunction marcasDe(';
   const corte = js.indexOf(marca);

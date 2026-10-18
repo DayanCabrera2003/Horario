@@ -39,6 +39,17 @@ for f in $casos; do
   node materializador/verificar-web.js "salida/$f.html" "salida/$f-esperado.json" || fallos=1
 done
 
+# Cada pagina, en un navegador de verdad: se escribe sin perder el foco.
+. materializador/navegador.sh
+if arrancar_navegador; then
+  for f in $casos; do
+    node materializador/sonda-foco.js "$PUERTO_NAVEGADOR" "salida/$f.html" || fallos=1
+  done
+  cerrar_navegador
+else
+  echo "  (no hay Chromium; la sonda de la pagina se salta)"
+fi
+
 # Una fecha tecleada de verdad (un numero de serie) tiene que comparar igual
 # que una escrita como texto: Lia entrega el 11 de octubre, despues del 10.
 case " $casos " in

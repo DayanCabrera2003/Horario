@@ -54,6 +54,22 @@ else
 fi
 
 echo
+echo "Pagina dibujada: se abre cada pagina en un navegador sin pantalla, se"
+echo "teclea en un control y se comprueba que no pierde el foco ni salta ningun"
+echo "error, y que lo calculado se pone al dia."
+. materializador/navegador.sh
+if arrancar_navegador; then
+  for f in plan-del-grupo defensas-de-tesis horario-del-grupo departamento horario-saul seder; do
+    aparece=""
+    [ "$f" = "horario-saul" ] && aparece="no está en la lista"
+    node materializador/sonda-foco.js "$PUERTO_NAVEGADOR" "salida/$f.html" "$aparece" || fallos=1
+  done
+  cerrar_navegador
+else
+  echo "  (no hay Chromium; esta comprobacion se salta)"
+fi
+
+echo
 echo "Los dos destinos no comparten nada: uno evalua formulas A1 dentro de una"
 echo "rejilla, el otro ejecuta funciones sobre arreglos. Que los dos coincidan"
 echo "con el mismo evaluador es lo que hace comprobable la afirmacion de que la"
