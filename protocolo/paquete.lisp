@@ -76,6 +76,7 @@
    #:entradas-del-informe #:arquitectura-del-informe
    #:entrada-de-informe-respuesta #:entrada-de-informe-capacidad
    #:entrada-de-informe-nota #:rebajar-en-informe #:+pieza-ausente+
+   #:anotar-avisos-de-los-datos
 
    ;; Planificacion de alto nivel
    #:materializar

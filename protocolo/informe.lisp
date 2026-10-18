@@ -54,6 +54,25 @@
           (anotar-en-informe respuesta capacidad nota))))
   respuesta)
 
+(defun anotar-avisos-de-los-datos (situacion entorno)
+  "Anota en el informe en curso los avisos que dependen de los datos y no de
+   la arquitectura: hoy, los valores que caen fuera del dominio declarado de
+   un eje o de unas secciones (nucleo/ejes.lisp).
+
+   Van con la respuesta :AVISO, que no cuenta en el resumen: no dicen como
+   resolvio la arquitectura una capacidad, sino que los datos no encajan con
+   lo que la descripcion declara. Cada arquitectura llama aqui al
+   materializar, asi que el aviso sale igual en los tres informes y nunca en
+   silencio."
+  (dolist (vista (nucleo:vistas situacion))
+    (let ((aviso (nucleo:aviso-fuera-de-dominio entorno vista)))
+      (when aviso
+        (anotar-en-informe :aviso
+                           (if (nucleo:cruzada-p vista)
+                               'con-tabla-cruzada
+                               'con-particion-de-vista)
+                           aviso)))))
+
 (defmacro con-informe ((arquitectura) &body cuerpo)
   "Ejecuta CUERPO acumulando un informe de conformidad.
 

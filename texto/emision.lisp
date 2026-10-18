@@ -43,6 +43,7 @@
                                 :situacion situacion
                                 :entorno entorno
                                 :evaluado (nucleo:evaluar-situacion situacion datos))))
+      (protocolo:anotar-avisos-de-los-datos situacion entorno)
       (protocolo:emitir a plan destino))))
 
 (defmethod protocolo:emitir ((a texto) plan destino)
@@ -69,8 +70,13 @@
     ;; (nucleo/tablas.lisp).
     (dolist (vista (nucleo:vistas situacion))
       (if (nucleo:cruzada-p vista)
-          (dolist (valor (secciones-de plan vista))
-            (escribir-cruzada a plan vista flujo valor))
+          (progn
+            (dolist (valor (secciones-de plan vista))
+              (escribir-cruzada a plan vista flujo valor))
+            ;; Los valores que caen fuera del dominio declarado salen al
+            ;; final de su eje; aqui se dice cuales, una vez por vista.
+            (let ((aviso (nucleo:aviso-fuera-de-dominio (entorno plan) vista)))
+              (when aviso (format flujo "Aviso: ~a~%~%" aviso))))
           (escribir-coleccion a plan
                               (nucleo:coleccion-llamada situacion (nucleo:fuente vista))
                               flujo (nucleo:etiqueta vista) (nucleo:agrupacion vista))))

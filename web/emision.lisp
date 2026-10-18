@@ -43,6 +43,7 @@
         (protocolo:requerir a capacidad nodo :detalle detalle)))
     (let ((plan (protocolo:planificar a situacion)))
       (setf (entorno plan) (nucleo:hacer-entorno situacion datos))
+      (protocolo:anotar-avisos-de-los-datos situacion (entorno plan))
       (protocolo:emitir a plan destino))))
 
 (defmethod protocolo:emitir ((a web) plan destino)
