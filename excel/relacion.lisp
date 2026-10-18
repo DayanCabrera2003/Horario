@@ -102,13 +102,10 @@
   (format nil "~{~a~^&CHAR(31)&~}"
           (mapcar (lambda (c) (celda hoja c fila)) (nucleo:clave coleccion))))
 
-(defun nombre-de-hoja-de-detalle (campo)
-  "El nombre de la pestana auxiliar de una relacion.
-
-   Excel no admite nombres de hoja de mas de 31 caracteres; es la misma
-   restriccion de formato que NOMBRE-DE-PESTANA resuelve para los cruces."
-  (let ((completo (format nil "Detalle - ~a" (nucleo:etiqueta campo))))
-    (if (> (length completo) 31) (subseq completo 0 31) completo)))
+(defun titulo-de-detalle (campo)
+  "El titulo de la pestana auxiliar de una relacion. Su nombre, valido y
+   unico, lo saca de aqui ASIGNAR-NOMBRES-DE-HOJA (excel/nombres.lisp)."
+  (format nil "Detalle - ~a" (nucleo:etiqueta campo)))
 
 (defun construir-tabla-cruda (campo hoja-objetivo bloques)
   "La tabla cruda: __clave__ mas los campos de la coleccion objetivo, una
@@ -123,7 +120,7 @@
                               :initial-value 0)))
     (make-instance
      'hoja
-     :nombre (nombre-de-hoja-de-detalle campo)
+     :nombre (titulo-de-detalle campo)
      :coleccion coleccion-objetivo
      :columnas columnas
      :fila-encabezado 3
@@ -335,6 +332,7 @@
                            (formulas-legibles tabla-cruda bloques-legibles capacidad
                                               col-legible campos-objetivo))))
     (list (cons "nombre" (nombre tabla-cruda))
+          (cons "titulo" (titulo tabla-cruda))
           (cons "relacion" (identidad-de-relacion detalle bloques-legibles capacidad
                                                   col-legible n-objetivo))
           (cons "fila_encabezado" fila-encabezado)

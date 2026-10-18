@@ -101,6 +101,7 @@
                (:file "relacion")
                (:file "verificacion")
                (:file "comparacion-exacta")
+               (:file "nombres-de-hoja")
                (:file "formula")
                (:file "particion-en-archivo")
                (:file "ejecutar"))
@@ -128,6 +129,7 @@
   :serial t
   :components ((:file "arquitectura")
                (:file "plan")
+               (:file "nombres")
                (:file "plano")
                (:file "formula")
                (:file "existencia")

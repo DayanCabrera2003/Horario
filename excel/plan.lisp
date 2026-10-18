@@ -14,7 +14,12 @@
 (in-package #:situacion.excel)
 
 (defclass hoja ()
-  ((nombre :accessor nombre :initarg :nombre)
+  ((nombre :accessor nombre :initarg :nombre
+           :documentation
+           "El nombre de la pestana. El definitivo lo fija
+            ASIGNAR-NOMBRES-DE-HOJA (excel/nombres.lisp) antes de emitir.")
+   (titulo :accessor titulo :initarg :titulo :initform nil
+           :documentation "El titulo completo, que va en la primera celda.")
    (coleccion :accessor coleccion :initarg :coleccion)
    (columnas :accessor columnas :initarg :columnas
              :documentation "Lista asociativa de nombre de campo a letra.")
@@ -71,6 +76,10 @@
 
 (defclass cruce ()
   ((vista :accessor vista :initarg :vista)
+   (nombre :accessor nombre :initarg :nombre :initform nil
+           :documentation "El nombre de su pestana, fijado por ASIGNAR-NOMBRES-DE-HOJA.")
+   (titulo :accessor titulo :initarg :titulo :initform nil
+           :documentation "El titulo completo de la pestana: vista y seccion.")
    (hoja-origen :accessor hoja-origen :initarg :hoja-origen)
    (seccion :accessor seccion :initarg :seccion :initform nil
             :documentation
@@ -186,9 +195,6 @@
                                   :letra (siguiente-columna-libre hoja))))
         (setf (distintos hoja) (append (distintos hoja) (list nueva)))
         nueva)))
-
-(defun entrecomillar (nombre)
-  (if (find #\Space nombre) (format nil "'~a'" nombre) nombre))
 
 ;;; ---------------------------------------------------------------------
 ;;; Planificacion (fase 5)

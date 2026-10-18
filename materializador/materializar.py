@@ -56,8 +56,9 @@ def materializar(plano, destino):
     libro = Workbook()
     libro.remove(libro.active)
 
+    usados = set()
     for hoja_plan in plano["hojas"]:
-        hoja = libro.create_sheet(_nombre_valido(hoja_plan["nombre"]))
+        hoja = libro.create_sheet(_nombre_comprobado(hoja_plan["nombre"], usados))
         _escribir_encabezados(hoja, hoja_plan)
         _escribir_celdas(hoja, hoja_plan)
         _escribir_formulas(hoja, hoja_plan)
@@ -72,12 +73,34 @@ def materializar(plano, destino):
     return destino
 
 
-def _nombre_valido(nombre):
-    """Los nombres de hoja tienen tope de 31 caracteres y prohiben algunos
-    signos. Es una restriccion del formato, no del dominio, y por eso se
-    resuelve aqui."""
-    limpio = "".join(c for c in nombre if c not in "[]:*?/\\")
-    return limpio[:31] or "Hoja"
+class NombreDeHojaInvalido(ValueError):
+    """El plano trae un nombre de hoja que el formato no admite."""
+
+
+def _nombre_comprobado(nombre, usados):
+    """Comprueba que NOMBRE es un nombre de hoja admisible y no repetido.
+
+    Aqui no se arregla nada. El nombre lo decide la arquitectura de Excel
+    (excel/nombres.lisp), y es el mismo que citan las formulas: si este
+    programa lo recortara o lo cambiara, las formulas apuntarian a una hoja
+    que no existe. Eso paso con "Dias que asisten los contratados" hasta el
+    2026-10-17. Un nombre invalido es un fallo del plano, y se dice."""
+    problema = None
+    if not nombre:
+        problema = "esta vacio"
+    elif len(nombre) > 31:
+        problema = "tiene mas de 31 caracteres"
+    elif any(c in nombre for c in "[]:*?/\\"):
+        problema = "lleva un signo que el formato prohibe"
+    elif nombre[0] == "'" or nombre[-1] == "'":
+        problema = "empieza o acaba por apostrofo"
+    elif nombre.lower() in usados:
+        problema = "se repite"
+    if problema:
+        raise NombreDeHojaInvalido(
+            "El plano trae la hoja {!r}, cuyo nombre {}.".format(nombre, problema))
+    usados.add(nombre.lower())
+    return nombre
 
 
 def _escribir_encabezados(hoja, plan):
@@ -88,7 +111,7 @@ def _escribir_encabezados(hoja, plan):
         celda.fill = RELLENO_ENCABEZADO
         celda.alignment = Alignment(horizontal="center", vertical="center")
     titulo = hoja["A1"]
-    titulo.value = plan["nombre"]
+    titulo.value = plan.get("titulo") or plan["nombre"]
     titulo.font = Font(bold=True, size=13)
 
 
@@ -200,11 +223,10 @@ def _proteger(hoja, plan):
 
 
 def _registrar_rangos(libro, hoja, plan):
+    """Los rangos con nombre, tal como los trae el plano: su referencia ya
+    cita la hoja por su nombre definitivo."""
     for item in plan.get("rangos_nombrados") or []:
-        referencia = item["referencia"].replace(
-            "{}!".format(plan["nombre"]), "{}!".format(hoja.title)
-        )
-        libro.defined_names.add(DefinedName(item["nombre"], attr_text=referencia))
+        libro.defined_names.add(DefinedName(item["nombre"], attr_text=item["referencia"]))
 
 
 def main(argv):
