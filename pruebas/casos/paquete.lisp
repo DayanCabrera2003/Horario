@@ -15,22 +15,28 @@
 (defpackage #:situacion.casos
   (:use #:common-lisp #:situacion.lenguaje)
   (:documentation "Casos de prueba de robustez, ajenos al corpus.")
-  (:export #:*casos* #:caso-prefijo #:caso-situacion #:caso-datos))
+  (:export #:*casos* #:caso-prefijo #:caso-situacion #:caso-datos #:caso-fila-nueva))
 
 (in-package #:situacion.casos)
 
 (defvar *casos* '()
   "Los casos registrados, en orden de definicion. Cada uno es una lista
-   (PREFIJO SITUACION DATOS).")
+   (PREFIJO SITUACION DATOS FILA-NUEVA).")
 
 (defun caso-prefijo (caso) (first caso))
 (defun caso-situacion (caso) (second caso))
 (defun caso-datos (caso) (third caso))
+(defun caso-fila-nueva (caso) (fourth caso))
 
-(defun registrar-caso (prefijo situacion datos)
-  "Registra un caso. Si ya hay uno con ese prefijo, lo sustituye."
+(defun registrar-caso (prefijo situacion datos &key fila-nueva)
+  "Registra un caso. Si ya hay uno con ese prefijo, lo sustituye.
+
+   FILA-NUEVA, si se da, es (\"coleccion\" . FILA): una fila que la sonda de
+   orden (materializador/sonda-orden.js) anade en la pagina como lo haria
+   el usuario, para comprobar que la coleccion se reordena y se recalcula
+   como el evaluador."
   (setf *casos* (append (remove prefijo *casos* :key #'first :test #'string=)
-                        (list (list prefijo situacion datos))))
+                        (list (list prefijo situacion datos fila-nueva))))
   prefijo)
 
 (defun fila (&rest pares)
