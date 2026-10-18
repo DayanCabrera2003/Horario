@@ -27,6 +27,19 @@ import json
 import sys
 from pathlib import Path
 
+from decimales import texto_con_decimales
+
+
+def texto_de_celda(valor, decimales):
+    """VALOR como se escribe en una celda de un campo con DECIMALES (o None
+    si el campo no los declara): con decimales fijos si es un numero, y como
+    cualquier otro valor si no (fase 2, hueco C6)."""
+    if decimales is not None:
+        fijo = texto_con_decimales(valor, decimales)
+        if fijo is not None:
+            return fijo
+    return texto_de_valor(valor)
+
 
 def texto_de_valor(valor):
     """VALOR escrito como lo escribe el texto plano, sin espacios a los
@@ -113,9 +126,10 @@ def verificar_tabla(lineas, tabla, esperado, desde):
                     fallos.append("{} fila {}: {} trae {} relacionadas y el oraculo {}"
                                   .format(titulo, posicion + 1, campo["campo"], cuantas,
                                           esperado_v))
-            elif real != texto_de_valor(esperado_v):
+            elif real != texto_de_celda(esperado_v, campo.get("decimales")):
                 fallos.append("{} fila {}: {} esperado {!r} obtenido {!r}".format(
-                    titulo, posicion + 1, campo["campo"], texto_de_valor(esperado_v), real))
+                    titulo, posicion + 1, campo["campo"],
+                    texto_de_celda(esperado_v, campo.get("decimales")), real))
         comprobadas += 1
         real_estado = celdas[len(campos)] if len(celdas) > len(campos) else ""
         if real_estado != texto_de_valor(estado):
@@ -125,8 +139,9 @@ def verificar_tabla(lineas, tabla, esperado, desde):
     return comprobadas, fallos, j
 
 
-def verificar_rejilla(lineas, cuadrante):
-    """Compara una rejilla con su cuadrante del oraculo de cruces."""
+def verificar_rejilla(lineas, cuadrante, decimales=None):
+    """Compara una rejilla con su cuadrante del oraculo de cruces. DECIMALES
+    son los del campo que muestran las casillas, si los declara."""
     titulo = cuadrante["titulo"]
     i = buscar_bloque(lineas, titulo, 0)
     if i is None:
@@ -136,7 +151,7 @@ def verificar_rejilla(lineas, cuadrante):
     casillas = {}
     for c in cuadrante["casillas"] or []:
         casillas[(texto_de_valor(c["fila"]), texto_de_valor(c["columna"]))] = \
-            " / ".join(texto_de_valor(v) for v in c["valores"])
+            " / ".join(texto_de_celda(v, decimales) for v in c["valores"])
     comprobadas = 0
     fallos = []
     vistas = set()
@@ -188,7 +203,7 @@ def main(argv):
         fallos.extend(f)
     for vista in cruces:
         for cuadrante in vista["cuadrantes"]:
-            n, f = verificar_rejilla(lineas, cuadrante)
+            n, f = verificar_rejilla(lineas, cuadrante, vista.get("decimales"))
             comprobadas += n
             fallos.extend(f)
     filas = sum(len(t["filas"] or []) for t in vistas)

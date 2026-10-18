@@ -52,7 +52,7 @@
   (some (lambda (n) (es simbolo n)) nombres))
 
 (defparameter +operadores+
-  '("+" "-" "*" "/" "=" "/=" "<" "<=" ">" ">=" "Y" "O" "NO")
+  '("+" "-" "*" "/" "=" "/=" "<" "<=" ">" ">=" "Y" "O" "NO" "REDONDEAR")
   "Operadores que construyen un nodo de aplicacion.
 
    Van todos en un solo nodo con el operador como simbolo, en vez de una
@@ -113,6 +113,13 @@
          `(nucleo:hacer-ref-parametro :nombre ',(normalizar (first resto))))
 
         ;; Aritmetica, comparacion y logica.
+        ;; (redondear E N): N es un entero escrito, de 0 a 10 (fase 2, C6).
+        ((and (es cabeza "REDONDEAR")
+              (not (and (= 2 (length resto)) (integerp (second resto))
+                        (<= 0 (second resto) 10))))
+         (error "~s no se entiende.~@
+                 Se escribe (REDONDEAR EXPRESION N), con N un numero entero de~@
+                 decimales escrito tal cual, de 0 a 10." forma))
         ((forma-de-operador-p forma)
          `(nucleo:hacer-aplicacion
            :operador ',(normalizar cabeza)

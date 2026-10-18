@@ -112,6 +112,32 @@ function N(x){ if (typeof x === 'number') return x;
 function NUMTXT(x){ if (Number.isInteger(x)) return String(x);
                     if (!isFinite(x)) return '';
                     return String(Number(x.toPrecision(10))); }
+// Redondeo a N decimales con el empate alejandose de cero, sobre la
+// escritura decimal del numero y no sobre el doble binario: 2.675 da 2.68,
+// como NUCLEO:REDONDEAR-A-DECIMALES y como ROUND de la hoja de calculo
+// (fase 2, hueco C6). Se lleva el numero a 15 cifras, se mueve la coma con
+// la notacion exponencial (que JavaScript lee en decimal) y se redondea.
+function REDONDEO(x, n){
+  const s = Math.sign(x);
+  const [m, e] = Math.abs(Number(x.toPrecision(15))).toExponential().split('e');
+  const r = Math.floor(Number(m + 'e' + (Number(e) + n)) + 0.5);
+  return s * Number(r + 'e' + (-n));
+}
+function REDONDEAR(x, n){
+  if (VACIO(x)) return '';
+  const r = REDONDEO(N(x), n);
+  return r === 0 ? 0 : r;
+}
+// Un numero con exactamente N decimales; lo que no es numero, como siempre.
+function NUMDEC(x, n){
+  if (typeof x !== 'number' || !isFinite(x)) return T(x);
+  const r = REDONDEO(x, n);
+  return (r === 0 ? 0 : r).toFixed(n);
+}
+// Como se escribe un valor en la celda de su campo: con sus decimales.
+function TC(x, campo){
+  return (campo && campo.dec !== undefined) ? NUMDEC(x, campo.dec) : T(x);
+}
 function T(x){ if (x === null || x === undefined || x === false) return '';
                if (x === true) return 'si';
                if (typeof x === 'number') return NUMTXT(x);
@@ -532,7 +558,7 @@ function dibujarUnaRejilla(cruce, indiceCruce, filas, ejes, valorDeSeccion, cont
         td = document.createElement('td');
         const celda = td;
         registrar(() => {
-          celda.textContent = enLaCasilla.map(f => T(f[cruce.celda])).join(' / ');
+          celda.textContent = enLaCasilla.map(f => TC(f[cruce.celda], cruce.campoCelda)).join(' / ');
         });
       }
       const marcada = td;
@@ -628,7 +654,7 @@ function dibujarTabla(tabla, contenedor){
           celda.textContent = c.clave
             // Relacion uno a muchos: cada fila relacionada por su clave.
             ? (fila[c.n] || []).map(r => c.clave.map(k => T(r[k])).join(' ')).join(', ')
-            : T(fila[c.n]);
+            : TC(fila[c.n], c);
         });
       }
       const marcada = td;

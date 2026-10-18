@@ -141,11 +141,15 @@
    Con una sola fila, su valor. Con mas de una, todos separados por barras:
    la casilla ensena el choque en vez de elegir uno y callarse, que es lo que
    hacia antes."
-  (format nil "~{~a~^ / ~}"
-          (loop for f in filas-en-la-casilla
-                collect (en-una-linea
-                         (nucleo:como-texto
-                          (nucleo:valor-de-campo (entorno plan) f campo-celda))))))
+  (let ((campo (nucleo:campo-llamado
+                (nucleo:coleccion-llamada (situacion plan) (nucleo:fuente vista))
+                campo-celda)))
+    (format nil "~{~a~^ / ~}"
+            (loop for f in filas-en-la-casilla
+                  for valor = (nucleo:valor-de-campo (entorno plan) f campo-celda)
+                  collect (en-una-linea (if campo
+                                            (nucleo:texto-del-campo campo valor)
+                                            (nucleo:como-texto valor)))))))
 
 (defun escribir-cruzada (a plan vista flujo &optional valor-de-seccion)
   "La vista cruzada, como rejilla de texto alineada.
@@ -204,6 +208,13 @@
                                                     (entorno plan) fila campo))))))
       (en-una-linea (nucleo:como-texto valor))))
 
+(defun texto-de-celda (plan campo valor)
+  "Como se escribe VALOR en una celda de CAMPO: con los decimales que el
+   campo declara (fase 2, hueco C6), o como cualquier otro valor."
+  (if (nucleo:decimales campo)
+      (en-una-linea (nucleo:texto-del-campo campo valor))
+      (texto-de-valor plan valor)))
+
 (defun en-una-linea (texto)
   "TEXTO sin saltos de linea: una celda de una tabla alineada es una linea.
    Un salto de linea dentro de un valor partia la fila en dos."
@@ -223,8 +234,8 @@
          (celdas (loop for fila in filas
                        collect (append
                                 (loop for campo in campos
-                                      collect (texto-de-valor
-                                               plan
+                                      collect (texto-de-celda
+                                               plan campo
                                                (cdr (assoc (nucleo:nombre campo)
                                                            (car fila)))))
                                 (list (en-una-linea

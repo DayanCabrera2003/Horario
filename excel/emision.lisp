@@ -172,8 +172,8 @@
                                                   (formula-de-casilla
                                                    cruce rango-valor rango-clave
                                                    f (letra-de-columna i) fila-enc)))))))
-    (declare (ignore coleccion))
-    (list (cons "nombre" (nombre cruce))
+    (append
+     (list (cons "nombre" (nombre cruce))
           (cons "titulo" (titulo cruce))
           (cons "cruce" (identidad-de-cruce cruce))
           (cons "fila_encabezado" fila-enc)
@@ -189,7 +189,19 @@
           (cons "validaciones" :lista-vacia)
           (cons "formatos_condicionales" (lista (marcas-de-la-rejilla cruce fila-ini fila-enc)))
           (cons "rangos_nombrados" :lista-vacia)
-          (cons "leyenda" :lista-vacia))))
+          (cons "leyenda" :lista-vacia))
+     ;; Las casillas muestran el campo de la celda: con sus decimales, si
+     ;; los declara (fase 2, hueco C6). Sin ellos la hoja no lleva la clave,
+     ;; y su plano es el de siempre.
+     (let ((campo (nucleo:campo-llamado coleccion campo-celda)))
+       (when (and campo (nucleo:decimales campo) (valores-de-fila cruce)
+                  (valores-de-columna cruce))
+         (list (cons "formatos_de_celda"
+                     (lista (list (formato-de-decimales
+                                   (format nil "B~d:~a~d" fila-ini
+                                           (letra-de-columna (length (valores-de-columna cruce)))
+                                           (+ fila-ini (length (valores-de-fila cruce)) -1))
+                                   (nucleo:decimales campo)))))))))))
 
 (defun marcas-de-la-rejilla (cruce fila-ini fila-enc)
   "Las reglas que pintan las casillas de una rejilla con la severidad mas
@@ -541,15 +553,32 @@
    primera fila a la ultima de la capacidad, como las validaciones. Asi lo
    tiene tambien una fila de reserva que el usuario todavia no ha escrito, y
    una fecha tecleada de verdad se ve como fecha y no como un numero."
-  (loop for campo in (nucleo:campos (coleccion hoja))
-        when (and (member (nucleo:tipo campo) '(:fecha :hora))
-                  (member (nucleo:rol campo) '(:fijo :entrada)))
-          collect (let ((letra (columna-de hoja (nucleo:nombre campo))))
-                    (list (cons "rango" (format nil "~a~d:~a~d"
-                                                letra (fila-primera hoja)
-                                                letra (fila-ultima hoja)))
-                          (cons "formato" (string-downcase
-                                           (symbol-name (nucleo:tipo campo))))))))
+  (append
+   (loop for campo in (nucleo:campos (coleccion hoja))
+         when (and (member (nucleo:tipo campo) '(:fecha :hora))
+                   (member (nucleo:rol campo) '(:fijo :entrada)))
+           collect (let ((letra (columna-de hoja (nucleo:nombre campo))))
+                     (list (cons "rango" (format nil "~a~d:~a~d"
+                                                 letra (fila-primera hoja)
+                                                 letra (fila-ultima hoja)))
+                           (cons "formato" (string-downcase
+                                            (symbol-name (nucleo:tipo campo)))))))
+   ;; Los decimales de un campo (fase 2, hueco C6): formato de numero en
+   ;; toda la columna, derivados y filas de reserva incluidos. La celda
+   ;; guarda el valor completo y la hoja calcula con el, como el evaluador.
+   (loop for campo in (nucleo:campos (coleccion hoja))
+         when (nucleo:decimales campo)
+           collect (let ((letra (columna-de hoja (nucleo:nombre campo))))
+                     (formato-de-decimales (format nil "~a~d:~a~d"
+                                                   letra (fila-primera hoja)
+                                                   letra (fila-ultima hoja))
+                                           (nucleo:decimales campo))))))
+
+(defun formato-de-decimales (rango decimales)
+  "La entrada de FORMATOS_DE_CELDA que escribe RANGO con DECIMALES fijos."
+  (list (cons "rango" rango)
+        (cons "formato" "decimales")
+        (cons "decimales" decimales)))
 
 (defun validaciones-de (a plan hoja)
   "El desplegable de cada campo de entrada con dominio.

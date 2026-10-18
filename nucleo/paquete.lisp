@@ -98,6 +98,7 @@
 
    ;; Numeros y booleanos
    #:normalizar-numero #:texto-de-numero #:escritura-de-numero
+   #:decimales #:redondear-a-decimales #:texto-con-decimales #:texto-del-campo
    #:expresion-booleana-p #:campo-booleano-p #:verdadero-p #:como-booleano
    #:cumple-en-fila #:normalizar-valor
    #:texto-de-estado #:nombre-legible-de-marca

@@ -283,6 +283,7 @@ Ejemplo real con clave compuesta, orden y crecimiento,
               [:dominio EXPRESION-DE-CONJUNTO]     ; solo con :rol entrada
               [:al-violar advertir|impedir]        ; por defecto advertir
               [:opcional t]
+              [:decimales N]                       ; solo con :tipo numero
               [EXPRESION])                         ; solo con :rol derivado
 ```
 
@@ -298,6 +299,39 @@ dominio dice que puede escribir el usuario; si nadie escribe ahí, no
 significa nada"*. Declarar `:rol entrada` con `:al-violar impedir` pero sin
 `:dominio` es aviso, no error: *"dice AL-VIOLAR IMPEDIR pero no tiene dominio
 que violar"*.
+
+**`:decimales N` (2026-10-18, fase 2, hueco C6)** dice con cuántos decimales
+se escriben las celdas de un campo `:tipo numero` (N es un entero de 0 a
+10): el promedio 52.333... con `:decimales 2` se ve `52.33`, y un precio de
+2.5, `2.50`. **Es solo presentación: el valor no cambia**, y comparaciones,
+agregados y marcas siguen usando el valor completo. Para cambiar el valor
+está `(redondear E N)` (sección 5.5). El redondeo va al más cercano y, en
+caso de empate, se aleja de cero, igual que el formato de número de Excel y
+LibreOffice. Se hace sobre la escritura decimal del número, así que 2.675 se
+ve `2.68`, como en la hoja de cálculo, aunque en binario sea 2.67499...
+
+Qué hace cada destino:
+- **Texto**: escribe las celdas del campo con esos decimales.
+- **Hoja de cálculo**: da a la columna entera el formato `0.00` (también a
+  las filas de reserva y a las casillas de una tabla cruzada que muestra el
+  campo). La celda guarda el valor completo.
+- **Página**: escribe así las celdas que no son controles. Un control de
+  entrada enseña lo que hay escrito.
+
+Dentro de `(texto ...)` (una explicación, por ejemplo) un número se escribe
+con la regla general, porque `texto` recibe un valor y no sabe de qué campo
+viene. Si hace falta, se escribe `(texto (redondear x 2) ...)`. Fuera de un
+campo `:tipo numero`, o con otra cosa que un entero de 0 a 10, `:decimales`
+es error de compilación. El separador decimal es el punto (ver PENDIENTES).
+
+Ejemplo, `pruebas/casos/notas.lisp`:
+
+```lisp
+(campo promedio :rol derivado :tipo numero :decimales 2 :etiqueta "Promedio"
+       (/ (+ (de fila n1) (de fila n2) (de fila n3)) 3))
+(campo nota :rol derivado :tipo entero :etiqueta "Nota del acta"
+       (redondear (de fila promedio) 0))
+```
 
 **Aviso de uso sobre tipos:** el sistema de tipos declara seis
 (`texto entero numero hora fecha booleano`), pero en todo el corpus real solo
@@ -393,6 +427,7 @@ marca, un dominio o un filtro de vista:
 | `(de (anterior fila :mismo CAMPOS) campo)` | Desde el 2026-10-17 (C3). La fila contigua solo si tiene los mismos valores en `CAMPOS` (un campo o una lista); si no, no hay fila, como en el borde de la colección. `CAMPOS` tiene que ser un **prefijo del `:orden`**, para que las filas de un grupo estén juntas; si no, el análisis lo rechaza y sugiere el orden. Ejemplo: `(:orden persona semana)` y `(+ (de fila horas) (de (anterior fila :mismo persona) acumulado))` es el acumulado de cada persona |
 | `(parametro nombre)` | Valor de un parámetro |
 | `(+ - * / = /= < <= > >= y o no ...)` | Aritmética, comparación y lógica — un solo nodo del núcleo, no una clase por operador |
+| `(redondear E N)` | Desde el 2026-10-18 (C6). `E` redondeada a `N` decimales (`N`, entero escrito de 0 a 10): al más cercano y, en el empate, alejándose de cero, sobre la escritura decimal (2.675 → 2.68, 1.005 → 1.01, -2.5 → -3). Con `N` = 0 da un entero. Un vacío sigue vacío. En la hoja de cálculo es `ROUND`. Cambia el valor; para cambiar solo cómo se ve está `:decimales` |
 | `(si prueba entonces si-no)` | Condicional de tres ramas |
 | `(vacio? x)` | Cierto si el campo aún no fue rellenado por el usuario — un hecho del dominio, no "la celda está vacía" |
 | `(texto a b c...)` | Concatenación de texto |
@@ -1200,7 +1235,8 @@ descripción, lo que cambia es esto:
   principio, mayúsculas distintas: se comparan literalmente y se escriben
   escapados en los tres destinos.
 - **Números**: enteros o dobles; la división da un doble y por cero da vacío;
-  se escriben con hasta 10 cifras significativas en los tres destinos.
+  se escriben con hasta 10 cifras significativas en los tres destinos, salvo
+  en un campo con `:decimales` (C6).
 - **Booleanos**: `"si"` y `"no"`. En una condición cuenta como verdadero
   `"si"`, el literal `t` o un número distinto de cero.
 - **Fechas y horas**: como dice el plan de tipos (sección 5.4).
@@ -1221,7 +1257,7 @@ descripción, lo que cambia es esto:
 Lo que sigue faltando de verdad, como construcción del lenguaje, queda para
 una segunda fase, con una nota de diseño por hueco antes de escribir código: orden y dominio de los ejes (C1, hecho el 2026-10-17), búsqueda por
 varios campos en Excel (C2, hecho el 2026-10-17), orden compuesto y vecino dentro de una partición
-(C3, hecho el 2026-10-18), formato numérico (C6), marca por campo (C7), sintaxis única de `:donde`
+(C3, hecho el 2026-10-18), formato numérico (C6, hecho el 2026-10-18), marca por campo (C7), sintaxis única de `:donde`
 (C4) y documentar `:una-fila-por` (C8; hoy hay que volver a declarar el campo
 agrupador en la colección derivada).
 

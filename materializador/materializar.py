@@ -158,11 +158,21 @@ def _aplicar_formatos_condicionales(hoja, plan):
 FORMATOS_DE_CELDA = {"fecha": "YYYY-MM-DD", "hora": "HH:MM"}
 
 
+def formato_de_numero(item):
+    """El formato de numero de una entrada de formatos_de_celda: el de fecha
+    u hora, o el de N decimales fijos ("0.00"; "0" con 0 decimales) que
+    declara un campo con :DECIMALES (fase 2, hueco C6)."""
+    if item["formato"] == "decimales":
+        n = item["decimales"]
+        return "0." + "0" * n if n > 0 else "0"
+    return FORMATOS_DE_CELDA[item["formato"]]
+
+
 def _aplicar_formatos_de_celda(hoja, plan):
-    """El formato de fecha u hora de las columnas que lo declaran. Solo
-    cambia como se ve un numero de serie: un texto ISO sigue siendo texto."""
+    """El formato de las columnas que lo declaran. Solo cambia como se ve un
+    numero: el valor de la celda es el mismo, y un texto sigue siendo texto."""
     for item in plan.get("formatos_de_celda") or []:
-        formato = FORMATOS_DE_CELDA[item["formato"]]
+        formato = formato_de_numero(item)
         minc, minr, maxc, maxr = range_boundaries(item["rango"])
         for fila in hoja.iter_rows(min_row=minr, max_row=maxr, min_col=minc, max_col=maxc):
             for celda in fila:

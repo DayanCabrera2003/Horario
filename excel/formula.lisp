@@ -194,6 +194,12 @@
          (format nil "NOT(EXACT(~a,~a))"
                  (operando-de-igualdad a (first argumentos) ambito plan)
                  (operando-de-igualdad a (second argumentos) ambito plan)))
+        ;; (redondear E N): ROUND redondea igual que el evaluador, con el
+        ;; empate alejandose de cero. Un vacio sigue vacio.
+        ((string= op "REDONDEAR")
+         (let ((valor (protocolo:emitir-expresion a (first argumentos) ambito plan)))
+           (format nil "IF(LEN(~a&\"\")=0,\"\",ROUND(~a,~d))"
+                   valor (como-numero-excel valor) (nucleo:valor (second argumentos)))))
         ((string= op "Y") (format nil "AND(~{~a~^,~})" (condiciones)))
         ((string= op "O") (format nil "OR(~{~a~^,~})" (condiciones)))
         ((string= op "NO") (format nil "NOT(~a)" (first (condiciones))))

@@ -93,9 +93,17 @@
      (situacion.excel::lista
       (loop for vista in (nucleo:vistas situacion)
             when (nucleo:cruzada-p vista)
-              collect (list (cons "vista" (string-downcase
-                                           (symbol-name (nucleo:nombre vista))))
-                            (cons "cuadrantes"
-                                  (situacion.excel::lista
-                                   (cuadrantes-de entorno vista))))))
+              collect (let ((campo (nucleo:campo-llamado
+                                    (nucleo:coleccion-llamada situacion (nucleo:fuente vista))
+                                    (nucleo:lo-que-se-muestra vista))))
+                        (append
+                         (list (cons "vista" (string-downcase
+                                              (symbol-name (nucleo:nombre vista))))
+                               (cons "cuadrantes"
+                                     (situacion.excel::lista
+                                      (cuadrantes-de entorno vista))))
+                         ;; Con cuantos decimales se escribe una casilla, si el
+                         ;; campo que muestra lo declara (fase 2, hueco C6).
+                         (when (and campo (nucleo:decimales campo))
+                           (list (cons "decimales" (nucleo:decimales campo))))))))
      destino)))

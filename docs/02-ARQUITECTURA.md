@@ -1328,6 +1328,20 @@ no puede, y lo declara (`emula` en `con-orden-declarado`). Lo comprueba en
 Chromium `materializador/sonda-orden.js`, que añade una fila en medio del
 orden y compara la colección entera con el evaluador.
 
+**D13 — Decimales de presentación y redondeo de valor, separados
+(2026-10-18, fase 2, C6).** `:decimales N` en un campo solo cambia cómo se
+escribe; `(redondear E N)` cambia el valor. Los dos redondean al más
+cercano con el empate alejándose de cero, sobre la escritura decimal del
+número (`nucleo/numeros.lisp`, `decimal-exacto`), que es lo que hacen el
+formato y `ROUND` de la hoja de cálculo; la página repite la regla llevando
+el número a 15 cifras y moviendo la coma con la notación exponencial. Los
+oráculos dicen los decimales de cada campo, y los verificadores comparan el
+texto formateado (texto y DOM) y el formato de número de la columna (libro).
+*Alternativas descartadas:* una cadena de formato al estilo de Excel
+(`:formato "0.00"`), que ata el lenguaje a un destino; y que `:decimales`
+redondeara el valor, que mezclaría aspecto y valor (un 59.996 se vería 60.00
+y aprobaría o no según dónde se declarara el formato).
+
 ---
 
 ## 13 bis. Estado de implementación

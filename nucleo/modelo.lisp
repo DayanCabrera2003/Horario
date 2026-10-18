@@ -47,6 +47,9 @@
   ((nombre "Identificador interno, un simbolo.")
    (etiqueta "Lo que se ve. Separado del identificador a proposito.")
    (tipo "Uno de :TEXTO :ENTERO :NUMERO :HORA :FECHA :BOOLEANO.")
+   (decimales "Cuantos decimales se escriben, o NIL para la regla general.
+               Solo en un campo :TIPO NUMERO. Es presentacion: el valor no
+               cambia (fase 2, hueco C6).")
    (rol ":FIJO se escribe al generar, :ENTRADA lo escribe el usuario,
          :DERIVADO se calcula.")
    (opcional "Si puede quedarse sin valor.")
