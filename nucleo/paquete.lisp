@@ -60,6 +60,7 @@
    #:vista #:hacer-vista
    #:fuente #:secciones #:agrupacion #:filtro #:conflicto #:es-entrada
    #:eje-de-filas #:eje-de-columnas #:lo-que-se-muestra #:cruzada-p
+   #:dominio-de-filas #:dominio-de-columnas #:dominio-de-secciones
 
    ;; Expresiones
    #:literal #:hacer-literal
@@ -103,6 +104,7 @@
 
    ;; Ejes y secciones de una vista cruzada
    #:filas-que-presenta #:valores-de-eje #:secciones-de-vista
+   #:valores-del-dominio #:valores-fuera-de-dominio #:aviso-fuera-de-dominio
 
    ;; Que tablas se dibujan
    #:vistas-de-lista #:vistas-de-lista-de #:vista-de-datos
