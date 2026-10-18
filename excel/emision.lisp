@@ -82,11 +82,18 @@
                                (remove-if (lambda (v) (member (nucleo:nombre v)
                                                               (vistas-en-archivo a)))
                                           (nucleo:vistas (situacion plan))))))
-        (cons "hojas" (lista (append
-                              (mapcar (lambda (c) (plano-de-cruce a plan c)) (cruces plan))
-                              (mapcar (lambda (h) (plano-de-hoja a plan h)) (hojas plan))
-                              (mapcar (lambda (d) (plano-de-detalle a plan d))
-                                      (auxiliares plan)))))))
+        (cons "hojas" (let ((hojas (append
+                                    (mapcar (lambda (c) (plano-de-cruce a plan c))
+                                            (cruces plan))
+                                    (mapcar (lambda (h) (plano-de-hoja a plan h))
+                                            (hojas plan))
+                                    (mapcar (lambda (d) (plano-de-detalle a plan d))
+                                            (auxiliares plan)))))
+                        ;; La hoja de listas va al final: se llena mientras se
+                        ;; emiten los desplegables de las demas.
+                        (lista (if (nombre-de-listas plan)
+                                   (append hojas (list (plano-de-listas plan)))
+                                   hojas))))))
 
 (defun reservar-columnas-de-distintos (plan)
   "Una columna de primera aparicion por cada campo cuyos valores distintos
@@ -454,11 +461,15 @@
    :AL-VIOLAR ADVERTIR se traduce a un aviso no bloqueante e :IMPEDIR a uno
    que si bloquea. La diferencia la declara el lenguaje porque es del dominio."
   (declare (ignore ambito))
-  (let ((letra (columna-de *hoja* (nucleo:nombre campo))))
+  (let ((letra (columna-de *hoja* (nucleo:nombre campo)))
+        (valores (valores-del-dominio a plan campo)))
     (list (cons "rango" (format nil "~a~d:~a~d" letra (fila-primera *hoja*)
                                 letra (fila-ultima *hoja*)))
           (cons "tipo" "lista")
-          (cons "valores" (valores-del-dominio a plan campo))
+          ;; Los valores van a una hoja oculta y la validacion cita su rango:
+          ;; escritos dentro de la validacion, una coma partia un valor en dos.
+          (cons "lista" (if valores (registrar-lista plan valores) :false))
+          (cons "valores" (lista (mapcar #'nucleo:como-texto valores)))
           (cons "bloquea" (if (eq (nucleo:al-violar campo) :impedir) t :false)))))
 
 (defun valores-del-dominio (a plan campo)
@@ -468,8 +479,10 @@
    que significa un conjunto. El backend no tiene que distinguir entre
    (los x de y) y (uno-de \"a\" \"b\"): los dos son expresiones de conjunto."
   (declare (ignore a))
+  ;; Los valores se dejan como son: un numero sigue siendo numero en la
+  ;; lista, para que coincida con el numero que el usuario teclee.
   (handler-case
-      (mapcar #'nucleo:como-texto
+      (mapcar #'nucleo:normalizar-numero
               (nucleo:evaluar (nucleo:dominio campo) (nucleo:hacer-ambito)
                               (entorno plan) '()))
     (error () '())))

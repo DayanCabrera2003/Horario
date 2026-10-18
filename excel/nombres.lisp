@@ -141,6 +141,8 @@
       (dolist (hoja (hojas plan))
         (setf (titulo hoja) (nucleo:etiqueta (coleccion hoja))
               (nombre hoja) (tomar (nucleo:etiqueta (coleccion hoja)))))
+      (when (necesita-listas-p plan)
+        (setf (nombre-de-listas plan) (tomar "Listas")))
       (dolist (detalle (auxiliares plan))
         (let ((tabla (tabla-cruda detalle)))
           (setf (titulo tabla) (titulo-de-detalle (campo detalle))

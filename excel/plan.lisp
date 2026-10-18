@@ -110,6 +110,12 @@
                :documentation
                "Hojas que la arquitectura se inventa para emular lo que no
                 tiene. El lenguaje no las nombra nunca.")
+   (listas :accessor listas :initform '()
+           :documentation
+           "Los valores de cada desplegable, como (VALORES . LETRA): la columna
+            de la hoja oculta de listas donde se escriben (excel/listas.lisp).")
+   (nombre-de-listas :accessor nombre-de-listas :initform nil
+                     :documentation "El nombre de la hoja de listas, si hace falta.")
    (archivos :accessor archivos :initarg :archivos :initform '()
              :documentation
              "Cruces de vistas en VISTAS-EN-ARCHIVO: uno por seccion, cada

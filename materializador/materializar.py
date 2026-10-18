@@ -59,6 +59,8 @@ def materializar(plano, destino):
     usados = set()
     for hoja_plan in plano["hojas"]:
         hoja = libro.create_sheet(_nombre_comprobado(hoja_plan["nombre"], usados))
+        if hoja_plan.get("oculta"):
+            hoja.sheet_state = "hidden"
         _escribir_encabezados(hoja, hoja_plan)
         _escribir_celdas(hoja, hoja_plan)
         _escribir_formulas(hoja, hoja_plan)
@@ -116,8 +118,18 @@ def _escribir_encabezados(hoja, plan):
 
 
 def _escribir_celdas(hoja, plan):
+    """Los valores escritos. Son datos, nunca formulas: un texto que empieza
+    por "=" se escribe como texto y con el prefijo de comilla, igual que los
+    que empiezan por "+", "-" o "@", para que al editarlo no se convierta en
+    formula. Antes "=1+1" se guardaba como formula y valia 2."""
     for item in plan.get("celdas") or []:
-        hoja[item["celda"]] = item["valor"]
+        celda = hoja[item["celda"]]
+        valor = item["valor"]
+        celda.value = valor
+        if isinstance(valor, str):
+            celda.data_type = "s"
+            if valor[:1] in ("=", "+", "-", "@"):
+                celda.quotePrefix = True
 
 
 def _escribir_formulas(hoja, plan):
@@ -148,10 +160,9 @@ def _aplicar_validaciones(hoja, plan):
     decision del dominio, no de Excel.
     """
     for item in plan.get("validaciones") or []:
-        valores = item.get("valores") or []
-        if not valores:
+        formula = item.get("lista")
+        if not formula:
             continue
-        formula = '"{}"'.format(",".join(str(v).replace('"', "") for v in valores))
         dv = DataValidation(
             type="list",
             formula1=formula,
