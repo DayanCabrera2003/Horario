@@ -90,6 +90,10 @@
                         ;; que PLANIFICAR-CRUCES compare con MEMBER a secas.
                         :vistas-en-archivo (mapcar #'nucleo:nombrar vistas-en-archivo)))
 
+(defvar *situacion* nil
+  "La situacion que se esta materializando. La necesita RESOLVER-CARENCIA
+   para saber si una vista es la de datos de su coleccion o una derivada.")
+
 (defmethod protocolo:resolver-carencia ((a excel) capacidad nodo)
   (case capacidad
 
@@ -139,7 +143,15 @@
               contenido mueve el direccionamiento entero."))
 
     (protocolo:con-agrupacion-en-vista
-     (values :degrada
+     (if (and *situacion* (typep nodo 'nucleo:vista)
+              (vista-derivada-p *situacion* nodo))
+         (values :emula
+                 "la vista sale en una hoja derivada de solo lectura, con las
+                  filas ordenadas por grupo y una cabecera por grupo, cada celda
+                  apuntando a la hoja de datos. Limite: el orden y las
+                  cabeceras se fijan AL GENERAR; si una fila cambia de grupo,
+                  sus valores se ponen al dia pero no se mueve de sitio.")
+         (values :degrada
              "las filas salen en el orden de la coleccion, sin cabecera por
               grupo. La tabla es correcta -son las mismas filas- y solo pierde
               legibilidad, que es lo que distingue degradar de rechazar.
@@ -148,7 +160,7 @@
               agrupar es solo el orden en que se DIBUJAN las filas, y el dato
               no se mueve. En una rejilla la posicion de la fila ES el dato:
               reordenarla cambiaria lo que significan ANTERIOR y SIGUIENTE, e
-              intercalar cabeceras correria las filas fuera de los rangos."))
+              intercalar cabeceras correria las filas fuera de los rangos.")))
 
     (protocolo:con-crecimiento
      (values :emula

@@ -49,6 +49,7 @@ FUENTE_ENCABEZADO = Font(bold=True, color="FFFFFF")
 RELLENO_ENCABEZADO = PatternFill("solid", fgColor="44546A")
 LADO_FINO = Side(style="thin", color="BFBFBF")
 BORDE = Border(left=LADO_FINO, right=LADO_FINO, top=LADO_FINO, bottom=LADO_FINO)
+RELLENO_DE_GRUPO = PatternFill("solid", fgColor="EEF2F8")
 
 
 def materializar(plano, destino):
@@ -68,6 +69,7 @@ def materializar(plano, destino):
         _aplicar_validaciones(hoja, hoja_plan)
         _aplicar_formatos_de_celda(hoja, hoja_plan)
         _escribir_leyenda(hoja, hoja_plan)
+        _resaltar_filas_de_grupo(hoja, hoja_plan)
         _aplicar_presentacion(hoja, hoja_plan)
         _proteger(hoja, hoja_plan)
         _registrar_rangos(libro, hoja, hoja_plan)
@@ -204,6 +206,14 @@ def _escribir_leyenda(hoja, plan):
         muestra.fill = PatternFill("solid", fgColor=item["relleno"])
         muestra.border = BORDE
         hoja.cell(row=fila + i, column=2, value=item["texto"])
+
+
+def _resaltar_filas_de_grupo(hoja, plan):
+    """Las cabeceras de grupo de una hoja derivada, en negrita y con fondo."""
+    for fila in plan.get("filas_de_grupo") or []:
+        celda = hoja.cell(row=fila, column=1)
+        celda.font = Font(bold=True)
+        celda.fill = RELLENO_DE_GRUPO
 
 
 def _aplicar_presentacion(hoja, plan):

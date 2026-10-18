@@ -35,7 +35,8 @@ fallos=$generados
 for f in $casos; do
   python3 materializador/materializar.py "salida/$f-plano.json" "salida/$f.xlsx" > /dev/null || fallos=1
   python3 materializador/verificar.py "salida/$f-plano.json" \
-          "salida/$f-esperado.json" "salida/$f.xlsx" "salida/$f-cruces.json" || fallos=1
+          "salida/$f-esperado.json" "salida/$f.xlsx" "salida/$f-cruces.json" \
+          "salida/$f-vistas.json" || fallos=1
   node materializador/verificar-web.js "salida/$f.html" "salida/$f-esperado.json" || fallos=1
   python3 materializador/verificar-texto.py "salida/$f.txt" "salida/$f-esperado.json" \
           "salida/$f-vistas.json" "salida/$f-cruces.json" || fallos=1

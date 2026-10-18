@@ -38,7 +38,7 @@ fallos=0
 for f in plan-del-grupo defensas-de-tesis horario-del-grupo departamento horario-saul seder; do
   python3 materializador/verificar.py "salida/$f-plano.json" \
           "salida/$f-esperado.json" "salida/$f.xlsx" \
-          "salida/$f-cruces.json" || fallos=1
+          "salida/$f-cruces.json" "salida/$f-vistas.json" || fallos=1
 done
 
 echo

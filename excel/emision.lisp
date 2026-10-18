@@ -27,12 +27,13 @@
 
 (defmethod protocolo:materializar ((a excel) situacion datos destino)
   (protocolo:con-informe (a)
-    (dolist (r (protocolo:requerimientos situacion))
-      (destructuring-bind (capacidad nodo detalle) r
-        (protocolo:requerir a capacidad nodo :detalle detalle)))
-    (let ((plan (protocolo:planificar a situacion)))
-      (setf (entorno plan) (nucleo:hacer-entorno situacion datos))
-      (protocolo:emitir a plan destino))))
+    (let ((*situacion* situacion))
+      (dolist (r (protocolo:requerimientos situacion))
+        (destructuring-bind (capacidad nodo detalle) r
+          (protocolo:requerir a capacidad nodo :detalle detalle)))
+      (let ((plan (protocolo:planificar a situacion)))
+        (setf (entorno plan) (nucleo:hacer-entorno situacion datos))
+        (protocolo:emitir a plan destino)))))
 
 (defmethod protocolo:emitir ((a excel) plan destino)
   ;; CONSTRUIR-PLANO resuelve (ARCHIVOS PLAN) como efecto lateral de recorrer
@@ -68,6 +69,9 @@
     (dolist (campo (campos-de-relacion (coleccion hoja)))
       (push (planificar-detalle a plan hoja campo) (auxiliares plan))))
   (setf (auxiliares plan) (nreverse (auxiliares plan)))
+  ;; Las vistas de lista que no son la de datos de su coleccion salen como
+  ;; hojas derivadas (excel/vistas.lisp).
+  (planificar-vistas-derivadas plan)
   ;; Los nombres de pestana se fijan aqui, una vez y antes de emitir ninguna
   ;; formula: son los que citan las formulas y los rangos con nombre.
   (asignar-nombres-de-hoja plan)
@@ -87,6 +91,8 @@
                                             (cruces plan))
                                     (mapcar (lambda (h) (plano-de-hoja a plan h))
                                             (hojas plan))
+                                    (mapcar #'plano-de-vista-derivada
+                                            (vistas-derivadas plan))
                                     (mapcar (lambda (d) (plano-de-detalle a plan d))
                                             (auxiliares plan)))))
                         ;; La hoja de listas va al final: se llena mientras se
@@ -246,11 +252,17 @@
   plan)
 
 (defmethod protocolo:emitir-vista ((a excel) vista plan)
-  "El nombre visible de la pestana y si es por donde se entra."
-  (let ((hoja (hoja-de plan (nucleo:fuente vista))))
+  "El nombre visible de la pestana de VISTA y si es por donde se entra: su
+   hoja derivada, la primera de sus pestanas cruzadas, o la hoja de datos."
+  (let ((derivada (find vista (vistas-derivadas plan) :key #'vista))
+        (cruce (find vista (cruces plan) :key #'vista))
+        (hoja (hoja-de plan (nucleo:fuente vista))))
     (list (cons "vista" (string-downcase (symbol-name (nucleo:nombre vista))))
           (cons "titulo" (nucleo:etiqueta vista))
-          (cons "hoja" (if hoja (nombre hoja) ""))
+          (cons "hoja" (cond (derivada (nombre derivada))
+                             (cruce (nombre cruce))
+                             (hoja (nombre hoja))
+                             (t "")))
           (cons "es_entrada" (if (nucleo:es-entrada vista) t :false)))))
 
 (defun plano-de-hoja (a plan hoja)

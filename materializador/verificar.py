@@ -25,7 +25,8 @@ CADA HOJA DICE QUE ES
 
 El plano marca cada hoja con su identidad: "coleccion" en las hojas de datos,
 "cruce" en las tablas cruzadas, "relacion" en las auxiliares de una relacion
-uno a muchos y "auxiliar" en las hojas de apoyo que no muestran datos. Se empareja por esa
+uno a muchos, "vista" en las hojas derivadas de una vista de lista y
+"auxiliar" en las hojas de apoyo que no muestran datos. Se empareja por esa
 identidad, nunca por los nombres de las columnas: emparejar por nombres hizo
 que la hoja principal del horario del Saul -la que lleva columnas de clave
 anadidas- se saltara en silencio hasta el 2026-10-17.
@@ -39,11 +40,12 @@ CUANDO FALLA
     formula (#VALUE!, #NAME?, #REF!, #N/A, #DIV/0!...).
 
 Las tablas cruzadas se comprueban contra el oraculo de cruces
-(verificar_cruces.py) y las relaciones contra el de valores
-(verificar_relaciones.py).
+(verificar_cruces.py), las relaciones contra el de valores
+(verificar_relaciones.py) y las hojas derivadas contra los de valores y
+vistas (verificar_vistas.py).
 
 Uso:
-    python3 verificar.py <plano.json> <esperado.json> <libro.xlsx> [<cruces.json>]
+    python3 verificar.py <plano.json> <esperado.json> <libro.xlsx> [<cruces.json> [<vistas.json>]]
 """
 
 import json
@@ -59,6 +61,7 @@ from comparar import iguales, normalizar
 from verificar_cruces import verificar_cruces
 from verificar_errores import errores_del_libro
 from verificar_relaciones import verificar_relacion
+from verificar_vistas import verificar_vista
 
 
 def recalcular_con_libreoffice(xlsx):
@@ -132,7 +135,7 @@ def verificar_coleccion(hoja_plan, hoja, filas_esperadas):
     return comprobadas, fallos
 
 
-def verificar(plano_path, esperado_path, xlsx_path, cruces_path=None):
+def verificar(plano_path, esperado_path, xlsx_path, cruces_path=None, vistas_path=None):
     """Compara el libro recalculado con los oraculos.
 
     Devuelve (comprobadas, fallos, por_hoja), donde POR_HOJA es una lista de
@@ -141,6 +144,8 @@ def verificar(plano_path, esperado_path, xlsx_path, cruces_path=None):
     esperado = json.loads(Path(esperado_path).read_text(encoding="utf-8"))
     cruces = (json.loads(Path(cruces_path).read_text(encoding="utf-8"))
               if cruces_path else None)
+    vistas = (json.loads(Path(vistas_path).read_text(encoding="utf-8"))
+              if vistas_path else None)
 
     recalculado, temporal = recalcular_con_libreoffice(xlsx_path)
     try:
@@ -168,6 +173,8 @@ def verificar(plano_path, esperado_path, xlsx_path, cruces_path=None):
                     f.append("{}: no se comparo ninguna celda".format(nombre))
             elif "relacion" in hoja_plan:
                 n, f = verificar_relacion(hoja_plan, hoja, esperado)
+            elif "vista" in hoja_plan:
+                n, f = verificar_vista(hoja_plan, hoja, esperado, vistas)
             elif "cruce" in hoja_plan:
                 # Las tablas cruzadas se comprueban todas juntas mas abajo.
                 continue
@@ -200,7 +207,7 @@ def verificar(plano_path, esperado_path, xlsx_path, cruces_path=None):
 
 
 def main(argv):
-    if len(argv) not in (4, 5):
+    if len(argv) not in (4, 5, 6):
         print(__doc__)
         return 2
     comprobadas, fallos, por_hoja = verificar(*argv[1:])

@@ -16,7 +16,14 @@ cerrar_navegador() {
     NAVEGADOR_PID=""
   fi
   if [ -n "$PERFIL_NAVEGADOR" ]; then
-    rm -rf "$PERFIL_NAVEGADOR"
+    # Los procesos hijos del navegador tardan un momento en salir y siguen
+    # escribiendo en el perfil: se espera a que no quede ninguno.
+    for i in 1 2 3 4 5 6 7 8 9 10; do
+      pgrep -f -- "$PERFIL_NAVEGADOR" > /dev/null 2>&1 || break
+      sleep 0.5
+    done
+    pkill -f -- "$PERFIL_NAVEGADOR" 2>/dev/null
+    rm -rf "$PERFIL_NAVEGADOR" 2>/dev/null
     PERFIL_NAVEGADOR=""
   fi
 }

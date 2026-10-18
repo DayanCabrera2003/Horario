@@ -112,6 +112,7 @@
                (:file "fechas")
                (:file "web-dibujo")
                (:file "ejes")
+               (:file "varias-vistas")
                (:file "formula")
                (:file "particion-en-archivo")
                (:file "ejecutar"))
@@ -149,6 +150,7 @@
                (:file "agregados")
                (:file "particion-en-archivo")
                (:file "estado")
+               (:file "vistas")
                (:file "emision")))
 
 (defsystem "situacion/web"

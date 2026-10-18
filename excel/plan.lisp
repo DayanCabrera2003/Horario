@@ -115,6 +115,10 @@
                :documentation
                "Hojas que la arquitectura se inventa para emular lo que no
                 tiene. El lenguaje no las nombra nunca.")
+   (vistas-derivadas :accessor vistas-derivadas :initform '()
+                     :documentation
+                     "Las hojas derivadas de las vistas de lista que no son la
+                      de datos de su coleccion (excel/vistas.lisp).")
    (listas :accessor listas :initform '()
            :documentation
            "Los valores de cada desplegable, como (VALORES . LETRA): la columna

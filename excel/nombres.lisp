@@ -138,9 +138,18 @@
              (let ((nombre (unico (nombre-valido texto) usados)))
                (push nombre usados)
                nombre)))
+      ;; La hoja de datos lleva la etiqueta de su vista de datos, como la
+      ;; tabla que dibujan el texto y la pagina; sin vista de lista, la de
+      ;; la coleccion.
       (dolist (hoja (hojas plan))
-        (setf (titulo hoja) (nucleo:etiqueta (coleccion hoja))
-              (nombre hoja) (tomar (nucleo:etiqueta (coleccion hoja)))))
+        (let ((vista (nucleo:vista-de-datos (situacion plan)
+                                            (nucleo:nombre (coleccion hoja)))))
+          (setf (titulo hoja) (if vista (nucleo:etiqueta vista)
+                                  (nucleo:etiqueta (coleccion hoja)))
+                (nombre hoja) (tomar (titulo hoja)))))
+      (dolist (derivada (vistas-derivadas plan))
+        (setf (titulo derivada) (nucleo:etiqueta (vista derivada))
+              (nombre derivada) (tomar (titulo derivada))))
       (when (necesita-listas-p plan)
         (setf (nombre-de-listas plan) (tomar "Listas")))
       (dolist (detalle (auxiliares plan))
