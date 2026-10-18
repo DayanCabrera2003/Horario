@@ -169,7 +169,12 @@
 
 (defnodo vecino (expresion)
   ((direccion ":ANTERIOR o :SIGUIENTE.")
-   (variable "Variable de fila."))
+   (variable "Variable de fila.")
+   (mismos "Lista de campos, o NIL. Con campos, la fila contigua solo cuenta
+            si tiene los mismos valores en ellos: (anterior fila :mismo
+            persona) es la anterior de la misma persona. Tienen que ser un
+            prefijo del :ORDEN de la coleccion, para que el grupo quede
+            contiguo (fase 2, hueco C3)."))
   "La fila contigua segun el orden declarado de la coleccion.
 
    Solo es legal si la coleccion declara orden, y el analisis lo comprueba

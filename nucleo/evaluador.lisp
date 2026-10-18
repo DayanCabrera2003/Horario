@@ -90,7 +90,7 @@
              (filas (loop for cruda in crudas
                           collect (hacer-fila coleccion
                                               (tabla-de-valores (normalizar-valores cruda))))))
-        ;; ORDEN es el nombre del campo, no el objeto: se guarda asi porque
+        ;; ORDEN son nombres de campo, no objetos: se guardan asi porque
         ;; el lenguaje lo escribe como simbolo y resolverlo a objeto seria
         ;; trabajo del analisis, no del evaluador.
         (when (orden coleccion)
@@ -184,10 +184,18 @@
     (loop for (campo . valor) in alist do (setf (gethash campo tabla) valor))
     tabla))
 
-(defun ordenar-filas (filas campo)
+(defun ordenar-filas (filas campos)
+  "FILAS ordenadas por CAMPOS: por el primero y, a igualdad, por el
+   siguiente. La ordenacion es estable: dos filas iguales en todos los
+   campos conservan el orden de los datos."
   (stable-sort (copy-list filas)
-               (lambda (a b) (menor-p (gethash campo (valores a))
-                                      (gethash campo (valores b))))))
+               (lambda (a b)
+                 (loop for campo in campos
+                       for va = (gethash campo (valores a))
+                       for vb = (gethash campo (valores b))
+                       do (cond ((menor-p va vb) (return t))
+                                ((menor-p vb va) (return nil)))
+                       finally (return nil)))))
 
 (defun menor-p (a b)
   (cond ((and (realp a) (realp b)) (< a b))
@@ -508,7 +516,13 @@
       (fallar "No se puede hablar de la fila ~(~a~) de ~a: no declara orden"
               (direccion e) (nombre coleccion)))
     (when (and (>= j 0) (< j (length todas)))
-      (nth j todas))))
+      (let ((contigua (nth j todas)))
+        ;; Con :MISMO, la contigua solo cuenta si es del mismo grupo; si no,
+        ;; no hay fila, como antes de la primera o despues de la ultima.
+        (when (every (lambda (campo) (iguales-p (valor-de-campo entorno f campo)
+                                                (valor-de-campo entorno contigua campo)))
+                     (mismos e))
+          contigua)))))
 
 ;;; Una referencia a campo sobre una expresion VECINO se escribe como
 ;;; (DE (ANTERIOR FILA) CAMPO). El lenguaje lo traduce a una PROYECCION cuyo

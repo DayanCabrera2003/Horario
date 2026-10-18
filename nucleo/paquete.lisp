@@ -79,7 +79,7 @@
    #:proyeccion #:hacer-proyeccion #:sobre #:por-defecto
    #:existe #:hacer-existe #:distinta-de
    #:comparten #:hacer-comparten #:variable-a #:variable-b
-   #:vecino #:hacer-vecino #:direccion
+   #:vecino #:hacer-vecino #:direccion #:mismos
    #:forma-invalida #:hacer-forma-invalida #:tipo-de-forma
 
    ;; Ambitos
