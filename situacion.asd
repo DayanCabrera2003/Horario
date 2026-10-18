@@ -116,6 +116,7 @@
                (:file "carencias")
                (:file "conformidad-salida")
                (:file "crecimiento")
+               (:file "datos")
                (:file "formula")
                (:file "particion-en-archivo")
                (:file "ejecutar"))

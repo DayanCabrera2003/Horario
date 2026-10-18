@@ -77,6 +77,7 @@
    Las colecciones que declaran orden se ordenan aqui, y es el unico sitio
    donde se hace: a partir de este punto, la fila siguiente es la siguiente
    de la lista, sin que nadie tenga que volver a pensar en el orden."
+  (comprobar-datos situacion datos)
   (let ((tablas (make-hash-table :test #'eq))
         (entorno nil))
     (setf entorno (make-instance 'entorno :situacion situacion :tablas tablas))
@@ -97,6 +98,38 @@
         (loop for f in filas for i from 0 do (setf (indice f) i))
         (setf (gethash (nombre coleccion) tablas) filas)))
     entorno))
+
+(defun comprobar-datos (situacion datos)
+  "Falla con un mensaje claro si DATOS traen algo que SITUACION no declara.
+
+   Antes se buscaba cada coleccion con ASSOC y lo que no casaba se tiraba en
+   silencio: un error al escribir el nombre de una coleccion o de un campo
+   dejaba la tabla vacia y todo seguia en verde. Asi se pudrieron los
+   experimentos de exploracion/, que internaban los nombres en otro paquete
+   y llevaban semanas generando tablas vacias sin que nadie lo viera."
+  (dolist (par datos)
+    (let* ((nombre (car par))
+           (coleccion (coleccion-llamada situacion nombre)))
+      (unless coleccion
+        (fallar "Los datos traen la coleccion ~a, y la situacion ~a no declara~@
+                 ninguna con ese nombre. Declara: ~{~(~a~)~^, ~}."
+                nombre (nombre situacion)
+                (mapcar #'nombre (colecciones situacion))))
+      (when (and (derivada-p coleccion) (some #'identity (cdr par)))
+        (fallar "Los datos traen filas para la coleccion ~a, que se deriva de~@
+                 otra (~s) y no admite datos escritos."
+                nombre (origen coleccion)))
+      (dolist (fila (cdr par))
+        (dolist (dato fila)
+          (let ((campo (campo-llamado coleccion (car dato))))
+            (cond ((null campo)
+                   (fallar "Una fila de ~a trae el campo ~a, que la coleccion no~@
+                            declara. Declara: ~{~(~a~)~^, ~}."
+                           nombre (car dato) (mapcar #'nombre (campos coleccion))))
+                  ((eq (rol campo) :derivado)
+                   (fallar "Una fila de ~a trae un valor para ~a, que es derivado:~@
+                            se calcula, no se escribe."
+                           nombre (car dato))))))))))
 
 (defun derivada-p (coleccion)
   "Cierto si las filas de COLECCION salen de otra coleccion en vez de
