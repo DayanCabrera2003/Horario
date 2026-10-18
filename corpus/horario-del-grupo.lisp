@@ -121,9 +121,14 @@
     :explica   "Turno sin asignar")
 
   ;; LA VISTA CRUZADA. Aqui es donde la rejilla deja de ser una lista.
+  ;; Los ejes declaran su dominio para que el orden no dependa de que
+  ;; casilla venga antes en los datos. Solo los dias y turnos que tienen
+  ;; casillas: una columna sin casillas debajo no se podria rellenar.
   (vista rejilla :de casillas :entrada t
                  :etiqueta "Horario semanal"
-                 :filas turno :columnas dia :muestra asignatura)
+                 :filas    (turno :dominio (uno-de "T1" "T2" "T3"))
+                 :columnas (dia :dominio (uno-de "lunes" "martes" "miercoles"))
+                 :muestra asignatura)
 
   (vista detalle :de casillas :etiqueta "Casilla por casilla")
   (vista plan    :de asignaturas :etiqueta "Plan de la carrera"))

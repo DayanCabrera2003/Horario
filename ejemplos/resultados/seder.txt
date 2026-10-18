@@ -25,21 +25,21 @@ Reparto de brigadas
 
   Instalacion admite: Pista 1, Pista 2, Gimnasio, Piscina
 
-Ocupacion de instalaciones - impar
-  Instalacion  10 a.m.  11 a.m.     3 p.m.
-  -----------  -------  ----------  ------
-  Pista 1                                 
-  Gimnasio                                
-  Piscina                           C211  
-  Pista 2               C212 / M21        
-
 Ocupacion de instalaciones - par
   Instalacion  10 a.m.  11 a.m.  3 p.m.
   -----------  -------  -------  ------
   Pista 1      C111                    
+  Pista 2      M11                     
   Gimnasio              C112           
   Piscina      F11                     
-  Pista 2      M11                     
+
+Ocupacion de instalaciones - impar
+  Instalacion  10 a.m.  11 a.m.     3 p.m.
+  -----------  -------  ----------  ------
+  Pista 1                                 
+  Pista 2               C212 / M21        
+  Gimnasio                                
+  Piscina                           C211  
 
 Horario del profesor - Prof. Alvarez
   Horario  par         impar

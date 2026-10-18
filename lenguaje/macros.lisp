@@ -204,28 +204,66 @@
 ;;; Vistas y parametros
 ;;; ---------------------------------------------------------------------
 
+(defun conjunto-escrito-p (expresion)
+  "Cierto si EXPRESION es un conjunto de los que admite un :DOMINIO:
+   (UNO-DE ...), (ALGUNO-DE ...) o (LOS CAMPO DE COLECCION ...)."
+  (and (consp expresion) (symbolp (first expresion))
+       (member (symbol-name (first expresion)) '("UNO-DE" "ALGUNO-DE" "LOS")
+               :test #'string=)))
+
+(defun partir-eje (vista clave eje)
+  "Separa lo escrito en la opcion CLAVE de VISTA en (VALUES CAMPO DOMINIO).
+
+   Un eje se escribe como el nombre del campo, y entonces sus valores salen
+   de los datos, o como (CAMPO :DOMINIO EXPRESION), y entonces son los de la
+   expresion, en su orden (fase 2, hueco C1; ver nucleo/ejes.lisp). La
+   expresion es la misma que la del :DOMINIO de un campo de entrada; no hay
+   vocabulario nuevo."
+  (cond ((or (null eje) (symbolp eje)) (values eje nil))
+        ((and (consp eje) (symbolp (first eje)) (= 3 (length eje))
+              (eq (second eje) :dominio) (conjunto-escrito-p (third eje)))
+         (values (first eje) (third eje)))
+        (t (error "En la vista ~a, ~s ~s no se entiende.~@
+                   Un eje es el nombre de un campo, o (CAMPO :DOMINIO CONJUNTO)~@
+                   con CONJUNTO escrito (uno-de ...) o (los CAMPO de COLECCION)."
+                  vista clave eje))))
+
 (defun compilar-vista (forma)
   "(vista NOMBRE :de COLECCION [:etiqueta ...] [:entrada t]
-                 [:secciones CAMPO] [:agrupada-por CAMPO] [:donde EXPRESION]
+                 [:secciones EJE] [:agrupada-por CAMPO] [:donde EXPRESION]
                  [:unica-salvo MARCA]
-                 [:filas CAMPO :columnas CAMPO :muestra CAMPO])"
+                 [:filas EJE :columnas EJE :muestra CAMPO])
+
+   EJE es CAMPO o (CAMPO :dominio CONJUNTO)."
   (destructuring-bind (cabeza nombre &rest opciones) forma
     (declare (ignore cabeza))
     (let ((fuente (opcion opciones :de))
           (donde (opcion opciones :donde)))
       (unless fuente (error "La vista ~a no dice :DE que coleccion es." nombre))
-      `(nucleo:hacer-vista
-        :nombre ',(normalizar nombre)
-        :etiqueta ,(opcion opciones :etiqueta (string-capitalize (symbol-name nombre)))
-        :fuente ',(normalizar fuente)
-        :secciones ',(normalizar (opcion opciones :secciones))
-        :agrupacion ',(normalizar (opcion opciones :agrupada-por))
-        :filtro ,(when donde (compilar-expresion donde))
-        :conflicto ',(normalizar (opcion opciones :unica-salvo))
-        :eje-de-filas ',(normalizar (opcion opciones :filas))
-        :eje-de-columnas ',(normalizar (opcion opciones :columnas))
-        :lo-que-se-muestra ',(normalizar (opcion opciones :muestra))
-        :es-entrada ,(opcion opciones :entrada nil)))))
+      (multiple-value-bind (filas dominio-de-filas)
+          (partir-eje nombre :filas (opcion opciones :filas))
+        (multiple-value-bind (columnas dominio-de-columnas)
+            (partir-eje nombre :columnas (opcion opciones :columnas))
+          (multiple-value-bind (secciones dominio-de-secciones)
+              (partir-eje nombre :secciones (opcion opciones :secciones))
+            `(nucleo:hacer-vista
+              :nombre ',(normalizar nombre)
+              :etiqueta ,(opcion opciones :etiqueta (string-capitalize (symbol-name nombre)))
+              :fuente ',(normalizar fuente)
+              :secciones ',(normalizar secciones)
+              :agrupacion ',(normalizar (opcion opciones :agrupada-por))
+              :filtro ,(when donde (compilar-expresion donde))
+              :conflicto ',(normalizar (opcion opciones :unica-salvo))
+              :eje-de-filas ',(normalizar filas)
+              :eje-de-columnas ',(normalizar columnas)
+              :lo-que-se-muestra ',(normalizar (opcion opciones :muestra))
+              :dominio-de-filas ,(when dominio-de-filas
+                                   (compilar-expresion dominio-de-filas))
+              :dominio-de-columnas ,(when dominio-de-columnas
+                                      (compilar-expresion dominio-de-columnas))
+              :dominio-de-secciones ,(when dominio-de-secciones
+                                       (compilar-expresion dominio-de-secciones))
+              :es-entrada ,(opcion opciones :entrada nil))))))))
 
 (defun compilar-parametro (forma)
   "(parametro NOMBRE :tipo ... :valor ... [:rol ...] [:etiqueta ...])"

@@ -120,6 +120,10 @@
    (eje-de-filas "Campo cuyos valores van en el eje vertical, o NIL.")
    (eje-de-columnas "Campo cuyos valores van en el eje horizontal, o NIL.")
    (lo-que-se-muestra "Campo que aparece en el cruce de los dos ejes, o NIL.")
+   (dominio-de-filas "Expresion de conjunto con los valores del eje vertical,
+                      en su orden, o NIL si salen de los datos (nucleo/ejes.lisp).")
+   (dominio-de-columnas "Lo mismo para el eje horizontal.")
+   (dominio-de-secciones "Lo mismo para las secciones.")
    (es-entrada "Si es el punto de entrada del documento."))
   "Como se organiza y se recorre lo que hay. Sin una sola coordenada: las
    secciones se declaran por el campo que las distingue, no por donde caen.

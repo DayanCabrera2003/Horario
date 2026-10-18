@@ -319,15 +319,26 @@
   ;; partida por grupo, por profesor y por aula. Las dos ultimas solo estan
   ;; bien definidas si nadie esta en dos sitios a la vez; si lo esta, la
   ;; casilla ensena el choque.
+  ;;
+  ;; Los turnos y los dias declaran su dominio: la rejilla tiene esas filas y
+  ;; esas columnas, en ese orden, sin depender de que casilla aparezca antes
+  ;; en los datos. Los horarios por profesor van en el orden de la coleccion
+  ;; de profesores, y uno sin clases tendria su pestana vacia.
   (vista por-grupo :de casillas :entrada t :etiqueta "Horario del grupo"
-                   :filas turno :columnas dia :muestra asignatura
+                   :filas    (turno :dominio (uno-de 1 2 3 4 5 6 7))
+                   :columnas (dia :dominio (uno-de "L" "M" "MI" "J" "V"))
+                   :muestra asignatura
                    :secciones grupo)
   (vista por-profesor :de casillas :etiqueta "Horario del profesor"
-                      :filas turno :columnas dia :muestra grupo
-                      :secciones profesor
+                      :filas     (turno :dominio (uno-de 1 2 3 4 5 6 7))
+                      :columnas  (dia :dominio (uno-de "L" "M" "MI" "J" "V"))
+                      :muestra grupo
+                      :secciones (profesor :dominio (los nombre de profesores))
                       :unica-salvo profesor-colisiona)
   (vista por-aula :de casillas :etiqueta "Horario del aula"
-                  :filas turno :columnas dia :muestra grupo
+                  :filas    (turno :dominio (uno-de 1 2 3 4 5 6 7))
+                  :columnas (dia :dominio (uno-de "L" "M" "MI" "J" "V"))
+                  :muestra grupo
                   :secciones aula
                   :unica-salvo aula-ocupada)
   (vista plan        :de asignaturas    :etiqueta "Asignaturas")

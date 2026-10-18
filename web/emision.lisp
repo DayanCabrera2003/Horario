@@ -43,6 +43,7 @@
         (protocolo:requerir a capacidad nodo :detalle detalle)))
     (let ((plan (protocolo:planificar a situacion)))
       (setf (entorno plan) (nucleo:hacer-entorno situacion datos))
+      (protocolo:anotar-avisos-de-los-datos situacion (entorno plan))
       (protocolo:emitir a plan destino))))
 
 (defmethod protocolo:emitir ((a web) plan destino)
@@ -340,7 +341,7 @@
   (let* ((coleccion (nucleo:coleccion-llamada (situacion plan) (nucleo:fuente vista)))
          (campo-celda (nucleo:campo-llamado coleccion (nucleo:lo-que-se-muestra vista)))
          (campo-filas (nucleo:campo-llamado coleccion (nucleo:eje-de-filas vista))))
-    (format nil "  {id: ~/situacion.web::js/, titulo: ~/situacion.web::js/, coleccion: ~/situacion.web::js/, ejeFilas: ~/situacion.web::js/, etiquetaFilas: ~/situacion.web::js/, ejeColumnas: ~/situacion.web::js/, celda: ~/situacion.web::js/, campoCelda: ~a, entrada: ~a, orden: ~a, secciones: ~a, filtro: ~a}"
+    (format nil "  {id: ~/situacion.web::js/, titulo: ~/situacion.web::js/, coleccion: ~/situacion.web::js/, ejeFilas: ~/situacion.web::js/, etiquetaFilas: ~/situacion.web::js/, ejeColumnas: ~/situacion.web::js/, etiquetaColumnas: ~/situacion.web::js/, celda: ~/situacion.web::js/, campoCelda: ~a, entrada: ~a, orden: ~a, secciones: ~a, etiquetaSecciones: ~/situacion.web::js/, filtro: ~a, dominioFilas: ~a, dominioColumnas: ~a, dominioSecciones: ~a}"
             (format nil "c-~a" (nombre-js (nucleo:nombre vista)))
             (nucleo:etiqueta vista)
             (nombre-js (nucleo:fuente vista))
@@ -348,6 +349,7 @@
             (if campo-filas (nucleo:etiqueta campo-filas)
                 (string-capitalize (symbol-name (nucleo:eje-de-filas vista))))
             (nombre-js (nucleo:eje-de-columnas vista))
+            (etiqueta-de-eje coleccion (nucleo:eje-de-columnas vista))
             (nombre-js (nucleo:lo-que-se-muestra vista))
             (if campo-celda (campo-js plan campo-celda) "null")
             (if (nucleo:es-entrada vista) "true" "false")
@@ -360,10 +362,33 @@
             (if (nucleo:secciones vista)
                 (format nil "~/situacion.web::js/" (nombre-js (nucleo:secciones vista)))
                 "null")
+            (if (nucleo:secciones vista)
+                (etiqueta-de-eje coleccion (nucleo:secciones vista))
+                "")
             ;; El filtro va como FUNCION, no como lista de filas: se reevalua
             ;; en cada puesta al dia, asi que si el usuario escribe algo que
             ;; hace que una fila deje de cumplirlo, desaparece sola.
             (if (nucleo:filtro vista)
                 (format nil "(f) => ~a"
                         (js-condicion a (nucleo:filtro vista) (ambito-de coleccion) plan))
-                "null"))))
+                "null")
+            ;; El dominio declarado de cada eje (fase 2, hueco C1), como
+            ;; FUNCION por la misma razon que los de DOMINIOS: uno escrito
+            ;; (los ... de C) tiene que enterarse si C crece en la pagina.
+            (dominio-js a plan coleccion (nucleo:dominio-de-filas vista))
+            (dominio-js a plan coleccion (nucleo:dominio-de-columnas vista))
+            (dominio-js a plan coleccion (nucleo:dominio-de-secciones vista)))))
+
+(defun etiqueta-de-eje (coleccion campo)
+  "Como se llama el campo CAMPO de COLECCION en la pagina."
+  (let ((declarado (nucleo:campo-llamado coleccion campo)))
+    (if declarado
+        (nucleo:etiqueta declarado)
+        (string-downcase (symbol-name campo)))))
+
+(defun dominio-js (a plan coleccion dominio)
+  "La funcion que da los valores de DOMINIO, o null si no se declaro."
+  (if dominio
+      (format nil "() => ~a"
+              (protocolo:emitir-expresion a dominio (ambito-de coleccion) plan))
+      "null"))

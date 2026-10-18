@@ -54,6 +54,28 @@ def _ejes_de(hoja_plan):
     return filas, columnas
 
 
+def comparar_ejes(nombre, filas, columnas, cuadrante, normalizar):
+    """Compara los ejes de una pestana, en su orden, con los del oraculo.
+
+    Con un dominio declarado hay filas y columnas sin ninguna casilla
+    ocupada (el turno en que nadie hace guardia); compararlas solo por sus
+    casillas no diria si estan. Devuelve (comprobadas, fallos)."""
+    if "filas" not in cuadrante:
+        return 0, []
+    fallos = []
+    leidas = [normalizar(filas[n]) for n in sorted(filas)]
+    esperadas = [normalizar(v) for v in cuadrante["filas"] or []]
+    if leidas != esperadas:
+        fallos.append("{}: las filas son {!r} y el oraculo dice {!r}".format(
+            nombre, leidas, esperadas))
+    leidas = [normalizar(t) for t in columnas.values()]
+    esperadas = [normalizar(v) for v in cuadrante["columnas"] or []]
+    if leidas != esperadas:
+        fallos.append("{}: las columnas son {!r} y el oraculo dice {!r}".format(
+            nombre, leidas, esperadas))
+    return 2, fallos
+
+
 def verificar_cruces(plano, cruces, libro, normalizar):
     """Compara cada pestana cruzada de LIBRO con su cuadrante del oraculo.
 
@@ -68,7 +90,7 @@ def verificar_cruces(plano, cruces, libro, normalizar):
     esperados = {}
     for vista in cruces:
         for cuadrante in vista["cuadrantes"]:
-            esperados[(vista["vista"], cuadrante["seccion"])] = cuadrante["casillas"]
+            esperados[(vista["vista"], cuadrante["seccion"])] = cuadrante
 
     resultado = []
     vistos = set()
@@ -93,8 +115,12 @@ def verificar_cruces(plano, cruces, libro, normalizar):
 
         hoja = libro[nombre]
         filas, columnas = _ejes_de(hoja_plan)
+        cuadrante = esperados[clave]
+        n, f = comparar_ejes(nombre, filas, columnas, cuadrante, normalizar)
+        comprobadas += n
+        fallos.extend(f)
         casillas = {}
-        for casilla in esperados[clave]:
+        for casilla in cuadrante["casillas"] or []:
             casillas[(normalizar(casilla["fila"]),
                       normalizar(casilla["columna"]))] = casilla["valores"]
 
