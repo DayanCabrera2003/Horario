@@ -13,7 +13,10 @@
 ;;;; capitulo que se escribe al final: su primer informe de conformidad ya
 ;;;; trae degradaciones de verdad.
 ;;;;
-;;;; Solo declara CON-MARCADO-TEXTUAL. Todo lo demas lo degrada, y cada
+;;;; Declara lo que el evaluador de referencia le da hecho al generar -la
+;;;; tabla cruzada, las vistas, la busqueda, el orden, los distintos, la
+;;;; relacion uno a muchos- y el marcado textual. Lo que pide un documento
+;;;; vivo -entrada, recalculo, color, crecimiento- lo degrada, y cada
 ;;;; degradacion dice en que consiste.
 
 (defpackage #:situacion.texto

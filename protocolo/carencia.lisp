@@ -23,7 +23,7 @@
 ;;;; acepta, asi que la misma descripcion se puede compilar en tres modos y
 ;;;; obtener tres respuestas distintas sobre la misma arquitectura. Eso
 ;;;; convierte el mecanismo en algo medible: compilar los libros del corpus
-;;;; contra las cuatro arquitecturas en los tres modos es una tabla de
+;;;; contra las tres arquitecturas en los tres modos es una tabla de
 ;;;; resultados experimentales, y sale del diseno sin escribir nada mas.
 
 (in-package #:situacion.protocolo)

@@ -71,8 +71,10 @@
            orden declarado no se puede hablar de la fila anterior ni de la
            siguiente.")
    (crecimiento "NIL o :CRECE. Intencion, nunca mecanismo.")
-   (origen ":DECLARADA, o (:UNA-FILA-POR campo :DE coleccion) para una
-            coleccion que se proyecta de otra.")
+   (origen ":DECLARADA; (:UNA-FILA-POR campo :DE coleccion) para una
+            coleccion que se proyecta de otra, con una fila por valor
+            distinto; o (:UNA-SOLA-FILA) para una coleccion de exactamente
+            una fila, la de lo que es de la situacion entera.")
    (datos "Las filas conocidas al generar, como lista de listas de valores en
            el orden de los campos de rol :FIJO."))
   "Una coleccion de filas homogeneas.")

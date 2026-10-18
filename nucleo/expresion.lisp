@@ -55,7 +55,7 @@
    'la celda de arriba'.")
 
 (defnodo aplicacion (expresion)
-  ((operador "Uno de + - * / = /= < <= > >= Y O NO.")
+  ((operador "Uno de + - * / = /= < <= > >= Y O NO REDONDEAR.")
    (argumentos "Lista de expresiones."))
   "Aritmetica, comparacion y logica.
 
@@ -189,7 +189,7 @@
    se cuele el modelo de la hoja de calculo: el PREVIOUS-OF de 2026
    significaba de hecho 'la fila de arriba en la rejilla', que no tiene
    traduccion fuera de ella. Con orden declarado, 'anterior' significa lo
-   mismo en los cuatro destinos.")
+   mismo en todos los destinos.")
 
 ;;; ---------------------------------------------------------------------
 ;;; Recorrido generico
