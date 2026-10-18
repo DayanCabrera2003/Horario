@@ -126,6 +126,7 @@
                (:file "claves-pegadas")
                (:file "decimales")
                (:file "derivadas")
+               (:file "marca-por-campo")
                (:file "ejecutar"))
   :perform (test-op (op system)
                     (uiop:symbol-call :situacion.pruebas :ejecutar)))
@@ -209,7 +210,8 @@
                (:file "biblioteca")
                (:file "escapes")
                (:file "guardias")
-               (:file "pedidos")))
+               (:file "pedidos")
+               (:file "tribunales")))
 
 (defsystem "situacion/demostracion"
   :description "Genera los artefactos de las tres arquitecturas a partir de
