@@ -30,7 +30,14 @@
                  protocolo:con-casilla-en-conflicto
                  protocolo:con-marcado-textual
                  protocolo:con-busqueda-por-clave
-                 protocolo:con-orden-declarado)
+                 protocolo:con-orden-declarado
+                 ;; Las dos las calcula el evaluador de referencia al
+                 ;; generar, que es como esta arquitectura calcula todo: no
+                 ;; hay nada que emular. Antes no las declaraba, y una
+                 ;; descripcion que contara valores distintos abortaba la
+                 ;; generacion entera del texto.
+                 protocolo:con-conteo-de-distintos
+                 protocolo:con-validacion-de-forma)
   ()
   (:documentation
    "Salida a texto plano: una tabla alineada por coleccion, con los valores
