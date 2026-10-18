@@ -1353,6 +1353,24 @@ campo visible en las tres salidas sin estar escrito en la descripción.
 *Coste:* una línea más en cada derivada. De las 10 derivadas del
 repositorio, ninguna tuvo que cambiar.
 
+**D15 — Marca por campo, y el color se verifica (2026-10-18, fase 2,
+C7).** `:por-campo VARIABLE` evalúa la condición de una marca una vez por
+cada campo de su `:sobre`; un nodo de expresión nuevo, `ref-valor`, es esa
+variable. Al mismo tiempo se cerró un hueco de la verificación: hasta
+entonces ningún verificador miraba qué celdas se colorean. Ahora el
+oráculo dice los campos que pinta cada marca en cada fila, y se comparan:
+- en la página, la clase de cada celda y lo que calcula `camposMarcados`;
+- en el libro, las reglas de formato condicional **leídas del propio
+  `.xlsx`**: cada una se traslada a cada celda de su rango como fórmula de
+  sondeo en una copia, y LibreOffice la calcula
+  (`materializador/verificar_marcas.py`).
+
+*Alternativas descartadas:* una marca por campo escrita a mano N veces
+(repite la descripción y la leyenda); deducir de la condición qué campos la
+hacen verdadera (mágico); columnas auxiliares en el libro del usuario para
+poder verificar el color (las sondas en una copia verifican lo mismo sin
+tocar lo que se entrega).
+
 ---
 
 ## 13 bis. Estado de implementación

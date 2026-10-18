@@ -498,7 +498,8 @@ error explícito citando la forma exacta que no supo leer.
               :cuando EXPRESION-BOOLEANA
               :sobre (campo1 campo2 ...)
               [:severidad informativa|advertencia|problema]   ; por defecto advertencia
-              [:explica EXPRESION-DE-TEXTO])
+              [:explica EXPRESION-DE-TEXTO]
+              [:por-campo VARIABLE])                          ; desde el 2026-10-18
 ```
 
 `:cuando` y `:sobre` son obligatorios. `:en` es opcional: si no se declara,
@@ -511,23 +512,52 @@ texto, y en una impresión en blanco y negro tiene que ser texto o no se ve
 nada."* Esta es la razón por la que una marca sobrevive al cambio de
 arquitectura y un color puesto a mano no.
 
-Ejemplo — la marca que detecta un profesor citado dos veces a la vez,
+**Una marca normal es de la fila**: si su condición se cumple, se pintan
+todos los campos de su `:sobre`. **Con `:por-campo VARIABLE` (2026-10-18,
+fase 2, hueco C7)**, la condición y la explicación se evalúan una vez por
+cada campo de `:sobre`, con `VARIABLE` ligada al valor de ese campo, y solo
+se pintan los campos donde se cumple. Para todo lo que es de la fila (si la
+tiene, su nivel, su estado) cuenta que se cumpla en alguno, y el estado
+lleva una explicación por cada campo que la cumple, en el orden de
+`:sobre`. La variable solo existe dentro de esa marca. Dentro de un
+`:donde` también es la variable, no un campo de la candidata.
+
+Ejemplo, la marca que detecta un profesor citado en dos locales a la vez,
 precedente directo para cualquier restricción de "no puede estar en dos
-sitios al mismo tiempo" (`corpus/defensas-de-tesis.lisp:84-94`):
+sitios al mismo tiempo" (`corpus/defensas-de-tesis.lisp`):
 
 ```lisp
 (marca profesor-citado-dos-veces
   :en citaciones
-  :cuando (existe otra :en citaciones
-            :distinta-de fila
-            :donde (y (= (de otra dia) (de fila dia))
-                      (= (de otra momento) (de fila momento))
-                      (comparten otra fila
-                                 (tutor oponente presidente secretario))))
   :sobre     (tutor oponente presidente secretario)
+  :por-campo profesor
+  :cuando (y (no (vacio? profesor))
+             (existe otra :en citaciones
+               :distinta-de fila
+               :donde (y (= (de otra dia) (de fila dia))
+                         (= (de otra momento) (de fila momento))
+                         (o (= (de otra tutor) profesor)
+                            (= (de otra oponente) profesor)
+                            (= (de otra presidente) profesor)
+                            (= (de otra secretario) profesor)))))
   :severidad problema
-  :explica   "Este profesor esta citado en dos locales a la vez")
+  :explica   (texto profesor " esta citado en dos locales a la vez"))
 ```
+
+Hasta el 2026-10-18 se escribía sin `:por-campo`, con
+`(comparten otra fila (tutor oponente presidente secretario))`. En la
+defensa de Juan Pérez se pintaban los cuatro miembros aunque el oponente,
+M. Ramírez, no chocaba con nadie, y la explicación decía "Este profesor"
+sin poder decir cuál.
+
+En la hoja de cálculo una marca `:por-campo` es una regla de formato por
+campo, cada una mirando su celda; en la página, la condición recibe la fila
+y el valor. **Qué celdas pinta cada marca se verifica en las tres
+arquitecturas**, en todas las marcas, no solo en estas:
+- el oráculo dice, por fila, los campos que pinta cada marca;
+- en el libro, cada regla de formato condicional se evalúa en LibreOffice
+  con celdas de sondeo en una copia;
+- en la página se compara la clase de cada celda.
 
 Ejemplo con concordancia numérica en la explicación,
 `corpus/plan-del-grupo.lisp:46-52`:
@@ -1303,7 +1333,7 @@ descripción, lo que cambia es esto:
 Lo que sigue faltando de verdad, como construcción del lenguaje, queda para
 una segunda fase, con una nota de diseño por hueco antes de escribir código: orden y dominio de los ejes (C1, hecho el 2026-10-17), búsqueda por
 varios campos en Excel (C2, hecho el 2026-10-17), orden compuesto y vecino dentro de una partición
-(C3, hecho el 2026-10-18), formato numérico (C6, hecho el 2026-10-18), marca por campo (C7), sintaxis única de `:donde`
+(C3, hecho el 2026-10-18), formato numérico (C6, hecho el 2026-10-18), marca por campo (C7, hecho el 2026-10-18), sintaxis única de `:donde`
 (C4) y documentar `:una-fila-por` (C8, hecho el 2026-10-18).
 
 ---
