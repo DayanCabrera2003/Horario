@@ -395,7 +395,8 @@ function dibujarTabla(tabla, contenedor){
       registrar(() => {
         // La marca senala los campos que declara su alcance.
         marcada.classList.remove('problema', 'advertencia', 'informativa');
-        const suyas = marcasDe(tabla.coleccion, fila).filter(m => m.campos.includes(c.n));
+        const suyas = marcasDe(tabla.coleccion, fila)
+                        .filter(m => camposMarcados(m, fila).includes(c.n));
         if (suyas.length) marcada.classList.add(suyas[0].clase);
       });
       tr.appendChild(td);

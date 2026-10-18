@@ -79,6 +79,16 @@
   (declare (ignore ambito plan))
   (format nil "V(~a~a)" (js-variable (nucleo:variable e)) (js-campo (nucleo:campo e))))
 
+(defun js-variable-de-valor (simbolo)
+  "El nombre en JavaScript de la variable de una marca :POR-CAMPO: v_ y el
+   nombre, para que no choque con las variables de fila (que van por su
+   inicial) ni con una palabra reservada (fase 2, hueco C7)."
+  (format nil "v_~a" (substitute #\_ #\- (string-downcase (symbol-name simbolo)))))
+
+(defmethod protocolo:emitir-expresion ((a web) (e nucleo:ref-valor) ambito plan)
+  (declare (ignore ambito plan))
+  (js-variable-de-valor (nucleo:nombre e)))
+
 (defmethod protocolo:emitir-expresion ((a web) (e nucleo:ref-parametro) ambito plan)
   (declare (ignore ambito))
   (let ((p (nucleo:parametro-llamado (situacion plan) (nucleo:nombre e))))
