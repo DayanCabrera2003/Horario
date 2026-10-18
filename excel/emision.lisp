@@ -640,7 +640,9 @@
                          (*hoja* hoja))
                      ;; Una condicion sin traduccion no pinta nada, y el
                      ;; informe lo dice de esa marca; el resto del libro sale.
-                     (handler-case (list (protocolo:emitir-marca a marca ambito plan))
+                     (handler-case (if (nucleo:por-campo marca)
+                                       (formatos-de-marca-por-campo a marca ambito plan)
+                                       (list (protocolo:emitir-marca a marca ambito plan)))
                        (error (e)
                          (protocolo:rebajar-en-informe
                           'protocolo:con-marcado-visual
@@ -660,6 +662,17 @@
         (cons "severidad" (string-downcase (symbol-name (nucleo:severidad marca))))
         (cons "formula" (condicion-excel a (nucleo:condicion marca) ambito plan))
         (cons "relleno" (relleno-de-marca plan marca))))
+
+(defun formatos-de-marca-por-campo (a marca ambito plan)
+  "Una marca :POR-CAMPO es una regla por campo de su :SOBRE, cada una sobre
+   la columna de ese campo y con la variable traducida a la celda de ese
+   campo: asi se pinta solo el campo donde se cumple (fase 2, hueco C7)."
+  (loop for campo in (nucleo:alcance marca)
+        collect (list (cons "rango" (rango-de-alcance *hoja* (list campo)))
+                      (cons "estado" (string-downcase (symbol-name (nucleo:nombre marca))))
+                      (cons "severidad" (string-downcase (symbol-name (nucleo:severidad marca))))
+                      (cons "formula" (condicion-de-marca a marca ambito plan campo))
+                      (cons "relleno" (relleno-de-marca plan marca)))))
 
 (defun rango-de-alcance (hoja campos)
   (format nil "~{~a~^ ~}"

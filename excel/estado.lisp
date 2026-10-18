@@ -27,11 +27,16 @@
                 (cons "rol" "derivado")
                 (cons "texto" (rotulo-de-estado (coleccion hoja)))))))
 
-(defun explicacion-en-formula (a marca ambito plan)
+(defun explicacion-en-formula (a marca ambito plan &optional campo)
   "El texto de la explicacion de MARCA en esta fila, como formula. Sin
    explicacion, el nombre de la marca. Si la explicacion no tiene
-   traduccion, tambien el nombre, y el informe lo dice de esa marca."
-  (let ((explicacion (nucleo:explicacion marca)))
+   traduccion, tambien el nombre, y el informe lo dice de esa marca. Para
+   una marca :POR-CAMPO, la de CAMPO."
+  (let ((explicacion (nucleo:explicacion marca))
+        (*valores-de-marca* (if (and campo (nucleo:por-campo marca))
+                                (acons (nucleo:por-campo marca) (celda *hoja* campo *fila*)
+                                       *valores-de-marca*)
+                                *valores-de-marca*)))
     (cond
       ((null explicacion) (cadena-excel (nucleo:nombre-legible-de-marca marca)))
       ((and (literal-p explicacion) (stringp (nucleo:valor explicacion)))
@@ -54,9 +59,15 @@
    separador delante y se quita el primero con EXTRAE."
   (format nil "MID(~{~a~^&~},3,32767)"
           (loop for marca in marcas
-                collect (format nil "IF(~a,\"; \"&~a,\"\")"
-                                (condicion-excel a (nucleo:condicion marca) ambito plan)
-                                (explicacion-en-formula a marca ambito plan)))))
+                ;; Una marca :POR-CAMPO da un termino por campo, en el orden de
+                ;; su :SOBRE, como NUCLEO:TEXTO-DE-ESTADO (fase 2, hueco C7).
+                append (loop for campo in (if (nucleo:por-campo marca)
+                                              (nucleo:alcance marca)
+                                              (list nil))
+                             collect (format nil "IF(~a,\"; \"&~a,\"\")"
+                                             (condicion-de-marca a marca ambito plan campo)
+                                             (explicacion-en-formula a marca ambito plan
+                                                                     campo))))))
 
 (defun formulas-de-estado (a plan hoja)
   "La columna de estado de HOJA, fila por fila, incluidas las de reserva."
@@ -93,8 +104,8 @@
                        collect (cons numero
                                      (format nil "OR(~{~a~^,~})"
                                              (mapcar (lambda (m)
-                                                       (condicion-excel
-                                                        a (nucleo:condicion m) ambito plan))
+                                                       (condicion-de-marca-en-fila
+                                                        a m ambito plan))
                                                      suyas))))))
     (reduce (lambda (rama resto) (format nil "IF(~a,~d,~a)" (cdr rama) (car rama) resto))
             ramas :from-end t :initial-value "0")))
