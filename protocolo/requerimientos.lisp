@@ -32,7 +32,7 @@
                          (nucleo:nombre coleccion))))
         (when (nucleo:orden coleccion)
           (pedir 'con-orden-declarado coleccion
-                 (format nil "~(~a~) se materializa ordenada por ~(~a~)"
+                 (format nil "~(~a~) se materializa ordenada por ~(~{~a~^, ~}~)"
                          (nucleo:nombre coleccion) (nucleo:orden coleccion))))
         (dolist (campo (nucleo:campos coleccion))
           (case (nucleo:rol campo)
