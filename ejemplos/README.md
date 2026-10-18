@@ -71,26 +71,31 @@ descripción no recoge.
 
 ## Lo que está verificado y lo que no
 
-Las seis las comprueba `./demostrar.sh` en cada ejecución: LibreOffice
-recalcula el `.xlsx` y Node ejecuta el JavaScript de la página, y cada valor
-calculado tiene que coincidir con el del evaluador de referencia del núcleo.
-Hoy coinciden todos; solo el Saúl Delgado son 1 161 celdas en LibreOffice y
-2 915 valores en Node.
+Las seis las comprueba `./demostrar.sh` en cada ejecución, y desde el
+2026-10-17 se compara todo lo que producen, no solo los valores calculados:
 
-En la hoja de cálculo se comprueban también las tablas cruzadas, casilla por
-casilla, contra lo que el núcleo dice que cae en cada una. Hasta el
-2026-10-13 solo se comprobaban las hojas de datos, y por ese hueco pasaron
-sin verse las pestañas por profesor y por aula del Saúl Delgado, que salían
-vacías.
+- **el libro**: LibreOffice lo recalcula y se compara cada hoja, la de datos,
+  las tablas cruzadas casilla por casilla, la columna de estado con la
+  explicación de las marcas, las hojas auxiliares de las relaciones y las de
+  las vistas derivadas; cualquier celda con un error de fórmula es un fallo;
+- **el texto plano**: se leen sus tablas y rejillas por columnas;
+- **la página**: Node ejecuta su cálculo y Chromium la abre para comparar lo
+  que dibuja;
+- **el uso**: se escribe en la página sin perder el foco y en el libro una
+  fila nueva.
 
-Lo que esa comprobación no cubre es el color: en la hoja de cálculo, las
-marcas son formato condicional y LibreOffice no informa de cuáles se
-pintan. Por eso la regla de turno doble del Saúl está escrita también como
-un campo ("Repite mal el día"), cuyo valor sí se comprueba.
+Hoy coinciden todos; solo el Saúl Delgado son 3 585 celdas en LibreOffice,
+3 630 en el texto, 3 210 valores en Node y 3 639 celdas dibujadas. Hasta el
+2026-10-17 la hoja principal del Saúl, "Casillas del horario", no se
+comparaba, y allí 118 celdas enseñaban un 0 donde iba un blanco.
 
-Una limitación que se ve al abrirlos: en las tablas cruzadas, las columnas
-salen en el orden en que aparecen los datos, no en un orden declarado. En el
-SEDER, la semana impar pone "3 p.m." antes que "11 a.m.".
+En las tablas cruzadas, todas las pestañas de una vista tienen los mismos
+ejes: cada horario por profesor o por aula es de siete turnos por cinco días,
+en el orden de la descripción (los turnos van por su `:orden`, los días en el
+orden en que aparecen en los datos). Las casillas se pintan con las marcas de
+su fila. Lo que todavía no se puede es declarar el orden de un eje que no es
+el campo de orden de la colección: en el SEDER, la semana impar sigue
+poniendo "3 p.m." antes que "11 a.m." porque así aparecen en los datos.
 
 Encontrar el horario —que cumpla todas las reglas a la vez— no es parte de
 este lenguaje, por decisión: el lenguaje describe y muestra una situación ya
@@ -100,8 +105,10 @@ decidida, y señala dónde no cumple. La sección 12 de la guía lo explica.
 
 `exploracion/` tiene cinco descripciones de dominios ajenos a la
 facultad, escritas para medir qué se puede describir y qué no. No son
-ejemplos terminados: algunas partes fallan a propósito, porque buscaban
-límites.
+ejemplos terminados: algunas partes sondean límites a propósito. Se generan y
+se verifican con `./explorar.sh`. Las descripciones nuevas de la auditoría del
+2026-10-17 (compras, notas, agenda, inventario, horas, préstamos, textos con
+signos raros) están en `pruebas/casos/` y las verifica `./demostrar.sh`.
 
 | Dominio | Descripción | Veredicto | Informe |
 |---|---|---|---|
@@ -119,4 +126,4 @@ límites.
 
 Ejecuta `./demostrar.sh`, que se detiene si algún valor no coincide, y
 copia los resultados de las seis descripciones. Necesita SBCL, Python con
-openpyxl, LibreOffice y Node, igual que la demostración.
+openpyxl, LibreOffice, Node y Chromium, igual que la demostración.
