@@ -164,12 +164,25 @@
    :actual (nucleo:nombrar "fila")))
 
 (defun comprobar-origen (coleccion situacion)
-  "Una coleccion derivada tiene que decir de donde salen sus filas."
-  (let ((origen (nucleo:origen coleccion)))
-    (when (and (consp origen) (eq (first origen) :una-fila-por))
+  "Una coleccion derivada tiene que decir de donde salen sus filas, y sus
+   campos tienen que poder recibir valor (fase 2, hueco C8).
+
+   (:UNA-FILA-POR CAMPO :DE COLECCION) pone el valor de cada grupo en el
+   campo de la derivada que se llama igual, que tiene que estar declarado y
+   ser :ROL FIJO: lo pone la agrupacion. Hasta el 2026-10-18 su ausencia era
+   solo un aviso y el valor iba al primer campo, fuera cual fuera. El resto
+   de campos de una derivada, y todos los de una (:UNA-SOLA-FILA), son
+   :ROL DERIVADO: sus filas no son de nadie, asi que lo que alguien
+   escribiera se perderia al recalcular, y un campo fijo no tendria quien
+   le diera valor."
+  (let* ((origen (nucleo:origen coleccion))
+         (clase (and (consp origen) (first origen)))
+         (agrupador (and (eq clase :una-fila-por) (second origen))))
+    (when (eq clase :una-fila-por)
       (destructuring-bind (clase campo de fuente) origen
         (declare (ignore clase de))
-        (let ((otra (nucleo:coleccion-llamada situacion fuente)))
+        (let ((otra (nucleo:coleccion-llamada situacion fuente))
+              (propio (nucleo:campo-llamado coleccion campo)))
           (cond
             ((null otra)
              (anotar :error "~(~a~) dice tener una fila por ~(~a~) de ~(~a~), y~@
@@ -178,10 +191,25 @@
             ((null (nucleo:campo-llamado otra campo))
              (anotar :error "~(~a~) se agrupa por ~(~a~), que no es campo de ~(~a~)."
                      (nucleo:nombre coleccion) campo fuente))
-            ((null (nucleo:campo-llamado coleccion campo))
-             (anotar :aviso "~(~a~) se agrupa por ~(~a~) y no tiene un campo con~@
-                             ese nombre donde ponerlo; se usara el primero."
-                     (nucleo:nombre coleccion) campo))))))))
+            ((null propio)
+             (anotar :error "~(~a~) se agrupa por ~(~a~) y no tiene un campo con ese nombre.~@
+                             Declara (campo ~(~a~) :rol fijo :etiqueta \"...\") en ~(~a~): es~@
+                             donde va el valor de cada grupo."
+                     (nucleo:nombre coleccion) campo campo (nucleo:nombre coleccion)))
+            ((not (eq (nucleo:rol propio) :fijo))
+             (anotar :error "El campo ~(~a~) de ~(~a~) recibe el valor de cada grupo, asi que~@
+                             tiene que ser :rol fijo: lo pone la agrupacion; ni se calcula ni~@
+                             lo escribe nadie."
+                     campo (nucleo:nombre coleccion)))))))
+    (when clase
+      (dolist (c (nucleo:campos coleccion))
+        (unless (or (eq (nucleo:rol c) :derivado)
+                    (eq (nucleo:nombre c) agrupador))
+          (anotar :error "~(~a~) es una coleccion derivada y su campo ~(~a~) es :rol ~(~a~).~@
+                          En una coleccion derivada los campos son :rol derivado (salvo el~@
+                          que recibe el grupo en :una-fila-por): sus filas no son de nadie,~@
+                          y lo que se escribiera se perderia al recalcular."
+                  (nucleo:nombre coleccion) (nucleo:nombre c) (nucleo:rol c)))))))
 
 (defun comprobar-coleccion (coleccion situacion)
   (comprobar-origen coleccion situacion)
