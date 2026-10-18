@@ -86,7 +86,7 @@
                 Depende de todo, y nada depende de ella. Es el unico sistema
                 que puede mirar dentro de los demas."
   :depends-on ("situacion/nucleo" "situacion/protocolo" "situacion/lenguaje"
-               "situacion/analisis" "situacion/corpus"
+               "situacion/analisis" "situacion/corpus" "situacion/casos"
                "situacion/texto" "situacion/excel" "situacion/web")
   :pathname "pruebas/"
   :serial t
@@ -100,6 +100,7 @@
                (:file "vistas")
                (:file "relacion")
                (:file "verificacion")
+               (:file "comparacion-exacta")
                (:file "formula")
                (:file "particion-en-archivo")
                (:file "ejecutar"))
