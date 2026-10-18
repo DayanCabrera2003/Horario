@@ -1,4 +1,6 @@
-;;;; G1. Lista de la compra con totales por categoria.
+;;;; G1. Lista de la compra con totales por categoria. Desde la fase 2
+;;;; (hueco C6) el dinero se ve con dos decimales, y unas galletas de 2.675
+;;;; CUP ponen a prueba el empate: tienen que verse 2.68 en las tres.
 ;;;; Ejercita: decimales, multiplicacion, suma con :donde, dominio (uno-de),
 ;;;; parametro, marcas, tildes, "|" "*" "?" en valores, etiquetas de
 ;;;; coleccion sin espacios pero con guion y con tilde.
@@ -12,7 +14,7 @@
     (:etiqueta "Categorías")
     (:clave nombre)
     (campo nombre :rol fijo :etiqueta "Categoría")
-    (campo total :rol derivado :tipo numero :etiqueta "Total"
+    (campo total :rol derivado :tipo numero :decimales 2 :etiqueta "Total"
            (suma subtotal de productos :donde (= categoria (de fila nombre))))
     (campo articulos :rol derivado :tipo entero :etiqueta "Artículos"
            (cuantas productos :donde (= categoria (de fila nombre)))))
@@ -26,20 +28,20 @@
     (campo categoria :rol entrada :etiqueta "Categoría"
            :dominio (los nombre de categorias) :al-violar impedir)
     (campo cantidad  :rol entrada :tipo entero :etiqueta "Cantidad")
-    (campo precio    :rol fijo :tipo numero :etiqueta "Precio")
+    (campo precio    :rol fijo :tipo numero :decimales 2 :etiqueta "Precio")
     (campo comprado  :rol entrada :etiqueta "¿Comprado?"
            :dominio (uno-de "sí" "no"))
-    (campo subtotal  :rol derivado :tipo numero :etiqueta "Subtotal"
+    (campo subtotal  :rol derivado :tipo numero :decimales 2 :etiqueta "Subtotal"
            (* (de fila cantidad) (de fila precio))))
 
   (coleccion resumen
     (:una-sola-fila)
     (:etiqueta "Resumen")
-    (campo gastado :rol derivado :tipo numero :etiqueta "Gastado"
+    (campo gastado :rol derivado :tipo numero :decimales 2 :etiqueta "Gastado"
            (suma subtotal de productos))
     (campo pendientes :rol derivado :tipo entero :etiqueta "Sin comprar"
            (cuantas productos :donde (= comprado "no")))
-    (campo margen :rol derivado :tipo numero :etiqueta "Margen"
+    (campo margen :rol derivado :tipo numero :decimales 2 :etiqueta "Margen"
            (- (parametro presupuesto) (de fila gastado))))
 
   (marca caro
@@ -75,6 +77,7 @@
                (fila "producto" "Leche en polvo" "categoria" "Lácteos" "cantidad" 2 "precio" 4.75 "comprado" "sí")
                (fila "producto" "Yogur ¿natural?" "categoria" "Lácteos" "cantidad" 3 "precio" 1.2 "comprado" "no")
                (fila "producto" "Pan de molde" "categoria" "Panadería" "cantidad" 1 "precio" 2.5 "comprado" "no")
+               (fila "producto" "Galletas" "categoria" "Panadería" "cantidad" 1 "precio" 2.675 "comprado" "no")
                (fila "producto" "Detergente" "categoria" "Limpieza|Hogar" "cantidad" 1 "precio" 12.99 "comprado" "no")
                (fila "producto" "Mangos" "categoria" "Frutas*" "cantidad" 6 "precio" 0.5 "comprado" "sí")
                (fila "producto" "Guayabas" "categoria" "" "cantidad" 4 "precio" 0.35 "comprado" "no"))
