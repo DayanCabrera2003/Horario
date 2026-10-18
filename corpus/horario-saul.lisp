@@ -154,12 +154,12 @@
            (si (y (no (vacio? (de fila asignatura)))
                   (existe otra :en casillas
                     :distinta-de fila
-                    :donde (y (= (de otra grupo) (de fila grupo))
-                              (= (de otra dia) (de fila dia))
-                              (= (de otra asignatura) (de fila asignatura))
+                    :donde (y (= grupo (de fila grupo))
+                              (= dia (de fila dia))
+                              (= asignatura (de fila asignatura))
                               (o (= (de fila turno-doble) "no")
-                                 (y (/= (de otra turno) (+ (de fila turno) 1))
-                                    (/= (de otra turno) (- (de fila turno) 1)))))))
+                                 (y (/= turno (+ (de fila turno) 1))
+                                    (/= turno (- (de fila turno) 1)))))))
                "si"
                "no"))
 
@@ -194,9 +194,9 @@
     :cuando    (y (no (vacio? (de fila asignatura)))
                   (existe otra :en casillas
                     :distinta-de fila
-                    :donde (y (= (de otra dia) (de fila dia))
-                              (= (de otra turno) (de fila turno))
-                              (= (de otra profesor) (de fila profesor)))))
+                    :donde (y (= dia (de fila dia))
+                              (= turno (de fila turno))
+                              (= profesor (de fila profesor)))))
     :sobre     (asignatura profesor)
     :severidad problema
     :explica   "Este profesor ya da clase a otro grupo en este mismo turno")
@@ -207,9 +207,9 @@
     :cuando    (y (no (vacio? (de fila asignatura)))
                   (existe otra :en casillas
                     :distinta-de fila
-                    :donde (y (= (de otra dia) (de fila dia))
-                              (= (de otra turno) (de fila turno))
-                              (= (de otra aula) (de fila aula)))))
+                    :donde (y (= dia (de fila dia))
+                              (= turno (de fila turno))
+                              (= aula (de fila aula)))))
     :sobre     (aula)
     :severidad problema
     :explica   "Ese local esta ocupado por otro grupo a esa hora")
