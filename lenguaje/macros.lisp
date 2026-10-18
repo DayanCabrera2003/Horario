@@ -86,6 +86,14 @@
         (when (and (not (eq rol :derivado)) expresion)
           (error "El campo ~a no es derivado pero trae una expresion.~@
                   Si querias que se calculara, ponle :ROL DERIVADO." nombre))
+        (let ((decimales (opcion opciones :decimales)))
+          (when (and (opcion-presente-p opciones :decimales)
+                     (not (and (eq tipo :numero) (integerp decimales) (<= 0 decimales 10))))
+            (error "El campo ~a tiene :DECIMALES ~s.~@
+                    :DECIMALES solo vale en un campo :TIPO NUMERO, con un entero~@
+                    de 0 a 10: es cuantos decimales se escriben (el valor no cambia;~@
+                    para cambiarlo esta (REDONDEAR EXPRESION N))."
+                   nombre decimales)))
         (when (and dominio (not (eq rol :entrada)))
           (error "El campo ~a tiene :DOMINIO pero su rol no es ENTRADA.~@
                   Un dominio dice que puede escribir el usuario; si nadie~@
@@ -95,6 +103,7 @@
           :etiqueta ,(opcion opciones :etiqueta (string-capitalize (symbol-name nombre)))
           :tipo ,tipo
           :rol ,rol
+          :decimales ,(opcion opciones :decimales)
           :opcional ,(opcion opciones :opcional nil)
           :dominio ,(when dominio (compilar-expresion dominio))
           :al-violar ,(como-clave (opcion opciones :al-violar 'nucleo::advertir))

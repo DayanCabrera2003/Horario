@@ -26,6 +26,14 @@
 ;;;;                       como literal dentro de una formula, de un programa o
 ;;;;                       de un JSON: sin perder cifras y sin el sufijo "d0"
 ;;;;                       que pone Common Lisp a un doble.
+;;;;
+;;;; Y, desde la fase 2 (hueco C6), los decimales que declara un campo y el
+;;;; operador REDONDEAR: REDONDEAR-A-DECIMALES, TEXTO-CON-DECIMALES y
+;;;; TEXTO-DEL-CAMPO. Las dos redondean al mas cercano y, en el empate, se
+;;;; alejan de cero, que es lo que hacen el formato de numero y ROUND de Excel
+;;;; y de LibreOffice. Y redondean la escritura DECIMAL del numero, no el doble
+;;;; binario: 2.675 es en binario 2.67499999..., y un redondeo ingenuo daria
+;;;; 2.67 donde la hoja de calculo da 2.68.
 
 (in-package #:situacion.nucleo)
 
@@ -94,3 +102,66 @@
           (if (integerp y)
               (format nil "~d" y)
               (escritura-de-numero y))))))
+
+;;; ---------------------------------------------------------------------
+;;; Decimales y redondeo (fase 2, hueco C6)
+;;; ---------------------------------------------------------------------
+
+(defun decimal-exacto (x)
+  "El racional exacto que escribe X en decimal: 2.675 es 2675/1000, no el
+   doble binario mas cercano. Se parte de la escritura mas corta que vuelve
+   al mismo doble, que es la que da PRIN1."
+  (if (rationalp x)
+      x
+      (let* ((texto (let ((*read-default-float-format* 'double-float))
+                      (string-downcase (prin1-to-string (coerce x 'double-float)))))
+             (e (position #\e texto))
+             (mantisa (subseq texto 0 e))
+             (exponente (if e (parse-integer texto :start (1+ e)) 0))
+             (signo (if (char= (char mantisa 0) #\-) -1 1))
+             (sin-signo (string-left-trim "-" mantisa))
+             (punto (position #\. sin-signo))
+             (entera (subseq sin-signo 0 punto))
+             (fraccion (if punto (subseq sin-signo (1+ punto)) "")))
+        (* signo
+           (parse-integer (concatenate 'string entera fraccion))
+           (expt 10 (- exponente (length fraccion)))))))
+
+(defun redondeo-exacto (x n)
+  "X redondeado a N decimales como racional exacto, con el empate
+   alejandose de cero."
+  (let* ((r (decimal-exacto x))
+         (escala (expt 10 n)))
+    (/ (* (signum r) (floor (+ (* (abs r) escala) 1/2))) escala)))
+
+(defun redondear-a-decimales (valor n)
+  "VALOR redondeado a N decimales: un entero si N es 0, un doble si no. Un
+   vacio sigue siendo vacio; cualquier otro valor se lee como numero, igual
+   que en la aritmetica."
+  (if (vacio-p valor)
+      nil
+      (let ((r (redondeo-exacto (normalizar-numero (como-numero valor)) n)))
+        (if (zerop n) r (normalizar-numero r)))))
+
+(defun texto-con-decimales (valor n)
+  "VALOR escrito con exactamente N decimales: 2.5 con 2 es \"2.50\". Lo que
+   no es un numero se escribe como siempre. Un resultado que redondea a cero
+   se escribe sin signo."
+  (let ((x (normalizar-numero valor)))
+    (if (not (realp x))
+        (como-texto valor)
+        (let* ((r (redondeo-exacto x n))
+               (escala (expt 10 n))
+               (entero (abs (* r escala))))
+          (multiple-value-bind (parte-entera fraccion) (floor entero escala)
+            (format nil "~:[~;-~]~d~:[~;.~v,'0d~]"
+                    (minusp r) parte-entera (plusp n) n fraccion))))))
+
+(defun texto-del-campo (campo valor)
+  "Como se escribe VALOR en una celda de CAMPO: con los decimales que el
+   campo declara, o con la regla general si no declara ninguno. Lo usan las
+   tres arquitecturas y los oraculos, asi que una celda se lee igual en
+   todas."
+  (if (and (decimales campo) (realp (normalizar-numero valor)))
+      (texto-con-decimales valor (decimales campo))
+      (como-texto valor)))

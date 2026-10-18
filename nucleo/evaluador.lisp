@@ -398,6 +398,8 @@
       ((es "Y") (every #'verdadero-p valores))
       ((es "O") (and (some #'verdadero-p valores) t))
       ((es "NO") (not (verdadero-p (first valores))))
+      ;; (redondear E N): el valor redondeado a N decimales (nucleo/numeros.lisp).
+      ((es "REDONDEAR") (redondear-a-decimales (first valores) (n (second valores))))
       (t (fallar "Operador desconocido: ~a" operador)))))
 
 (defmethod evaluar ((e condicional) ambito entorno ligaduras)
