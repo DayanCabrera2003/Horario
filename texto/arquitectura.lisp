@@ -37,7 +37,12 @@
                  ;; descripcion que contara valores distintos abortaba la
                  ;; generacion entera del texto.
                  protocolo:con-conteo-de-distintos
-                 protocolo:con-validacion-de-forma)
+                 protocolo:con-validacion-de-forma
+                 ;; Las filas relacionadas se escriben todas, separadas por
+                 ;; comas. Antes se respondia :CUMPLE desde RESOLVER-CARENCIA
+                 ;; sin heredarla, y CAPACIDADES no la listaba: lo que una
+                 ;; arquitectura cumple se declara aqui.
+                 protocolo:con-relacion-uno-a-muchos)
   ()
   (:documentation
    "Salida a texto plano: una tabla alineada por coleccion, con los valores
@@ -74,9 +79,6 @@
              "las filas se calculan al generar y quedan fijas. Si despues
               aparece un valor nuevo en la coleccion de origen, no aparece
               una fila para el: hay que volver a generar."))
-
-    (protocolo:con-relacion-uno-a-muchos
-     (values :cumple "las filas relacionadas se escriben separadas por comas"))
     (t (values :rechaza
                (format nil "texto plano no tiene nada parecido a ~(~a~)"
                        capacidad)))))
