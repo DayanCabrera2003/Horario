@@ -1,7 +1,9 @@
 ;;;; G2. Notas de estudiantes: promedio, aprobado/suspenso, booleano y fecha.
 ;;;; Ejercita: division, parametro, si anidado, :tipo booleano y :tipo fecha,
 ;;;; comparacion de fechas, una coleccion resumen de una sola fila, vista
-;;;; agrupada, valores con tilde y enie.
+;;;; agrupada, valores con tilde y enie. Desde la fase 2 (hueco C6), el
+;;;; promedio se ve con dos decimales y lo que decide es la nota del acta, el
+;;;; promedio redondeado: Mario, con 59.67, aprueba con un 60.
 (in-package #:situacion.casos)
 
 (defsituacion caso-notas (:etiqueta "Notas de Álgebra")
@@ -21,14 +23,18 @@
     (campo n2      :rol entrada :tipo entero :etiqueta "Parcial 2")
     (campo n3      :rol entrada :tipo entero :etiqueta "Final")
     (campo entrega :rol entrada :tipo fecha :etiqueta "Entrega del proyecto")
-    (campo promedio :rol derivado :tipo numero :etiqueta "Promedio"
+    (campo promedio :rol derivado :tipo numero :decimales 2 :etiqueta "Promedio"
            (/ (+ (de fila n1) (de fila n2) (de fila n3)) 3))
     (campo resultado :rol derivado :etiqueta "Resultado"
            (si (o (vacio? (de fila n1)) (vacio? (de fila n2)) (vacio? (de fila n3)))
                "Incompleto"
-               (si (>= (de fila promedio) (parametro aprobado)) "Aprobado" "Suspenso")))
+               (si (>= (de fila nota) (parametro aprobado)) "Aprobado" "Suspenso")))
     (campo tarde :rol derivado :tipo booleano :etiqueta "Entregó tarde"
-           (y (no (vacio? (de fila entrega))) (> (de fila entrega) "2026-10-10"))))
+           (y (no (vacio? (de fila entrega))) (> (de fila entrega) "2026-10-10")))
+    ;; El acta redondea el promedio a entero, y con eso se decide. Va al final
+    ;; para no mover las columnas de los demas campos.
+    (campo nota :rol derivado :tipo entero :etiqueta "Nota del acta"
+           (redondear (de fila promedio) 0)))
 
   (coleccion resumen
     (:una-sola-fila)
@@ -37,9 +43,9 @@
            (cuantas estudiantes))
     (campo aprobados :rol derivado :tipo entero :etiqueta "Aprobados"
            (cuantas estudiantes :donde (= resultado "Aprobado")))
-    (campo porcentaje :rol derivado :tipo numero :etiqueta "% aprobados"
+    (campo porcentaje :rol derivado :tipo numero :decimales 1 :etiqueta "% aprobados"
            (/ (* 100 (de fila aprobados)) (de fila matriculados)))
-    (campo mejor :rol derivado :tipo numero :etiqueta "Mejor promedio"
+    (campo mejor :rol derivado :tipo numero :decimales 2 :etiqueta "Mejor promedio"
            (maximo promedio de estudiantes))
     (campo becados :rol derivado :tipo entero :etiqueta "Becados"
            (cuantas estudiantes :donde (= becado t))))
@@ -49,7 +55,7 @@
     :cuando (= (de fila resultado) "Suspenso")
     :sobre (promedio resultado)
     :severidad problema
-    :explica (texto "Promedio " (de fila promedio) " por debajo de " (parametro aprobado)))
+    :explica (texto "Nota " (de fila nota) " por debajo de " (parametro aprobado)))
 
   (marca becado-en-riesgo
     :en estudiantes
@@ -77,7 +83,9 @@
                (fila "carne" "A02" "nombre" "Ana Núñez" "grupo" "C-11" "becado" t
                      "n1" 90 "n2" nil "n3" 77 "entrega" nil)
                (fila "carne" "A04" "nombre" "José Ávila" "grupo" "C-12" "becado" nil
-                     "n1" 61 "n2" 60 "n3" 60 "entrega" "2026-10-10"))
+                     "n1" 61 "n2" 60 "n3" 60 "entrega" "2026-10-10")
+               (fila "carne" "A05" "nombre" "Mario Ruiz" "grupo" "C-11" "becado" nil
+                     "n1" 60 "n2" 60 "n3" 59 "entrega" "2026-10-08"))
          (list "resumen" (fila))))
 
 (registrar-caso "caso-notas" caso-notas datos-de-notas)
