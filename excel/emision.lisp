@@ -146,10 +146,22 @@
                                      (cons "campo" (format nil "__col~d__" i))
                                      (cons "rol" "fijo")
                                      (cons "texto" (nucleo:como-texto v))))))
-         (celdas (loop for v in (valores-de-fila cruce)
-                       for f from fila-ini
-                       collect (list (cons "celda" (format nil "A~d" f))
-                                     (cons "valor" v))))
+         (celdas (append
+                  (loop for v in (valores-de-fila cruce)
+                        for f from fila-ini
+                        collect (list (cons "celda" (format nil "A~d" f))
+                                      (cons "valor" v)))
+                  ;; Los valores fuera del dominio declarado de un eje (fase 2,
+                  ;; hueco C1) tienen su fila o su columna al final; debajo de
+                  ;; la rejilla se dice cuales. Va en la columna B porque la A
+                  ;; es el eje de filas.
+                  (let ((aviso (nucleo:aviso-fuera-de-dominio (entorno plan) vista)))
+                    (when aviso
+                      (list (list (cons "celda"
+                                        (format nil "B~d" (+ fila-ini
+                                                             (length (valores-de-fila cruce))
+                                                             1)))
+                                  (cons "valor" (format nil "Aviso: ~a" aviso))))))))
          (formulas (loop for v in (valores-de-fila cruce)
                          for f from fila-ini
                          append (loop for i from 1 to (length (valores-de-columna cruce))
