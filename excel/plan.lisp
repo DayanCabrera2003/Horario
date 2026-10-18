@@ -302,19 +302,6 @@
                  (string-capitalize (substitute #\Space #\- (symbol-name
                                                              (nucleo:nombre coleccion))))))
 
-;;; Regla transversal, escrita una vez para toda arquitectura con entrada:
-;;; lo derivado queda de solo lectura. Es la idea de los metodos auxiliares
-;;; de ADOL*, aplicada aqui.
-(defmethod protocolo:planificar-campo :after ((a protocolo:con-entrada)
-                                              campo coleccion plan)
-  (declare (ignore coleccion plan))
-  (when (eq (nucleo:rol campo) :derivado)
-    ;; Nada que hacer aqui todavia mas que dejar constancia: el bloqueo real
-    ;; lo aplica la emision, que es quien conoce las celdas. Lo que importa es
-    ;; que la regla este en un solo sitio y valga para Excel, para la web y
-    ;; para cualquier arquitectura con entrada que llegue despues.
-    t))
-
 (defmethod protocolo:planificar-campo ((a excel) campo coleccion plan)
   (declare (ignore campo coleccion plan))
   t)
