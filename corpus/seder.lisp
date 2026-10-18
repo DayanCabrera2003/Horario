@@ -40,15 +40,15 @@
     (:datos (("CC-1" "Ciencia de la Computacion" "par"))))
 
   ;; Y que horarios tiene disponibles: uno, dos o los tres, una fila por
-  ;; cada uno. La clave junta ano y horario en un solo campo porque la hoja
-  ;; de calculo busca por una sola igualdad.
+  ;; cada uno. La clave es compuesta, ano y horario. Hasta el 2026-10-17 los
+  ;; dos iban pegados con "#" en un campo CLAVE, porque la hoja de calculo
+  ;; solo buscaba por una igualdad (fase 2, hueco C2).
   (coleccion disponibles
     (:etiqueta "Horarios disponibles por ano")
-    (:clave clave)
-    (campo clave   :rol fijo :etiqueta "Clave")
+    (:clave ano horario)
     (campo ano     :rol fijo :etiqueta "Ano")
     (campo horario :rol fijo :etiqueta "Horario")
-    (:datos (("CC-1#10 a.m." "CC-1" "10 a.m."))))
+    (:datos (("CC-1" "10 a.m."))))
 
   ;; LAS BRIGADAS. Lo que se escribe a mano es el horario y la instalacion;
   ;; el profesor viene dado.
@@ -74,13 +74,12 @@
            (el capacidad de (la-fila-de instalaciones
                               :donde (= nombre (de fila instalacion)))
                :si-no 0))
-    (campo clave-disponible :rol derivado :etiqueta "Ano#Horario"
-           (texto (de fila ano) "#" (de fila horario)))
     (campo disponible :rol derivado :etiqueta "Horario disponible"
            (si (vacio? (de fila horario))
                ""
-               (si (= (el clave de (la-fila-de disponibles
-                                     :donde (= clave (de fila clave-disponible)))
+               (si (= (el horario de (la-fila-de disponibles
+                                       :donde (y (= ano (de fila ano))
+                                                 (= horario (de fila horario))))
                           :si-no "")
                       "")
                    "no"
@@ -248,8 +247,7 @@
                           ("FIS-1" "11 a.m." "3 p.m.")
                           ("FIS-2" "3 p.m."))
                    append (loop for horario in horarios
-                                collect (fila "clave" (format nil "~a#~a" ano horario)
-                                              "ano" ano "horario" horario))))
+                                collect (fila "ano" ano "horario" horario))))
        (cons (funcall n "brigadas")
              (loop for (brigada ano personas profesor horario instalacion)
                      in '(("C111" "CC-1"  28 "Prof. Alvarez" "10 a.m." "Pista 1")
