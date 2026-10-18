@@ -123,7 +123,11 @@
           (origen :declarada))
       (dolist (f cuerpo)
         (cond
-          ((cabeza-es f "CAMPO") (push (compilar-campo f) campos))
+          ((cabeza-es f "CAMPO")
+           (push (let ((*donde-se-compila*
+                         (format nil "el campo ~(~a~) de ~(~a~)" (second f) nombre)))
+                   (compilar-campo f))
+                 campos))
           ((eq (first f) :etiqueta) (setf etiqueta (second f)))
           ((eq (first f) :clave) (setf clave (normalizar-lista (rest f))))
           ((eq (first f) :orden)
@@ -207,7 +211,8 @@
                nombre por-campo))
       (let ((*variables-de-valor* (if por-campo
                                       (cons por-campo *variables-de-valor*)
-                                      *variables-de-valor*)))
+                                      *variables-de-valor*))
+            (*donde-se-compila* (format nil "la marca ~(~a~)" nombre)))
         `(nucleo:hacer-marca
           :nombre ',(normalizar nombre)
           :coleccion ',(normalizar en)
@@ -257,6 +262,7 @@
     (let ((fuente (opcion opciones :de))
           (donde (opcion opciones :donde)))
       (unless fuente (error "La vista ~a no dice :DE que coleccion es." nombre))
+      (let ((*donde-se-compila* (format nil "la vista ~(~a~)" nombre)))
       (multiple-value-bind (filas dominio-de-filas)
           (partir-eje nombre :filas (opcion opciones :filas))
         (multiple-value-bind (columnas dominio-de-columnas)
@@ -269,7 +275,9 @@
               :fuente ',(normalizar fuente)
               :secciones ',(normalizar secciones)
               :agrupacion ',(normalizar (opcion opciones :agrupada-por))
-              :filtro ,(when donde (compilar-expresion donde))
+              ;; En el :DONDE de una vista, un simbolo suelto es un campo de
+              ;; la fila de la vista (fase 2, hueco C4).
+              :filtro ,(when donde (compilar-expresion donde 'fila))
               :conflicto ',(normalizar (opcion opciones :unica-salvo))
               :eje-de-filas ',(normalizar filas)
               :eje-de-columnas ',(normalizar columnas)
@@ -280,7 +288,7 @@
                                       (compilar-expresion dominio-de-columnas))
               :dominio-de-secciones ,(when dominio-de-secciones
                                        (compilar-expresion dominio-de-secciones))
-              :es-entrada ,(opcion opciones :entrada nil))))))))
+              :es-entrada ,(opcion opciones :entrada nil)))))))))
 
 (defun compilar-parametro (forma)
   "(parametro NOMBRE :tipo ... :valor ... [:rol ...] [:etiqueta ...])"
