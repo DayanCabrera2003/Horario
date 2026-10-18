@@ -127,6 +127,7 @@
                (:file "decimales")
                (:file "derivadas")
                (:file "marca-por-campo")
+               (:file "donde")
                (:file "ejecutar"))
   :perform (test-op (op system)
                     (uiop:symbol-call :situacion.pruebas :ejecutar)))
