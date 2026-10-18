@@ -354,7 +354,8 @@
             (if campo-celda (campo-js plan campo-celda) "null")
             (if (nucleo:es-entrada vista) "true" "false")
             (if (nucleo:orden coleccion)
-                (format nil "~/situacion.web::js/" (nombre-js (nucleo:orden coleccion)))
+                (format nil "[~{~/situacion.web::js/~^, ~}]"
+                        (mapcar #'nombre-js (nucleo:orden coleccion)))
                 "null")
             ;; El campo por el que se parte, o null. La pagina calcula las
             ;; secciones al dibujar: si manana aparece un grupo nuevo,

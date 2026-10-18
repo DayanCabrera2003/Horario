@@ -126,10 +126,14 @@ function COMPARTEN(a, b, campos){
 }
 
 // --- La fila contigua segun el orden declarado ---
-function VECINO(coleccion, fila, paso){
+// Con MISMOS (los campos de :MISMO), la contigua solo cuenta si tiene los
+// mismos valores en ellos; si no, no hay fila (fase 2, hueco C3).
+function VECINO(coleccion, fila, paso, mismos){
   const i = coleccion.indexOf(fila);
   const j = i + paso;
-  return (j >= 0 && j < coleccion.length) ? coleccion[j] : null;
+  if (j < 0 || j >= coleccion.length) return null;
+  const contigua = coleccion[j];
+  return (mismos || []).every(c => IG(contigua[c], fila[c])) ? contigua : null;
 }
 
 // --- Calcula los derivados de una fila y los deja puestos ---

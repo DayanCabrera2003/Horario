@@ -214,10 +214,10 @@ function ejeSegunLosDatos(filas, campo, cruce){
   return ordenarEje(distintosDe(filas, campo), campo, cruce);
 }
 
-// Si el eje es el campo por el que la coleccion declara orden, sus valores
-// van en ese orden; si no, en el de primera aparicion.
+// Si el eje es uno de los campos por los que la coleccion declara orden,
+// sus valores van ordenados; si no, en el de primera aparicion.
 function ordenarEje(valores, campo, cruce){
-  if (cruce.orden !== campo) return valores;
+  if (!(cruce.orden || []).includes(campo)) return valores;
   return valores.slice().sort(compararSecciones);
 }
 
