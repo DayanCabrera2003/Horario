@@ -18,7 +18,18 @@
   "El informe que se esta construyendo, o NIL si no hay compilacion en curso.")
 
 (defun anotar-en-informe (respuesta capacidad nota)
-  (when *informe*
+  "Anota en el informe en curso que CAPACIDAD se resolvio con RESPUESTA.
+
+   Una entrada identica a otra ya anotada no se repite: una arquitectura
+   pide la capacidad de un nodo cada vez que lo emite, y un nodo se emite
+   una vez por fila. Sin esto, la validacion de forma de una fecha llenaba
+   el informe con cien lineas iguales."
+  (when (and *informe*
+             (not (find-if (lambda (e)
+                             (and (eq (entrada-de-informe-respuesta e) respuesta)
+                                  (eq (entrada-de-informe-capacidad e) capacidad)
+                                  (equal (entrada-de-informe-nota e) nota)))
+                           (cdr *informe*))))
     (push (hacer-entrada respuesta capacidad nota) (cdr *informe*)))
   respuesta)
 
