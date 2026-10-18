@@ -258,17 +258,25 @@
     (:datos ((1) (2))))
   (vista v :de dias :entrada t))
 
-;;; SONDA 2. Orden compuesto: se escribe, se lee solo el primero.
-(defsituacion sonda-orden-compuesto
-    (:etiqueta "Sonda: orden compuesto")
-  (coleccion asignaciones
-    (:clave dia turno)
-    (:orden dia turno)
-    (campo dia   :rol fijo :tipo entero)
-    (campo turno :rol fijo)
-    (campo quien :rol entrada)
-    (:datos ((1 "manana"))))
-  (vista v :de asignaciones :entrada t))
+;;; SONDA 2. Orden compuesto. Cuando se escribio este experimento, se leia
+;;; solo el primer campo y el segundo se descartaba en silencio. Desde
+;;; entonces el lenguaje lo rechaza con un mensaje claro (hueco C3, fase 2),
+;;; asi que la sonda guarda ese mensaje en vez de una situacion.
+(defparameter +sonda-orden-compuesto+
+  (handler-case
+      (progn
+        (macroexpand '(defsituacion sonda-orden-compuesto
+                          (:etiqueta "Sonda: orden compuesto")
+                        (coleccion asignaciones
+                          (:clave dia turno)
+                          (:orden dia turno)
+                          (campo dia   :rol fijo :tipo entero)
+                          (campo turno :rol fijo)
+                          (campo quien :rol entrada)
+                          (:datos ((1 "manana"))))
+                        (vista v :de asignaciones :entrada t)))
+        "se acepto sin error")
+    (error (e) (princ-to-string e))))
 
 
 ;;; ====================================================================
@@ -297,7 +305,7 @@
 
 (defparameter +gente+ '("Ana" "Bruno" "Carla" "Diego"))
 
-(defun n (s) (intern (string-upcase s) '#:situacion.nucleo))
+(defun n (s) (nucleo:nombrar s))
 
 (defun fila (&rest pares)
   (loop for (campo valor) on pares by #'cddr collect (cons (n campo) valor)))
@@ -474,10 +482,7 @@
   ;; ------------------------------------------------------------------
   (titulo "SONDA 2: (:orden dia turno)")
   (format t "~&Escrito:  (:orden dia turno)~%")
-  (format t "Guardado: (:orden ~(~a~))~%"
-          (nucleo:orden (nucleo:coleccion-llamada sonda-orden-compuesto
-                                                  (n "asignaciones"))))
-  (format t "Sin error ni aviso: el segundo campo se descarta en silencio.~%")
+  (format t "Respuesta del lenguaje: ~a~%" +sonda-orden-compuesto+)
 
   ;; ------------------------------------------------------------------
   (titulo "SONDA 3: aritmetica n-aria")

@@ -143,7 +143,7 @@
 ;;; Los datos de prueba
 ;;; ---------------------------------------------------------------------
 
-(defun n (s) (intern (string-upcase s) '#:situacion.nucleo))
+(defun n (s) (nucleo:nombrar s))
 
 (defun filas (campos tuplas)
   (loop for tupla in tuplas
