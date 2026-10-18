@@ -165,7 +165,8 @@
     (protocolo:con-crecimiento
      (values :emula
              (format nil
-                     "~d filas de reserva y un rango que se dimensiona con lo~@
+                     "~d filas de reserva, con sus campos fijos y de entrada~@
+                      desbloqueados, y un rango que se dimensiona con lo~@
                       escrito. Limite comprobado en el corpus: no admite huecos~@
                       en medio del listado, porque el conteo de celdas no vacias~@
                       no distingue una fila en blanco de una fila ausente y la~@

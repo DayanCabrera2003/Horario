@@ -289,7 +289,7 @@
           (cons "formulas" (lista (append (formulas-de a plan hoja)
                                           (formulas-de-estado a plan hoja)
                                           (formulas-de-claves a plan hoja))))
-          (cons "editables" (lista (rangos-editables hoja)))
+          (cons "editables" (lista (rangos-editables plan hoja)))
           (cons "validaciones" (lista (validaciones-de a plan hoja)))
           (cons "formatos_de_celda" (lista (formatos-de-celda hoja)))
           (cons "formatos_condicionales" (lista (formatos-de a plan hoja)))
@@ -481,15 +481,28 @@
    :ligaduras (list (cons (nucleo:nombrar "fila") coleccion))
    :actual (nucleo:nombrar "fila")))
 
-(defun rangos-editables (hoja)
+(defun rangos-editables (plan hoja)
   "Los rangos donde el usuario puede escribir.
 
-   Salen del rol de campo. Todo lo demas queda bloqueado al proteger la hoja,
-   que es lo que impide borrar una formula sin querer."
-  (loop for campo in (nucleo:campos-de-rol (coleccion hoja) :entrada)
-        collect (format nil "~a~d:~a~d"
-                        (columna-de hoja (nucleo:nombre campo)) (fila-primera hoja)
-                        (columna-de hoja (nucleo:nombre campo)) (fila-ultima hoja))))
+   Salen del rol de campo. Los campos de entrada, en todas las filas. Los
+   fijos de una coleccion que crece, en las filas de reserva: en una
+   coleccion que crece, fijo quiere decir que lo escribe quien crea la fila
+   y despues no cambia. Antes quedaban bloqueados, y no habia forma de
+   anadir una fila sin desproteger la hoja. Todo lo demas queda bloqueado
+   al proteger la hoja, que es lo que impide borrar una formula sin querer."
+  (let ((coleccion (coleccion hoja)))
+    (append
+     (loop for campo in (nucleo:campos-de-rol coleccion :entrada)
+           collect (format nil "~a~d:~a~d"
+                           (columna-de hoja (nucleo:nombre campo)) (fila-primera hoja)
+                           (columna-de hoja (nucleo:nombre campo)) (fila-ultima hoja)))
+     (when (eq (nucleo:crecimiento coleccion) :crece)
+       (let ((primera-de-reserva (+ (fila-primera hoja) (filas-reales plan hoja))))
+         (when (<= primera-de-reserva (fila-ultima hoja))
+           (loop for campo in (nucleo:campos-de-rol coleccion :fijo)
+                 collect (format nil "~a~d:~a~d"
+                                 (columna-de hoja (nucleo:nombre campo)) primera-de-reserva
+                                 (columna-de hoja (nucleo:nombre campo)) (fila-ultima hoja)))))))))
 
 (defun formatos-de-celda (hoja)
   "El formato de fecha u hora de cada campo fijo o de entrada con ese tipo.

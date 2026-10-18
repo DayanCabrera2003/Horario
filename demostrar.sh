@@ -50,6 +50,12 @@ for f in plan-del-grupo defensas-de-tesis horario-del-grupo departamento horario
 done
 
 echo
+echo "Libro usado: se escribe una asignatura nueva en una fila de reserva del"
+echo "plan del grupo, se recalcula y se comprueba que la fila calcula."
+python3 materializador/sonda_escritura.py salida/plan-del-grupo.xlsx "Plan del grupo" \
+        A10=X B10=Nueva C10=3 D10=1 -- E10=2 || fallos=1
+
+echo
 echo "Pagina web: se ejecuta el JavaScript que emitio la arquitectura y se"
 echo "comparan los valores que calcula."
 if command -v node >/dev/null 2>&1; then

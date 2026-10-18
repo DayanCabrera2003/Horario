@@ -115,6 +115,7 @@
                (:file "varias-vistas")
                (:file "carencias")
                (:file "conformidad-salida")
+               (:file "crecimiento")
                (:file "formula")
                (:file "particion-en-archivo")
                (:file "ejecutar"))
