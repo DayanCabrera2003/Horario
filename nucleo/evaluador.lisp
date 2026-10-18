@@ -160,11 +160,14 @@
                                      (mapcar (lambda (f) (gethash campo (valores f)))
                                              filas))
                           :test #'iguales-p :from-end t))
-                ;; El campo que recibe el valor agrupado es el primero de la
-                ;; coleccion derivada que se llame igual que el de origen; si
-                ;; no hay ninguno, el primero a secas.
-                (destino (or (and (campo-llamado coleccion campo) campo)
-                             (nombre (first (campos coleccion))))))
+                ;; El valor de cada grupo va en el campo que se llama igual
+                ;; que el de origen. El analisis exige que exista; hasta el
+                ;; 2026-10-18, si no existia, iba al primer campo de la
+                ;; coleccion, fuera cual fuera (fase 2, hueco C8).
+                (destino (if (campo-llamado coleccion campo)
+                             campo
+                             (fallar "~a se agrupa por ~a y no tiene un campo con ese nombre"
+                                     (nombre coleccion) campo))))
            (mapcar (lambda (v) (list (cons destino v))) valores)))))))
 
 (defun normalizar-valor (valor)
