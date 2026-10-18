@@ -26,12 +26,18 @@
           ;; filas trae, y cada destino las ensena a su manera.
           (cons "campos" (situacion.excel::lista
                           (loop for campo in (nucleo:campos coleccion)
-                                collect (list (cons "campo" (string-downcase
-                                                             (symbol-name (nucleo:nombre campo))))
-                                              (cons "relacion"
-                                                    (if (typep (nucleo:expresion campo)
-                                                               'nucleo:relacionadas)
-                                                        t :false))))))
+                                collect (append
+                                         (list (cons "campo" (string-downcase
+                                                              (symbol-name (nucleo:nombre campo))))
+                                               (cons "relacion"
+                                                     (if (typep (nucleo:expresion campo)
+                                                                'nucleo:relacionadas)
+                                                         t :false)))
+                                         ;; Con cuantos decimales se escribe la
+                                         ;; celda, si el campo lo declara (C6).
+                                         (when (nucleo:decimales campo)
+                                           (list (cons "decimales"
+                                                       (nucleo:decimales campo))))))))
           (cons "filas" (situacion.excel::lista (mapcar #'car orden)))
           (cons "cabeceras" (situacion.excel::lista
                              (loop for (nil . cabecera) in orden

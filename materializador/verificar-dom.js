@@ -26,6 +26,24 @@ const {abrir} = require('./cdp.js');
 
 // VALOR escrito como lo escribe la pagina (funcion T): hasta 10 cifras
 // significativas, sin espacios a los lados.
+// Un numero con exactamente N decimales, con el empate alejandose de cero
+// sobre su escritura decimal: la misma regla que NUCLEO:TEXTO-CON-DECIMALES
+// y que la funcion NUMDEC de la pagina, escrita aparte para no fiarse de
+// ella (fase 2, hueco C6).
+function conDecimales(v, n) {
+  if (typeof v !== 'number' || !isFinite(v)) return texto(v);
+  const s = Math.sign(v);
+  const [m, e] = Math.abs(Number(v.toPrecision(15))).toExponential().split('e');
+  const r = s * Number(Math.floor(Number(m + 'e' + (Number(e) + n)) + 0.5) + 'e' + (-n));
+  return (r === 0 ? 0 : r).toFixed(n);
+}
+
+// Lo que tiene que verse en una celda: con los decimales del campo, salvo en
+// un control de entrada, que ensena lo que hay escrito.
+function textoDeCelda(v, decimales, esControl) {
+  return (decimales === undefined || esControl) ? texto(v) : conDecimales(v, decimales);
+}
+
 function texto(v) {
   if (v === null || v === undefined || v === false) return '';
   if (v === true) return 'si';
@@ -45,7 +63,8 @@ const LEER = `(() => {
   };
   const tabla = t => Array.from(t.querySelectorAll('tbody tr')).map(tr => ({
     grupo: !!tr.querySelector('td.grupo'),
-    celdas: Array.from(tr.children).map(celda)
+    celdas: Array.from(tr.children).map(celda),
+    controles: Array.from(tr.children).map(td => !!td.querySelector('input,select'))
   }));
   const titulos = {};
   for (const h of document.querySelectorAll('h2, h3')) {
@@ -88,8 +107,8 @@ function compararTabla(vista, esperado, tabla, fallos) {
         if (cuantas !== Number(esp || 0)) {
           fallos.push(`${tabla.titulo} fila ${posicion + 1}: ${campo.campo} trae ${cuantas} relacionadas y el oraculo ${esp}`);
         }
-      } else if (real !== texto(esp)) {
-        fallos.push(`${tabla.titulo} fila ${posicion + 1}: ${campo.campo} esperado ${JSON.stringify(texto(esp))} obtenido ${JSON.stringify(real)}`);
+      } else if (real !== textoDeCelda(esp, campo.decimales, fila.controles[k])) {
+        fallos.push(`${tabla.titulo} fila ${posicion + 1}: ${campo.campo} esperado ${JSON.stringify(textoDeCelda(esp, campo.decimales, fila.controles[k]))} obtenido ${JSON.stringify(real)}`);
       }
     });
     comprobadas++;
@@ -102,11 +121,12 @@ function compararTabla(vista, esperado, tabla, fallos) {
   return comprobadas;
 }
 
-function compararRejilla(vista, cuadrante, fallos) {
+function compararRejilla(vista, cuadrante, fallos, decimales) {
   let comprobadas = 0;
   const casillas = new Map();
   for (const c of cuadrante.casillas || []) {
-    casillas.set(texto(c.fila) + '\u0001' + texto(c.columna), c.valores.map(texto).join(' / '));
+    casillas.set(texto(c.fila) + '\u0001' + texto(c.columna),
+                 c.valores.map(v => textoDeCelda(v, decimales, false)).join(' / '));
   }
   const columnas = vista.cabecera.slice(1);
   const vistas = new Set();
@@ -167,7 +187,7 @@ async function main(argv) {
     for (const cuadrante of v.cuadrantes) {
       const vista = pagina.titulos[cuadrante.titulo];
       if (!vista) { fallos.push(`la pagina no dibuja la rejilla ${JSON.stringify(cuadrante.titulo)}`); continue; }
-      comprobadas += compararRejilla(vista, cuadrante, fallos);
+      comprobadas += compararRejilla(vista, cuadrante, fallos, v.decimales);
     }
   }
   // La navegacion: un enlace por tabla de lista y por vista cruzada, a una

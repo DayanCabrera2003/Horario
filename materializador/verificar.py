@@ -64,6 +64,7 @@ from verificar_cruces import verificar_cruces
 from verificar_errores import errores_del_libro
 from verificar_relaciones import verificar_relacion
 from verificar_vistas import verificar_vista
+from materializar import formato_de_numero
 
 
 def recalcular_con_libreoffice(xlsx):
@@ -100,6 +101,25 @@ def valores_de_fila(envoltura):
     """Los valores de una fila del oraculo, que viene como [valores, marcas]
     o como el diccionario de valores a secas."""
     return envoltura[0] if isinstance(envoltura, list) else envoltura
+
+
+def verificar_formatos(hoja_plan, hoja):
+    """Comprueba que las columnas con decimales declarados (fase 2, hueco C6)
+    tienen su formato de numero en el libro recalculado: la primera y la
+    ultima celda de cada rango. Devuelve (comprobadas, fallos)."""
+    comprobadas = 0
+    fallos = []
+    for item in hoja_plan.get("formatos_de_celda") or []:
+        if item["formato"] != "decimales":
+            continue
+        esperado = formato_de_numero(item)
+        for celda in item["rango"].split(":"):
+            comprobadas += 1
+            real = hoja[celda].number_format
+            if real != esperado:
+                fallos.append("{}!{}  formato esperado {!r}  obtenido {!r}".format(
+                    hoja.title, celda, esperado, real))
+    return comprobadas, fallos
 
 
 def verificar_coleccion(hoja_plan, hoja, filas_esperadas):
@@ -171,6 +191,9 @@ def verificar(plano_path, esperado_path, xlsx_path, cruces_path=None, vistas_pat
                         nombre, coleccion))
                     continue
                 n, f = verificar_coleccion(hoja_plan, hoja, esperado[coleccion])
+                nf, ff = verificar_formatos(hoja_plan, hoja)
+                n += nf
+                f.extend(ff)
                 if esperado[coleccion] and n == 0:
                     f.append("{}: no se comparo ninguna celda".format(nombre))
             elif "relacion" in hoja_plan:
@@ -178,7 +201,13 @@ def verificar(plano_path, esperado_path, xlsx_path, cruces_path=None, vistas_pat
             elif "vista" in hoja_plan:
                 n, f = verificar_vista(hoja_plan, hoja, esperado, vistas)
             elif "cruce" in hoja_plan:
-                # Las tablas cruzadas se comprueban todas juntas mas abajo.
+                # Las casillas se comprueban todas juntas mas abajo; aqui solo
+                # el formato de numero, si el campo de la celda declara
+                # decimales.
+                nf, ff = verificar_formatos(hoja_plan, hoja)
+                if nf:
+                    por_hoja.append((nombre + " (formato)", nf))
+                fallos.extend(ff)
                 continue
             elif "auxiliar" in hoja_plan:
                 por_hoja.append((nombre, "auxiliar"))
