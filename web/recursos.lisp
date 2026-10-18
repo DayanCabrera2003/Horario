@@ -42,6 +42,8 @@ button { font:inherit; padding:5px 12px; margin-top:8px; cursor:pointer;
          border:1px solid #bbb; border-radius:3px; background:#fff; }
 button:hover { background:#f0f0ee; }
 .aviso { color:#a5402a; font-size:12px; }
+.aviso-de-dominio { margin:10px 0 0; padding:6px 10px; font-size:13px; color:#7a4a00;
+                     background:#fff4d6; border-left:3px solid #e0a800; }
 .indice { display:flex; flex-wrap:wrap; gap:6px 14px; margin:0 0 20px; font-size:14px; }
 .indice a, a.arriba { color:#2f5597; }
 a.arriba { display:inline-block; margin-top:8px; font-size:12px; }
