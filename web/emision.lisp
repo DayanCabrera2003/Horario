@@ -100,9 +100,24 @@
     (escribir-derivaciones a plan flujo)
     (escribir-marcas a plan flujo)
     (escribir-dominios a plan flujo)
+    (escribir-ordenes plan flujo)
     (escribir-render a plan flujo)
     (write-string +render-js+ flujo)
     (format flujo "~%construir();~%</script>~%</body>~%</html>~%")))
+
+(defun escribir-ordenes (plan flujo)
+  "El orden declarado de cada coleccion que lo tiene, como ORDENES.
+
+   La pagina lo necesita para volver a ordenar una coleccion cuando el
+   usuario anade una fila o cambia un campo del orden (fase 2, hueco C3):
+   el evaluador ve las filas ordenadas, y la fila anterior de VECINO es la
+   anterior del arreglo, asi que el arreglo tiene que estar en ese orden."
+  (format flujo "~%const ORDENES = {~{~a~^, ~}};~%"
+          (loop for coleccion in (nucleo:colecciones (situacion plan))
+                when (nucleo:orden coleccion)
+                  collect (format nil "~/situacion.web::js/: [~{~/situacion.web::js/~^, ~}]"
+                                  (nombre-js (nucleo:nombre coleccion))
+                                  (mapcar #'nombre-js (nucleo:orden coleccion))))))
 
 (defun algo-que-escribir-p (situacion)
   "Cierto si alguna coleccion tiene un campo de entrada, o alguna crece."
@@ -354,7 +369,8 @@
             (if campo-celda (campo-js plan campo-celda) "null")
             (if (nucleo:es-entrada vista) "true" "false")
             (if (nucleo:orden coleccion)
-                (format nil "~/situacion.web::js/" (nombre-js (nucleo:orden coleccion)))
+                (format nil "[~{~/situacion.web::js/~^, ~}]"
+                        (mapcar #'nombre-js (nucleo:orden coleccion)))
                 "null")
             ;; El campo por el que se parte, o null. La pagina calcula las
             ;; secciones al dibujar: si manana aparece un grupo nuevo,

@@ -47,7 +47,9 @@
   (every (lambda (coleccion)
            (let* ((hoja (hoja-de-coleccion plano (string-downcase
                                                    (symbol-name (nucleo:nombre coleccion)))))
-                  (encabezado (find (string-downcase (symbol-name (nucleo:orden coleccion)))
+                  ;; Con un orden compuesto, el primer campo no baja nunca.
+                  (encabezado (find (string-downcase
+                                     (symbol-name (first (nucleo:orden coleccion))))
                                     (lista-del-plano (dato hoja "encabezados"))
                                     :key (lambda (e) (dato e "campo")) :test #'equal))
                   (letra (and encabezado (string-right-trim "0123456789"
@@ -71,7 +73,7 @@
    valores de su campo de orden sin bajar."
   (every (lambda (coleccion)
            (let* ((nombre (string-downcase (symbol-name (nucleo:nombre coleccion))))
-                  (campo (format nil "\"~(~a~)\": " (nucleo:orden coleccion)))
+                  (campo (format nil "\"~(~a~)\": " (first (nucleo:orden coleccion))))
                   (inicio (search (format nil "D[\"~a\"] = [" nombre) salida))
                   (fin (and inicio (search "];" salida :start2 inicio)))
                   (valores '()))

@@ -122,6 +122,7 @@
                (:file "particion-en-archivo")
                (:file "verificador-sin-comparar")
                (:file "busqueda-multicampo")
+               (:file "orden-compuesto")
                (:file "ejecutar"))
   :perform (test-op (op system)
                     (uiop:symbol-call :situacion.pruebas :ejecutar)))

@@ -223,7 +223,7 @@ corrigió.
 (coleccion NOMBRE
   (:etiqueta "...")
   (:clave campo1 [campo2 ...])   ; simple o compuesta, sin sintaxis especial
-  (:orden campo)                 ; UN SOLO campo — ver más abajo
+  (:orden campo1 [campo2 ...])   ; simple o compuesto (desde el 2026-10-17)
   (:crece)                       ; opcional, sin argumentos
   (:datos ((...) (...) ...))
   (campo ...) (campo ...) ...)
@@ -231,15 +231,23 @@ corrigió.
 
 - **`:clave`** identifica una fila. Puede ser compuesta (varios símbolos)
   sin ninguna sintaxis adicional.
-- **`:orden`** acepta exactamente un campo. Poner más de uno es error
-  explícito en tiempo de macroexpansión: *"si de verdad hace falta ordenar
-  por varios, no es un problema de sintaxis: es que al lenguaje le falta el
-  orden compuesto"*. Sin `:orden` declarado, cualquier uso de `anterior` o
+- **`:orden`** acepta uno o varios campos (fase 2, hueco C3): ordena por el
+  primero y, a igualdad, por el siguiente, con la misma comparación de
+  siempre en cada campo (números y fechas por su valor, textos por sus
+  caracteres). La ordenación es estable: dos filas iguales en todos los
+  campos del orden conservan el orden de los datos. Hasta el 2026-10-17 solo
+  admitía un campo, y antes de eso se quedaba con el primero sin avisar. Sin
+  `:orden` declarado, cualquier uso de `anterior` o
   `siguiente` sobre esa colección es rechazado por el análisis estático
   citando esta misma regla de diseño — es la comprobación que el proyecto
   señala como la más importante de todas: sin orden declarado, "anterior"
   solo podría significar "la fila de arriba", que es una propiedad del
   dibujo, no del problema.
+  En una colección `:orden` que además `:crece`, la página vuelve a ordenar
+  la colección cuando el usuario añade una fila o confirma un campo del
+  orden. La hoja de cálculo no puede reordenarse sola: si algo usa
+  `anterior`/`siguiente` sobre esa colección, su informe dice `emula` y que
+  las filas añadidas tienen que escribirse en su sitio del orden.
 - **`:crece`** declara la intención de que la colección no está cerrada
   ("El listado sigue creciendo... esto es un hecho del dominio, no una
   instrucción sobre filas en blanco"). No dice el mecanismo: cada
@@ -381,7 +389,8 @@ marca, un dominio o un filtro de vista:
 | Forma | Qué hace |
 |---|---|
 | `(de fila campo)` | Accede a un campo de una variable de fila ligada |
-| `(de (anterior fila) campo)` / `(de (siguiente fila) campo)` | Fila contigua según el `:orden` declarado. Ilegal sin orden declarado |
+| `(de (anterior fila) campo)` / `(de (siguiente fila) campo)` | Fila contigua según el `:orden` declarado. Ilegal sin orden declarado. Fuera de la colección no hay fila: el acceso da vacío (0 en aritmética) |
+| `(de (anterior fila :mismo CAMPOS) campo)` | Desde el 2026-10-17 (C3). La fila contigua solo si tiene los mismos valores en `CAMPOS` (un campo o una lista); si no, no hay fila, como en el borde de la colección. `CAMPOS` tiene que ser un **prefijo del `:orden`**, para que las filas de un grupo estén juntas; si no, el análisis lo rechaza y sugiere el orden. Ejemplo: `(:orden persona semana)` y `(+ (de fila horas) (de (anterior fila :mismo persona) acumulado))` es el acumulado de cada persona |
 | `(parametro nombre)` | Valor de un parámetro |
 | `(+ - * / = /= < <= > >= y o no ...)` | Aritmética, comparación y lógica — un solo nodo del núcleo, no una clase por operador |
 | `(si prueba entonces si-no)` | Condicional de tres ramas |
@@ -529,8 +538,8 @@ Ejemplo real, la vista de tabla cruzada del corpus
 **El dominio de un eje (2026-10-17, fase 2, hueco C1).** Escrito solo con
 el nombre del campo, un eje saca sus valores de los datos: los que toma el
 campo en las filas que la vista presenta, comunes a todas las secciones, en
-el orden de primera aparición (o en el `:orden` de la colección si el eje es
-ese campo); las secciones, ordenadas por su valor. Eso tiene tres
+el orden de primera aparición (ordenados si el eje es uno de los campos del
+`:orden` de la colección); las secciones, ordenadas por su valor. Eso tiene tres
 consecuencias que el lenguaje no podía evitar: un valor que todavía no
 aparece no tiene fila ni columna (y en la hoja de cálculo, que fija la
 rejilla al generar, lo que se escriba después no se ve en ninguna tabla); el
@@ -642,6 +651,8 @@ rechaza en tiempo de análisis, como **error duro** (bloquea la compilación):
 - `anterior`/`siguiente` sobre una colección sin `:orden` declarado — la
   comprobación que el propio proyecto señala como la más importante de
   todas.
+- `(anterior fila :mismo CAMPOS)` cuyos `CAMPOS` no son un prefijo del
+  `:orden` de la colección; el mensaje sugiere `(:orden CAMPOS ...)`.
 - Colección referenciada que no existe, en cualquier construcción que la
   mencione.
 - Campo de colección duplicado; campo mencionado en `:clave` o `:orden` que
@@ -1196,9 +1207,9 @@ descripción, lo que cambia es esto:
 - **Varias vistas de lista** sobre la misma colección: cada una se dibuja con
   su etiqueta y su agrupación (en Excel, como hoja derivada).
 - **Ejes**: todas las secciones de una vista cruzada tienen los mismos; si el
-  eje es el campo de `:orden` de la colección van en ese orden, si no en el
-  de primera aparición. Las secciones van ordenadas. Declarar el orden de un
-  eje es el hueco C1 de la fase 2.
+  eje es un campo del `:orden` de la colección van ordenados, si no en el
+  de primera aparición. Las secciones van ordenadas. Desde C1 (fase 2) la
+  vista puede declarar el dominio y el orden de cada eje.
 - **Datos**: una colección o un campo de los datos que la situación no
   declara, o un valor para un campo derivado, es un error claro, no una tabla
   vacía.
@@ -1210,7 +1221,7 @@ descripción, lo que cambia es esto:
 Lo que sigue faltando de verdad, como construcción del lenguaje, queda para
 una segunda fase, con una nota de diseño por hueco antes de escribir código: orden y dominio de los ejes (C1, hecho el 2026-10-17), búsqueda por
 varios campos en Excel (C2, hecho el 2026-10-17), orden compuesto y vecino dentro de una partición
-(C3), formato numérico (C6), marca por campo (C7), sintaxis única de `:donde`
+(C3, hecho el 2026-10-18), formato numérico (C6), marca por campo (C7), sintaxis única de `:donde`
 (C4) y documentar `:una-fila-por` (C8; hoy hay que volver a declarar el campo
 agrupador en la colección derivada).
 

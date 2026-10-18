@@ -219,11 +219,12 @@
   ;; que se lee como correcta y significa otra cosa.
   (flet ((rechaza-p (forma)
            (handler-case (progn (macroexpand-1 forma) nil) (error () t))))
-    (comprobar (rechaza-p '(situacion.lenguaje:defsituacion s-orden ()
-                            (coleccion c (:orden a b)
-                              (campo a :rol fijo) (campo b :rol fijo))))
-               "(:orden a b) deberia rechazarse: el orden solo admite un campo~@
-                y antes se quedaba con el primero sin decir nada")
+    ;; (:orden a b) era el otro descarte: se quedaba con el primero. Desde la
+    ;; fase 2 (hueco C3) es el orden compuesto, y ya no se descarta nada.
+    (comprobar (not (rechaza-p '(situacion.lenguaje:defsituacion s-orden ()
+                                 (coleccion c (:orden a b)
+                                   (campo a :rol fijo) (campo b :rol fijo)))))
+               "(:orden a b) es el orden compuesto y tiene que aceptarse")
     (comprobar (rechaza-p '(situacion.lenguaje:defsituacion s-vecino ()
                             (coleccion c (:orden a)
                               (campo a :rol fijo)

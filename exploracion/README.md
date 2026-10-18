@@ -47,4 +47,5 @@ Los cuatro fallos que seguian abiertos el 2026-10-17 (el acumulado con
 daba `45/2`, el `:si-no` de la pagina con una fila que existe sin valor y el
 emparejamiento de hojas del torneo B en el verificador) estan arreglados, y
 `./explorar.sh` lo comprueba. La sonda del orden compuesto de `turnos.lisp`
-guarda ahora el mensaje con que el lenguaje lo rechaza.
+usa desde la fase 2 (hueco C3) `(:orden dia turno)` y
+`(anterior fila :mismo dia)`, y se materializa en las tres arquitecturas.

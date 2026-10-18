@@ -259,24 +259,22 @@
   (vista v :de dias :entrada t))
 
 ;;; SONDA 2. Orden compuesto. Cuando se escribio este experimento, se leia
-;;; solo el primer campo y el segundo se descartaba en silencio. Desde
-;;; entonces el lenguaje lo rechaza con un mensaje claro (hueco C3, fase 2),
-;;; asi que la sonda guarda ese mensaje en vez de una situacion.
-(defparameter +sonda-orden-compuesto+
-  (handler-case
-      (progn
-        (macroexpand '(defsituacion sonda-orden-compuesto
-                          (:etiqueta "Sonda: orden compuesto")
-                        (coleccion asignaciones
-                          (:clave dia turno)
-                          (:orden dia turno)
-                          (campo dia   :rol fijo :tipo entero)
-                          (campo turno :rol fijo)
-                          (campo quien :rol entrada)
-                          (:datos ((1 "manana"))))
-                        (vista v :de asignaciones :entrada t)))
-        "se acepto sin error")
-    (error (e) (princ-to-string e))))
+;;; solo el primer campo y el segundo se descartaba en silencio; despues el
+;;; lenguaje lo rechazo con un mensaje claro, y desde la fase 2 (hueco C3) es
+;;; el orden compuesto. La sonda lo usa con (anterior fila :mismo dia): quien
+;;; hizo el turno anterior del mismo dia. Los turnos van numerados (1 manana,
+;;; 2 tarde, 3 noche) porque por su nombre se ordenarian alfabeticamente.
+(defsituacion sonda-orden-compuesto (:etiqueta "Sonda: orden compuesto")
+  (coleccion asignaciones
+    (:clave dia turno)
+    (:orden dia turno)
+    (campo dia   :rol fijo :tipo entero :etiqueta "Dia")
+    (campo turno :rol fijo :tipo entero :etiqueta "Turno")
+    (campo quien :rol entrada :etiqueta "Quien")
+    (campo antes :rol derivado :etiqueta "Turno anterior del dia"
+           (de (anterior fila :mismo dia) quien)))
+  (vista v :de asignaciones :entrada t))
+
 
 
 ;;; ====================================================================
@@ -334,6 +332,16 @@
                     (fila "dia" 2 "turno" "manana" "persona" "Bruno")
                     (fila "dia" 2 "turno" "noche"  "persona" "Carla")))
         (cons (n "dias") (list (fila "dia" 1) (fila "dia" 2)))))
+
+;;; Escritas fuera de orden a proposito: el evaluador y las tres
+;;; arquitecturas tienen que ordenarlas por dia y turno.
+(defparameter datos-sonda-orden
+  (list (cons (n "asignaciones")
+              (list (fila "dia" 2 "turno" 1 "quien" "Diego")
+                    (fila "dia" 1 "turno" 3 "quien" "Carla")
+                    (fila "dia" 1 "turno" 1 "quien" "Ana")
+                    (fila "dia" 1 "turno" 2 "quien" "Bruno")
+                    (fila "dia" 2 "turno" 2 "quien" "Ana")))))
 
 
 ;;; ====================================================================
@@ -480,9 +488,12 @@
   (tres-arquitecturas sonda-clave-compuesta datos-sonda-clave "sonda-clave")
 
   ;; ------------------------------------------------------------------
-  (titulo "SONDA 2: (:orden dia turno)")
-  (format t "~&Escrito:  (:orden dia turno)~%")
-  (format t "Respuesta del lenguaje: ~a~%" +sonda-orden-compuesto+)
+  (titulo "SONDA 2: (:orden dia turno) y (anterior fila :mismo dia)")
+  (analizar-y-contar sonda-orden-compuesto)
+  (subtitulo "Evaluador de referencia")
+  (mostrar-evaluacion sonda-orden-compuesto datos-sonda-orden :solo '("asignaciones"))
+  (subtitulo "Materializacion")
+  (tres-arquitecturas sonda-orden-compuesto datos-sonda-orden "sonda-orden")
 
   ;; ------------------------------------------------------------------
   (titulo "SONDA 3: aritmetica n-aria")

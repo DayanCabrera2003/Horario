@@ -63,8 +63,10 @@
    (etiqueta "Como se muestra.")
    (campos "Lista de campos.")
    (clave "Lista de campos que identifican una fila. Puede ser compuesta.")
-   (orden "Campo por el que esta ordenada, o NIL. Sin orden declarado no se
-           puede hablar de la fila anterior ni de la siguiente.")
+   (orden "Lista de campos por los que esta ordenada, o NIL: por el
+           primero y, a igualdad, por el siguiente (fase 2, hueco C3). Sin
+           orden declarado no se puede hablar de la fila anterior ni de la
+           siguiente.")
    (crecimiento "NIL o :CRECE. Intencion, nunca mecanismo.")
    (origen ":DECLARADA, o (:UNA-FILA-POR campo :DE coleccion) para una
             coleccion que se proyecta de otra.")

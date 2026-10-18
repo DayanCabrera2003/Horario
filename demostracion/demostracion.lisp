@@ -128,6 +128,34 @@
                              :lista-vacia)))
      destino)))
 
+(defun escribir-fila-nueva (situacion datos fila-nueva destino)
+  "El oraculo de la sonda de orden: la fila que se anade y como tiene que
+   quedar su coleccion entera despues, segun el evaluador.
+
+   FILA-NUEVA es (\"coleccion\" . FILA). El evaluador la recibe con los demas
+   datos y la ordena con el :ORDEN de la coleccion, asi que ESPERADO trae las
+   filas en el orden en que la pagina tiene que dejarlas tras reordenar, con
+   sus campos calculados."
+  (let* ((coleccion (nucleo:nombrar (car fila-nueva)))
+         (con-la-nueva (loop for (nombre . filas) in datos
+                             collect (cons nombre (if (eq nombre coleccion)
+                                                      (append filas (list (cdr fila-nueva)))
+                                                      filas))))
+         (evaluado (cdr (assoc coleccion (nucleo:evaluar-situacion situacion con-la-nueva))))
+         (texto (lambda (s) (string-downcase (symbol-name s)))))
+    (situacion.excel::escribir-plano
+     (list (cons "coleccion" (car fila-nueva))
+           (cons "valores" (loop for (campo . valor) in (cdr fila-nueva)
+                                 collect (cons (funcall texto campo) valor)))
+           (cons "orden" (situacion.excel::lista
+                          (mapcar texto (nucleo:orden (nucleo:coleccion-llamada
+                                                       situacion coleccion)))))
+           (cons "esperado" (situacion.excel::lista
+                             (loop for fila in evaluado
+                                   collect (loop for (campo . valor) in (car fila)
+                                                 collect (cons (funcall texto campo) valor))))))
+     destino)))
+
 (defun generar-todo ()
   (generar situacion.corpus:plan-del-grupo
            situacion.corpus:datos-del-plan
@@ -159,9 +187,19 @@
    haria que la bateria verificara solo los casos que si salieron."
   (let ((fallidos '()))
     (dolist (caso situacion.casos:*casos*)
-      (handler-case (generar (situacion.casos:caso-situacion caso)
-                             (situacion.casos:caso-datos caso)
-                             (situacion.casos:caso-prefijo caso))
+      (handler-case
+          (progn
+            (generar (situacion.casos:caso-situacion caso)
+                     (situacion.casos:caso-datos caso)
+                     (situacion.casos:caso-prefijo caso))
+            (when (situacion.casos:caso-fila-nueva caso)
+              (escribir-fila-nueva (situacion.casos:caso-situacion caso)
+                                   (situacion.casos:caso-datos caso)
+                                   (situacion.casos:caso-fila-nueva caso)
+                                   (ruta (format nil "~a-fila-nueva.json"
+                                                 (situacion.casos:caso-prefijo caso))))
+              (format t "Generado salida/~a-fila-nueva.json  (oraculo de la sonda de orden)~%"
+                      (situacion.casos:caso-prefijo caso))))
         (error (e)
           (push (situacion.casos:caso-prefijo caso) fallidos)
           (format t "~&FALLO AL GENERAR ~a: ~a~%" (situacion.casos:caso-prefijo caso) e))))

@@ -93,10 +93,46 @@
    seria el modelo de la hoja de calculo colandose en el lenguaje.
 
    Fuera de la hoja no hay fila: el resultado es el vacio, que en aritmetica
-   vale 0 porque cada operando pasa por la coercion numerica."
-  (declare (ignore a ambito plan))
+   vale 0 porque cada operando pasa por la coercion numerica.
+
+   Con :MISMO (fase 2, hueco C3) la fila de al lado solo cuenta si tiene los
+   mismos valores en esos campos, comparados con EXACT como cualquier
+   igualdad. Como :MISMO es un prefijo del orden, el grupo esta contiguo y
+   no hace falta buscar."
+  (declare (ignore a ambito))
+  (avisar-de-filas-anadidas plan)
   (let* ((desplazamiento (if (eq (nucleo:direccion vecino) :anterior) -1 1))
          (fila (+ *fila* desplazamiento)))
     (if (or (< fila (fila-primera *hoja*)) (> fila (fila-ultima *hoja*)))
         (texto-de-literal nil)
-        (celda *hoja* (nucleo:campo proyeccion) fila))))
+        (let ((valor (celda *hoja* (nucleo:campo proyeccion) fila)))
+          (if (null (nucleo:mismos vecino))
+              valor
+              (format nil "IF(AND(~{~a~^,~}),~a,\"\")"
+                      (loop for campo in (nucleo:mismos vecino)
+                            collect (format nil "EXACT(~a&\"\",~a&\"\")"
+                                            (celda *hoja* campo fila)
+                                            (celda *hoja* campo *fila*)))
+                      valor))))))
+
+(defun avisar-de-filas-anadidas (plan)
+  "Si la coleccion de la hoja crece, rebaja su orden declarado a EMULA.
+
+   La hoja escribe las filas en el orden declarado al generar, pero las que
+   el usuario anada van a las filas de reserva, al final, aunque por su
+   orden les tocara ir antes; y una hoja de calculo no se reordena sola.
+   Entonces su fila anterior es la de encima y no la del evaluador. No hay
+   formula que lo arregle sin buscar en cada celda, asi que se dice."
+  (declare (ignore plan))
+  (let ((coleccion (coleccion *hoja*)))
+    (when (eq (nucleo:crecimiento coleccion) :crece)
+      (protocolo:rebajar-en-informe
+       'protocolo:con-orden-declarado
+       "se habla de la fila anterior o la siguiente"
+       :emula
+       (format nil "la fila anterior o la siguiente de ~(~a~) es la de encima o~@
+                    la de debajo, porque la hoja se escribe en su orden al~@
+                    generar. Limite: la hoja no se reordena sola, asi que las~@
+                    filas que se anadan tienen que escribirse en su sitio del~@
+                    orden; anadidas al final, su fila anterior es la de encima."
+               (nucleo:nombre coleccion))))))

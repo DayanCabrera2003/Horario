@@ -238,10 +238,11 @@
   ;; variable de fila. No hace falta ninguna direccion: en una pagina, la fila
   ;; anterior es el elemento anterior del arreglo ya ordenado.
   (let ((coleccion (nucleo:coleccion-de-variable ambito (nucleo:variable e))))
-    (format nil "VECINO(~a, ~a, ~d)"
+    (format nil "VECINO(~a, ~a, ~d~@[, [~{~/situacion.web::js/~^, ~}]~])"
             (js-coleccion (nucleo:nombre coleccion))
             (js-variable (nucleo:variable e))
-            (if (eq (nucleo:direccion e) :anterior) -1 1))))
+            (if (eq (nucleo:direccion e) :anterior) -1 1)
+            (mapcar #'nombre-js (nucleo:mismos e)))))
 
 (defmethod protocolo:emitir-expresion ((a web) (e nucleo:forma-invalida) ambito plan)
   "Una expresion regular con la misma forma que exige el evaluador: AAAA-MM-DD

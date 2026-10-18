@@ -1313,6 +1313,21 @@ depende de que el separador no aparezca en los datos. *Coste:* un vector
 por término y por celda. En el Saúl, con tres búsquedas por dos campos, el
 recálculo en LibreOffice pasó de 2,14 s a 2,15 s (mediana de cinco).
 
+**D12 — Orden compuesto y vecino dentro de un grupo (2026-10-18, fase 2,
+C3).** `(:orden a b ...)` es un orden lexicográfico estable, y `(anterior
+fila :mismo CAMPOS)` da la fila contigua solo si coincide en `CAMPOS`, que
+tienen que ser un prefijo del orden. Con esa restricción el grupo es
+contiguo, y cada arquitectura lo traduce sin buscar: la hoja, como "la celda
+de arriba si `EXACT` en los campos del grupo"; la página, como `VECINO` con
+la misma comprobación. *Alternativas descartadas:* `(anterior fila :donde
+...)`, que en la hoja exige una búsqueda hacia atrás por celda;
+`(:orden semana :por persona)`, que esconde en la colección algo que es del
+acceso; y `:mismo` sin la restricción de prefijo. *Coste:* las filas que el
+usuario añade tienen que volver al orden. La página reordena sola; la hoja
+no puede, y lo declara (`emula` en `con-orden-declarado`). Lo comprueba en
+Chromium `materializador/sonda-orden.js`, que añade una fila en medio del
+orden y compara la colección entera con el evaluador.
+
 ---
 
 ## 13 bis. Estado de implementación

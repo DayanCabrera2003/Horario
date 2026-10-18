@@ -86,7 +86,7 @@
     (comprobar s "la situacion no quedo registrada")
     (comprobar (= 2 (length (nucleo:colecciones s))) "deberian ser dos colecciones")
     (comprobar (eq :crece (nucleo:crecimiento tareas)) "tareas declara :crece")
-    (comprobar (eq (n "codigo") (nucleo:orden tareas)) "tareas se ordena por codigo")
+    (comprobar (equal (list (n "codigo")) (nucleo:orden tareas)) "tareas se ordena por codigo")
     ;; El rol llega al modelo como palabra clave aunque se escriba suelto.
     (comprobar (eq :entrada (nucleo:rol (nucleo:campo-llamado tareas (n "hechas")))))
     (comprobar (eq :derivado (nucleo:rol (nucleo:campo-llamado tareas (n "faltan")))))
@@ -212,7 +212,7 @@
                   :por-defecto (nucleo:hacer-literal :valor nil)))
          (sin-orden (analisis:comprobar-situacion (situacion-con-campo vecino)))
          (con-orden (analisis:comprobar-situacion
-                     (situacion-con-campo vecino :orden (n "id")))))
+                     (situacion-con-campo vecino :orden (list (n "id"))))))
     (comprobar (= 1 (length sin-orden)) "sin orden deberia dar un error")
     (comprobar (search "orden" (analisis:texto-de-problema (first sin-orden)))
                "el mensaje deberia explicar que falta el orden")

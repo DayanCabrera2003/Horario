@@ -50,6 +50,12 @@ if arrancar_navegador; then
     node materializador/verificar-dom.js "$PUERTO_NAVEGADOR" "salida/$f.html" \
          "salida/$f-esperado.json" "salida/$f-vistas.json" "salida/$f-cruces.json" || fallos=1
     node materializador/sonda-foco.js "$PUERTO_NAVEGADOR" "salida/$f.html" || fallos=1
+    # Si el caso declara una fila nueva, se anade en la pagina y la coleccion
+    # tiene que quedar reordenada y recalculada como dice el evaluador.
+    if [ -f "salida/$f-fila-nueva.json" ]; then
+      node materializador/sonda-orden.js "$PUERTO_NAVEGADOR" "salida/$f.html" \
+           "salida/$f-fila-nueva.json" || fallos=1
+    fi
   done
   cerrar_navegador
 else

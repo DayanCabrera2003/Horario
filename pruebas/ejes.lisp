@@ -111,9 +111,9 @@
                                                 (or (protocolo:entrada-de-informe-nota e) "")))
                             (protocolo:entradas-del-informe informe))
                    "el informe de ~a tiene que avisar del sabado" (type-of arquitectura))
-        (unless (typep arquitectura 'situacion.excel:excel)
-          (comprobar (search "fuera del dominio declarado" salida)
-                     "la salida de ~a tiene que avisar del sabado" (type-of arquitectura)))))))
+        ;; La hoja de calculo lo escribe debajo de cada rejilla del plano.
+        (comprobar (search "fuera del dominio declarado" salida)
+                   "la salida de ~a tiene que avisar del sabado" (type-of arquitectura))))))
 
 (definir-prueba ejes-dominio-en-la-hoja-de-calculo
     "Ejes: la hoja de calculo tiene una pestana por sala, la vacia tambien, con todos los ejes"

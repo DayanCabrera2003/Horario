@@ -118,18 +118,10 @@
           ((eq (first f) :etiqueta) (setf etiqueta (second f)))
           ((eq (first f) :clave) (setf clave (normalizar-lista (rest f))))
           ((eq (first f) :orden)
-           ;; Un solo campo. Antes se tomaba el primero y se tiraba el resto
-           ;; en silencio, que es el mismo tipo de fallo que este trabajo le
-           ;; reprocha a 2026: una descripcion que se lee como correcta y
-           ;; significa otra cosa.
-           (when (cddr f)
-             (error "(:orden ~{~a~^ ~}) declara mas de un campo, y el orden~@
-                     solo admite uno.~@
-                     Si de verdad hace falta ordenar por varios, no es un~@
-                     problema de sintaxis: es que al lenguaje le falta el~@
-                     orden compuesto."
-                    (rest f)))
-           (setf orden (normalizar (second f))))
+           ;; Uno o varios campos: por el primero y, a igualdad, por el
+           ;; siguiente (fase 2, hueco C3). Hasta el 2026-10-17 solo se
+           ;; admitia uno; antes aun, el resto se tiraba en silencio.
+           (setf orden (normalizar-lista (rest f))))
           ((eq (first f) :crece) (setf crecimiento :crece))
           ((eq (first f) :datos) (setf datos (second f)))
           ;; (:una-fila-por campo :de coleccion) y (:una-sola-fila)

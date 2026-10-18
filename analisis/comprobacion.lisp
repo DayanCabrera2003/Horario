@@ -83,7 +83,23 @@
                    Sin orden declarado, \"anterior\" solo puede significar \"la~@
                    de arriba\", que es una propiedad de como se dibuja y no del~@
                    problema. Anade (:orden <campo>) a la coleccion."
-                  contexto (nucleo:direccion expresion) (nucleo:nombre coleccion))))))
+                  contexto (nucleo:direccion expresion) (nucleo:nombre coleccion)))
+         ;; :MISMO tiene que ser un prefijo del orden: asi las filas de un
+         ;; grupo quedan contiguas y "la anterior del grupo" es la de al lado,
+         ;; que es lo que cualquier arquitectura sabe traducir sin buscar.
+         ((let ((mismos (nucleo:mismos expresion))
+                (orden (nucleo:orden coleccion)))
+            (and mismos
+                 (not (and (<= (length mismos) (length orden))
+                           (equal mismos (subseq orden 0 (length mismos)))))))
+          (anotar :error
+                  "~a: (~(~a~) ... :mismo ~(~{~a~^ ~}~)) pide la fila contigua del mismo~@
+                   grupo, pero ~(~a~) esta ordenada por (~(~{~a~^ ~}~)), y asi las filas~@
+                   de un grupo no quedan juntas.~@
+                   Ordena primero por esos campos: (:orden ~(~{~a~^ ~}~) ...)."
+                  contexto (nucleo:direccion expresion) (nucleo:mismos expresion)
+                  (nucleo:nombre coleccion) (nucleo:orden coleccion)
+                  (nucleo:mismos expresion))))))
 
     ((or nucleo:existe nucleo:busqueda nucleo:agregado nucleo:conjunto
          nucleo:relacionadas)
@@ -182,10 +198,10 @@
       (unless (nucleo:campo-llamado coleccion c)
         (anotar :error "La clave de ~(~a~) menciona un campo ~(~a~) que no existe."
                 (nucleo:nombre coleccion) c)))
-    (when (and (nucleo:orden coleccion)
-               (null (nucleo:campo-llamado coleccion (nucleo:orden coleccion))))
-      (anotar :error "~(~a~) dice estar ordenada por ~(~a~), que no es un campo suyo."
-              (nucleo:nombre coleccion) (nucleo:orden coleccion)))
+    (dolist (c (nucleo:orden coleccion))
+      (unless (nucleo:campo-llamado coleccion c)
+        (anotar :error "~(~a~) dice estar ordenada por ~(~a~), que no es un campo suyo."
+                (nucleo:nombre coleccion) c)))
     ;; Cada campo.
     (dolist (campo (nucleo:campos coleccion))
       (let ((contexto (format nil "El campo ~(~a~).~(~a~)"

@@ -192,17 +192,21 @@
   "(de FILA campo) y (de (anterior FILA) campo)."
   (let ((origen (first resto))
         (campo (second resto)))
-    ;; El vecino recorre la coleccion entera ordenada, sin particionar. Antes
-    ;; se aceptaba (anterior fila :donde ...) y el :DONDE se descartaba sin
-    ;; decir nada, con lo que la descripcion se leia como correcta y daba
-    ;; numeros mal.
-    (when (and (consp origen) (cddr origen))
-      (error "~s lleva argumentos de mas.~@
-              ANTERIOR y SIGUIENTE recorren la coleccion entera en el orden~@
-              que declara, y no saben particionar por ningun campo. Si hace~@
-              falta \"el anterior del mismo grupo\", al lenguaje le falta esa~@
-              construccion; no es un problema de sintaxis."
-             origen))
+    ;; (anterior fila) recorre la coleccion entera ordenada; (anterior fila
+    ;; :mismo CAMPOS) se queda dentro del grupo (fase 2, hueco C3). Cualquier
+    ;; otra cosa es error: hasta el 2026-09-25 se aceptaba (anterior fila
+    ;; :donde ...) y el :DONDE se descartaba sin decir nada.
+    (when (and (consp origen) (cddr origen)
+               (not (and (= 4 (length origen)) (eq (third origen) :mismo)
+                         (or (symbolp (fourth origen))
+                             (and (consp (fourth origen))
+                                  (every #'symbolp (fourth origen)))))))
+      (error "~s no se entiende.~@
+              Se escribe (~(~a~) FILA), que recorre la coleccion entera en su~@
+              orden, o (~(~a~) FILA :MISMO CAMPOS), que se queda dentro del~@
+              grupo de filas con los mismos valores en CAMPOS (un campo o una~@
+              lista de campos)."
+             origen (first origen) (first origen)))
     (if (symbolp origen)
         `(nucleo:hacer-ref-campo :variable ',(normalizar origen)
                                  :campo ',(normalizar campo))
@@ -213,8 +217,11 @@
                                ((es (first origen) "SIGUIENTE") :siguiente)
                                (t (error "No se como leer el acceso ~s" origen)))))
           `(nucleo:hacer-proyeccion
-            :sobre (nucleo:hacer-vecino :direccion ,direccion
-                                        :variable ',(normalizar (second origen)))
+            :sobre (nucleo:hacer-vecino
+                    :direccion ,direccion
+                    :variable ',(normalizar (second origen))
+                    :mismos ',(let ((mismos (fourth origen)))
+                                (normalizar-lista (if (listp mismos) mismos (list mismos)))))
             :campo ',(normalizar campo)
             :por-defecto (nucleo:hacer-literal :valor nil))))))
 

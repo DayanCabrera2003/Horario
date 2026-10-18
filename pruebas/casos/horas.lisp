@@ -1,7 +1,9 @@
 ;;;; G5. Registro de horas trabajadas.
 ;;;; Ejercita: coleccion derivada (:una-fila-por), tabla cruzada con un eje
-;;;; numerico, saldo acumulado con (anterior fila), una coleccion :crece que
-;;;; llega vacia, y cuantas-distintas.
+;;;; numerico, orden compuesto y saldo acumulado de cada persona con
+;;;; (anterior fila :mismo persona) (fase 2, hueco C3), una coleccion :crece
+;;;; que llega vacia, y cuantas-distintas. La sonda de orden le anade a Ana la
+;;;; semana 3, que tiene que quedar entre su semana 2 y la 1 de Zoe.
 (in-package #:situacion.casos)
 
 (defsituacion caso-horas (:etiqueta "Horas trabajadas")
@@ -10,13 +12,15 @@
   (coleccion registros
     (:etiqueta "Registros")
     (:clave persona semana)
-    (:orden semana)
+    (:orden persona semana)
     (:crece)
     (campo persona :rol fijo :etiqueta "Persona")
     (campo semana  :rol fijo :tipo entero :etiqueta "Semana")
     (campo horas   :rol entrada :tipo entero :etiqueta "Horas")
-    (campo acumulado :rol derivado :tipo entero :etiqueta "Acumulado (todas)"
-           (+ (de fila horas) (de (anterior fila) acumulado))))
+    ;; Hasta el 2026-10-17 solo se podia acumular todas las filas seguidas,
+    ;; mezclando personas, y la etiqueta decia "(todas)".
+    (campo acumulado :rol derivado :tipo entero :etiqueta "Acumulado de la persona"
+           (+ (de fila horas) (de (anterior fila :mismo persona) acumulado))))
 
   (coleccion personas
     (:una-fila-por persona :de registros)
@@ -66,4 +70,5 @@
          (list "incidencias")
          (list "resumen" (fila))))
 
-(registrar-caso "caso-horas" caso-horas datos-de-horas)
+(registrar-caso "caso-horas" caso-horas datos-de-horas
+                :fila-nueva (cons "registros" (fila "persona" "Ana" "semana" 3 "horas" 10)))

@@ -42,6 +42,8 @@ button { font:inherit; padding:5px 12px; margin-top:8px; cursor:pointer;
          border:1px solid #bbb; border-radius:3px; background:#fff; }
 button:hover { background:#f0f0ee; }
 .aviso { color:#a5402a; font-size:12px; }
+.aviso-de-dominio { margin:10px 0 0; padding:6px 10px; font-size:13px; color:#7a4a00;
+                     background:#fff4d6; border-left:3px solid #e0a800; }
 .indice { display:flex; flex-wrap:wrap; gap:6px 14px; margin:0 0 20px; font-size:14px; }
 .indice a, a.arriba { color:#2f5597; }
 a.arriba { display:inline-block; margin-top:8px; font-size:12px; }
@@ -126,10 +128,14 @@ function COMPARTEN(a, b, campos){
 }
 
 // --- La fila contigua segun el orden declarado ---
-function VECINO(coleccion, fila, paso){
+// Con MISMOS (los campos de :MISMO), la contigua solo cuenta si tiene los
+// mismos valores en ellos; si no, no hay fila (fase 2, hueco C3).
+function VECINO(coleccion, fila, paso, mismos){
   const i = coleccion.indexOf(fila);
   const j = i + paso;
-  return (j >= 0 && j < coleccion.length) ? coleccion[j] : null;
+  if (j < 0 || j >= coleccion.length) return null;
+  const contigua = coleccion[j];
+  return (mismos || []).every(c => IG(contigua[c], fila[c])) ? contigua : null;
 }
 
 // --- Calcula los derivados de una fila y los deja puestos ---

@@ -4,8 +4,9 @@
 ;;;;
 ;;;; Sin dominio (el eje escrito solo con el nombre del campo), los valores
 ;;;; salen de los datos: los que toma el eje en todas las filas que la vista
-;;;; presenta, comunes a todas las secciones. Su orden es el :ORDEN de la
-;;;; coleccion si el eje es ese campo, y si no el de primera aparicion. Las
+;;;; presenta, comunes a todas las secciones. Si el eje es uno de los campos
+;;;; del :ORDEN de la coleccion se ordena por su valor, y si no va en el de
+;;;; primera aparicion. Las
 ;;;; secciones se ordenan por su valor. Antes de la fase 1 de robustez
 ;;;; (2026-10-17) cada seccion tenia sus propios ejes: en el Saul la pestana
 ;;;; de un profesor era una rejilla de 1 x 2 y la de un aula tenia las
@@ -64,7 +65,7 @@
   (let ((valores (valores-en-orden-de-aparicion entorno (filas-que-presenta entorno vista)
                                                 campo))
         (coleccion (coleccion-llamada (situacion entorno) (fuente vista))))
-    (if (and coleccion (eq (orden coleccion) campo))
+    (if (and coleccion (member campo (orden coleccion)))
         (stable-sort (copy-list valores) #'menor-p)
         valores)))
 

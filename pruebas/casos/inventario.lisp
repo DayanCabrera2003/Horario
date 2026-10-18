@@ -2,7 +2,9 @@
 ;;;; Ejercita: dos colecciones relacionadas, busqueda por clave, relacion uno
 ;;;; a muchos, suma con :donde, marca de reposicion, minimo/maximo, etiquetas
 ;;;; de coleccion largas que solo difieren despues del caracter 31 y una
-;;;; etiqueta con apostrofo.
+;;;; etiqueta con apostrofo. Las existencias tienen clave compuesta (almacen
+;;;; y codigo); hasta el 2026-10-17 llevaban una columna CLAVE pegada a mano
+;;;; con "#", que se escapo a la limpieza de C2 por estar en los datos.
 (in-package #:situacion.casos)
 
 (defsituacion caso-inventario (:etiqueta "Inventario de la ferretería")
@@ -21,9 +23,8 @@
 
   (coleccion existencias
     (:etiqueta "Existencias registradas en el almacén central")
-    (:clave clave)
+    (:clave almacen codigo)
     (:crece)
-    (campo clave    :rol fijo :etiqueta "Clave")
     (campo almacen  :rol fijo :etiqueta "Almacén")
     (campo codigo   :rol entrada :etiqueta "Código"
            :dominio (los codigo de articulos) :al-violar impedir)
@@ -32,16 +33,22 @@
            (el nombre de (la-fila-de articulos :donde (= codigo (de fila codigo)))
                :si-no "(desconocido)")))
 
+  ;; Las entradas del almacen norte, ordenadas por articulo y numero, con el
+  ;; saldo de cada articulo (fase 2, hueco C3). La sonda de orden anade una
+  ;; entrada de pintura, que tiene que quedar con las otras de pintura.
   (coleccion movimientos
     (:etiqueta "Existencias registradas en el almacén norte")
     (:clave numero)
+    (:orden codigo numero)
     (:crece)
     (campo numero   :rol fijo :tipo entero :etiqueta "No.")
     (campo codigo   :rol entrada :etiqueta "Código")
     (campo unidades :rol entrada :tipo entero :etiqueta "Unidades")
     (campo articulo :rol derivado :etiqueta "Artículo"
            (el nombre de (la-fila-de articulos :donde (= codigo (de fila codigo)))
-               :si-no "")))
+               :si-no ""))
+    (campo saldo :rol derivado :tipo entero :etiqueta "Saldo del artículo"
+           (+ (de fila unidades) (de (anterior fila :mismo codigo) saldo))))
 
   (coleccion resumen
     (:una-sola-fila)
@@ -71,17 +78,20 @@
                (fila "codigo" "C-02" "nombre" "Cable eléctrico (m)" "minimo" 50)
                (fila "codigo" "P-03" "nombre" "Pintura blanca" "minimo" 5))
          (list "existencias"
-               (fila "clave" "Central#T-01" "almacen" "Central" "codigo" "T-01" "cantidad" 40)
-               (fila "clave" "Norte#T-01" "almacen" "Norte" "codigo" "T-01" "cantidad" 30)
-               (fila "clave" "Central#C-02" "almacen" "Central" "codigo" "C-02" "cantidad" 80)
-               (fila "clave" "Norte#P-03" "almacen" "Norte" "codigo" "P-03" "cantidad" 2)
-               (fila "clave" "Central#X-99" "almacen" "Central" "codigo" "X-99" "cantidad" 7))
+               (fila "almacen" "Central" "codigo" "T-01" "cantidad" 40)
+               (fila "almacen" "Norte" "codigo" "T-01" "cantidad" 30)
+               (fila "almacen" "Central" "codigo" "C-02" "cantidad" 80)
+               (fila "almacen" "Norte" "codigo" "P-03" "cantidad" 2)
+               (fila "almacen" "Central" "codigo" "X-99" "cantidad" 7))
          (list "movimientos"
                (fila "numero" 1 "codigo" "T-01" "unidades" 10)
-               (fila "numero" 2 "codigo" "P-03" "unidades" 1))
+               (fila "numero" 2 "codigo" "P-03" "unidades" 1)
+               (fila "numero" 3 "codigo" "T-01" "unidades" 5))
          (list "resumen" (fila))))
 
-(registrar-caso "caso-inventario" caso-inventario datos-de-inventario)
+(registrar-caso "caso-inventario" caso-inventario datos-de-inventario
+                :fila-nueva (cons "movimientos"
+                                  (fila "numero" 4 "codigo" "P-03" "unidades" 2)))
 
 ;;; Variante B: la misma situacion con etiquetas cortas y sin apostrofo.
 
@@ -101,9 +111,8 @@
 
   (coleccion existencias
     (:etiqueta "Existencias central")
-    (:clave clave)
+    (:clave almacen codigo)
     (:crece)
-    (campo clave    :rol fijo :etiqueta "Clave")
     (campo almacen  :rol fijo :etiqueta "Almacén")
     (campo codigo   :rol entrada :etiqueta "Código"
            :dominio (los codigo de articulos) :al-violar impedir)
@@ -151,11 +160,11 @@
                (fila "codigo" "C-02" "nombre" "Cable eléctrico (m)" "minimo" 50)
                (fila "codigo" "P-03" "nombre" "Pintura blanca" "minimo" 5))
          (list "existencias"
-               (fila "clave" "Central#T-01" "almacen" "Central" "codigo" "T-01" "cantidad" 40)
-               (fila "clave" "Norte#T-01" "almacen" "Norte" "codigo" "T-01" "cantidad" 30)
-               (fila "clave" "Central#C-02" "almacen" "Central" "codigo" "C-02" "cantidad" 80)
-               (fila "clave" "Norte#P-03" "almacen" "Norte" "codigo" "P-03" "cantidad" 2)
-               (fila "clave" "Central#X-99" "almacen" "Central" "codigo" "X-99" "cantidad" 7))
+               (fila "almacen" "Central" "codigo" "T-01" "cantidad" 40)
+               (fila "almacen" "Norte" "codigo" "T-01" "cantidad" 30)
+               (fila "almacen" "Central" "codigo" "C-02" "cantidad" 80)
+               (fila "almacen" "Norte" "codigo" "P-03" "cantidad" 2)
+               (fila "almacen" "Central" "codigo" "X-99" "cantidad" 7))
          (list "movimientos"
                (fila "numero" 1 "codigo" "T-01" "unidades" 10)
                (fila "numero" 2 "codigo" "P-03" "unidades" 1))
