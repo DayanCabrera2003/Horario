@@ -188,13 +188,22 @@
 
   ;; Lo que dice el resultado: en un horario, el profesor de una brigada le
   ;; da clase en una instalacion. Visto por instalacion y por profesor.
+  ;;
+  ;; Los ejes declaran su dominio: al empezar el trabajo ninguna brigada
+  ;; tiene horario ni instalacion, y sin dominio la rejilla saldria sin filas
+  ;; ni columnas. En la hoja de calculo, que fija la rejilla al generar, lo
+  ;; que se escribiera despues no se veria en ninguna tabla.
   (vista reparto :de brigadas :entrada t :etiqueta "Reparto de brigadas")
   (vista ocupacion :de brigadas :etiqueta "Ocupacion de instalaciones"
-                   :filas instalacion :columnas horario :muestra brigada
-                   :secciones semana
+                   :filas     (instalacion :dominio (los nombre de instalaciones))
+                   :columnas  (horario :dominio (uno-de "10 a.m." "11 a.m." "3 p.m."))
+                   :muestra brigada
+                   :secciones (semana :dominio (uno-de "par" "impar"))
                    :unica-salvo instalacion-ocupada)
   (vista por-profesor :de brigadas :etiqueta "Horario del profesor"
-                      :filas horario :columnas semana :muestra brigada
+                      :filas    (horario :dominio (uno-de "10 a.m." "11 a.m." "3 p.m."))
+                      :columnas (semana :dominio (uno-de "par" "impar"))
+                      :muestra brigada
                       :secciones profesor
                       :unica-salvo profesor-en-dos-brigadas)
   (vista locales :de instalaciones :etiqueta "Instalaciones")
