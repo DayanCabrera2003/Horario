@@ -92,12 +92,12 @@
     :cuando (y (no (vacio? profesor))
                (existe otra :en citaciones
                  :distinta-de fila
-                 :donde (y (= (de otra dia) (de fila dia))
-                           (= (de otra momento) (de fila momento))
-                           (o (= (de otra tutor) profesor)
-                              (= (de otra oponente) profesor)
-                              (= (de otra presidente) profesor)
-                              (= (de otra secretario) profesor)))))
+                 :donde (y (= dia (de fila dia))
+                           (= momento (de fila momento))
+                           (o (= tutor profesor)
+                              (= oponente profesor)
+                              (= presidente profesor)
+                              (= secretario profesor)))))
     :severidad problema
     :explica   (texto profesor " esta citado en dos locales a la vez"))
 
