@@ -86,9 +86,12 @@
     (format flujo "<title>~a</title>~%" (html-escapar (nucleo:etiqueta situacion)))
     (format flujo "<style>~%~a</style>~%" +estilos+)
     (format flujo "</head>~%<body>~%")
-    (format flujo "<h1>~a</h1>~%" (html-escapar (nucleo:etiqueta situacion)))
-    (format flujo "<p class=\"nota\">Escribe en las casillas: lo calculado y las ~
-               marcas se actualizan solos.</p>~%")
+    (format flujo "<h1 id=\"arriba\">~a</h1>~%" (html-escapar (nucleo:etiqueta situacion)))
+    ;; La ayuda solo si hay algo que escribir.
+    (when (algo-que-escribir-p situacion)
+      (format flujo "<p class=\"nota\">Escribe en las casillas: lo calculado y las ~
+                 marcas se actualizan solos.</p>~%"))
+    (format flujo "<nav id=\"indice\" class=\"indice\"></nav>~%")
     (format flujo "<div id=\"app\"></div>~%")
     (format flujo "<script>~%")
     (escribir-datos a plan flujo)
@@ -99,6 +102,12 @@
     (escribir-render a plan flujo)
     (write-string +render-js+ flujo)
     (format flujo "~%construir();~%</script>~%</body>~%</html>~%")))
+
+(defun algo-que-escribir-p (situacion)
+  "Cierto si alguna coleccion tiene un campo de entrada, o alguna crece."
+  (some (lambda (c) (or (nucleo:campos-de-rol c :entrada)
+                        (eq (nucleo:crecimiento c) :crece)))
+        (nucleo:colecciones situacion)))
 
 (defun escribir-datos (a plan flujo)
   "Los datos conocidos, como objeto de JavaScript."
@@ -209,18 +218,6 @@
           (nombre-js (nucleo:fuente vista))
           (if (nucleo:es-entrada vista) "true" "false")))
 
-(defun campo-de-agrupacion (plan coleccion)
-  "El campo por el que se agrupa esta coleccion, si alguna vista lo dice.
-
-   La agrupacion se declara en la VISTA porque es una decision de
-   presentacion; aqui se busca al reves, desde la coleccion que se esta
-   dibujando."
-  (let ((vista (find-if (lambda (v)
-                          (and (eq (nucleo:fuente v) (nucleo:nombre coleccion))
-                               (nucleo:agrupacion v)))
-                        (nucleo:vistas (situacion plan)))))
-    (when vista (nucleo:agrupacion vista))))
-
 (defun coleccion-de-la-marca (marca situacion)
   (if (nucleo:coleccion marca)
       (nucleo:coleccion-llamada situacion (nucleo:coleccion marca))
@@ -284,35 +281,56 @@
    El rol de campo decide aqui exactamente lo mismo que en la hoja de
    calculo, con otra realizacion: de entrada es un control, derivado es texto
    de solo lectura, fijo es texto. Un solo hecho del dominio, dos destinos."
-  (format flujo "~%const TABLAS = [~%")
-  (loop for coleccion in (nucleo:colecciones (situacion plan))
-        for primera = t then nil
-        do (unless primera (format flujo ",~%"))
-           (format flujo "  {vista: ~/situacion.web::js/, titulo: ~/situacion.web::js/, coleccion: ~/situacion.web::js/, crece: ~a, agrupa: ~a, columnaEstado: ~/situacion.web::js/, campos: [~{~a~^, ~}]}"
-                   (nombre-js (nucleo:nombre coleccion))
-                   (nucleo:etiqueta coleccion)
-                   (nombre-js (nucleo:nombre coleccion))
-                   (if (eq (nucleo:crecimiento coleccion) :crece) "true" "false")
-                   (let ((campo (campo-de-agrupacion plan coleccion)))
-                     (if campo (format nil "~/situacion.web::js/" (nombre-js campo)) "null"))
-                   (columna-de-estado coleccion)
-                   (mapcar (lambda (c) (campo-js plan c)) (nucleo:campos coleccion))))
-  (format flujo "~%];~%")
-  ;; Las vistas cruzadas. Una pagina no tiene direcciones que repartir, asi
-  ;; que el numero de columnas puede depender del contenido sin que eso
-  ;; mueva nada: se calculan al dibujar, y si aparece un valor nuevo aparece
-  ;; una columna nueva sola.
-  (format flujo "~%const CRUCES = [~%~{~a~^,~%~}~%];~%"
-          (loop for vista in (nucleo:vistas (situacion plan))
-                when (nucleo:cruzada-p vista)
-                  collect (escribir-cruce a plan vista))))
+  (let* ((situacion (situacion plan))
+         (tablas (append
+                  (mapcar (lambda (v)
+                            (list (nucleo:nombre v) (nucleo:etiqueta v)
+                                  (nucleo:coleccion-llamada situacion (nucleo:fuente v))
+                                  (nucleo:agrupacion v)))
+                          (nucleo:vistas-de-lista situacion))
+                  (mapcar (lambda (c) (list nil (nucleo:etiqueta c) c nil))
+                          (nucleo:colecciones-sin-vista-de-lista situacion))))
+         (cruzadas (remove-if-not #'nucleo:cruzada-p (nucleo:vistas situacion))))
+    ;; Una tabla por vista de lista, y una por coleccion que ninguna presenta
+    ;; (nucleo/tablas.lisp). Antes habia una por coleccion, y dos vistas de
+    ;; la misma coleccion salian como una sola tabla.
+    (format flujo "~%const TABLAS = [~%~{~a~^,~%~}~%];~%"
+            (loop for (vista titulo coleccion agrupacion) in tablas
+                  collect (format nil "  {id: ~/situacion.web::js/, vista: ~/situacion.web::js/, titulo: ~/situacion.web::js/, coleccion: ~/situacion.web::js/, crece: ~a, agrupa: ~a, columnaEstado: ~/situacion.web::js/, campos: [~{~a~^, ~}]}"
+                                  (format nil "t-~a" (nombre-js (or vista (nucleo:nombre coleccion))))
+                                  (nombre-js (or vista (nucleo:nombre coleccion)))
+                                  titulo
+                                  (nombre-js (nucleo:nombre coleccion))
+                                  (if (eq (nucleo:crecimiento coleccion) :crece) "true" "false")
+                                  (if agrupacion
+                                      (format nil "~/situacion.web::js/" (nombre-js agrupacion))
+                                      "null")
+                                  (columna-de-estado coleccion)
+                                  (mapcar (lambda (c) (campo-js plan c)) (nucleo:campos coleccion)))))
+    ;; Las vistas cruzadas. Una pagina no tiene direcciones que repartir, asi
+    ;; que el numero de columnas puede depender del contenido sin que eso
+    ;; mueva nada: se calculan al dibujar.
+    (format flujo "~%const CRUCES = [~%~{~a~^,~%~}~%];~%"
+            (mapcar (lambda (v) (escribir-cruce a plan v)) cruzadas))
+    ;; El orden en que se dibujan: las vistas como se declararon, y despues
+    ;; las colecciones sin vista de lista. Es tambien el indice de la pagina.
+    (format flujo "~%const ORDEN = [~%~{~a~^,~%~}~%];~%"
+            (append
+             (loop for v in (nucleo:vistas situacion)
+                   collect (if (nucleo:cruzada-p v)
+                               (format nil "  {tipo: 'cruce', indice: ~d}" (position v cruzadas))
+                               (format nil "  {tipo: 'tabla', indice: ~d}"
+                                       (position (nucleo:nombre v) tablas :key #'first))))
+             (loop for i from (length (nucleo:vistas-de-lista situacion)) below (length tablas)
+                   collect (format nil "  {tipo: 'tabla', indice: ~d}" i))))))
 
 (defun escribir-cruce (a plan vista)
   "La descripcion de una vista cruzada para la pagina."
   (let* ((coleccion (nucleo:coleccion-llamada (situacion plan) (nucleo:fuente vista)))
          (campo-celda (nucleo:campo-llamado coleccion (nucleo:lo-que-se-muestra vista)))
          (campo-filas (nucleo:campo-llamado coleccion (nucleo:eje-de-filas vista))))
-    (format nil "  {titulo: ~/situacion.web::js/, coleccion: ~/situacion.web::js/, ejeFilas: ~/situacion.web::js/, etiquetaFilas: ~/situacion.web::js/, ejeColumnas: ~/situacion.web::js/, celda: ~/situacion.web::js/, campoCelda: ~a, entrada: ~a, orden: ~a, secciones: ~a, filtro: ~a}"
+    (format nil "  {id: ~/situacion.web::js/, titulo: ~/situacion.web::js/, coleccion: ~/situacion.web::js/, ejeFilas: ~/situacion.web::js/, etiquetaFilas: ~/situacion.web::js/, ejeColumnas: ~/situacion.web::js/, celda: ~/situacion.web::js/, campoCelda: ~a, entrada: ~a, orden: ~a, secciones: ~a, filtro: ~a}"
+            (format nil "c-~a" (nombre-js (nucleo:nombre vista)))
             (nucleo:etiqueta vista)
             (nombre-js (nucleo:fuente vista))
             (nombre-js (nucleo:eje-de-filas vista))

@@ -63,13 +63,15 @@ fi
 
 echo
 echo "Pagina dibujada: se abre cada pagina en un navegador sin pantalla, se"
-echo "teclea en un control y se comprueba que no pierde el foco ni salta ningun"
-echo "error, y que lo calculado se pone al dia."
+echo "compara cada tabla y cada rejilla que se ve con el evaluador, se teclea en"
+echo "un control y se comprueba que no pierde el foco ni salta ningun error."
 . materializador/navegador.sh
 if arrancar_navegador; then
   for f in plan-del-grupo defensas-de-tesis horario-del-grupo departamento horario-saul seder; do
     aparece=""
     [ "$f" = "horario-saul" ] && aparece="no está en la lista"
+    node materializador/verificar-dom.js "$PUERTO_NAVEGADOR" "salida/$f.html" \
+         "salida/$f-esperado.json" "salida/$f-vistas.json" "salida/$f-cruces.json" || fallos=1
     node materializador/sonda-foco.js "$PUERTO_NAVEGADOR" "salida/$f.html" "$aparece" || fallos=1
   done
   cerrar_navegador

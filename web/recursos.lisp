@@ -42,6 +42,10 @@ button { font:inherit; padding:5px 12px; margin-top:8px; cursor:pointer;
          border:1px solid #bbb; border-radius:3px; background:#fff; }
 button:hover { background:#f0f0ee; }
 .aviso { color:#a5402a; font-size:12px; }
+.indice { display:flex; flex-wrap:wrap; gap:6px 14px; margin:0 0 20px; font-size:14px; }
+.indice a, a.arriba { color:#2f5597; }
+a.arriba { display:inline-block; margin-top:8px; font-size:12px; }
+h3 { font-size:15px; margin:18px 0 6px; font-weight:600; }
 @media (max-width:520px) { th, td { padding:5px 7px; } }
 "
   "Estilos de la pagina. El color de cada severidad sale de aqui, no del

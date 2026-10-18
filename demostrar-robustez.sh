@@ -41,10 +41,13 @@ for f in $casos; do
           "salida/$f-vistas.json" "salida/$f-cruces.json" || fallos=1
 done
 
-# Cada pagina, en un navegador de verdad: se escribe sin perder el foco.
+# Cada pagina, en un navegador de verdad: lo que dibuja coincide con el
+# evaluador, y se escribe sin perder el foco.
 . materializador/navegador.sh
 if arrancar_navegador; then
   for f in $casos; do
+    node materializador/verificar-dom.js "$PUERTO_NAVEGADOR" "salida/$f.html" \
+         "salida/$f-esperado.json" "salida/$f-vistas.json" "salida/$f-cruces.json" || fallos=1
     node materializador/sonda-foco.js "$PUERTO_NAVEGADOR" "salida/$f.html" || fallos=1
   done
   cerrar_navegador

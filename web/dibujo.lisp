@@ -105,10 +105,19 @@ function controlDe(nombreColeccion, campo, fila, ref){
   aviso.className = 'aviso';
   td.appendChild(aviso);
   registrar(() => {
-    if (document.activeElement !== control) control.value = T(fila[campo.n]);
-    // Avisa sin bloquear, como los desplegables del corpus.
-    const fuera = dominio && !dominio.bloquea && !VACIO(fila[campo.n]) &&
+    const actual = T(fila[campo.n]);
+    const fuera = dominio && !VACIO(fila[campo.n]) &&
                   !dominio.valores().some(v => IG(v, fila[campo.n]));
+    // Un desplegable que bloquea no puede ensenar un valor que no esta entre
+    // sus opciones: el que ya venia en los datos se veria vacio. Se le anade
+    // como opcion, para que se vea y se pueda corregir.
+    if (control.tagName === 'SELECT' && fuera &&
+        !Array.from(control.options).some(o => o.value === actual)) {
+      const o = document.createElement('option');
+      o.value = actual; o.textContent = actual;
+      control.appendChild(o);
+    }
+    if (document.activeElement !== control) control.value = actual;
     aviso.textContent = fuera ? 'no está en la lista' : '';
   });
   return td;
@@ -261,10 +270,7 @@ function ordenarParaMostrar(filas, campo){
 }
 
 function dibujarTabla(tabla, contenedor){
-  const seccion = document.createElement('section');
-  const titulo = document.createElement('h3');
-  titulo.textContent = tabla.titulo;
-  seccion.appendChild(titulo);
+  const seccion = contenedor;
 
   const envoltura = document.createElement('div');
   envoltura.className = 'envoltura';
@@ -364,7 +370,6 @@ function dibujarTabla(tabla, contenedor){
     }
     seccion.appendChild(p);
   }
-  contenedor.appendChild(seccion);
 }
 
 // --- La forma de la pagina ---
@@ -427,9 +432,37 @@ function actualizar(){
   for (const f of ACTUALIZADORES) f();
 }
 
+// Cada vista es una seccion con su titulo, un ancla para el indice y un
+// enlace para volver arriba. El indice de la pagina es la navegacion: un
+// enlace por vista, en el orden en que se declararon.
 function dibujarVistas(app){
-  CRUCES.forEach((c, i) => dibujarCruce(c, i, app));
-  for (const t of TABLAS) dibujarTabla(t, app);
+  const indice = document.getElementById('indice');
+  if (indice) {
+    indice.textContent = '';
+    for (const o of ORDEN) {
+      const v = o.tipo === 'cruce' ? CRUCES[o.indice] : TABLAS[o.indice];
+      const a = document.createElement('a');
+      a.href = '#' + v.id;
+      a.textContent = v.titulo;
+      indice.appendChild(a);
+    }
+  }
+  for (const o of ORDEN) {
+    const v = o.tipo === 'cruce' ? CRUCES[o.indice] : TABLAS[o.indice];
+    const seccion = document.createElement('section');
+    seccion.id = v.id;
+    const titulo = document.createElement('h2');
+    titulo.textContent = v.titulo;
+    seccion.appendChild(titulo);
+    if (o.tipo === 'cruce') dibujarCruce(v, o.indice, seccion);
+    else dibujarTabla(v, seccion);
+    const arriba = document.createElement('a');
+    arriba.href = '#arriba';
+    arriba.className = 'arriba';
+    arriba.textContent = 'volver arriba';
+    seccion.appendChild(arriba);
+    app.appendChild(seccion);
+  }
 }
 "
   "El dibujo de la pagina: construir y actualizar.")

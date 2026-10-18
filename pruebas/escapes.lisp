@@ -33,7 +33,7 @@
          (primer-cierre (search "</script>" html :start2 (1+ (or inicio 0)))))
     (comprobar (and inicio primer-cierre (= primer-cierre (search "</script>" html :from-end t)))
                "un dato cierra el <script> antes de tiempo")
-    (comprobar (search "<h1>Precios &lt;IVA&gt; &amp; descuentos</h1>" html)
+    (comprobar (search ">Precios &lt;IVA&gt; &amp; descuentos</h1>" html)
                "la etiqueta de la situacion tiene que ir escapada en el h1")))
 
 (definir-prueba excel-desplegable-con-coma-va-a-un-rango
