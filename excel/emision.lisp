@@ -53,13 +53,17 @@
     (when (nucleo:cruzada-p vista) (planificar-cruces a vista plan))
     (protocolo:planificar-vista a vista plan))
   (setf (cruces plan) (nreverse (cruces plan)))
+  ;; Las columnas auxiliares del conteo de distintos se reparten antes de
+  ;; emitir ninguna hoja: una hoja puede contar los distintos de otra que se
+  ;; emite antes que ella, y su columna tiene que existir ya.
+  (reservar-columnas-de-distintos plan)
   ;; Los cruces de una vista en VISTAS-EN-ARCHIVO (H2) tambien se acumularon
   ;; con PUSH dentro de PLANIFICAR-CRUCES, por la misma razon que CRUCES.
   (setf (archivos plan) (nreverse (archivos plan)))
   ;; La hoja auxiliar de cada relacion uno-a-muchos (H4), antes que
   ;; PLANO-DE-HOJA: EMITIR-EXPRESION sobre RELACIONADAS (excel/formula.lisp)
   ;; necesita encontrar su hoja auxiliar en (AUXILIARES PLAN) para escribir
-  ;; el COUNTIF de la hoja de origen.
+  ;; el conteo de la hoja de origen.
   (dolist (hoja (hojas plan))
     (dolist (campo (campos-de-relacion (coleccion hoja)))
       (push (planificar-detalle a plan hoja campo) (auxiliares plan))))
@@ -87,6 +91,28 @@
                         ;; citan, y conservan su nombre.
                         (lista (append (renombrar-sin-repetir cruces resto)
                                        resto))))))
+
+(defun reservar-columnas-de-distintos (plan)
+  "Una columna de primera aparicion por cada campo cuyos valores distintos
+   cuenta alguna expresion de la situacion sin condicion. Con condicion no
+   hay columna: esa forma se rechaza al emitirla (excel/agregados.lisp)."
+  (flet ((mirar (expresion)
+           (when expresion
+             (nucleo:recorrer-expresion
+              expresion
+              (lambda (e)
+                (when (and (typep e 'nucleo:agregado)
+                           (eq (nucleo:operacion e) :distintas)
+                           (null (nucleo:condicion e)))
+                  (let ((hoja (hoja-de plan (nucleo:coleccion e))))
+                    (when hoja (columna-de-distintos-de hoja (nucleo:campo e))))))))))
+    (let ((situacion (situacion plan)))
+      (dolist (coleccion (nucleo:colecciones situacion))
+        (dolist (campo (nucleo:campos coleccion))
+          (mirar (nucleo:expresion campo))))
+      (dolist (marca (nucleo:marcas situacion))
+        (mirar (nucleo:condicion marca))
+        (mirar (nucleo:explicacion marca))))))
 
 (defun renombrar-sin-repetir (cruces resto)
   "Los planos de CRUCES con nombres que no se repiten entre ellos ni con
@@ -193,22 +219,25 @@
 
    La busqueda pregunta ademas si lo encontrado esta vacio. INDICE sobre una
    celda en blanco devuelve cero, no blanco, y sin la pregunta un turno libre
-   se leeria como un 0 en el cuadrante."
-  (let* ((clave (format nil "~@[\"~a\"&\"|\"&~]$A~d&\"|\"&~a$~d"
+   se leeria como un 0 en el cuadrante.
+
+   La coincidencia es EXACT, no COINCIDIR a secas: COINCIDIR no distingue
+   mayusculas y lee \"*\" y \"?\" como comodines, y una sala llamada
+   \"Sala*\" ensenaba la reunion de \"Sala Azul\"."
+  (let* ((clave (format nil "~@[~a&CHAR(31)&~]$A~d&CHAR(31)&~a$~d"
                         (when (seccion cruce)
-                          (nucleo:como-texto (seccion cruce)))
+                          (cadena-excel (nucleo:como-texto (seccion cruce))))
                         fila columna fila-enc))
-         (encontrado (format nil "INDEX(~a,MATCH(~a,~a,0))"
-                             rango-valor clave rango-clave))
-         (busqueda (format nil "IFERROR(IF(~a=\"\",\"\",~a),\"\")"
-                           encontrado encontrado)))
+         (coincide (format nil "EXACT(~a,~a)" rango-clave clave))
+         (posicion (format nil "MATCH(1,INDEX(~a*1,0),0)" coincide))
+         (encontrado (format nil "INDEX(~a,~a)" rango-valor posicion))
+         (busqueda (format nil "IF(ISNA(~a),\"\",IF(ISBLANK(~a),\"\",~a))"
+                           posicion encontrado encontrado)))
     (if (null (nucleo:conflicto (vista cruce)))
         (format nil "=~a" busqueda)
-        (format nil "=IF(COUNTIF(~a,~a)>1,~a&\" (+\"&(COUNTIF(~a,~a)-1)&\")\",~a)"
-                rango-clave clave
-                busqueda
-                rango-clave clave
-                busqueda))))
+        (let ((cuantas (format nil "SUMPRODUCT(1*~a)" coincide)))
+          (format nil "=IF(~a>1,~a&\" (+\"&(~a-1)&\")\",~a)"
+                  cuantas busqueda cuantas busqueda)))))
 
 (defconstant +largo-de-pestana+ 31
   "Excel no admite nombres de hoja de mas de 31 caracteres.")
@@ -334,18 +363,28 @@
                       (cons "texto" (nucleo:etiqueta campo)))))
 
 (defun encabezados-de-claves (hoja)
-  "El encabezado de cada columna de clave compuesta de HOJA.
+  "El encabezado de cada columna auxiliar de HOJA: las de clave compuesta y
+   las de primera aparicion.
 
-   Dice que campos concatena: con mas de una clave en la hoja, un rotulo
+   Dice que contiene: con mas de una columna auxiliar en la hoja, un rotulo
    igual para todas no deja saber cual es cual."
-  (loop for clave in (claves hoja)
-        for i from 1
-        collect (list (cons "celda" (format nil "~a~d" (letra clave)
-                                            (fila-encabezado hoja)))
-                      (cons "campo" (format nil "__clave~d__" i))
-                      (cons "rol" "derivado")
-                      (cons "texto" (format nil "(clave ~{~(~a~)~^|~}~:[~;, filtrada~])"
-                                            (partes clave) (filtro clave))))))
+  (append
+   (loop for clave in (claves hoja)
+         for i from 1
+         collect (list (cons "celda" (format nil "~a~d" (letra clave)
+                                             (fila-encabezado hoja)))
+                       (cons "campo" (format nil "__clave~d__" i))
+                       (cons "rol" "derivado")
+                       (cons "texto" (format nil "(clave ~{~(~a~)~^|~}~:[~;, filtrada~])"
+                                             (partes clave) (filtro clave)))))
+   (loop for columna in (distintos hoja)
+         for i from 1
+         collect (list (cons "celda" (format nil "~a~d" (letra columna)
+                                             (fila-encabezado hoja)))
+                       (cons "campo" (format nil "__distintos~d__" i))
+                       (cons "rol" "derivado")
+                       (cons "texto" (format nil "(primera vez de ~(~a~))"
+                                             (campo-de columna)))))))
 
 (defun formulas-de-claves (a plan hoja)
   "Las columnas de clave compuesta de HOJA, fila por fila.
@@ -354,20 +393,29 @@
    todos a la vez. Es maquinaria que el lenguaje no nombra: la inventa esta
    arquitectura porque no tiene busqueda por clave compuesta. En una pagina
    no hace ninguna falta."
-  (loop for clave in (claves hoja)
-        append (loop for i from 0 below (capacidad hoja)
-                     for f = (+ (fila-primera hoja) i)
-                     collect (list (cons "celda" (format nil "~a~d" (letra clave) f))
-                                   (cons "formula"
-                                         (formula-de-clave-compuesta a plan hoja clave f))))))
+  (append
+   (loop for clave in (claves hoja)
+         append (loop for i from 0 below (capacidad hoja)
+                      for f = (+ (fila-primera hoja) i)
+                      collect (list (cons "celda" (format nil "~a~d" (letra clave) f))
+                                    (cons "formula"
+                                          (formula-de-clave-compuesta a plan hoja clave f)))))
+   (loop for columna in (distintos hoja)
+         append (loop for i from 0 below (capacidad hoja)
+                      for f = (+ (fila-primera hoja) i)
+                      collect (list (cons "celda" (format nil "~a~d" (letra columna) f))
+                                    (cons "formula"
+                                          (formula-de-primera-aparicion plan hoja columna f)))))))
 
 (defun formula-de-clave-compuesta (a plan hoja clave fila)
-  "La clave compuesta de una fila: sus partes separadas por una barra.
+  "La clave compuesta de una fila: sus partes separadas por el caracter 31
+   de ASCII, que no se puede teclear en una celda. Con una barra, un valor
+   que llevara una barra podia confundirse con otro.
 
    Si la clave lleva filtro, la fila que no lo cumple se queda con la clave
    vacia. El filtro se pregunta en la hoja y no al generar: una fila que
    deja de cumplirlo sale de su casilla sin regenerar el libro."
-  (let ((partes (format nil "~{~a~^&\"|\"&~}"
+  (let ((partes (format nil "~{~a~^&CHAR(31)&~}"
                         (loop for parte in (partes clave)
                               collect (celda hoja parte fila)))))
     (if (null (filtro clave))
@@ -440,11 +488,14 @@
    no tiene filas vacias- y por eso se resuelve aqui y el lenguaje no lo
    menciona."
   (declare (ignore ambito plan))
-  (let ((clave (or (first (nucleo:clave coleccion))
-                   (nucleo:nombre (first (nucleo:campos coleccion))))))
-    (if (eq (nucleo:crecimiento coleccion) :crece)
-        (format nil "IF(~a=\"\",\"\",~a)" (celda hoja clave *fila*) formula)
-        formula)))
+  (if (eq (nucleo:crecimiento coleccion) :crece)
+      ;; La fila existe en cuanto tiene escrito algun campo de su clave, no
+      ;; solo el primero: una clave compuesta se puede empezar a escribir por
+      ;; cualquiera de sus campos.
+      (format nil "IF(AND(~{~a=\"\"~^,~}),\"\",~a)"
+              (mapcar (lambda (c) (celda hoja c *fila*)) (campos-de-existencia coleccion))
+              formula)
+      formula))
 
 (defun ambito-de (coleccion)
   (nucleo:hacer-ambito

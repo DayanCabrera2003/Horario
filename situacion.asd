@@ -128,9 +128,12 @@
   :components ((:file "arquitectura")
                (:file "plan")
                (:file "plano")
-               (:file "relacion")
-               (:file "particion-en-archivo")
                (:file "formula")
+               (:file "existencia")
+               (:file "busqueda")
+               (:file "relacion")
+               (:file "agregados")
+               (:file "particion-en-archivo")
                (:file "emision")))
 
 (defsystem "situacion/web"

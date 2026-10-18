@@ -28,7 +28,12 @@
            :documentation
            "Las columnas de clave compuesta que esta arquitectura anade a la
             hoja, en el orden en que se pidieron. Van detras de las columnas
-            declaradas. Solo CLAVE-COMPUESTA-DE escribe aqui."))
+            declaradas. Solo CLAVE-COMPUESTA-DE escribe aqui.")
+   (distintos :accessor distintos :initform '()
+              :documentation
+              "Las columnas auxiliares que marcan la primera aparicion de cada
+               valor de un campo, para contar valores distintos. Van detras
+               de las de clave. Solo COLUMNA-DE-DISTINTOS-DE escribe aqui."))
   (:documentation "Donde cae cada cosa de una coleccion dentro del libro."))
 
 (defclass clave-compuesta ()
@@ -53,6 +58,16 @@
     Lo que la identifica es QUE contiene, no quien la pidio. Dos vistas que
     buscan por los mismos campos entre las mismas filas comparten columna;
     dos que difieren en los campos o en el filtro tienen cada una la suya."))
+
+(defclass columna-de-distintos ()
+  ((campo :accessor campo-de :initarg :campo
+          :documentation "El campo cuyos valores distintos se cuentan.")
+   (letra :accessor letra :initarg :letra
+          :documentation "La columna de la hoja donde se escribe."))
+  (:documentation
+   "Una columna que vale 1 en la fila donde un valor aparece por primera vez.
+    Sumarla da cuantos valores distintos hay. Es la emulacion del conteo de
+    distintos: una hoja de calculo no lo tiene sin formulas matriciales."))
 
 (defclass cruce ()
   ((vista :accessor vista :initarg :vista)
@@ -142,7 +157,8 @@
 (defun siguiente-columna-libre (hoja)
   "La primera columna de HOJA que no ocupa ni un campo declarado ni una
    columna anadida por esta arquitectura."
-  (letra-de-columna (+ (length (columnas hoja)) (length (claves hoja)))))
+  (letra-de-columna (+ (length (columnas hoja)) (length (claves hoja))
+                       (length (distintos hoja)))))
 
 (defun clave-compuesta-de (hoja partes &optional filtro)
   "La clave compuesta de HOJA que concatena PARTES en las filas que cumplen
@@ -160,6 +176,15 @@
                                   :filtro filtro
                                   :letra (siguiente-columna-libre hoja))))
         (setf (claves hoja) (append (claves hoja) (list nueva)))
+        nueva)))
+
+(defun columna-de-distintos-de (hoja campo)
+  "La columna de primera aparicion de CAMPO en HOJA, creandola si no existe."
+  (or (find campo (distintos hoja) :key #'campo-de)
+      (let ((nueva (make-instance 'columna-de-distintos
+                                  :campo campo
+                                  :letra (siguiente-columna-libre hoja))))
+        (setf (distintos hoja) (append (distintos hoja) (list nueva)))
         nueva)))
 
 (defun entrecomillar (nombre)

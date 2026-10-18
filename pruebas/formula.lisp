@@ -168,12 +168,24 @@
   (let* ((s (situacion.lenguaje:situacion-llamada "TURNO-DOBLE"))
          (texto (handler-case (materializar-en-cadena (situacion.excel:hacer-excel)
                                                       s *datos-turno-doble*)
-                  (error (e) (format nil "ERROR ~a" e)))))
-    (comprobar (not (search "ERROR" texto))
+                  (error (e) (format nil "FALLO-AL-MATERIALIZAR ~a" e)))))
+    ;; Se busca una marca propia y no la palabra ERROR: las formulas llevan
+    ;; IFERROR, y la prueba confundia su propio fallo con una funcion.
+    (comprobar (not (search "FALLO-AL-MATERIALIZAR" texto))
                "Excel tendria que traducir la condicion, y dijo: ~a" texto)
     ;; La candidata va como rango de su columna: el distinto compara la
-    ;; columna entera de TURNO contra el turno de esta fila mas uno.
-    (comprobar (search "<>" texto)
-               "la formula tendria que llevar el distinto como <>")
-    (comprobar (not (search "OR(" texto))
+    ;; columna entera de TURNO contra el turno de esta fila mas uno, como
+    ;; desigualdad exacta (NOT(EXACT(...))), que distingue mayusculas igual
+    ;; que el evaluador.
+    (comprobar (search "NOT(EXACT(" texto)
+               "la formula tendria que llevar el distinto como NOT(EXACT(...))")
+    (comprobar (not (funcion-or-p texto))
                "dentro de SUMPRODUCT el O no puede ser OR(): colapsa el arreglo")))
+
+(defun funcion-or-p (texto)
+  "Cierto si TEXTO llama a la funcion OR. No basta buscar \"OR(\": esa
+   cadena esta dentro de IFERROR(."
+  (loop for inicio = (search "OR(" texto) then (search "OR(" texto :start2 (1+ inicio))
+        while inicio
+        thereis (or (zerop inicio)
+                    (not (alpha-char-p (char texto (1- inicio)))))))
