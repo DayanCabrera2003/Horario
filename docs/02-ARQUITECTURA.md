@@ -1299,6 +1299,20 @@ dominio de un campo de entrada (cambiaría la salida del corpus sin tocar su
 descripción, y es más difícil de defender que una declaración explícita).
 *Coste:* el dominio de los días se repite en las tres vistas del Saúl.
 
+**D11 — Una búsqueda en la hoja de cálculo usa los factores de los agregados
+(2026-10-17, fase 2, C2).** Una búsqueda cuya condición no es una igualdad
+sobre un campo es `MATCH(1, INDEX(1*f1*f2*..., 0), 0)`, con los mismos
+factores que `cuantas`, `suma` y `existe` (`excel/existencia.lisp`). La
+igualdad sobre un campo conserva su fórmula de siempre. Si varias filas
+cumplen, gana la primera en el orden de la colección, en las tres
+arquitecturas: el evaluador devuelve la primera de `filas-de`, y la hoja y
+la página escriben las filas en ese orden. *Alternativa descartada:* una
+columna oculta de clave compuesta en la hoja de destino, como la de las
+tablas cruzadas. Solo cubre conjunciones de igualdades, añade columnas y
+depende de que el separador no aparezca en los datos. *Coste:* un vector
+por término y por celda. En el Saúl, con tres búsquedas por dos campos, el
+recálculo en LibreOffice pasó de 2,14 s a 2,15 s (mediana de cinco).
+
 ---
 
 ## 13 bis. Estado de implementación
