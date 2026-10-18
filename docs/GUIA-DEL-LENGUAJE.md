@@ -233,8 +233,10 @@ documento; una constante del dominio, no."* Con `:rol fijo` (por defecto) se
 establece al generar; con `:rol entrada` la edita el usuario. Se lee dentro de
 una expresión con `(parametro nombre)`.
 
-**Aviso de uso:** ningún archivo del corpus real lo usa todavía, y el
-experimento de "notas" (sección 11) encontró que `:rol entrada` en un
+**Aviso de uso:** en el corpus lo usa `corpus/horario-saul.lisp`
+(`(parametro tope-diario ...)`, el máximo de sesiones de un profesor en un
+día, que lee la marca `pasa-del-tope-diario`). El experimento de "notas"
+(sección 11) encontró que `:rol entrada` en un
 parámetro **no se materializa como editable en ninguna arquitectura** —tanto
 Excel como la web incrustan el valor literal en vez de una referencia. Es un
 hueco real, no una limitación teórica: si necesitas un parámetro que el
@@ -905,7 +907,7 @@ arquitectura.
 | | Texto | Excel | Web |
 |---|---|---|---|
 | Propósito | Forzar que haya dos arquitecturas desde el primer commit — la única salvaguarda real contra diseñar el protocolo mirando un solo destino | Documento de uso real, el que hoy ya usa Fernando | Demostrar que la misma descripción produce un artefacto con comportamiento vivo en un destino que no comparte nada con el primero — no pretende ser una aplicación de producción |
-| Capacidades nativas | 10 | 9 | 16 de 20 |
+| Capacidades nativas | 10 | 9 | 17 de 20 |
 | Lo más capaz que hace de forma nativa | Tabla cruzada, partición de vista, agrupación en vista, filtro de vista, casilla en conflicto, marcado textual, búsqueda por clave, orden declarado | Rejilla real, búsqueda por clave, derivación viva, entrada validada, dominio de entrada, orden declarado, marcado visual y textual, navegación | Todo lo de Excel salvo la rejilla, más tabla cruzada nativa, crecimiento, relación uno a muchos, partición de vista, agrupación y filtro de vista, casilla en conflicto y conteo de distintos |
 | Lo que NO tiene, deliberadamente | Rejilla, derivación viva/por consulta, entrada, dominio de entrada, marcado visual, crecimiento, agrupación (se degradan o emulan) | — | Rejilla (*"nunca fue un concepto del dominio"*), agrupación (emulada, fija al generar), derivación por consulta (degradada) |
 
