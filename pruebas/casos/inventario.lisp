@@ -33,16 +33,22 @@
            (el nombre de (la-fila-de articulos :donde (= codigo (de fila codigo)))
                :si-no "(desconocido)")))
 
+  ;; Las entradas del almacen norte, ordenadas por articulo y numero, con el
+  ;; saldo de cada articulo (fase 2, hueco C3). La sonda de orden anade una
+  ;; entrada de pintura, que tiene que quedar con las otras de pintura.
   (coleccion movimientos
     (:etiqueta "Existencias registradas en el almacén norte")
     (:clave numero)
+    (:orden codigo numero)
     (:crece)
     (campo numero   :rol fijo :tipo entero :etiqueta "No.")
     (campo codigo   :rol entrada :etiqueta "Código")
     (campo unidades :rol entrada :tipo entero :etiqueta "Unidades")
     (campo articulo :rol derivado :etiqueta "Artículo"
            (el nombre de (la-fila-de articulos :donde (= codigo (de fila codigo)))
-               :si-no "")))
+               :si-no ""))
+    (campo saldo :rol derivado :tipo entero :etiqueta "Saldo del artículo"
+           (+ (de fila unidades) (de (anterior fila :mismo codigo) saldo))))
 
   (coleccion resumen
     (:una-sola-fila)
@@ -79,10 +85,13 @@
                (fila "almacen" "Central" "codigo" "X-99" "cantidad" 7))
          (list "movimientos"
                (fila "numero" 1 "codigo" "T-01" "unidades" 10)
-               (fila "numero" 2 "codigo" "P-03" "unidades" 1))
+               (fila "numero" 2 "codigo" "P-03" "unidades" 1)
+               (fila "numero" 3 "codigo" "T-01" "unidades" 5))
          (list "resumen" (fila))))
 
-(registrar-caso "caso-inventario" caso-inventario datos-de-inventario)
+(registrar-caso "caso-inventario" caso-inventario datos-de-inventario
+                :fila-nueva (cons "movimientos"
+                                  (fila "numero" 4 "codigo" "P-03" "unidades" 2)))
 
 ;;; Variante B: la misma situacion con etiquetas cortas y sin apostrofo.
 
