@@ -8,9 +8,14 @@
 ;;;;
 ;;;; LA DECISION DE LECTURA MAS IMPORTANTE DE TODO EL LENGUAJE
 ;;;;
-;;;; Dentro de un :DONDE, un simbolo suelto se refiere al campo de la fila
-;;;; candidata; para hablar de la fila de fuera hay que decirlo con (DE FILA
-;;;; ...). Eso hace que una busqueda por clave se lea asi:
+;;;; Dentro de un :DONDE, un simbolo suelto es un campo de la fila que ese
+;;;; :DONDE esta filtrando: la candidata en LA-FILA-DE y en los agregados, la
+;;;; variable V en (EXISTE V ...), y la fila de la vista en el :DONDE de una
+;;;; vista. Si hay varios anidados, manda el mas interior. Para hablar de otra
+;;;; fila hay que decirlo con (DE FILA ...). Hasta el 2026-10-18 solo valia en
+;;;; LA-FILA-DE y los agregados, y en EXISTE y en las vistas era un error que
+;;;; decia "fuera de un :DONDE" estando dentro (fase 2, hueco C4). Asi una
+;;;; busqueda por clave se lee:
 ;;;;
 ;;;;     (la-fila-de tesis :donde (= estudiante (de fila estudiante)))
 ;;;;
@@ -81,11 +86,22 @@
    simbolo suelto que sea una de ellas es esa variable, este o no dentro de
    un :DONDE.")
 
+(defvar *donde-se-compila* nil
+  "Que se esta compilando, en palabras (\"el campo total de personas\"), para
+   que un error diga donde esta lo que no se entiende. Lo ligan las macros.")
+
+(defun variable-filtrada (en-donde)
+  "La variable de la fila que filtra el :DONDE EN-DONDE: T es la candidata
+   de una busqueda o un agregado; un simbolo es esa variable."
+  (if (eq en-donde t) +variable-candidata+ (normalizar en-donde)))
+
 (defun compilar-expresion (forma &optional (en-donde nil))
   "Traduce FORMA a un nodo de expresion del nucleo.
 
-   EN-DONDE indica si se esta dentro de un :DONDE, en cuyo caso un simbolo
-   suelto se lee como campo de la fila candidata."
+   EN-DONDE es NIL fuera de todo :DONDE; dentro de uno, la fila que filtra:
+   T para la candidata de una busqueda o un agregado, o el simbolo de la
+   variable (la de un EXISTE, o FILA en una vista). Un simbolo suelto se lee
+   como campo de esa fila (fase 2, hueco C4)."
   (cond
     ;; Literales.
     ((or (numberp forma) (stringp forma)) `(nucleo:hacer-literal :valor ,forma))
@@ -98,14 +114,16 @@
                   :key #'symbol-name :test #'string=))
      `(nucleo:hacer-ref-valor :nombre ',(normalizar forma)))
 
-    ;; Un simbolo suelto dentro de un :DONDE es un campo de la candidata.
+    ;; Un simbolo suelto dentro de un :DONDE es un campo de la fila que ese
+    ;; :DONDE filtra.
     ((symbolp forma)
      (if en-donde
-         `(nucleo:hacer-ref-campo :variable ',+variable-candidata+
+         `(nucleo:hacer-ref-campo :variable ',(variable-filtrada en-donde)
                                   :campo ',(normalizar forma))
-         (error "Simbolo suelto fuera de un :DONDE: ~s.~@
+         (error "Simbolo suelto ~s~@[ en ~a~], fuera de todo :DONDE.~@
                  Fuera de un :DONDE hay que decir de que fila se habla, con~@
-                 (DE FILA ~:*~s) o (DE OTRA ~:*~s)." forma)))
+                 (DE FILA ~s) o (DE OTRA ~s)."
+                forma *donde-se-compila* forma forma)))
 
     ((not (consp forma)) (error "No se como leer ~s" forma))
 
@@ -318,5 +336,6 @@
     (unless donde (error "(EXISTE ~a ...) necesita :DONDE <condicion>." variable))
     `(nucleo:hacer-existe
       :variable ',(normalizar variable) :coleccion ',(normalizar coleccion)
-      :condicion ,(compilar-expresion donde nil)
+      ;; Dentro del :DONDE de un EXISTE, un simbolo suelto es un campo de V.
+      :condicion ,(compilar-expresion donde variable)
       :distinta-de ',(normalizar distinta))))

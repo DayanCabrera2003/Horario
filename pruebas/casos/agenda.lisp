@@ -23,9 +23,9 @@
     :en reuniones
     :cuando (y (no (vacio? (de fila jefe)))
                (existe otra :en reuniones :distinta-de fila
-                 :donde (y (= (de otra dia) (de fila dia))
-                           (= (de otra hora) (de fila hora))
-                           (= (de otra jefe) (de fila jefe)))))
+                 :donde (y (= dia (de fila dia))
+                           (= hora (de fila hora))
+                           (= jefe (de fila jefe)))))
     :sobre (jefe)
     :severidad problema
     :explica "Convoca dos reuniones a la vez")
@@ -45,7 +45,7 @@
   (vista por-jefe :de reuniones :etiqueta "Agenda de quien convoca"
                   :filas hora :columnas dia :muestra sala
                   :secciones jefe
-                  :donde (no (vacio? (de fila asunto)))
+                  :donde (no (vacio? asunto))
                   :unica-salvo jefe-en-dos-salas)
   (vista lista :de reuniones :etiqueta "Todas las reuniones"))
 

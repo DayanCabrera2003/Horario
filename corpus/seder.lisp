@@ -143,9 +143,9 @@
                   (no (vacio? (de fila horario)))
                   (existe otra :en brigadas
                     :distinta-de fila
-                    :donde (y (= (de otra semana) (de fila semana))
-                              (= (de otra horario) (de fila horario))
-                              (= (de otra instalacion) (de fila instalacion)))))
+                    :donde (y (= semana (de fila semana))
+                              (= horario (de fila horario))
+                              (= instalacion (de fila instalacion)))))
     :sobre     (instalacion)
     :severidad problema
     :explica   "Otra brigada usa esta instalacion en ese horario y esa semana")
@@ -157,9 +157,9 @@
     :cuando    (y (no (vacio? (de fila horario)))
                   (existe otra :en brigadas
                     :distinta-de fila
-                    :donde (y (= (de otra semana) (de fila semana))
-                              (= (de otra horario) (de fila horario))
-                              (= (de otra profesor) (de fila profesor)))))
+                    :donde (y (= semana (de fila semana))
+                              (= horario (de fila horario))
+                              (= profesor (de fila profesor)))))
     :sobre     (profesor horario)
     :severidad problema
     :explica   "Este profesor tiene otra brigada en ese horario y esa semana")
