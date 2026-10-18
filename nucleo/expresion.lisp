@@ -38,6 +38,13 @@
   ((nombre "Nombre del parametro."))
   "El valor de un parametro con nombre.")
 
+(defnodo ref-valor (expresion)
+  ((nombre "La variable de valor, un simbolo."))
+  "El valor ligado a una variable que no es una fila: la de una marca
+   :POR-CAMPO, que vale, en cada vuelta, el valor de uno de los campos de su
+   :SOBRE (fase 2, hueco C7). Es otra cosa que (DE FILA X): no nombra ningun
+   campo, porque el campo cambia en cada vuelta.")
+
 (defnodo ref-campo (expresion)
   ((variable "Variable de fila ligada, por ejemplo FILA u OTRA.")
    (campo "Nombre del campo."))
@@ -206,6 +213,7 @@
 (defmethod subexpresiones ((e agregado))
   (when (condicion e) (list (condicion e))))
 (defmethod subexpresiones ((e relacionadas)) (list (condicion e)))
+(defmethod subexpresiones ((e ref-valor)) '())
 (defmethod subexpresiones ((e enumeracion)) '())
 (defmethod subexpresiones ((e busqueda)) (list (condicion e)))
 (defmethod subexpresiones ((e proyeccion))

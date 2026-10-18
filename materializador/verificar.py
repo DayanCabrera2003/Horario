@@ -65,6 +65,7 @@ from verificar_errores import errores_del_libro
 from verificar_relaciones import verificar_relacion
 from verificar_vistas import verificar_vista
 from materializar import formato_de_numero
+from verificar_marcas import comprobar_sondas, preparar_sondas
 
 
 def recalcular_con_libreoffice(xlsx):
@@ -169,12 +170,26 @@ def verificar(plano_path, esperado_path, xlsx_path, cruces_path=None, vistas_pat
     vistas = (json.loads(Path(vistas_path).read_text(encoding="utf-8"))
               if vistas_path else None)
 
-    recalculado, temporal = recalcular_con_libreoffice(xlsx_path)
+    # El color de las marcas se comprueba con celdas de sondeo escritas en
+    # una copia del libro (verificar_marcas.py); el libro original no se toca.
+    copia = Path(tempfile.mkdtemp(prefix="situacion-sondas-"))
+    con_sondas = load_workbook(xlsx_path)
+    sondas, fallos_de_reglas = preparar_sondas(con_sondas, plano, esperado)
+    a_recalcular = copia / Path(xlsx_path).name
+    con_sondas.save(a_recalcular)
+
+    recalculado, temporal = recalcular_con_libreoffice(a_recalcular)
     try:
         libro = load_workbook(recalculado, data_only=True)
         fallos = []
         por_hoja = []
         colecciones_vistas = set()
+
+        n_marcas, f_marcas = comprobar_sondas(libro, sondas, esperado)
+        if n_marcas:
+            por_hoja.append(("(color de las marcas)", n_marcas))
+        fallos.extend(fallos_de_reglas)
+        fallos.extend(f_marcas)
 
         for hoja_plan in plano["hojas"]:
             nombre = hoja_plan["nombre"]
@@ -236,6 +251,7 @@ def verificar(plano_path, esperado_path, xlsx_path, cruces_path=None, vistas_pat
         return comprobadas, fallos, por_hoja
     finally:
         shutil.rmtree(temporal, ignore_errors=True)
+        shutil.rmtree(copia, ignore_errors=True)
 
 
 def fallos_del_total(comprobadas):

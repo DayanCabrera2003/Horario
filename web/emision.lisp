@@ -208,18 +208,25 @@
                                                  (nucleo:nombre
                                                   (coleccion-de-la-marca
                                                    marca (situacion plan)))))))
-    (format nil "  {nombre: ~/situacion.web::js/, leyenda: ~/situacion.web::js/, coleccion: ~/situacion.web::js/, clase: ~/situacion.web::js/, campos: [~{~/situacion.web::js/~^, ~}],~%   cond: (f) => ~a,~%   explica: ~a}"
-            (nombre-js (nucleo:nombre marca))
-            (substitute #\Space #\- (nombre-js (nucleo:nombre marca)))
-            (nombre-js (nucleo:nombre coleccion))
-            (or (cdr (assoc (nucleo:severidad marca) +paleta-web+)) "informativa")
-            (mapcar #'nombre-js (nucleo:alcance marca))
-            (js-condicion a (nucleo:condicion marca) ambito plan)
-            (if (nucleo:explicacion marca)
-                (format nil "(f) => ~a"
-                        (protocolo:emitir-expresion a (nucleo:explicacion marca)
-                                                    ambito plan))
-                "null"))))
+    ;; Una marca :POR-CAMPO (fase 2, hueco C7) recibe, ademas de la fila, el
+    ;; valor del campo que se esta mirando, y lo dice con porCampo.
+    (let ((parametros (if (nucleo:por-campo marca)
+                          (format nil "(f, ~a)" (js-variable-de-valor (nucleo:por-campo marca)))
+                          "(f)")))
+      (format nil "  {nombre: ~/situacion.web::js/, leyenda: ~/situacion.web::js/, coleccion: ~/situacion.web::js/, clase: ~/situacion.web::js/, campos: [~{~/situacion.web::js/~^, ~}],~@[ porCampo: ~a,~]~%   cond: ~a => ~a,~%   explica: ~a}"
+              (nombre-js (nucleo:nombre marca))
+              (substitute #\Space #\- (nombre-js (nucleo:nombre marca)))
+              (nombre-js (nucleo:nombre coleccion))
+              (or (cdr (assoc (nucleo:severidad marca) +paleta-web+)) "informativa")
+              (mapcar #'nombre-js (nucleo:alcance marca))
+              (when (nucleo:por-campo marca) "true")
+              parametros
+              (js-condicion a (nucleo:condicion marca) ambito plan)
+              (if (nucleo:explicacion marca)
+                  (format nil "~a => ~a" parametros
+                          (protocolo:emitir-expresion a (nucleo:explicacion marca)
+                                                      ambito plan))
+                  "null")))))
 
 (defmethod protocolo:emitir-entrada ((a web) campo ambito plan)
   "Un campo de entrada con dominio es una entrada de DOMINIOS.

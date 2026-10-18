@@ -81,17 +81,25 @@
 
   ;; La razon de ser del documento: avisar de que un profesor esta citado en
   ;; dos sitios a la vez.
+  ;; Se mira cada miembro del tribunal por separado (:por-campo): se pinta
+  ;; solo el que esta citado en otro local a la misma hora, y la explicacion
+  ;; dice quien es. Hasta el 2026-10-18 se pintaban los cuatro aunque solo
+  ;; chocara uno (fase 2, hueco C7).
   (marca profesor-citado-dos-veces
     :en citaciones
-    :cuando (existe otra :en citaciones
-              :distinta-de fila
-              :donde (y (= (de otra dia) (de fila dia))
-                        (= (de otra momento) (de fila momento))
-                        (comparten otra fila
-                                   (tutor oponente presidente secretario))))
     :sobre     (tutor oponente presidente secretario)
+    :por-campo profesor
+    :cuando (y (no (vacio? profesor))
+               (existe otra :en citaciones
+                 :distinta-de fila
+                 :donde (y (= (de otra dia) (de fila dia))
+                           (= (de otra momento) (de fila momento))
+                           (o (= (de otra tutor) profesor)
+                              (= (de otra oponente) profesor)
+                              (= (de otra presidente) profesor)
+                              (= (de otra secretario) profesor)))))
     :severidad problema
-    :explica   "Este profesor esta citado en dos locales a la vez")
+    :explica   (texto profesor " esta citado en dos locales a la vez"))
 
   (marca sin-asignar
     :en citaciones

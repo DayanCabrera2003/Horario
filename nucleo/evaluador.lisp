@@ -360,6 +360,12 @@
     (unless p (fallar "No hay ningun parametro llamado ~a" (nombre e)))
     (normalizar-valor (valor p))))
 
+(defmethod evaluar ((e ref-valor) ambito entorno ligaduras)
+  (declare (ignore ambito entorno))
+  (let ((par (assoc (nombre e) ligaduras)))
+    (unless par (fallar "La variable ~a no esta ligada" (nombre e)))
+    (cdr par)))
+
 (defmethod evaluar ((e ref-campo) ambito entorno ligaduras)
   (declare (ignore ambito))
   (valor-de-campo entorno (fila-ligada ligaduras (variable e)) (campo e)))
@@ -539,20 +545,44 @@
 ;;; Marcas
 ;;; ---------------------------------------------------------------------
 
+(defun ligaduras-de-marca (marca fila &optional campo valor)
+  "Las ligaduras con que se evalua MARCA en FILA: la fila, y si la marca es
+   :POR-CAMPO, su variable con VALOR, el del campo CAMPO."
+  (append (when (and (por-campo marca) campo)
+            (list (cons (por-campo marca) valor)))
+          (list (cons (nombrar "fila") fila))))
+
+(defun cumple-marca-p (entorno fila marca &optional campo)
+  "Cierto si la condicion de MARCA se cumple en FILA; para una marca
+   :POR-CAMPO, con su variable ligada al valor de CAMPO."
+  (let ((ambito (hacer-ambito :ligaduras (list (cons (nombrar "fila") (coleccion fila)))
+                              :actual 'fila)))
+    (verdadero-p (evaluar (condicion marca) ambito entorno
+                          (ligaduras-de-marca marca fila campo
+                                              (and campo (valor-de-campo entorno fila campo)))))))
+
+(defun campos-marcados (entorno fila marca)
+  "Los campos de FILA que senala MARCA, en el orden de su :SOBRE.
+
+   Una marca normal senala todo su :SOBRE si su condicion se cumple, o
+   nada. Una marca :POR-CAMPO evalua la condicion una vez por campo, con su
+   variable ligada al valor de ese campo, y senala solo los campos donde se
+   cumple (fase 2, hueco C7)."
+  (cond ((not (marca-aplica-p marca (coleccion fila))) '())
+        ((por-campo marca)
+         (remove-if-not (lambda (campo) (cumple-marca-p entorno fila marca campo))
+                        (alcance marca)))
+        ((cumple-marca-p entorno fila marca) (copy-list (alcance marca)))
+        (t '())))
+
 (defun marcas-que-disparan (entorno fila)
-  "Las marcas de la situacion que se cumplen en FILA.
+  "Las marcas de la situacion que se cumplen en FILA: las que senalan algun
+   campo. Para una marca :POR-CAMPO, basta con que se cumpla en uno.
 
    Solo se evaluan las marcas cuyo alcance pertenece a la coleccion de la
    fila: una marca senala campos de una coleccion concreta."
-  (let ((coleccion (coleccion fila))
-        (resultado '()))
-    (dolist (m (marcas (situacion entorno)) (nreverse resultado))
-      (when (marca-aplica-p m coleccion)
-        (let ((ambito (hacer-ambito :ligaduras (list (cons (nombrar "fila") coleccion))
-                                    :actual 'fila)))
-          (when (verdadero-p (evaluar (condicion m) ambito entorno
-                                      (list (cons (nombrar "fila") fila))))
-            (push m resultado)))))))
+  (remove-if-not (lambda (m) (campos-marcados entorno fila m))
+                 (marcas (situacion entorno))))
 
 (defun marca-aplica-p (marca coleccion)
   (if (coleccion marca)
@@ -578,13 +608,16 @@
    preguntan el filtro de una vista y cualquier otra condicion por fila."
   (verdadero-p (evaluar-en-fila entorno fila condicion)))
 
-(defun explicacion-de-marca (entorno fila marca)
-  "El texto de la explicacion de MARCA en FILA, o NIL si no tiene."
+(defun explicacion-de-marca (entorno fila marca &optional campo)
+  "El texto de la explicacion de MARCA en FILA, o NIL si no tiene. Para una
+   marca :POR-CAMPO, con su variable ligada al valor de CAMPO."
   (when (explicacion marca)
     (let ((ambito (hacer-ambito :ligaduras (list (cons 'fila (coleccion fila)))
                                 :actual 'fila)))
       (como-texto (evaluar (explicacion marca) ambito entorno
-                           (list (cons (nombrar "fila") fila)))))))
+                           (ligaduras-de-marca marca fila campo
+                                               (and campo
+                                                    (valor-de-campo entorno fila campo))))))))
 
 (defun nombre-legible-de-marca (marca)
   "El nombre de MARCA para leerlo: en minusculas y con espacios en vez de
@@ -598,9 +631,14 @@
    Es lo que escriben las tres arquitecturas en su columna de estado, y lo
    que el oraculo dice que tienen que escribir."
   (format nil "~{~a~^; ~}"
-          (mapcar (lambda (m) (or (explicacion-de-marca entorno fila m)
-                                  (nombre-legible-de-marca m)))
-                  (marcas-que-disparan entorno fila))))
+          (loop for m in (marcas-que-disparan entorno fila)
+                ;; Una marca :POR-CAMPO da una explicacion por cada campo que
+                ;; senala, en el orden de su :SOBRE; las demas, una.
+                append (loop for campo in (if (por-campo m)
+                                              (campos-marcados entorno fila m)
+                                              (list nil))
+                             collect (or (explicacion-de-marca entorno fila m campo)
+                                         (nombre-legible-de-marca m))))))
 
 ;;; ---------------------------------------------------------------------
 ;;; Evaluacion completa

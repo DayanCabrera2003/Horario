@@ -90,6 +90,21 @@
                      when (typep (nucleo:expresion campo) 'nucleo:relacionadas)
                        collect (nucleo:nombre campo))))
 
+(defun campos-marcados-esperados (entorno fila)
+  "Que campos de FILA pinta cada marca que dispara, en el orden de las
+   marcas. En el JSON sale como objeto, {marca: [severidad, [campos]]}, en
+   el orden en que se declararon las marcas. Es lo que comparan los
+   verificadores con el color de cada celda (fase 2, hueco C7): la severidad
+   dice que color, y los campos donde."
+  (situacion.excel::lista
+   (loop for marca in (nucleo:marcas-que-disparan entorno fila)
+         collect (situacion.excel::lista
+                  (list (string-downcase (symbol-name (nucleo:nombre marca)))
+                        (string-downcase (symbol-name (nucleo:severidad marca)))
+                        (situacion.excel::lista
+                         (mapcar (lambda (c) (string-downcase (symbol-name c)))
+                                 (nucleo:campos-marcados entorno fila marca))))))))
+
 (defun escribir-esperado (situacion datos destino)
   "Los valores que el evaluador de referencia calcula, por coleccion y fila.
 
@@ -98,8 +113,9 @@
    auxiliar, la pagina como una lista-, pero el numero es el mismo en todas y
    es lo que se puede comparar.
 
-   Cada fila sale como [valores, marcas, estado]: el estado es el texto que
-   las arquitecturas tienen que escribir en su columna de estado.
+   Cada fila sale como [valores, marcas, estado, marcados]: el estado es el
+   texto que las arquitecturas tienen que escribir en su columna de estado, y
+   MARCADOS dice que campos pinta cada marca (CAMPOS-MARCADOS-ESPERADOS).
 
    Se reutiliza el serializador de la arquitectura de Excel porque es el que
    hay; no es una dependencia del nucleo, solo una comodidad de esta
@@ -124,7 +140,9 @@
                                              (mapcar (lambda (m)
                                                        (string-downcase (symbol-name m)))
                                                      (cdr fila)))
-                                            (nucleo:texto-de-estado entorno fila-del-entorno)))
+                                            (nucleo:texto-de-estado entorno fila-del-entorno)
+                                            (campos-marcados-esperados entorno
+                                                                       fila-del-entorno)))
                              :lista-vacia)))
      destino)))
 

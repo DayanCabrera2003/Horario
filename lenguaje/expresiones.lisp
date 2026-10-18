@@ -75,6 +75,12 @@
   (let ((posicion (position clave lista)))
     (if posicion (nth (1+ posicion) lista) por-defecto)))
 
+(defvar *variables-de-valor* '()
+  "Las variables de valor visibles mientras se compila: la de una marca
+   :POR-CAMPO dentro de su :CUANDO y su :EXPLICA (fase 2, hueco C7). Un
+   simbolo suelto que sea una de ellas es esa variable, este o no dentro de
+   un :DONDE.")
+
 (defun compilar-expresion (forma &optional (en-donde nil))
   "Traduce FORMA a un nodo de expresion del nucleo.
 
@@ -85,6 +91,12 @@
     ((or (numberp forma) (stringp forma)) `(nucleo:hacer-literal :valor ,forma))
     ((eq forma t) `(nucleo:hacer-literal :valor t))
     ((null forma) `(nucleo:hacer-literal :valor nil))
+
+    ;; La variable de una marca :POR-CAMPO.
+    ((and (symbolp forma)
+          (member (symbol-name forma) *variables-de-valor*
+                  :key #'symbol-name :test #'string=))
+     `(nucleo:hacer-ref-valor :nombre ',(normalizar forma)))
 
     ;; Un simbolo suelto dentro de un :DONDE es un campo de la candidata.
     ((symbolp forma)

@@ -64,6 +64,8 @@ const LEER = `(() => {
   const tabla = t => Array.from(t.querySelectorAll('tbody tr')).map(tr => ({
     grupo: !!tr.querySelector('td.grupo'),
     celdas: Array.from(tr.children).map(celda),
+    clases: Array.from(tr.children).map(td =>
+      ['problema', 'advertencia', 'informativa'].find(c => td.classList.contains(c)) || ''),
     controles: Array.from(tr.children).map(td => !!td.querySelector('input,select'))
   }));
   const titulos = {};
@@ -97,8 +99,18 @@ function compararTabla(vista, esperado, tabla, fallos) {
     }
     const fila = vistas.shift();
     if (!fila) { fallos.push(`${tabla.titulo}: faltan filas`); return; }
-    const [valores, , estado] = filas[indice];
+    const [valores, , estado, marcados] = filas[indice];
     campos.forEach((campo, k) => {
+      // El color de la celda: el de la primera marca, en el orden en que se
+      // declararon, que pinta este campo; ninguno si no lo pinta ninguna
+      // (fase 2, hueco C7: antes no se comprobaba en ningun sitio).
+      comprobadas++;
+      const pintada = Object.entries(marcados || {})
+        .find(([, [, suyos]]) => suyos.includes(campo.campo));
+      const claseEsperada = pintada ? pintada[1][0] : '';
+      if ((fila.clases[k] || '') !== claseEsperada) {
+        fallos.push(`${tabla.titulo} fila ${posicion + 1}: ${campo.campo} tiene que estar ${claseEsperada ? 'pintado de ' + claseEsperada : 'sin pintar'} y esta ${fila.clases[k] ? 'pintado de ' + fila.clases[k] : 'sin pintar'}`);
+      }
       comprobadas++;
       const real = fila.celdas[k] ?? '';
       const esp = valores[campo.campo];

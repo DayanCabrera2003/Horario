@@ -44,6 +44,34 @@
 (defvar *hoja* nil
   "Hoja cuya fila se esta generando.")
 
+(defvar *valores-de-marca* '()
+  "Lista asociativa de (VARIABLE . CELDA) para la variable de una marca
+   :POR-CAMPO mientras se traduce su condicion para un campo: la variable es
+   la celda de ese campo en la fila *FILA* (fase 2, hueco C7).")
+
+(defmethod protocolo:emitir-expresion ((a excel) (e nucleo:ref-valor) ambito plan)
+  (declare (ignore ambito plan))
+  (or (cdr (assoc (nucleo:nombre e) *valores-de-marca*))
+      (error "La variable ~(~a~) no esta ligada en esta formula." (nucleo:nombre e))))
+
+(defun condicion-de-marca (a marca ambito plan &optional campo)
+  "La condicion de MARCA en la fila *FILA*, como formula. Para una marca
+   :POR-CAMPO, la de CAMPO: su variable es la celda de ese campo."
+  (let ((*valores-de-marca* (if (and campo (nucleo:por-campo marca))
+                                (acons (nucleo:por-campo marca) (celda *hoja* campo *fila*)
+                                       *valores-de-marca*)
+                                *valores-de-marca*)))
+    (condicion-excel a (nucleo:condicion marca) ambito plan)))
+
+(defun condicion-de-marca-en-fila (a marca ambito plan)
+  "Si MARCA se cumple en la fila *FILA*: su condicion, o para una marca
+   :POR-CAMPO, que se cumpla en alguno de sus campos."
+  (if (nucleo:por-campo marca)
+      (format nil "OR(~{~a~^,~})"
+              (mapcar (lambda (campo) (condicion-de-marca a marca ambito plan campo))
+                      (nucleo:alcance marca)))
+      (condicion-de-marca a marca ambito plan)))
+
 (defvar *candidata* nil
   "Mientras se traduce la condicion de un recorrido (EXISTE, un agregado),
    (VARIABLE . HOJA) de la fila candidata. Una referencia a esa variable no
