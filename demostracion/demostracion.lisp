@@ -16,7 +16,7 @@
 
 (defpackage #:situacion.demostracion
   (:use #:common-lisp)
-  (:export #:generar #:generar-todo))
+  (:export #:generar #:generar-todo #:generar-casos))
 
 (in-package #:situacion.demostracion)
 
@@ -134,3 +134,22 @@
            "seder")
   (format t "~&~%Todo en ~a~%" (truename +salida+))
   t)
+
+(defun generar-casos ()
+  "Genera los casos de prueba de robustez (pruebas/casos/), con el prefijo de
+   cada uno, igual que GENERAR-TODO genera el corpus.
+
+   Un caso que no se puede generar no detiene a los demas: se dice cual y
+   por que, y al final se devuelve NIL para que quien llame falle. Callarlo
+   haria que la bateria verificara solo los casos que si salieron."
+  (let ((fallidos '()))
+    (dolist (caso situacion.casos:*casos*)
+      (handler-case (generar (situacion.casos:caso-situacion caso)
+                             (situacion.casos:caso-datos caso)
+                             (situacion.casos:caso-prefijo caso))
+        (error (e)
+          (push (situacion.casos:caso-prefijo caso) fallidos)
+          (format t "~&FALLO AL GENERAR ~a: ~a~%" (situacion.casos:caso-prefijo caso) e))))
+    (format t "~&~%Casos: ~d registrados, ~d fallidos~@[ (~{~a~^, ~})~]~%"
+            (length situacion.casos:*casos*) (length fallidos) (reverse fallidos))
+    (null fallidos)))

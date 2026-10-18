@@ -163,10 +163,26 @@
                (:file "horario-saul")
                (:file "seder")))
 
+(defsystem "situacion/casos"
+  :description "Casos de prueba de robustez: situaciones ajenas al corpus,
+                con datos y etiquetas que el corpus nunca tuvo. No son
+                corpus; los genera y verifica ./demostrar-robustez.sh."
+  :depends-on ("situacion/lenguaje")
+  :pathname "pruebas/casos/"
+  :serial t
+  :components ((:file "paquete")
+               (:file "compras")
+               (:file "notas")
+               (:file "agenda")
+               (:file "inventario")
+               (:file "horas")
+               (:file "biblioteca")
+               (:file "escapes")))
+
 (defsystem "situacion/demostracion"
   :description "Genera los artefactos de las tres arquitecturas a partir de
                 las mismas descripciones."
-  :depends-on ("situacion/corpus" "situacion/analisis"
+  :depends-on ("situacion/corpus" "situacion/casos" "situacion/analisis"
                "situacion/texto" "situacion/excel" "situacion/web")
   :pathname "demostracion/"
   :serial t
