@@ -1367,9 +1367,25 @@ oráculo dice los campos que pinta cada marca en cada fila, y se comparan:
 
 *Alternativas descartadas:* una marca por campo escrita a mano N veces
 (repite la descripción y la leyenda); deducir de la condición qué campos la
-hacen verdadera (mágico); columnas auxiliares en el libro del usuario para
-poder verificar el color (las sondas en una copia verifican lo mismo sin
-tocar lo que se entrega).
+hacen verdadera (mágico); columnas auxiliares ocultas en el libro, con el
+formato condicional mirándolas, para poder verificar el color. Fue lo que
+proponía la nota de diseño, y se cambió al implementar, con el acuerdo de
+proyecto-6f. Las sondas en una copia que solo usa la verificación
+comprueban la fórmula que de verdad colorea, y no una copia suya en otra
+columna. Además, el libro que recibe el usuario no lleva nada añadido, y el
+plano de una marca sin `:por-campo` sigue idéntico.
+
+**D16 — Una sola regla para el símbolo suelto (2026-10-18, fase 2, C4).**
+Dentro de un `:donde`, un símbolo suelto es un campo de la fila que ese
+`:donde` filtra (la candidata, la variable de un `existe` o la fila de una
+vista), y manda el más interior. Es solo una regla de lectura del compilador
+(`lenguaje/expresiones.lisp`): el árbol que sale es idéntico al de la forma
+larga, así que ni el núcleo ni las arquitecturas cambian. Lo demuestran dos
+diffs vacíos de toda la salida: uno al cambiar el compilador y otro al
+reescribir el corpus a la forma corta. *Alternativas descartadas:* que un
+símbolo suelto sea `(de fila x)` en todas partes, porque el mismo símbolo
+leería filas distintas según dónde esté; prohibirlo siempre, porque empeora
+la frase que el lenguaje toma como criterio de calidad.
 
 ---
 

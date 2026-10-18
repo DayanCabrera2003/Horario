@@ -171,12 +171,36 @@ diseño, no una curiosidad — es el argumento central de la tesis frente a
 ## 5. El lenguaje: referencia completa
 
 Convención de lectura, y la decisión de diseño más importante del lenguaje
-(`lenguaje/expresiones.lisp:9-20`): dentro de un `:cuando` o un `:donde`, un
-símbolo suelto se refiere al campo de la **fila candidata** que se está
-evaluando. Para hablar de la fila de fuera hay que decirlo explícitamente:
-`(de fila ...)` o `(de otra ...)`. Fuera de ese contexto, un símbolo suelto
-es **error**: *"fuera de un `:donde` hay que decir de qué fila se habla, con
-`(de fila x)` o `(de otra x)`"*.
+(`lenguaje/expresiones.lisp`). **Dentro de un `:donde`, un símbolo suelto es
+un campo de la fila que ese `:donde` está filtrando**:
+- en `la-fila-de`, los agregados, `los` y `las-filas-de`, la candidata;
+- en `(existe V :en C :donde ...)`, la variable `V`;
+- en el `:donde` de una vista, la fila de la vista.
+
+Si hay varios `:donde` anidados, manda el más interior. Para hablar de otra
+fila hay que decirlo explícitamente: `(de fila ...)` o `(de otra ...)`.
+Fuera de todo `:donde` (la expresión de un campo, el `:cuando` de una
+marca), un símbolo suelto es **error**, y el mensaje dice dónde está:
+*"Simbolo suelto HORAS en el campo doble de personas, fuera de todo
+:DONDE"*.
+
+La regla es única desde el 2026-10-18 (fase 2, hueco C4). Antes solo valía
+en las búsquedas y los agregados: en un `existe` había que escribir
+`(de otra dia)`, y en una vista `(de fila asunto)`. El símbolo suelto daba
+un error que decía "fuera de un :DONDE" estando dentro de uno. La forma
+larga sigue valiendo y significa lo mismo, y las dos compilan al mismo
+árbol:
+
+```lisp
+(existe otra :en citaciones :distinta-de fila
+  :donde (y (= dia (de fila dia)) (= momento (de fila momento))))
+;; es lo mismo que
+(existe otra :en citaciones :distinta-de fila
+  :donde (y (= (de otra dia) (de fila dia)) (= (de otra momento) (de fila momento))))
+```
+
+La única excepción es la variable de una marca `:por-campo` (sección 5.6).
+Dentro de su marca es siempre la variable, también dentro de un `:donde`.
 
 ### 5.1 `defsituacion`
 
@@ -534,12 +558,12 @@ sitios al mismo tiempo" (`corpus/defensas-de-tesis.lisp`):
   :cuando (y (no (vacio? profesor))
              (existe otra :en citaciones
                :distinta-de fila
-               :donde (y (= (de otra dia) (de fila dia))
-                         (= (de otra momento) (de fila momento))
-                         (o (= (de otra tutor) profesor)
-                            (= (de otra oponente) profesor)
-                            (= (de otra presidente) profesor)
-                            (= (de otra secretario) profesor)))))
+               :donde (y (= dia (de fila dia))
+                         (= momento (de fila momento))
+                         (o (= tutor profesor)
+                            (= oponente profesor)
+                            (= presidente profesor)
+                            (= secretario profesor)))))
   :severidad problema
   :explica   (texto profesor " esta citado en dos locales a la vez"))
 ```
@@ -624,7 +648,8 @@ nombres de los slots internos del modelo, no lo que escribe el autor.
   filtro deja fuera sigue contando para los agregados y para las marcas — el
   horario de un profesor no enseña las clases de otro, y aun así tiene que
   saber que chocan"*. Se rechaza declarar `:donde` en una vista que no sea
-  cruzada.
+  cruzada. Un símbolo suelto en él es un campo de la fila de la vista:
+  `:donde (no (vacio? asunto))` (`pruebas/casos/agenda.lisp`).
 - **`:filas` / `:columnas` / `:muestra`** son la tabla cruzada. Hay que
   declarar las tres o ninguna — declarar solo alguna es error ("tabla
   cruzada a medias"). Es la construcción que resolvió el caso que durante
@@ -1022,9 +1047,9 @@ bloque explicando el porqué):
     :cuando (y (no (vacio? (de fila aula)))
                (existe otra :en casillas
                  :distinta-de fila
-                 :donde (y (= (de otra dia) (de fila dia))
-                           (= (de otra turno) (de fila turno))
-                           (= (de otra aula) (de fila aula)))))
+                 :donde (y (= dia (de fila dia))
+                           (= turno (de fila turno))
+                           (= aula (de fila aula)))))
     :sobre     (aula)
     :severidad problema
     :explica   "Ese local esta ocupado por otro grupo a esa hora")
@@ -1334,7 +1359,7 @@ Lo que sigue faltando de verdad, como construcción del lenguaje, queda para
 una segunda fase, con una nota de diseño por hueco antes de escribir código: orden y dominio de los ejes (C1, hecho el 2026-10-17), búsqueda por
 varios campos en Excel (C2, hecho el 2026-10-17), orden compuesto y vecino dentro de una partición
 (C3, hecho el 2026-10-18), formato numérico (C6, hecho el 2026-10-18), marca por campo (C7, hecho el 2026-10-18), sintaxis única de `:donde`
-(C4) y documentar `:una-fila-por` (C8, hecho el 2026-10-18).
+(C4, hecho el 2026-10-18) y documentar `:una-fila-por` (C8, hecho el 2026-10-18).
 
 ---
 
