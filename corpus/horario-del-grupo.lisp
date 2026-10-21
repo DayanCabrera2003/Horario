@@ -108,6 +108,7 @@
     :cuando    (y (no (vacio? (de fila asignatura)))
                   (< (de fila faltan) 0))
     :sobre     (asignatura nombre faltan)
+    :leyenda   "La asignatura tiene mas turnos que su frecuencia"
     :severidad advertencia
     :explica   (texto (plural (- 0 (de fila faltan)) "Sobra" "Sobran") " "
                       (- 0 (de fila faltan)) " "

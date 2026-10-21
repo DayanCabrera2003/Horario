@@ -184,6 +184,7 @@
     :en profesores
     :cuando    (> (de fila horas) (de fila tope))
     :sobre     (horas tope)
+    :leyenda   "El profesor pasa de su tope de horas"
     :severidad problema
     :explica   (texto "Pasa del tope en " (- (de fila horas) (de fila tope))
                       " horas"))
@@ -195,6 +196,7 @@
     :cuando    (y (no (vacio? (de fila id)))
                   (no (= (de fila estado) "Completa")))
     :sobre     (nombre estado)
+    :leyenda   "La asignatura no tiene cubiertas todas sus horas"
     :severidad advertencia
     :explica   (de fila estado))
 
@@ -203,6 +205,7 @@
     :cuando    (y (no (vacio? (de fila id)))
                   (= (de fila estado) "Completa"))
     :sobre     (nombre estado)
+    :leyenda   "La asignatura tiene cubiertas todas sus horas"
     :severidad informativa)
 
   (vista asignacion :de asignacion :entrada t :etiqueta "Asignacion")

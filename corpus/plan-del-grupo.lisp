@@ -46,6 +46,7 @@
   (marca insuficiente
     :cuando    (< (de fila asignadas) (de fila frecuencia))
     :sobre     (nombre asignadas faltan)
+    :leyenda   "La asignatura tiene menos turnos asignados que su frecuencia"
     :severidad advertencia
     :explica   (texto (plural (de fila faltan) "Falta" "Faltan") " "
                       (de fila faltan) " "
@@ -54,6 +55,7 @@
   (marca excedida
     :cuando    (> (de fila asignadas) (de fila frecuencia))
     :sobre     (nombre asignadas faltan)
+    :leyenda   "La asignatura tiene mas turnos asignados que su frecuencia"
     :severidad problema
     :explica   (texto (plural (- (de fila asignadas) (de fila frecuencia))
                               "Sobra" "Sobran")
@@ -65,6 +67,7 @@
     :cuando    (y (= (de fila asignadas) (de fila frecuencia))
                   (no (vacio? (de fila asignadas))))
     :sobre     (nombre)
+    :leyenda   "La asignatura tiene todos sus turnos asignados"
     :severidad informativa)
 
   (vista plan :de asignaturas :entrada t :etiqueta "Plan del grupo"))

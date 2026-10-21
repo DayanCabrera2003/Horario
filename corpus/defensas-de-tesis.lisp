@@ -98,6 +98,7 @@
                               (= oponente profesor)
                               (= presidente profesor)
                               (= secretario profesor)))))
+    :leyenda   "Un profesor esta citado en dos locales a la vez"
     :severidad problema
     :explica   (texto profesor " esta citado en dos locales a la vez"))
 

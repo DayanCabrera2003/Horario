@@ -261,6 +261,7 @@
     :en casillas
     :cuando    (= (de fila repite-mal) "si")
     :sobre     (asignatura)
+    :leyenda   "La asignatura se repite el mismo dia en el grupo sin admitir turno doble, o sin ir en turnos seguidos"
     :severidad problema
     :explica   (si (= (de fila turno-doble) "no")
                    "Esta asignatura no admite turno doble y repite el dia en este grupo"
@@ -310,6 +311,7 @@
     :en plan-por-grupo
     :cuando    (> (de fila faltan) 0)
     :sobre     (asignadas faltan)
+    :leyenda   "El grupo recibe la asignatura menos veces que su frecuencia"
     :severidad problema
     :explica   (texto (plural (de fila faltan) "Falta" "Faltan") " "
                       (de fila faltan) " "
@@ -319,6 +321,7 @@
     :en plan-por-grupo
     :cuando    (< (de fila faltan) 0)
     :sobre     (asignadas faltan)
+    :leyenda   "El grupo recibe la asignatura mas veces que su frecuencia"
     :severidad problema
     :explica   (texto (plural (- 0 (de fila faltan)) "Sobra" "Sobran") " "
                       (- 0 (de fila faltan)) " "
@@ -342,6 +345,7 @@
     :en carga-diaria
     :cuando    (> (de fila sesiones) (parametro tope-diario))
     :sobre     (sesiones)
+    :leyenda   "El profesor da mas sesiones ese dia que el tope de la hoja Parametros"
     :severidad advertencia
     :explica   (texto "Da " (de fila sesiones) " sesiones ese dia"))
 

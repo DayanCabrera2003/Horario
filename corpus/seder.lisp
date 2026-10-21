@@ -147,6 +147,7 @@
     :cuando    (y (no (vacio? (de fila instalacion)))
                   (< (de fila capacidad) (de fila personas)))
     :sobre     (instalacion personas capacidad)
+    :leyenda   "La instalacion tiene menos capacidad que personas la brigada"
     :severidad problema
     :explica   (texto "La instalacion es para " (de fila capacidad)
                       " personas y la brigada tiene " (de fila personas)))
@@ -189,6 +190,7 @@
     :en instalaciones
     :cuando    (> (de fila brigadas) (+ (de fila menos-cargada) 1))
     :sobre     (brigadas)
+    :leyenda   "La instalacion tiene 2 brigadas o mas por encima de la que menos tiene"
     :severidad advertencia
     :explica   (texto "Tiene " (de fila brigadas) " brigadas y otra tiene "
                       (de fila menos-cargada)))
@@ -197,6 +199,7 @@
     :en franja
     :cuando    (> (de fila brigadas) (+ (de fila menos-cargada) 1))
     :sobre     (brigadas)
+    :leyenda   "El horario tiene 2 brigadas o mas por encima del que menos tiene"
     :severidad advertencia
     :explica   (texto "Tiene " (de fila brigadas) " brigadas y otro horario tiene "
                       (de fila menos-cargada)))
