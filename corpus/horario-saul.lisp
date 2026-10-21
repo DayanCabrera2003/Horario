@@ -216,7 +216,8 @@
 
   ;; La descripcion dice "un tope" sin numero. Era 3 por suponer algo; el
   ;; 2026-10-21 se acordo 5 con la otra tesis, que modela la misma regla.
-  (parametro tope-diario :tipo entero :valor 5
+  ;; De entrada: el centro lo cambia en el documento sin volver a generar.
+  (parametro tope-diario :tipo entero :valor 5 :rol entrada
              :etiqueta "Tope de sesiones al dia por profesor")
 
   ;; ------------------------------------------------------------------

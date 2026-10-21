@@ -60,6 +60,13 @@ python3 materializador/sonda_escritura.py salida/plan-del-grupo.xlsx "Plan del g
         A10=X B10=Nueva C10=3 D10=1 -- E10=2 || fallos=1
 
 echo
+echo "Parametro de entrada: se baja el tope diario del Saul a 1 en su hoja y"
+echo "se comprueba que el profesor de Matematica del 10-3, que da 2 sesiones"
+echo "el viernes, pasa a estar por encima del tope."
+python3 materializador/sonda_escritura.py salida/horario-saul.xlsx "Carga diaria" \
+        Parametros!B4=1 -- "D8=Da 2 sesiones ese dia" || fallos=1
+
+echo
 echo "Pagina web: se ejecuta el JavaScript que emitio la arquitectura y se"
 echo "comparan los valores que calcula."
 if command -v node >/dev/null 2>&1; then
