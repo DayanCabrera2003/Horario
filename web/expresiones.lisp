@@ -95,9 +95,14 @@
   (js-variable-de-valor (nucleo:nombre e)))
 
 (defmethod protocolo:emitir-expresion ((a web) (e nucleo:ref-parametro) ambito plan)
+  "Un parametro de entrada se lee de P, que la pagina cambia cuando el
+   usuario lo edita (web/emision.lisp, ESCRIBIR-PARAMETROS). Uno fijo se
+   copia: es una constante del dominio."
   (declare (ignore ambito))
   (let ((p (nucleo:parametro-llamado (situacion plan) (nucleo:nombre e))))
-    (js-literal (and p (nucleo:valor p)))))
+    (if (and p (eq (nucleo:rol p) :entrada))
+        (format nil "P[~/situacion.web::js/]" (nombre-js (nucleo:nombre p)))
+        (js-literal (and p (nucleo:valor p))))))
 
 (defun js-condicion (a e ambito plan)
   "E traducida para usarla como condicion. Si por su forma ya es verdadero o

@@ -96,6 +96,7 @@
     (format flujo "<div id=\"app\"></div>~%")
     (format flujo "<script>~%")
     (escribir-datos a plan flujo)
+    (escribir-parametros plan flujo)
     (write-string +ayudas-js+ flujo)
     (escribir-derivaciones a plan flujo)
     (escribir-marcas a plan flujo)
@@ -120,10 +121,13 @@
                                   (mapcar #'nombre-js (nucleo:orden coleccion))))))
 
 (defun algo-que-escribir-p (situacion)
-  "Cierto si alguna coleccion tiene un campo de entrada, o alguna crece."
-  (some (lambda (c) (or (nucleo:campos-de-rol c :entrada)
-                        (eq (nucleo:crecimiento c) :crece)))
-        (nucleo:colecciones situacion)))
+  "Cierto si alguna coleccion tiene un campo de entrada, o alguna crece, o
+   hay algun parametro de entrada."
+  (or (some (lambda (c) (or (nucleo:campos-de-rol c :entrada)
+                            (eq (nucleo:crecimiento c) :crece)))
+            (nucleo:colecciones situacion))
+      (some (lambda (p) (eq (nucleo:rol p) :entrada))
+            (nucleo:parametros situacion))))
 
 (defun escribir-datos (a plan flujo)
   "Los datos conocidos, como objeto de JavaScript."
@@ -151,6 +155,28 @@
           (loop for c in (nucleo:colecciones (situacion plan))
                 when (eq (nucleo:crecimiento c) :crece)
                   collect (nombre-js (nucleo:nombre c)))))
+
+(defun escribir-parametros (plan flujo)
+  "Los parametros de entrada: su valor en P, que es lo que leen las
+   derivaciones y las marcas, y su descripcion en PARAMETROS, que es lo que
+   dibuja la seccion donde se editan (web/dibujo.lisp).
+
+   Hasta el 2026-10-21 la pagina copiaba el valor de todo parametro en el
+   codigo, y el tope del Saul no se podia cambiar en ella. Los fijos se
+   siguen copiando y no aparecen aqui."
+  (let ((de-entrada (remove-if-not (lambda (p) (eq (nucleo:rol p) :entrada))
+                                   (nucleo:parametros (situacion plan)))))
+    (format flujo "const P = {~{~a~^, ~}};~%"
+            (loop for p in de-entrada
+                  collect (format nil "~/situacion.web::js/: ~a"
+                                  (nombre-js (nucleo:nombre p))
+                                  (js-literal (nucleo:valor p)))))
+    (format flujo "const PARAMETROS = [~{~a~^, ~}];~%"
+            (loop for p in de-entrada
+                  collect (format nil "{n: ~/situacion.web::js/, e: ~/situacion.web::js/, tipo: ~/situacion.web::js/}"
+                                  (nombre-js (nucleo:nombre p))
+                                  (nucleo:etiqueta p)
+                                  (string-downcase (symbol-name (nucleo:tipo p))))))))
 
 (defun escribir-derivaciones (a plan flujo)
   "Una funcion por campo derivado. La pagina las recalcula todas tras cada

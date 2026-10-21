@@ -46,3 +46,15 @@
                          situacion.corpus:datos-del-seder)))
     (comprobar (null (hoja-llamada plano "Parametros"))
                "el SEDER no tiene parametros y no puede tener la hoja")))
+
+(definir-prueba parametro-de-entrada-en-la-pagina
+    "Parametros: la pagina lee uno de entrada de P y lo dibuja para editarlo"
+  (let ((html (materializar-en-cadena (situacion.web:hacer-web)
+                                      (situacion.lenguaje:situacion-llamada "CASO-NOTAS")
+                                      (datos-del-caso "DATOS-DE-NOTAS"))))
+    (comprobar (search "P[\"aprobado\"]" html)
+               "las derivaciones tienen que leer la nota para aprobar de P")
+    (comprobar (search "{n: \"aprobado\", e: \"Nota para aprobar\"" html)
+               "la nota para aprobar tiene que estar entre los parametros que se dibujan")
+    (comprobar (not (search "P[\"hoy\"]" html))
+               "la fecha de hoy es fija y se copia en el codigo")))
