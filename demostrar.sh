@@ -118,6 +118,10 @@ if arrancar_navegador; then
          "salida/$f-esperado.json" "salida/$f-vistas.json" "salida/$f-cruces.json" || fallos=1
     node materializador/sonda-foco.js "$PUERTO_NAVEGADOR" "salida/$f.html" "$aparece" || fallos=1
   done
+  # El tope diario del Saul es de entrada: bajarlo a 1 en la pagina tiene que
+  # hacer aparecer el aviso del profesor que da 2 sesiones un dia.
+  node materializador/sonda-parametro.js "$PUERTO_NAVEGADOR" salida/horario-saul.html \
+       tope-diario 1 "Da 2 sesiones ese dia" || fallos=1
   cerrar_navegador
 else
   echo "  (no hay Chromium; esta comprobacion se salta)"
