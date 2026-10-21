@@ -130,7 +130,6 @@
 
    El coste esta declarado en el informe de conformidad: los ejes se fijan al
    generar."
-  (declare (ignore a))
   (let* ((vista (vista cruce))
          (hoja (hoja-origen cruce))
          (coleccion (coleccion hoja))
@@ -547,7 +546,7 @@
    las filas en blanco. Es un problema de esta arquitectura -una pagina web
    no tiene filas vacias- y por eso se resuelve aqui y el lenguaje no lo
    menciona."
-  (declare (ignore ambito plan))
+  (declare (ignore a ambito plan))
   (if (eq (nucleo:crecimiento coleccion) :crece)
       ;; La fila existe en cuanto tiene escrito algun campo de su clave, no
       ;; solo el primero: una clave compuesta se puede empezar a escribir por

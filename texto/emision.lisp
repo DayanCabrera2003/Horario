@@ -160,6 +160,7 @@
    VALOR-DE-SECCION es el valor del campo por el que se parte la vista, o NIL
    si no se parte. Las casillas se llenan con las filas de ESA seccion; los
    ejes son los de la vista entera."
+  (declare (ignore a))
   (let* ((situacion (situacion plan))
          (coleccion (nucleo:coleccion-llamada situacion (nucleo:fuente vista)))
          (filas-fuente (filas-de-la-seccion plan vista valor-de-seccion))

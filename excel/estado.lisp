@@ -57,6 +57,7 @@
   "El estado de la fila *FILA*: las explicaciones de las MARCAS que
    disparan, separadas por punto y coma. Se concatenan todas con su
    separador delante y se quita el primero con EXTRAE."
+  (declare (ignore hoja))
   (format nil "MID(~{~a~^&~},3,32767)"
           (loop for marca in marcas
                 ;; Una marca :POR-CAMPO da un termino por campo, en el orden de
