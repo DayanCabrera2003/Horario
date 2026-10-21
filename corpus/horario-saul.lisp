@@ -17,6 +17,8 @@
 ;;;;   - Los contratados y los que viven lejos: ninguno.
 ;;;;   - Que asignaturas admiten tarde: solo AL/AC, que es la unica que el
 ;;;;     horario real pone en el turno 7.
+;;;;   - Que asignaturas admiten turno doble: M y Lit-L, las dos que el
+;;;;     horario real pone en turnos seguidos.
 ;;;;   - El nombre largo de algunas asignaturas.
 ;;;;
 ;;;; El dia, tal como lo usa el centro hoy: seis turnos de manana y uno de
@@ -68,16 +70,22 @@
            :dominio (los nombre de profesores)
            :al-violar advertir)
     (campo frecuencia   :rol entrada :tipo entero :etiqueta "Frecuencia")
+    ;; Si la asignatura admite turno doble es un dato aparte, no se deriva
+    ;; de la frecuencia. Hasta el 2026-10-21 se calculaba como "frecuencia
+    ;; cinco", leyendo la descripcion como "solo las de frecuencia cinco lo
+    ;; admiten". La otra tesis aclaro que dice otra cosa: las de frecuencia
+    ;; cinco lo NECESITAN (cinco sesiones en los cuatro dias que deja el de
+    ;; preparacion), y que otras tambien pueden admitirlo. El horario real lo
+    ;; confirma: Lit-L, de frecuencia cuatro, va en turno doble en 10-3 y 10-4.
+    (campo turno-doble  :rol entrada :etiqueta "Turno doble"
+           :dominio (uno-de "si" "no")
+           :al-violar advertir)
     (campo admite-tarde :rol entrada :etiqueta "Admite tarde"         ; SUPUESTO
            :dominio (uno-de "si" "no")
            :al-violar advertir)
     (campo nombre :rol derivado :etiqueta "Asignatura"
            (el nombre de (la-fila-de asignaturas :donde (= abrev (de fila abrev)))
                :si-no ""))
-    ;; "Las asignaturas de frecuencia cinco son exactamente las que admiten
-    ;; turno doble": se deriva, no se escribe dos veces.
-    (campo turno-doble :rol derivado :etiqueta "Turno doble"
-           (si (= (de fila frecuencia) 5) "si" "no"))
     (campo asignadas :rol derivado :tipo entero :etiqueta "Asignadas"
            (cuantas casillas :donde (y (= grupo (de fila grupo))
                                        (= asignatura (de fila abrev)))))
@@ -392,26 +400,29 @@
 
 (defparameter +dias-del-saul+ '("L" "M" "MI" "J" "V"))
 
-;;; Las asignaturas: abreviatura, nombre, frecuencia, admite tarde y local.
-;;; La frecuencia y la tarde van al plan de cada grupo; el resto, a la
-;;; asignatura. Los nombres entre parentesis estan por confirmar: la foto solo trae la
-;;; abreviatura.
+;;; Las asignaturas: abreviatura, nombre, frecuencia, turno doble, admite
+;;; tarde y local. La frecuencia, el turno doble y la tarde van al plan de
+;;; cada grupo; el resto, a la asignatura. Los nombres entre parentesis estan
+;;; por confirmar: la foto solo trae la abreviatura.
+;;;
+;;; Turno doble (SUPUESTO): las dos que el horario real pone en turnos
+;;; seguidos, M y Lit-L.
 (defparameter +asignaturas-del-saul+
-  '(("M"     "Matematica"                   5 "no" "")
-    ("Lit-L" "Literatura y Lengua"          4 "no" "")
-    ("F"     "Fisica"                       3 "no" "")
-    ("I"     "Ingles"                       3 "no" "")
-    ("H"     "Historia"                     3 "no" "")
-    ("EF"    "Educacion Fisica"             2 "no" "Terreno")
-    ("B"     "Biologia"                     2 "no" "")
-    ("G"     "Geografia"                    2 "no" "")
-    ("INF"   "Informatica"                  1 "no" "Laboratorio")
-    ("Q"     "Quimica"                      1 "no" "")
-    ("CP"    "(CP, por confirmar)"          1 "no" "")
-    ("DC"    "(DC, por confirmar)"          1 "no" "")
-    ("CA"    "(CA, por confirmar)"          1 "no" "")
-    ("RD"    "(RD, por confirmar)"          1 "no" "")
-    ("AL/AC" "(AL/AC, por confirmar)"       1 "si" "")))
+  '(("M"     "Matematica"                   5 "si" "no" "")
+    ("Lit-L" "Literatura y Lengua"          4 "si" "no" "")
+    ("F"     "Fisica"                       3 "no" "no" "")
+    ("I"     "Ingles"                       3 "no" "no" "")
+    ("H"     "Historia"                     3 "no" "no" "")
+    ("EF"    "Educacion Fisica"             2 "no" "no" "Terreno")
+    ("B"     "Biologia"                     2 "no" "no" "")
+    ("G"     "Geografia"                    2 "no" "no" "")
+    ("INF"   "Informatica"                  1 "no" "no" "Laboratorio")
+    ("Q"     "Quimica"                      1 "no" "no" "")
+    ("CP"    "(CP, por confirmar)"          1 "no" "no" "")
+    ("DC"    "(DC, por confirmar)"          1 "no" "no" "")
+    ("CA"    "(CA, por confirmar)"          1 "no" "no" "")
+    ("RD"    "(RD, por confirmar)"          1 "no" "no" "")
+    ("AL/AC" "(AL/AC, por confirmar)"       1 "no" "si" "")))
 
 ;;; El horario real, por turno y de lunes a viernes. "" es un turno libre.
 ;;; Las correcciones en rojo de la foto ya estan aplicadas.
@@ -451,17 +462,18 @@
                                  collect (profesor-supuesto grupo abrev)))))
         (list
          (cons (funcall n "asignaturas")
-               (loop for (abrev nombre nil nil local) in +asignaturas-del-saul+
+               (loop for (abrev nombre nil nil nil local) in +asignaturas-del-saul+
                      collect (fila "abrev" abrev "nombre" nombre
                                    "dia-preparacion" "" "local" local)))
-         ;; La frecuencia y la tarde se repiten en cada grupo: la foto da
-         ;; las mismas en los dos.
+         ;; La frecuencia, el turno doble y la tarde se repiten en cada
+         ;; grupo: la foto da los mismos en los dos.
          (cons (funcall n "plan-por-grupo")
                (loop for (grupo . nil) in +grupos-del-saul+
-                     append (loop for (abrev nil frecuencia tarde) in +asignaturas-del-saul+
+                     append (loop for (abrev nil frecuencia doble tarde) in +asignaturas-del-saul+
                                   collect (fila "grupo" grupo "abrev" abrev
                                                 "profesor" (profesor-supuesto grupo abrev)
                                                 "frecuencia" frecuencia
+                                                "turno-doble" doble
                                                 "admite-tarde" tarde))))
          (cons (funcall n "profesores")
                (loop for p in profesores
