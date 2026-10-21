@@ -60,14 +60,19 @@ archivo donde se usa, hasta que el centro lo dé:
 - los días de preparación, los contratados y los que viven lejos: ninguno;
 - qué asignaturas admiten tarde: solo AL/AC, la única que el horario pone
   en el turno 7;
+- qué asignaturas admiten turno doble: M y Lit-L, las dos que el horario
+  pone en turnos seguidos;
 - el nombre de CP, DC, CA, RD y AL/AC.
 
-Contra ese horario, **el modelo señala una sola cosa**: Lit-L tiene dos
-sesiones seguidas el mismo día en los dos grupos (10-3 el jueves, turnos 3 y
-4; 10-4 el viernes, turnos 1 y 2). Según la descripción, solo admiten turno
-doble las asignaturas de frecuencia cinco, y Lit-L tiene cuatro. O el
-horario incumple la regla, o la regla tiene una excepción que la
-descripción no recoge.
+Contra ese horario **el modelo no señala ningún problema**, solo los turnos
+libres. Hasta el 2026-10-21 señalaba a Lit-L, que va en turno doble en los
+dos grupos (10-3 el jueves, turnos 3 y 4; 10-4 el viernes, turnos 1 y 2)
+con frecuencia cuatro: el turno doble se calculaba como "frecuencia cinco".
+La descripción dice otra cosa: una asignatura de frecuencia cinco
+*necesita* turno doble, porque el día de preparación le deja cuatro días
+para cinco sesiones, pero otras también pueden admitirlo. Ahora el turno
+doble se escribe en el plan de cada grupo, y lo que se señala es una
+asignatura de frecuencia cinco que no lo admite.
 
 ## Lo que está verificado y lo que no
 
