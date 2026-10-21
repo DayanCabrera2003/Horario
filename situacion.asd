@@ -170,6 +170,8 @@
                (:file "presentacion")
                (:file "vistas")
                (:file "rejilla-de-entrada")
+               (:file "entradas")
+               (:file "cruces")
                (:file "emision")))
 
 (defsystem "situacion/web"
