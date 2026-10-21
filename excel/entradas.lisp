@@ -51,10 +51,16 @@
    :AL-VIOLAR ADVERTIR se traduce a un aviso no bloqueante e :IMPEDIR a uno
    que si bloquea. La diferencia la declara el lenguaje porque es del dominio."
   (declare (ignore ambito))
-  (let ((letra (columna-de *hoja* (nucleo:nombre campo)))
-        (valores (valores-del-dominio a plan campo)))
-    (list (cons "rango" (format nil "~a~d:~a~d" letra (fila-primera *hoja*)
-                                letra (fila-ultima *hoja*)))
+  (let ((letra (columna-de *hoja* (nucleo:nombre campo))))
+    (desplegable a plan campo (format nil "~a~d:~a~d" letra (fila-primera *hoja*)
+                                      letra (fila-ultima *hoja*)))))
+
+(defun desplegable (a plan campo rango)
+  "La validacion de lista de CAMPO sobre RANGO. La usan la columna de la
+   hoja de datos y la rejilla de entrada, que escribe el mismo campo en otro
+   sitio (excel/rejilla-de-entrada.lisp)."
+  (let ((valores (valores-del-dominio a plan campo)))
+    (list (cons "rango" rango)
           (cons "tipo" "lista")
           ;; Los valores van a una hoja oculta y la validacion cita su rango:
           ;; escritos dentro de la validacion, una coma partia un valor en dos.
