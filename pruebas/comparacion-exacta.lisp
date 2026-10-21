@@ -50,8 +50,11 @@
     "Comparacion exacta: (= a b) se compila a EXACT y (/= a b) a NOT(EXACT)"
   (let* ((plano (plano-de (situacion.lenguaje:situacion-llamada "HORARIO-SAUL")
                           situacion.corpus:datos-del-saul))
-         ;; TURNO-DOBLE de ASIGNATURAS es (si (= (de fila frecuencia) 5) ...).
-         (formula (formula-de-celda (hoja-de-coleccion plano "asignaturas") "D4")))
+         ;; TURNO-DOBLE del plan por grupo es (si (= (de fila frecuencia) 5) ...).
+         ;; Hasta el 2026-10-21 estaba en ASIGNATURAS; se busca la columna por
+         ;; el campo para no depender de donde cae.
+         (hoja (hoja-de-coleccion plano "plan-por-grupo"))
+         (formula (formula-de-celda hoja (celda-de-campo hoja "turno-doble" 4))))
     (comprobar (and formula (search "EXACT(" formula))
                "la igualdad tiene que ser EXACT: ~a" formula)))
 

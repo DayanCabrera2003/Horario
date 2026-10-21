@@ -28,25 +28,24 @@
 (defsituacion horario-saul
     (:etiqueta "Horario docente de 10mo grado, preuniversitario Saul Delgado")
 
-  ;; El plan del ano: cuantas veces recibe cada grupo cada asignatura. Las
-  ;; frecuencias salen de contar la foto, y dan lo mismo en los dos grupos.
+  ;; Lo que es de la asignatura sea cual sea el grupo y el ano. La
+  ;; frecuencia, el turno doble y si admite tarde NO van aqui: cambian de un
+  ;; ano a otro, y van en el plan por grupo (2026-10-21, a pedido de la otra
+  ;; tesis; con un solo ano daba igual, con varios no).
   (coleccion asignaturas
     (:etiqueta "Asignaturas")
     (:clave abrev)
     (campo abrev      :rol fijo :etiqueta "Abrev")
     (campo nombre     :rol fijo :etiqueta "Asignatura")
-    (campo frecuencia :rol fijo :tipo entero :etiqueta "Frecuencia")
-    ;; "Las asignaturas de frecuencia cinco son exactamente las que admiten
-    ;; turno doble": se deriva, no se escribe dos veces.
-    (campo turno-doble :rol derivado :etiqueta "Turno doble"
-           (si (= (de fila frecuencia) 5) "si" "no"))
-    (campo admite-tarde    :rol fijo :etiqueta "Admite tarde")      ; SUPUESTO
     (campo dia-preparacion :rol fijo :etiqueta "Dia de preparacion") ; SUPUESTO
     ;; Vacio: se da en el aula del grupo.
     (campo local           :rol fijo :etiqueta "Local")              ; SUPUESTO
-    (:datos (("M" "Matematica" 5 "no" "" ""))))
+    (:datos (("M" "Matematica" "" ""))))
 
-  ;; Quien da cada asignatura a cada grupo. El enunciado dice que viene dado.
+  ;; El plan: que recibe cada grupo, cuantas veces y quien se lo da. El
+  ;; enunciado dice que el profesor viene dado. Las frecuencias salen de
+  ;; contar la foto, y dan lo mismo en los dos grupos.
+  ;;
   ;; La clave es compuesta, grupo y asignatura. Hasta el 2026-10-17 los dos
   ;; iban pegados con "#" en un campo CLAVE, porque la hoja de calculo solo
   ;; buscaba por una igualdad (fase 2, hueco C2).
@@ -56,18 +55,21 @@
     (campo grupo    :rol fijo :etiqueta "Grupo")
     (campo abrev    :rol fijo :etiqueta "Abrev")
     (campo profesor :rol fijo :etiqueta "Profesor")                   ; SUPUESTO
+    (campo frecuencia   :rol fijo :tipo entero :etiqueta "Frecuencia")
+    (campo admite-tarde :rol fijo :etiqueta "Admite tarde")           ; SUPUESTO
     (campo nombre :rol derivado :etiqueta "Asignatura"
            (el nombre de (la-fila-de asignaturas :donde (= abrev (de fila abrev)))
                :si-no ""))
-    (campo frecuencia :rol derivado :tipo entero :etiqueta "Frecuencia"
-           (el frecuencia de (la-fila-de asignaturas :donde (= abrev (de fila abrev)))
-               :si-no 0))
+    ;; "Las asignaturas de frecuencia cinco son exactamente las que admiten
+    ;; turno doble": se deriva, no se escribe dos veces.
+    (campo turno-doble :rol derivado :etiqueta "Turno doble"
+           (si (= (de fila frecuencia) 5) "si" "no"))
     (campo asignadas :rol derivado :tipo entero :etiqueta "Asignadas"
            (cuantas casillas :donde (y (= grupo (de fila grupo))
                                        (= asignatura (de fila abrev)))))
     (campo faltan :rol derivado :tipo entero :etiqueta "Faltan"
            (- (de fila frecuencia) (de fila asignadas)))
-    (:datos (("10-3" "M" "Profesor de M en 10-3"))))
+    (:datos (("10-3" "M" "Profesor de M en 10-3" 5 "no"))))
 
   ;; Las dos disposiciones sobre los profesores que usan las reglas.
   (coleccion profesores
@@ -120,13 +122,17 @@
                (si (vacio? (de fila local))
                    (texto "Aula " (de fila grupo))
                    (de fila local))))
+    ;; El turno doble y la tarde son del plan del grupo, no de la
+    ;; asignatura: se buscan por grupo y asignatura.
     (campo turno-doble :rol derivado :etiqueta "Turno doble"
-           (el turno-doble de (la-fila-de asignaturas
-                                :donde (= abrev (de fila asignatura)))
+           (el turno-doble de (la-fila-de plan-por-grupo
+                                :donde (y (= grupo (de fila grupo))
+                                          (= abrev (de fila asignatura))))
                :si-no "no"))
     (campo admite-tarde :rol derivado :etiqueta "Admite tarde"
-           (el admite-tarde de (la-fila-de asignaturas
-                                 :donde (= abrev (de fila asignatura)))
+           (el admite-tarde de (la-fila-de plan-por-grupo
+                                 :donde (y (= grupo (de fila grupo))
+                                           (= abrev (de fila asignatura))))
                :si-no "no"))
     (campo dia-preparacion :rol derivado :etiqueta "Dia de preparacion"
            (el dia-preparacion de (la-fila-de asignaturas
@@ -347,7 +353,7 @@
                   :secciones aula
                   :unica-salvo aula-ocupada)
   (vista plan        :de asignaturas    :etiqueta "Asignaturas")
-  (vista frecuencias :de plan-por-grupo :etiqueta "Frecuencias por grupo")
+  (vista frecuencias :de plan-por-grupo :etiqueta "Plan por grupo")
   (vista carga       :de carga-diaria   :etiqueta "Carga diaria"))
 
 ;;; ====================================================================
@@ -357,7 +363,8 @@
 (defparameter +dias-del-saul+ '("L" "M" "MI" "J" "V"))
 
 ;;; Las asignaturas: abreviatura, nombre, frecuencia, admite tarde y local.
-;;; Los nombres entre parentesis estan por confirmar: la foto solo trae la
+;;; La frecuencia y la tarde van al plan de cada grupo; el resto, a la
+;;; asignatura. Los nombres entre parentesis estan por confirmar: la foto solo trae la
 ;;; abreviatura.
 (defparameter +asignaturas-del-saul+
   '(("M"     "Matematica"                   5 "no" "")
@@ -414,15 +421,18 @@
                                  collect (profesor-supuesto grupo abrev)))))
         (list
          (cons (funcall n "asignaturas")
-               (loop for (abrev nombre frecuencia tarde local) in +asignaturas-del-saul+
+               (loop for (abrev nombre nil nil local) in +asignaturas-del-saul+
                      collect (fila "abrev" abrev "nombre" nombre
-                                   "frecuencia" frecuencia "admite-tarde" tarde
                                    "dia-preparacion" "" "local" local)))
+         ;; La frecuencia y la tarde se repiten en cada grupo: la foto da
+         ;; las mismas en los dos.
          (cons (funcall n "plan-por-grupo")
                (loop for (grupo . nil) in +grupos-del-saul+
-                     append (loop for (abrev) in +asignaturas-del-saul+
+                     append (loop for (abrev nil frecuencia tarde) in +asignaturas-del-saul+
                                   collect (fila "grupo" grupo "abrev" abrev
-                                                "profesor" (profesor-supuesto grupo abrev)))))
+                                                "profesor" (profesor-supuesto grupo abrev)
+                                                "frecuencia" frecuencia
+                                                "admite-tarde" tarde))))
          (cons (funcall n "profesores")
                (loop for p in profesores
                      collect (fila "nombre" p "contratado" "no" "vive-lejos" "no")))

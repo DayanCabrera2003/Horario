@@ -60,7 +60,7 @@
   (let* ((plano (plano-de (situacion.lenguaje:situacion-llamada "HORARIO-SAUL")
                           situacion.corpus:datos-del-saul))
          (hoja (hoja-de-coleccion plano "plan-por-grupo"))
-         (formula (formula-de-celda hoja "E4")))
+         (formula (formula-de-celda hoja (celda-de-campo hoja "nombre" 4))))
     (comprobar (and formula (search "MATCH(1,INDEX(EXACT(" formula))
                "el nombre de la asignatura tiene que seguir buscandose con EXACT: ~a"
                formula)))
