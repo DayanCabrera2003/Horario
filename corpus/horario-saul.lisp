@@ -140,11 +140,16 @@
            (el vive-lejos de (la-fila-de profesores
                                :donde (= nombre (de fila profesor)))
                :si-no "no"))
-    (campo profesor-asiste-hoy :rol derivado :etiqueta "Asiste hoy"
-           (el asiste de (la-fila-de disponibilidad
-                           :donde (y (= profesor (de fila profesor))
-                                     (= dia (de fila dia))))
-               :si-no "no"))
+    ;; Solo dice algo de los contratados, que son los unicos que no vienen
+    ;; todos los dias. Para los demas queda vacio: antes decia "no" a todos,
+    ;; y en un centro sin contratados parecia que nadie venia nunca.
+    (campo profesor-asiste-hoy :rol derivado :etiqueta "Contratado: viene hoy"
+           (si (= (de fila profesor-contratado) "si")
+               (el asiste de (la-fila-de disponibilidad
+                               :donde (y (= profesor (de fila profesor))
+                                         (= dia (de fila dia))))
+                   :si-no "no")
+               ""))
 
     ;; Reglas 3 y 4: la misma asignatura otra vez el mismo dia en el mismo
     ;; grupo, cuando no admite turno doble o no es en el turno de al lado.
