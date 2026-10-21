@@ -183,7 +183,9 @@
                                        (no (vacio? asignatura)))))
     (:datos (("Profesor de M en 10-3" "L"))))
 
-  (parametro tope-diario :tipo entero :valor 3                         ; SUPUESTO
+  ;; La descripcion dice "un tope" sin numero. Era 3 por suponer algo; el
+  ;; 2026-10-21 se acordo 5 con la otra tesis, que modela la misma regla.
+  (parametro tope-diario :tipo entero :valor 5
              :etiqueta "Tope de sesiones al dia por profesor")
 
   ;; ------------------------------------------------------------------
