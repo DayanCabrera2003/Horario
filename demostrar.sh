@@ -94,6 +94,13 @@ python3 materializador/sonda_escritura.py salida/horario-saul.xlsx "Horario del 
         || fallos=1
 
 echo
+echo "Pestana con selector: se le da Matematica del 10-3 a una profesora que no"
+echo "existia al generar el libro y se la escoge en el horario del profesor"
+echo "(elegir). Su rejilla tiene que ensenar el 10-3 el lunes en el turno 6."
+python3 materializador/sonda_escritura.py salida/horario-saul.xlsx "Horario del profesor (elegir)" \
+        "Plan por grupo!C4=Prof. Nueva" "B2=Prof. Nueva" -- B9=10-3 || fallos=1
+
+echo
 echo "Pagina web: se ejecuta el JavaScript que emitio la arquitectura y se"
 echo "comparan los valores que calcula."
 if command -v node >/dev/null 2>&1; then
