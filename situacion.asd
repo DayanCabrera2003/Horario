@@ -130,6 +130,7 @@
                (:file "donde")
                (:file "parametros")
                (:file "rejilla-de-entrada")
+               (:file "leyenda")
                (:file "ejecutar"))
   :perform (test-op (op system)
                     (uiop:symbol-call :situacion.pruebas :ejecutar)))

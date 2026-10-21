@@ -56,7 +56,7 @@
    #:campo #:hacer-campo
    #:etiqueta #:tipo #:rol #:opcional #:dominio #:al-violar #:expresion
    #:marca #:hacer-marca
-   #:condicion #:alcance #:severidad #:explicacion
+   #:condicion #:alcance #:severidad #:explicacion #:leyenda
    #:vista #:hacer-vista
    #:fuente #:secciones #:agrupacion #:filtro #:conflicto #:es-entrada
    #:eje-de-filas #:eje-de-columnas #:lo-que-se-muestra #:cruzada-p

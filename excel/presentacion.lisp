@@ -134,9 +134,11 @@
            (nucleo:colecciones (situacion plan))))
 
 (defun texto-de-leyenda (marca)
-  "Lo que dice la leyenda de MARCA: su explicacion si es un texto escrito,
-   y si no su nombre."
+  "Lo que dice la leyenda de MARCA: su :LEYENDA si la declara; si no, su
+   explicacion si es un texto escrito, y si tampoco, su nombre. El nombre
+   es interno (\"instalacion desequilibrada\") y no dice que significa."
   (let ((e (nucleo:explicacion marca)))
-    (if (and e (typep e 'nucleo:literal) (stringp (nucleo:valor e)))
-        (nucleo:valor e)
-        (nucleo:nombre-legible-de-marca marca))))
+    (cond ((nucleo:leyenda marca))
+          ((and e (typep e 'nucleo:literal) (stringp (nucleo:valor e)))
+           (nucleo:valor e))
+          (t (nucleo:nombre-legible-de-marca marca)))))

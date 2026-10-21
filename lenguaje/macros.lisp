@@ -189,7 +189,10 @@
 
 (defun compilar-marca (forma)
   "(marca NOMBRE :cuando EXPR :sobre (campo ...) :severidad ... [:explica EXPR]
-                 [:por-campo VARIABLE])
+                 [:leyenda TEXTO] [:por-campo VARIABLE])
+
+   :LEYENDA es una frase fija que dice que significa la marca en general,
+   para donde se habla de la marca y no de una fila.
 
    Con :POR-CAMPO, la condicion y la explicacion se evaluan una vez por cada
    campo de :SOBRE, con VARIABLE ligada al valor de ese campo, y solo se
@@ -200,8 +203,13 @@
           (sobre (opcion opciones :sobre))
           (en (opcion opciones :en))
           (explica (opcion opciones :explica))
+          (leyenda (opcion opciones :leyenda))
           (por-campo (opcion opciones :por-campo)))
       (unless cuando (error "La marca ~a no dice :CUANDO se cumple." nombre))
+      (when (and (opcion-presente-p opciones :leyenda) (not (stringp leyenda)))
+        (error "La marca ~a tiene :LEYENDA ~s.~@
+                :LEYENDA es un texto fijo entre comillas: dice que significa la~@
+                marca en general, no en una fila." nombre leyenda))
       (unless sobre (error "La marca ~a no dice :SOBRE que campos senala." nombre))
       (when (and (opcion-presente-p opciones :por-campo)
                  (not (and por-campo (symbolp por-campo) (not (keywordp por-campo)))))
@@ -220,6 +228,7 @@
           :alcance ',(normalizar-lista sobre)
           :severidad ,(como-clave (opcion opciones :severidad 'nucleo::advertencia))
           :explicacion ,(when explica (compilar-expresion explica))
+          :leyenda ,leyenda
           :por-campo ',(normalizar por-campo))))))
 
 ;;; ---------------------------------------------------------------------
