@@ -74,7 +74,10 @@
            (el capacidad de (la-fila-de instalaciones
                               :donde (= nombre (de fila instalacion)))
                :si-no 0))
-    (campo disponible :rol derivado :etiqueta "Horario disponible"
+    ;; No es la lista de horarios del ano, que esta en DISPONIBLES: dice si
+    ;; el horario escrito esta entre ellos. "Horario disponible" se leia
+    ;; como si la brigada tuviera uno solo.
+    (campo disponible :rol derivado :etiqueta "Su ano admite el horario"
            (si (vacio? (de fila horario))
                ""
                (si (= (el horario de (la-fila-de disponibles
