@@ -154,8 +154,9 @@
     ;; Reglas 3 y 4: la misma asignatura otra vez el mismo dia en el mismo
     ;; grupo, cuando no admite turno doble o no es en el turno de al lado.
     ;; Es un campo, y no solo la condicion de la marca, para que la
-    ;; demostracion compruebe el valor en las tres arquitecturas.
-    (campo repite-mal :rol derivado :etiqueta "Repite mal el dia"
+    ;; demostracion compruebe el valor en las tres arquitecturas. La
+    ;; etiqueta lo dice entero: "Repite mal el dia" no se entendia.
+    (campo repite-mal :rol derivado :etiqueta "Se repite el dia sin poder"
            (si (y (no (vacio? (de fila asignatura)))
                   (existe otra :en casillas
                     :distinta-de fila
