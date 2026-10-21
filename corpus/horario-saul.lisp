@@ -32,15 +32,24 @@
   ;; frecuencia, el turno doble y si admite tarde NO van aqui: cambian de un
   ;; ano a otro, y van en el plan por grupo (2026-10-21, a pedido de la otra
   ;; tesis; con un solo ano daba igual, con varios no).
+  ;;
+  ;; LAS TABLAS DE DATOS SE LLENAN EN EL DOCUMENTO (2026-10-21). Lo primero
+  ;; que pidio el centro es llenar los datos, y antes todo era fijo: no habia
+  ;; forma de marcar un contratado ni de cambiar una frecuencia sin
+  ;; desproteger la hoja. Ahora lo que identifica la fila es fijo y lo demas
+  ;; es de entrada, y la tabla crece para anadir filas.
   (coleccion asignaturas
     (:etiqueta "Asignaturas")
     (:clave abrev)
+    (:crece)
     (campo abrev      :rol fijo :etiqueta "Abrev")
     (campo nombre     :rol fijo :etiqueta "Asignatura")
-    (campo dia-preparacion :rol fijo :etiqueta "Dia de preparacion") ; SUPUESTO
+    (campo dia-preparacion :rol entrada :etiqueta "Dia de preparacion" ; SUPUESTO
+           :dominio (uno-de "L" "M" "MI" "J" "V")
+           :al-violar advertir)
     ;; Vacio: se da en el aula del grupo.
-    (campo local           :rol fijo :etiqueta "Local")              ; SUPUESTO
-    (:datos (("M" "Matematica" "" ""))))
+    (campo local           :rol entrada :etiqueta "Local")              ; SUPUESTO
+    (:datos (("M" "Matematica"))))
 
   ;; El plan: que recibe cada grupo, cuantas veces y quien se lo da. El
   ;; enunciado dice que el profesor viene dado. Las frecuencias salen de
@@ -52,11 +61,16 @@
   (coleccion plan-por-grupo
     (:etiqueta "Plan por grupo")
     (:clave grupo abrev)
+    (:crece)
     (campo grupo    :rol fijo :etiqueta "Grupo")
     (campo abrev    :rol fijo :etiqueta "Abrev")
-    (campo profesor :rol fijo :etiqueta "Profesor")                   ; SUPUESTO
-    (campo frecuencia   :rol fijo :tipo entero :etiqueta "Frecuencia")
-    (campo admite-tarde :rol fijo :etiqueta "Admite tarde")           ; SUPUESTO
+    (campo profesor :rol entrada :etiqueta "Profesor"                 ; SUPUESTO
+           :dominio (los nombre de profesores)
+           :al-violar advertir)
+    (campo frecuencia   :rol entrada :tipo entero :etiqueta "Frecuencia")
+    (campo admite-tarde :rol entrada :etiqueta "Admite tarde"         ; SUPUESTO
+           :dominio (uno-de "si" "no")
+           :al-violar advertir)
     (campo nombre :rol derivado :etiqueta "Asignatura"
            (el nombre de (la-fila-de asignaturas :donde (= abrev (de fila abrev)))
                :si-no ""))
@@ -69,25 +83,34 @@
                                        (= asignatura (de fila abrev)))))
     (campo faltan :rol derivado :tipo entero :etiqueta "Faltan"
            (- (de fila frecuencia) (de fila asignadas)))
-    (:datos (("10-3" "M" "Profesor de M en 10-3" 5 "no"))))
+    (:datos (("10-3" "M"))))
 
   ;; Las dos disposiciones sobre los profesores que usan las reglas.
   (coleccion profesores
     (:etiqueta "Profesores")
     (:clave nombre)
+    (:crece)
     (campo nombre     :rol fijo :etiqueta "Profesor")
-    (campo contratado :rol fijo :etiqueta "Contratado")               ; SUPUESTO
-    (campo vive-lejos :rol fijo :etiqueta "Vive lejos")               ; SUPUESTO
-    (:datos (("Profesor de M en 10-3" "no" "no"))))
+    (campo contratado :rol entrada :etiqueta "Contratado"             ; SUPUESTO
+           :dominio (uno-de "si" "no")
+           :al-violar advertir)
+    (campo vive-lejos :rol entrada :etiqueta "Vive lejos"             ; SUPUESTO
+           :dominio (uno-de "si" "no")
+           :al-violar advertir)
+    (:datos (("Profesor de M en 10-3"))))
 
   ;; Que dias asiste cada profesor contratado.
-  ;; Hoy no hay contratados (SUPUESTO), asi que no hay filas.
+  ;; Hoy no hay contratados (SUPUESTO), asi que no hay filas: se anaden en
+  ;; el documento, en las filas de reserva.
   (coleccion disponibilidad
     (:etiqueta "Dias que asisten los contratados")
     (:clave profesor dia)
+    (:crece)
     (campo profesor :rol fijo :etiqueta "Profesor")
     (campo dia      :rol fijo :etiqueta "Dia")
-    (campo asiste   :rol fijo :etiqueta "Asiste"))
+    (campo asiste   :rol entrada :etiqueta "Asiste"
+           :dominio (uno-de "si" "no")
+           :al-violar advertir))
 
   ;; LA REJILLA, una fila por casilla: grupo, dia y turno. Solo la
   ;; asignatura se escribe; lo demas se trae de las tablas de arriba.
@@ -178,9 +201,11 @@
     (:datos (("10-3" "L" 1))))
 
   ;; Cuantas sesiones da cada profesor cada dia, para la regla blanda del tope.
+  ;; Crece para que un profesor anadido tenga donde contar su carga.
   (coleccion carga-diaria
     (:etiqueta "Carga diaria por profesor")
     (:clave profesor dia)
+    (:crece)
     (campo profesor :rol fijo :etiqueta "Profesor")
     (campo dia      :rol fijo :etiqueta "Dia")
     (campo sesiones :rol derivado :tipo entero :etiqueta "Sesiones"
