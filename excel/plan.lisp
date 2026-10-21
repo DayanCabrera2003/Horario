@@ -130,6 +130,10 @@
             de la hoja oculta de listas donde se escriben (excel/listas.lisp).")
    (nombre-de-listas :accessor nombre-de-listas :initform nil
                      :documentation "El nombre de la hoja de listas, si hace falta.")
+   (rejillas-de-entrada :accessor rejillas-de-entrada :initform '()
+                        :documentation
+                        "Las vistas cruzadas cuya rejilla lleva el dato y es
+                         donde se escribe (excel/rejilla-de-entrada.lisp).")
    (nombre-de-parametros :accessor nombre-de-parametros :initform nil
                          :documentation
                          "El nombre de la hoja de los parametros de entrada,

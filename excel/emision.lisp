@@ -41,6 +41,9 @@
     (when (nucleo:cruzada-p vista) (planificar-cruces a vista plan))
     (protocolo:planificar-vista a vista plan))
   (setf (cruces plan) (nreverse (cruces plan)))
+  ;; Que rejillas de entrada llevan el dato: decide que columnas de las
+  ;; hojas de datos pasan a ser formulas, asi que va antes de emitir ninguna.
+  (planificar-rejillas-de-entrada a plan)
   ;; Las columnas auxiliares del conteo de distintos se reparten antes de
   ;; emitir ninguna hoja: una hoja puede contar los distintos de otra que se
   ;; emite antes que ella, y su columna tiene que existir ya.
@@ -128,7 +131,13 @@
          (hoja (hoja-origen cruce))
          (coleccion (coleccion hoja))
          (nombre-origen (entrecomillar (nombre hoja)))
-         (fila-enc 3) (fila-ini 4)
+         (fila-enc (1- +fila-primera-de-rejilla+)) (fila-ini +fila-primera-de-rejilla+)
+         ;; Una rejilla de entrada lleva el dato y no la busqueda
+         ;; (excel/rejilla-de-entrada.lisp).
+         (de-entrada (rejilla-de-entrada-p plan cruce))
+         (rango-de-casillas (format nil "B~d:~a~d" fila-ini
+                                    (letra-de-columna (max 1 (length (valores-de-columna cruce))))
+                                    (+ fila-ini (max 0 (1- (length (valores-de-fila cruce)))))))
          (campo-celda (nucleo:lo-que-se-muestra vista))
          (rango-clave (format nil "~a!$~a$~d:$~a$~d" nombre-origen
                               (letra (clave cruce)) (fila-primera hoja)
@@ -164,8 +173,9 @@
                                         (format nil "B~d" (+ fila-ini
                                                              (length (valores-de-fila cruce))
                                                              1)))
-                                  (cons "valor" (format nil "Aviso: ~a" aviso))))))))
-         (formulas (loop for v in (valores-de-fila cruce)
+                                  (cons "valor" (format nil "Aviso: ~a" aviso))))))
+                  (when de-entrada (celdas-de-la-rejilla plan cruce))))
+         (formulas (loop for v in (unless de-entrada (valores-de-fila cruce))
                          for f from fila-ini
                          append (loop for i from 1 to (length (valores-de-columna cruce))
                                       collect
@@ -182,14 +192,17 @@
           (cons "fila_encabezado" fila-enc)
           (cons "fila_primera" fila-ini)
           (cons "capacidad" (max 1 (length (valores-de-fila cruce))))
-          (cons "color_pestana" "8EA9DB")
+          ;; Azul si se escribe en ella, como cualquier hoja de entrada.
+          (cons "color_pestana" (if de-entrada "4472C4" "8EA9DB"))
           (cons "encabezados" (lista encabezados))
           (cons "celdas" (lista celdas))
           (cons "formulas" (lista formulas))
           (cons "anchos" (anchos-de-cruce plan cruce))
           (cons "impresion" (impresion t))
-          (cons "editables" :lista-vacia)
-          (cons "validaciones" :lista-vacia)
+          (cons "editables" (if de-entrada (lista (list rango-de-casillas)) :lista-vacia))
+          (cons "validaciones" (if de-entrada
+                                   (lista (validacion-de-la-rejilla a plan cruce rango-de-casillas))
+                                   :lista-vacia))
           (cons "formatos_condicionales" (lista (marcas-de-la-rejilla cruce fila-ini fila-enc)))
           (cons "rangos_nombrados" :lista-vacia)
           (cons "leyenda" :lista-vacia))
@@ -336,13 +349,14 @@
           (cons "fila_encabezado" (fila-encabezado hoja))
           (cons "fila_primera" (fila-primera hoja))
           (cons "capacidad" (capacidad hoja))
-          (cons "color_pestana" (color-de-pestana hoja))
+          (cons "color_pestana" (color-de-pestana plan hoja))
           (cons "encabezados" (lista (append (encabezados-de hoja)
                                              (encabezado-de-estado hoja)
                                              (encabezado-de-nivel hoja)
                                              (encabezados-de-claves hoja))))
           (cons "celdas" (lista (celdas-de a plan hoja)))
           (cons "formulas" (lista (append (formulas-de a plan hoja)
+                                          (formulas-copiadas-de-la-rejilla plan hoja)
                                           (formulas-de-estado a plan hoja)
                                           (formulas-de-nivel a plan hoja)
                                           (formulas-de-claves a plan hoja))))
@@ -356,12 +370,15 @@
           (cons "rangos_nombrados" (lista (rangos-nombrados-de hoja)))
           (cons "leyenda" (lista (leyenda-de plan hoja))))))
 
-(defun color-de-pestana (hoja)
+(defun color-de-pestana (plan hoja)
   "Azul si en la hoja se escribe a mano, azul claro si todo se calcula.
 
    Sale del rol de campo, no de una decision aparte. Es el mismo criterio que
-   usan los libros del corpus."
-  (if (nucleo:campos-de-rol (coleccion hoja) :entrada) "4472C4" "8EA9DB"))
+   usan los libros del corpus. Un campo de entrada que se escribe en una
+   rejilla (excel/rejilla-de-entrada.lisp) no cuenta: aqui se calcula."
+  (if (remove-if (lambda (c) (rejilla-que-escribe plan hoja (nucleo:nombre c)))
+                 (nucleo:campos-de-rol (coleccion hoja) :entrada))
+      "4472C4" "8EA9DB"))
 
 (defun encabezados-de (hoja)
   (loop for campo in (nucleo:campos (coleccion hoja))
@@ -445,7 +462,11 @@
    abriria el archivo y encontraria vacio lo que ya habia decidido."
   (declare (ignore a))
   (let* ((coleccion (coleccion hoja))
-         (escribibles (remove-if (lambda (c) (eq (nucleo:rol c) :derivado))
+         ;; Un campo que se escribe en una rejilla de entrada no lleva el
+         ;; valor aqui: lo lleva la rejilla, y aqui hay una formula que lo lee.
+         (escribibles (remove-if (lambda (c)
+                                   (or (eq (nucleo:rol c) :derivado)
+                                       (rejilla-que-escribe plan hoja (nucleo:nombre c))))
                                  (nucleo:campos coleccion)))
          (filas (nucleo:filas-de (entorno plan) (nucleo:nombre coleccion)))
          (resultado '()))
@@ -553,6 +574,7 @@
   (let ((coleccion (coleccion hoja)))
     (append
      (loop for campo in (nucleo:campos-de-rol coleccion :entrada)
+           unless (rejilla-que-escribe plan hoja (nucleo:nombre campo))
            collect (format nil "~a~d:~a~d"
                            (columna-de hoja (nucleo:nombre campo)) (fila-primera hoja)
                            (columna-de hoja (nucleo:nombre campo)) (fila-ultima hoja)))
@@ -608,7 +630,8 @@
   (let ((ambito (ambito-de (coleccion hoja)))
         (*hoja* hoja))
     (loop for campo in (nucleo:campos-de-rol (coleccion hoja) :entrada)
-          when (nucleo:dominio campo)
+          when (and (nucleo:dominio campo)
+                    (not (rejilla-que-escribe plan hoja (nucleo:nombre campo))))
             collect (protocolo:emitir-entrada a campo ambito plan))))
 
 (defmethod protocolo:emitir-entrada ((a excel) campo ambito plan)

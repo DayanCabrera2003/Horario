@@ -333,7 +333,10 @@
     (campo turno      :rol fijo)
     (campo asignatura :rol entrada :dominio (uno-de "MAT" "ESP")
                       :al-violar advertir))
-  (vista por-grupo :de casillas :entrada t :etiqueta "Por grupo"
+  ;; Sin :ENTRADA T: las dos tienen que ser busquedas. Desde el 2026-10-21
+  ;; una rejilla de entrada en la que cada casilla es una fila lleva el dato
+  ;; y no busca (excel/rejilla-de-entrada.lisp), y esta lo seria.
+  (vista por-grupo :de casillas :etiqueta "Por grupo"
                    :filas turno :columnas dia :muestra asignatura
                    :secciones grupo)
   (vista por-dia   :de casillas :etiqueta "Por dia"
