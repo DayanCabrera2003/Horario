@@ -82,11 +82,14 @@
                                             (vistas-derivadas plan))
                                     (mapcar (lambda (d) (plano-de-detalle a plan d))
                                             (auxiliares plan)))))
-                        ;; La hoja de listas va al final: se llena mientras se
-                        ;; emiten los desplegables de las demas.
-                        (lista (if (nombre-de-listas plan)
-                                   (append hojas (list (plano-de-listas plan)))
-                                   hojas))))))
+                        ;; La de parametros, detras de las de datos. La de
+                        ;; listas va al final: se llena mientras se emiten los
+                        ;; desplegables de las demas.
+                        (lista (append hojas
+                                       (when (nombre-de-parametros plan)
+                                         (list (plano-de-parametros plan)))
+                                       (when (nombre-de-listas plan)
+                                         (list (plano-de-listas plan)))))))))
 
 (defun reservar-columnas-de-distintos (plan)
   "Una columna de primera aparicion por cada campo cuyos valores distintos

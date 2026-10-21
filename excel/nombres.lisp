@@ -152,6 +152,8 @@
               (nombre derivada) (tomar (titulo derivada))))
       (when (necesita-listas-p plan)
         (setf (nombre-de-listas plan) (tomar "Listas")))
+      (when (necesita-parametros-p plan)
+        (setf (nombre-de-parametros plan) (tomar "Parametros")))
       (dolist (detalle (auxiliares plan))
         (let ((tabla (tabla-cruda detalle)))
           (setf (titulo tabla) (titulo-de-detalle (campo detalle))

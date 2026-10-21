@@ -168,9 +168,13 @@
       (celda *hoja* (nucleo:campo e) *fila*)))
 
 (defmethod protocolo:emitir-expresion ((a excel) (e nucleo:ref-parametro) ambito plan)
+  "Un parametro de entrada se cita por su celda de la hoja de parametros,
+   para que cambiarlo ahi cambie todo lo que depende de el. Uno fijo se
+   copia en la formula (excel/parametros.lisp)."
   (declare (ignore ambito))
   (let ((p (nucleo:parametro-llamado (situacion plan) (nucleo:nombre e))))
-    (texto-de-literal (and p (nucleo:valor p)))))
+    (or (and p (celda-de-parametro plan p))
+        (texto-de-literal (and p (nucleo:valor p))))))
 
 ;;; ---------------------------------------------------------------------
 ;;; Operadores
