@@ -85,6 +85,15 @@ python3 materializador/sonda_escritura.py salida/seder.xlsx "Reparto de brigadas
         "E6=11 a.m." "F6=Pista 2" -- "OI - impar!C5=C211 / C212 (+1)" || fallos=1
 
 echo
+echo "Rejilla de entrada: se escribe EF en el horario del 10-3, miercoles, turno 2,"
+echo "como lo haria quien arma el horario. Casillas la copia, y salen las dos"
+echo "marcas: Educacion Fisica repite el dia y el Terreno esta ocupado por el 10-4."
+python3 materializador/sonda_escritura.py salida/horario-saul.xlsx "Horario del grupo - 10-3" \
+        D5=EF -- "Casillas del horario!D16=EF" \
+        "Casillas del horario!P16=Ese local esta ocupado por otro grupo a esa hora; Esta asignatura no admite turno doble y repite el dia en este grupo" \
+        || fallos=1
+
+echo
 echo "Pagina web: se ejecuta el JavaScript que emitio la arquitectura y se"
 echo "comparan los valores que calcula."
 if command -v node >/dev/null 2>&1; then
