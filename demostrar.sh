@@ -21,7 +21,18 @@ echo
 echo "#############################################################"
 echo "#  1 y 2.  De la descripcion a los artefactos"
 echo "#############################################################"
-./generar-demostracion.sh 2>/dev/null | grep -v '^;'
+# La salida pasa por un archivo y no por una tuberia: en una tuberia, el
+# codigo de salida es el del ultimo programa, y si la generacion fallaba (un
+# .lisp que no compila) la demostracion seguia con los artefactos de la
+# vez anterior y podia acabar en "ok" sin haber generado nada (2026-10-21).
+mkdir -p salida
+if ! ./generar-demostracion.sh > salida/generacion.log 2> salida/generacion.err; then
+  grep -v '^;' salida/generacion.err | head -20
+  echo
+  echo "FALLA  la generacion no termino: no se verifica nada (salida/generacion.err)"
+  exit 1
+fi
+grep -v '^;' salida/generacion.log
 
 echo
 echo "#############################################################"
