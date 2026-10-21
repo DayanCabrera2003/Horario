@@ -96,7 +96,7 @@ D["franja"] = [
   {"semana": "impar", "horario": "11 a.m."},
   {"semana": "impar", "horario": "3 p.m."}
 ];
-const CRECEN = [];
+const CRECEN = ["instalaciones", "anos", "disponibles", "brigadas"];
 
 // --- Coercion, identica a la del evaluador de referencia del nucleo ---
 function VACIO(x){ return x === null || x === undefined || x === ''; }
@@ -329,6 +329,8 @@ const MARCAS = [
 ];
 
 const DOMINIOS = {};
+DOMINIOS["anos.semana"] = {bloquea: false, valores: () => ["par", "impar"]};
+DOMINIOS["brigadas.ano"] = {bloquea: false, valores: () => [...new Set(D["anos"].filter(c => true).map(c => V(c["id"])).filter(x => !VACIO(x)))]};
 DOMINIOS["brigadas.horario"] = {bloquea: false, valores: () => ["10 a.m.", "11 a.m.", "3 p.m."]};
 DOMINIOS["brigadas.instalacion"] = {bloquea: false, valores: () => [...new Set(D["instalaciones"].filter(c => true).map(c => V(c["nombre"])).filter(x => !VACIO(x)))]};
 
@@ -344,11 +346,11 @@ const VISTAS = [
 const ORDENES = {};
 
 const TABLAS = [
-  {id: "t-reparto", vista: "reparto", titulo: "Reparto de brigadas", coleccion: "brigadas", crece: false, agrupa: null, columnaEstado: "Estado", campos: [{n: "brigada", e: "Brigada", rol: "fijo", tipo: "texto", clave: null}, {n: "ano", e: "Ano", rol: "fijo", tipo: "texto", clave: null}, {n: "personas", e: "Personas", rol: "fijo", tipo: "entero", clave: null}, {n: "profesor", e: "Profesor", rol: "fijo", tipo: "texto", clave: null}, {n: "horario", e: "Horario", rol: "entrada", tipo: "texto", clave: null}, {n: "instalacion", e: "Instalacion", rol: "entrada", tipo: "texto", clave: null}, {n: "semana", e: "Semana", rol: "derivado", tipo: "texto", clave: null}, {n: "capacidad", e: "Capacidad", rol: "derivado", tipo: "entero", clave: null}, {n: "disponible", e: "Horario disponible", rol: "derivado", tipo: "texto", clave: null}]},
-  {id: "t-locales", vista: "locales", titulo: "Instalaciones", coleccion: "instalaciones", crece: false, agrupa: null, columnaEstado: "Estado", campos: [{n: "nombre", e: "Instalacion", rol: "fijo", tipo: "texto", clave: null}, {n: "capacidad", e: "Capacidad", rol: "fijo", tipo: "entero", clave: null}, {n: "brigadas", e: "Brigadas", rol: "derivado", tipo: "entero", clave: null}, {n: "menos-cargada", e: "La que menos tiene", rol: "derivado", tipo: "entero", clave: null}]},
+  {id: "t-reparto", vista: "reparto", titulo: "Reparto de brigadas", coleccion: "brigadas", crece: true, agrupa: null, columnaEstado: "Estado", campos: [{n: "brigada", e: "Brigada", rol: "fijo", tipo: "texto", clave: null}, {n: "ano", e: "Ano", rol: "entrada", tipo: "texto", clave: null}, {n: "personas", e: "Personas", rol: "entrada", tipo: "entero", clave: null}, {n: "profesor", e: "Profesor", rol: "entrada", tipo: "texto", clave: null}, {n: "horario", e: "Horario", rol: "entrada", tipo: "texto", clave: null}, {n: "instalacion", e: "Instalacion", rol: "entrada", tipo: "texto", clave: null}, {n: "semana", e: "Semana", rol: "derivado", tipo: "texto", clave: null}, {n: "capacidad", e: "Capacidad", rol: "derivado", tipo: "entero", clave: null}, {n: "disponible", e: "Su ano admite el horario", rol: "derivado", tipo: "texto", clave: null}]},
+  {id: "t-locales", vista: "locales", titulo: "Instalaciones", coleccion: "instalaciones", crece: true, agrupa: null, columnaEstado: "Estado", campos: [{n: "nombre", e: "Instalacion", rol: "fijo", tipo: "texto", clave: null}, {n: "capacidad", e: "Capacidad", rol: "entrada", tipo: "entero", clave: null}, {n: "brigadas", e: "Brigadas", rol: "derivado", tipo: "entero", clave: null}, {n: "menos-cargada", e: "La que menos tiene", rol: "derivado", tipo: "entero", clave: null}]},
   {id: "t-casillas", vista: "casillas", titulo: "Brigadas por horario", coleccion: "franja", crece: false, agrupa: null, columnaEstado: "Estado", campos: [{n: "semana", e: "Semana", rol: "fijo", tipo: "texto", clave: null}, {n: "horario", e: "Horario", rol: "fijo", tipo: "texto", clave: null}, {n: "brigadas", e: "Brigadas", rol: "derivado", tipo: "entero", clave: null}, {n: "menos-cargada", e: "La que menos tiene", rol: "derivado", tipo: "entero", clave: null}]},
-  {id: "t-declaraciones", vista: "declaraciones", titulo: "Anos de carrera", coleccion: "anos", crece: false, agrupa: null, columnaEstado: "Estado", campos: [{n: "id", e: "Ano", rol: "fijo", tipo: "texto", clave: null}, {n: "carrera", e: "Carrera", rol: "fijo", tipo: "texto", clave: null}, {n: "semana", e: "Semana", rol: "fijo", tipo: "texto", clave: null}]},
-  {id: "t-disponibles", vista: "disponibles", titulo: "Horarios disponibles por ano", coleccion: "disponibles", crece: false, agrupa: null, columnaEstado: "Estado", campos: [{n: "ano", e: "Ano", rol: "fijo", tipo: "texto", clave: null}, {n: "horario", e: "Horario", rol: "fijo", tipo: "texto", clave: null}]}
+  {id: "t-declaraciones", vista: "declaraciones", titulo: "Anos de carrera", coleccion: "anos", crece: true, agrupa: null, columnaEstado: "Estado", campos: [{n: "id", e: "Ano", rol: "fijo", tipo: "texto", clave: null}, {n: "carrera", e: "Carrera", rol: "entrada", tipo: "texto", clave: null}, {n: "semana", e: "Semana", rol: "entrada", tipo: "texto", clave: null}]},
+  {id: "t-disponibles", vista: "disponibles", titulo: "Horarios disponibles por ano", coleccion: "disponibles", crece: true, agrupa: null, columnaEstado: "Estado", campos: [{n: "ano", e: "Ano", rol: "fijo", tipo: "texto", clave: null}, {n: "horario", e: "Horario", rol: "fijo", tipo: "texto", clave: null}]}
 ];
 
 const CRUCES = [

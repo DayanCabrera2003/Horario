@@ -21,7 +21,18 @@ echo
 echo "#############################################################"
 echo "#  1 y 2.  De la descripcion a los artefactos"
 echo "#############################################################"
-./generar-demostracion.sh 2>/dev/null | grep -v '^;'
+# La salida pasa por un archivo y no por una tuberia: en una tuberia, el
+# codigo de salida es el del ultimo programa, y si la generacion fallaba (un
+# .lisp que no compila) la demostracion seguia con los artefactos de la
+# vez anterior y podia acabar en "ok" sin haber generado nada (2026-10-21).
+mkdir -p salida
+if ! ./generar-demostracion.sh > salida/generacion.log 2> salida/generacion.err; then
+  grep -v '^;' salida/generacion.err | head -20
+  echo
+  echo "FALLA  la generacion no termino: no se verifica nada (salida/generacion.err)"
+  exit 1
+fi
+grep -v '^;' salida/generacion.log
 
 echo
 echo "#############################################################"
@@ -58,6 +69,29 @@ echo "Libro usado: se escribe una asignatura nueva en una fila de reserva del"
 echo "plan del grupo, se recalcula y se comprueba que la fila calcula."
 python3 materializador/sonda_escritura.py salida/plan-del-grupo.xlsx "Plan del grupo" \
         A10=X B10=Nueva C10=3 D10=1 -- E10=2 || fallos=1
+
+echo
+echo "Parametro de entrada: se baja el tope diario del Saul a 1 en su hoja y"
+echo "se comprueba que el profesor de Matematica del 10-3, que da 2 sesiones"
+echo "el viernes, pasa a estar por encima del tope."
+python3 materializador/sonda_escritura.py salida/horario-saul.xlsx "Carga diaria" \
+        Parametros!B4=1 -- "D8=Da 2 sesiones ese dia" || fallos=1
+
+echo
+echo "Casilla en conflicto: en el SEDER se manda una tercera brigada (C211) a"
+echo "la Pista 2 de la semana impar a las 11, donde ya chocan C212 y M21. La"
+echo "casilla tiene que nombrar las dos primeras y decir que hay una mas."
+python3 materializador/sonda_escritura.py salida/seder.xlsx "Reparto de brigadas" \
+        "E6=11 a.m." "F6=Pista 2" -- "OI - impar!C5=C211 / C212 (+1)" || fallos=1
+
+echo
+echo "Rejilla de entrada: se escribe EF en el horario del 10-3, miercoles, turno 2,"
+echo "como lo haria quien arma el horario. Casillas la copia, y salen las dos"
+echo "marcas: Educacion Fisica repite el dia y el Terreno esta ocupado por el 10-4."
+python3 materializador/sonda_escritura.py salida/horario-saul.xlsx "Horario del grupo - 10-3" \
+        D5=EF -- "Casillas del horario!D16=EF" \
+        "Casillas del horario!P16=Ese local esta ocupado por otro grupo a esa hora; Esta asignatura no admite turno doble y repite el dia en este grupo" \
+        || fallos=1
 
 echo
 echo "Pagina web: se ejecuta el JavaScript que emitio la arquitectura y se"

@@ -20,6 +20,10 @@ Uso:
 Cada escritura es CELDA=VALOR; un VALOR "fecha:AAAA-MM-DD" se escribe como
 fecha de verdad, uno numerico como numero y lo demas como texto. Cada
 comprobacion es CELDA=ESPERADO.
+
+Una CELDA puede llevar delante otra hoja, como Parametros!B4: un parametro
+se escribe en su hoja y lo que cambia se lee en otra. Sin hoja, es la
+<hoja> de la linea de ordenes.
 """
 
 import datetime
@@ -46,6 +50,14 @@ def valor_de(texto):
             return texto
 
 
+def partir_celda(texto, hoja):
+    """(HOJA, CELDA) de una celda escrita como CELDA o como HOJA!CELDA."""
+    if "!" in texto:
+        otra, celda = texto.rsplit("!", 1)
+        return otra, celda
+    return hoja, texto
+
+
 def main(argv):
     if len(argv) < 5 or "--" not in argv:
         print(__doc__)
@@ -59,12 +71,16 @@ def main(argv):
         copia = temporal / Path(libro).name
         wb = load_workbook(libro)
         for celda, valor in escrituras:
-            wb[hoja][celda].value = valor_de(valor)
+            donde, celda = partir_celda(celda, hoja)
+            wb[donde][celda].value = valor_de(valor)
         wb.save(copia)
         recalculado, otro = recalcular_con_libreoffice(copia)
         try:
-            leido = load_workbook(recalculado, data_only=True)[hoja]
-            obtenidos = {celda: leido[celda].value for celda, _ in comprobaciones}
+            leido = load_workbook(recalculado, data_only=True)
+            obtenidos = {}
+            for celda, _ in comprobaciones:
+                donde, sola = partir_celda(celda, hoja)
+                obtenidos[celda] = leido[donde][sola].value
         finally:
             shutil.rmtree(otro, ignore_errors=True)
     finally:

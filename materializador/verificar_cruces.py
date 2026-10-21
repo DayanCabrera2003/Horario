@@ -26,14 +26,17 @@ def texto_de_casilla(valores):
     """Lo que la hoja de calculo ensena en una casilla con esos valores.
 
     Con un valor, el valor. Con varios -un conflicto declarado con
-    :UNICA-SALVO-, el primero y cuantos mas hay: es la emulacion que declara
-    la arquitectura en su informe de conformidad.
+    :UNICA-SALVO-, los dos primeros y cuantos mas hay: es la emulacion que
+    declara la arquitectura en su informe de conformidad.
     """
     if not valores:
         return ""
     if len(valores) == 1:
         return valores[0]
-    return "{} (+{})".format(valores[0], len(valores) - 1)
+    texto = "{} / {}".format(valores[0], valores[1])
+    if len(valores) > 2:
+        texto += " (+{})".format(len(valores) - 2)
+    return texto
 
 
 def _ejes_de(hoja_plan):

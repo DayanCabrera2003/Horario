@@ -128,6 +128,8 @@
                (:file "derivadas")
                (:file "marca-por-campo")
                (:file "donde")
+               (:file "parametros")
+               (:file "rejilla-de-entrada")
                (:file "ejecutar"))
   :perform (test-op (op system)
                     (uiop:symbol-call :situacion.pruebas :ejecutar)))
@@ -155,6 +157,7 @@
                (:file "plan")
                (:file "nombres")
                (:file "listas")
+               (:file "parametros")
                (:file "plano")
                (:file "formula")
                (:file "existencia")
@@ -165,6 +168,7 @@
                (:file "estado")
                (:file "presentacion")
                (:file "vistas")
+               (:file "rejilla-de-entrada")
                (:file "emision")))
 
 (defsystem "situacion/web"

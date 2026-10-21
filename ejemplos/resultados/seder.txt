@@ -10,16 +10,18 @@ Indice
   - Anos de carrera
 
 Reparto de brigadas
-  Brigada  Ano    Personas  Profesor       Horario  Instalacion  Semana  Capacidad  Horario disponible  Estado                                                                                               
-  -------  -----  --------  -------------  -------  -----------  ------  ---------  ------------------  -----------------------------------------------------------------------------------------------------
-  C111     CC-1   28        Prof. Alvarez  10 a.m.  Pista 1      par     40         si                  Este profesor tiene otra brigada en ese horario y esa semana                                         
-  C112     CC-1   25        Prof. Alvarez  11 a.m.  Gimnasio     par     25         si                                                                                                                       
-  C211     CC-2   22        Prof. Benitez  3 p.m.   Piscina      impar   20         si                  La instalacion es para 20 personas y la brigada tiene 22                                             
-  C212     CC-2   20        Prof. Benitez  11 a.m.  Pista 2      impar   30         si                  Otra brigada usa esta instalacion en ese horario y esa semana                                        
-  M11      MAT-1  30        Prof. Castro   10 a.m.  Pista 2      par     30         si                                                                                                                       
-  M21      MAT-2  18        Prof. Castro   11 a.m.  Pista 2      impar   30         si                  Otra brigada usa esta instalacion en ese horario y esa semana                                        
-  F11      FIS-1  15        Prof. Alvarez  10 a.m.  Piscina      par     20         no                  Su ano no tiene este horario disponible; Este profesor tiene otra brigada en ese horario y esa semana
-  F21      FIS-2  12        Prof. Diaz                           par     0                              Esta brigada todavia no tiene clase esta semana                                                      
+  Brigada  Ano    Personas  Profesor       Horario  Instalacion  Semana  Capacidad  Su ano admite el horario  Estado                                                                                               
+  -------  -----  --------  -------------  -------  -----------  ------  ---------  ------------------------  -----------------------------------------------------------------------------------------------------
+  C111     CC-1   28        Prof. Alvarez  10 a.m.  Pista 1      par     40         si                        Este profesor tiene otra brigada en ese horario y esa semana                                         
+  C112     CC-1   25        Prof. Alvarez  11 a.m.  Gimnasio     par     25         si                                                                                                                             
+  C211     CC-2   22        Prof. Benitez  3 p.m.   Piscina      impar   20         si                        La instalacion es para 20 personas y la brigada tiene 22                                             
+  C212     CC-2   20        Prof. Benitez  11 a.m.  Pista 2      impar   30         si                        Otra brigada usa esta instalacion en ese horario y esa semana                                        
+  M11      MAT-1  30        Prof. Castro   10 a.m.  Pista 2      par     30         si                                                                                                                             
+  M21      MAT-2  18        Prof. Castro   11 a.m.  Pista 2      impar   30         si                        Otra brigada usa esta instalacion en ese horario y esa semana                                        
+  F11      FIS-1  15        Prof. Alvarez  10 a.m.  Piscina      par     20         no                        Su ano no tiene este horario disponible; Este profesor tiene otra brigada en ese horario y esa semana
+  F21      FIS-2  12        Prof. Diaz                           par     0                                    Esta brigada todavia no tiene clase esta semana                                                      
+
+  Ano admite: CC-1, CC-2, MAT-1, MAT-2, FIS-1, FIS-2
 
   Horario admite: 10 a.m., 11 a.m., 3 p.m.
 
@@ -96,6 +98,8 @@ Anos de carrera
   MAT-2  Matematica                 impar         
   FIS-1  Fisica                     par           
   FIS-2  Fisica                     par           
+
+  Semana admite: par, impar
 
 Horarios disponibles por ano
   Ano    Horario  Estado

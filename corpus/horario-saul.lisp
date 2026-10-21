@@ -28,64 +28,89 @@
 (defsituacion horario-saul
     (:etiqueta "Horario docente de 10mo grado, preuniversitario Saul Delgado")
 
-  ;; El plan del ano: cuantas veces recibe cada grupo cada asignatura. Las
-  ;; frecuencias salen de contar la foto, y dan lo mismo en los dos grupos.
+  ;; Lo que es de la asignatura sea cual sea el grupo y el ano. La
+  ;; frecuencia, el turno doble y si admite tarde NO van aqui: cambian de un
+  ;; ano a otro, y van en el plan por grupo (2026-10-21, a pedido de la otra
+  ;; tesis; con un solo ano daba igual, con varios no).
+  ;;
+  ;; LAS TABLAS DE DATOS SE LLENAN EN EL DOCUMENTO (2026-10-21). Lo primero
+  ;; que pidio el centro es llenar los datos, y antes todo era fijo: no habia
+  ;; forma de marcar un contratado ni de cambiar una frecuencia sin
+  ;; desproteger la hoja. Ahora lo que identifica la fila es fijo y lo demas
+  ;; es de entrada, y la tabla crece para anadir filas.
   (coleccion asignaturas
     (:etiqueta "Asignaturas")
     (:clave abrev)
+    (:crece)
     (campo abrev      :rol fijo :etiqueta "Abrev")
     (campo nombre     :rol fijo :etiqueta "Asignatura")
-    (campo frecuencia :rol fijo :tipo entero :etiqueta "Frecuencia")
-    ;; "Las asignaturas de frecuencia cinco son exactamente las que admiten
-    ;; turno doble": se deriva, no se escribe dos veces.
-    (campo turno-doble :rol derivado :etiqueta "Turno doble"
-           (si (= (de fila frecuencia) 5) "si" "no"))
-    (campo admite-tarde    :rol fijo :etiqueta "Admite tarde")      ; SUPUESTO
-    (campo dia-preparacion :rol fijo :etiqueta "Dia de preparacion") ; SUPUESTO
+    (campo dia-preparacion :rol entrada :etiqueta "Dia de preparacion" ; SUPUESTO
+           :dominio (uno-de "L" "M" "MI" "J" "V")
+           :al-violar advertir)
     ;; Vacio: se da en el aula del grupo.
-    (campo local           :rol fijo :etiqueta "Local")              ; SUPUESTO
-    (:datos (("M" "Matematica" 5 "no" "" ""))))
+    (campo local           :rol entrada :etiqueta "Local")              ; SUPUESTO
+    (:datos (("M" "Matematica"))))
 
-  ;; Quien da cada asignatura a cada grupo. El enunciado dice que viene dado.
+  ;; El plan: que recibe cada grupo, cuantas veces y quien se lo da. El
+  ;; enunciado dice que el profesor viene dado. Las frecuencias salen de
+  ;; contar la foto, y dan lo mismo en los dos grupos.
+  ;;
   ;; La clave es compuesta, grupo y asignatura. Hasta el 2026-10-17 los dos
   ;; iban pegados con "#" en un campo CLAVE, porque la hoja de calculo solo
   ;; buscaba por una igualdad (fase 2, hueco C2).
   (coleccion plan-por-grupo
     (:etiqueta "Plan por grupo")
     (:clave grupo abrev)
+    (:crece)
     (campo grupo    :rol fijo :etiqueta "Grupo")
     (campo abrev    :rol fijo :etiqueta "Abrev")
-    (campo profesor :rol fijo :etiqueta "Profesor")                   ; SUPUESTO
+    (campo profesor :rol entrada :etiqueta "Profesor"                 ; SUPUESTO
+           :dominio (los nombre de profesores)
+           :al-violar advertir)
+    (campo frecuencia   :rol entrada :tipo entero :etiqueta "Frecuencia")
+    (campo admite-tarde :rol entrada :etiqueta "Admite tarde"         ; SUPUESTO
+           :dominio (uno-de "si" "no")
+           :al-violar advertir)
     (campo nombre :rol derivado :etiqueta "Asignatura"
            (el nombre de (la-fila-de asignaturas :donde (= abrev (de fila abrev)))
                :si-no ""))
-    (campo frecuencia :rol derivado :tipo entero :etiqueta "Frecuencia"
-           (el frecuencia de (la-fila-de asignaturas :donde (= abrev (de fila abrev)))
-               :si-no 0))
+    ;; "Las asignaturas de frecuencia cinco son exactamente las que admiten
+    ;; turno doble": se deriva, no se escribe dos veces.
+    (campo turno-doble :rol derivado :etiqueta "Turno doble"
+           (si (= (de fila frecuencia) 5) "si" "no"))
     (campo asignadas :rol derivado :tipo entero :etiqueta "Asignadas"
            (cuantas casillas :donde (y (= grupo (de fila grupo))
                                        (= asignatura (de fila abrev)))))
     (campo faltan :rol derivado :tipo entero :etiqueta "Faltan"
            (- (de fila frecuencia) (de fila asignadas)))
-    (:datos (("10-3" "M" "Profesor de M en 10-3"))))
+    (:datos (("10-3" "M"))))
 
   ;; Las dos disposiciones sobre los profesores que usan las reglas.
   (coleccion profesores
     (:etiqueta "Profesores")
     (:clave nombre)
+    (:crece)
     (campo nombre     :rol fijo :etiqueta "Profesor")
-    (campo contratado :rol fijo :etiqueta "Contratado")               ; SUPUESTO
-    (campo vive-lejos :rol fijo :etiqueta "Vive lejos")               ; SUPUESTO
-    (:datos (("Profesor de M en 10-3" "no" "no"))))
+    (campo contratado :rol entrada :etiqueta "Contratado"             ; SUPUESTO
+           :dominio (uno-de "si" "no")
+           :al-violar advertir)
+    (campo vive-lejos :rol entrada :etiqueta "Vive lejos"             ; SUPUESTO
+           :dominio (uno-de "si" "no")
+           :al-violar advertir)
+    (:datos (("Profesor de M en 10-3"))))
 
   ;; Que dias asiste cada profesor contratado.
-  ;; Hoy no hay contratados (SUPUESTO), asi que no hay filas.
+  ;; Hoy no hay contratados (SUPUESTO), asi que no hay filas: se anaden en
+  ;; el documento, en las filas de reserva.
   (coleccion disponibilidad
     (:etiqueta "Dias que asisten los contratados")
     (:clave profesor dia)
+    (:crece)
     (campo profesor :rol fijo :etiqueta "Profesor")
     (campo dia      :rol fijo :etiqueta "Dia")
-    (campo asiste   :rol fijo :etiqueta "Asiste"))
+    (campo asiste   :rol entrada :etiqueta "Asiste"
+           :dominio (uno-de "si" "no")
+           :al-violar advertir))
 
   ;; LA REJILLA, una fila por casilla: grupo, dia y turno. Solo la
   ;; asignatura se escribe; lo demas se trae de las tablas de arriba.
@@ -120,13 +145,17 @@
                (si (vacio? (de fila local))
                    (texto "Aula " (de fila grupo))
                    (de fila local))))
+    ;; El turno doble y la tarde son del plan del grupo, no de la
+    ;; asignatura: se buscan por grupo y asignatura.
     (campo turno-doble :rol derivado :etiqueta "Turno doble"
-           (el turno-doble de (la-fila-de asignaturas
-                                :donde (= abrev (de fila asignatura)))
+           (el turno-doble de (la-fila-de plan-por-grupo
+                                :donde (y (= grupo (de fila grupo))
+                                          (= abrev (de fila asignatura))))
                :si-no "no"))
     (campo admite-tarde :rol derivado :etiqueta "Admite tarde"
-           (el admite-tarde de (la-fila-de asignaturas
-                                 :donde (= abrev (de fila asignatura)))
+           (el admite-tarde de (la-fila-de plan-por-grupo
+                                 :donde (y (= grupo (de fila grupo))
+                                           (= abrev (de fila asignatura))))
                :si-no "no"))
     (campo dia-preparacion :rol derivado :etiqueta "Dia de preparacion"
            (el dia-preparacion de (la-fila-de asignaturas
@@ -140,17 +169,23 @@
            (el vive-lejos de (la-fila-de profesores
                                :donde (= nombre (de fila profesor)))
                :si-no "no"))
-    (campo profesor-asiste-hoy :rol derivado :etiqueta "Asiste hoy"
-           (el asiste de (la-fila-de disponibilidad
-                           :donde (y (= profesor (de fila profesor))
-                                     (= dia (de fila dia))))
-               :si-no "no"))
+    ;; Solo dice algo de los contratados, que son los unicos que no vienen
+    ;; todos los dias. Para los demas queda vacio: antes decia "no" a todos,
+    ;; y en un centro sin contratados parecia que nadie venia nunca.
+    (campo profesor-asiste-hoy :rol derivado :etiqueta "Contratado: viene hoy"
+           (si (= (de fila profesor-contratado) "si")
+               (el asiste de (la-fila-de disponibilidad
+                               :donde (y (= profesor (de fila profesor))
+                                         (= dia (de fila dia))))
+                   :si-no "no")
+               ""))
 
     ;; Reglas 3 y 4: la misma asignatura otra vez el mismo dia en el mismo
     ;; grupo, cuando no admite turno doble o no es en el turno de al lado.
     ;; Es un campo, y no solo la condicion de la marca, para que la
-    ;; demostracion compruebe el valor en las tres arquitecturas.
-    (campo repite-mal :rol derivado :etiqueta "Repite mal el dia"
+    ;; demostracion compruebe el valor en las tres arquitecturas. La
+    ;; etiqueta lo dice entero: "Repite mal el dia" no se entendia.
+    (campo repite-mal :rol derivado :etiqueta "Se repite el dia sin poder"
            (si (y (no (vacio? (de fila asignatura)))
                   (existe otra :en casillas
                     :distinta-de fila
@@ -166,9 +201,11 @@
     (:datos (("10-3" "L" 1))))
 
   ;; Cuantas sesiones da cada profesor cada dia, para la regla blanda del tope.
+  ;; Crece para que un profesor anadido tenga donde contar su carga.
   (coleccion carga-diaria
     (:etiqueta "Carga diaria por profesor")
     (:clave profesor dia)
+    (:crece)
     (campo profesor :rol fijo :etiqueta "Profesor")
     (campo dia      :rol fijo :etiqueta "Dia")
     (campo sesiones :rol derivado :tipo entero :etiqueta "Sesiones"
@@ -177,7 +214,10 @@
                                        (no (vacio? asignatura)))))
     (:datos (("Profesor de M en 10-3" "L"))))
 
-  (parametro tope-diario :tipo entero :valor 3                         ; SUPUESTO
+  ;; La descripcion dice "un tope" sin numero. Era 3 por suponer algo; el
+  ;; 2026-10-21 se acordo 5 con la otra tesis, que modela la misma regla.
+  ;; De entrada: el centro lo cambia en el documento sin volver a generar.
+  (parametro tope-diario :tipo entero :valor 5 :rol entrada
              :etiqueta "Tope de sesiones al dia por profesor")
 
   ;; ------------------------------------------------------------------
@@ -339,7 +379,7 @@
                   :secciones aula
                   :unica-salvo aula-ocupada)
   (vista plan        :de asignaturas    :etiqueta "Asignaturas")
-  (vista frecuencias :de plan-por-grupo :etiqueta "Frecuencias por grupo")
+  (vista frecuencias :de plan-por-grupo :etiqueta "Plan por grupo")
   (vista carga       :de carga-diaria   :etiqueta "Carga diaria"))
 
 ;;; ====================================================================
@@ -349,7 +389,8 @@
 (defparameter +dias-del-saul+ '("L" "M" "MI" "J" "V"))
 
 ;;; Las asignaturas: abreviatura, nombre, frecuencia, admite tarde y local.
-;;; Los nombres entre parentesis estan por confirmar: la foto solo trae la
+;;; La frecuencia y la tarde van al plan de cada grupo; el resto, a la
+;;; asignatura. Los nombres entre parentesis estan por confirmar: la foto solo trae la
 ;;; abreviatura.
 (defparameter +asignaturas-del-saul+
   '(("M"     "Matematica"                   5 "no" "")
@@ -406,15 +447,18 @@
                                  collect (profesor-supuesto grupo abrev)))))
         (list
          (cons (funcall n "asignaturas")
-               (loop for (abrev nombre frecuencia tarde local) in +asignaturas-del-saul+
+               (loop for (abrev nombre nil nil local) in +asignaturas-del-saul+
                      collect (fila "abrev" abrev "nombre" nombre
-                                   "frecuencia" frecuencia "admite-tarde" tarde
                                    "dia-preparacion" "" "local" local)))
+         ;; La frecuencia y la tarde se repiten en cada grupo: la foto da
+         ;; las mismas en los dos.
          (cons (funcall n "plan-por-grupo")
                (loop for (grupo . nil) in +grupos-del-saul+
-                     append (loop for (abrev) in +asignaturas-del-saul+
+                     append (loop for (abrev nil frecuencia tarde) in +asignaturas-del-saul+
                                   collect (fila "grupo" grupo "abrev" abrev
-                                                "profesor" (profesor-supuesto grupo abrev)))))
+                                                "profesor" (profesor-supuesto grupo abrev)
+                                                "frecuencia" frecuencia
+                                                "admite-tarde" tarde))))
          (cons (funcall n "profesores")
                (loop for p in profesores
                      collect (fila "nombre" p "contratado" "no" "vive-lejos" "no")))

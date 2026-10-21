@@ -18,26 +18,34 @@
 
 (defsituacion seder (:etiqueta "Horario de educacion fisica del SEDER")
 
+  ;; LOS DATOS SE LLENAN EN EL DOCUMENTO (2026-10-21). Lo que identifica la
+  ;; fila es fijo, lo demas es de entrada, y cada tabla crece para anadir
+  ;; filas. Antes todo era fijo y no habia forma de cambiar una capacidad o
+  ;; la semana de un ano sin desproteger la hoja.
   (coleccion instalaciones
     (:etiqueta "Instalaciones")
     (:clave nombre)
+    (:crece)
     (campo nombre    :rol fijo :etiqueta "Instalacion")
-    (campo capacidad :rol fijo :tipo entero :etiqueta "Capacidad")
+    (campo capacidad :rol entrada :tipo entero :etiqueta "Capacidad")
     ;; Cuantas brigadas usan la instalacion en toda la franja.
     (campo brigadas :rol derivado :tipo entero :etiqueta "Brigadas"
            (cuantas brigadas :donde (= instalacion (de fila nombre))))
     (campo menos-cargada :rol derivado :tipo entero :etiqueta "La que menos tiene"
            (minimo brigadas de instalaciones))
-    (:datos (("Pista 1" 40) ("Pista 2" 30) ("Gimnasio" 25) ("Piscina" 20))))
+    (:datos (("Pista 1") ("Pista 2") ("Gimnasio") ("Piscina"))))
 
   ;; Cada ano de cada carrera declara en que semana recibe sus clases.
   (coleccion anos
     (:etiqueta "Anos de carrera")
     (:clave id)
+    (:crece)
     (campo id      :rol fijo :etiqueta "Ano")
-    (campo carrera :rol fijo :etiqueta "Carrera")
-    (campo semana  :rol fijo :etiqueta "Semana")
-    (:datos (("CC-1" "Ciencia de la Computacion" "par"))))
+    (campo carrera :rol entrada :etiqueta "Carrera")
+    (campo semana  :rol entrada :etiqueta "Semana"
+           :dominio (uno-de "par" "impar")
+           :al-violar advertir)
+    (:datos (("CC-1"))))
 
   ;; Y que horarios tiene disponibles: uno, dos o los tres, una fila por
   ;; cada uno. La clave es compuesta, ano y horario. Hasta el 2026-10-17 los
@@ -46,19 +54,24 @@
   (coleccion disponibles
     (:etiqueta "Horarios disponibles por ano")
     (:clave ano horario)
+    (:crece)
     (campo ano     :rol fijo :etiqueta "Ano")
     (campo horario :rol fijo :etiqueta "Horario")
     (:datos (("CC-1" "10 a.m."))))
 
-  ;; LAS BRIGADAS. Lo que se escribe a mano es el horario y la instalacion;
-  ;; el profesor viene dado.
+  ;; LAS BRIGADAS. Lo que se reparte es el horario y la instalacion; el
+  ;; ano, las personas y el profesor vienen dados, pero se escriben en el
+  ;; documento como cualquier otro dato.
   (coleccion brigadas
     (:etiqueta "Brigadas")
     (:clave brigada)
+    (:crece)
     (campo brigada  :rol fijo :etiqueta "Brigada")
-    (campo ano      :rol fijo :etiqueta "Ano")
-    (campo personas :rol fijo :tipo entero :etiqueta "Personas")
-    (campo profesor :rol fijo :etiqueta "Profesor")
+    (campo ano      :rol entrada :etiqueta "Ano"
+           :dominio (los id de anos)
+           :al-violar advertir)
+    (campo personas :rol entrada :tipo entero :etiqueta "Personas")
+    (campo profesor :rol entrada :etiqueta "Profesor")
 
     (campo horario :rol entrada :etiqueta "Horario"
            :dominio   (uno-de "10 a.m." "11 a.m." "3 p.m.")
@@ -74,7 +87,10 @@
            (el capacidad de (la-fila-de instalaciones
                               :donde (= nombre (de fila instalacion)))
                :si-no 0))
-    (campo disponible :rol derivado :etiqueta "Horario disponible"
+    ;; No es la lista de horarios del ano, que esta en DISPONIBLES: dice si
+    ;; el horario escrito esta entre ellos. "Horario disponible" se leia
+    ;; como si la brigada tuviera uno solo.
+    (campo disponible :rol derivado :etiqueta "Su ano admite el horario"
            (si (vacio? (de fila horario))
                ""
                (si (= (el horario de (la-fila-de disponibles
@@ -84,7 +100,7 @@
                       "")
                    "no"
                    "si")))
-    (:datos (("C111" "CC-1" 28 "Prof. Alvarez"))))
+    (:datos (("C111"))))
 
   ;; Las seis casillas de la franja, para ver cuantas brigadas cae en cada
   ;; una.
