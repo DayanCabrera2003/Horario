@@ -126,7 +126,8 @@
     (protocolo:con-casilla-en-conflicto
      (values :emula
              "la casilla pregunta primero cuantas filas cumplen su clave. Con
-              mas de una escribe la primera y cuantas mas hay: (+1), (+2).
+              dos escribe las dos, A / B; con mas, las dos primeras y cuantas
+              mas hay: A / B (+1).
               Limite: no puede escribirlas todas. Concatenar un numero
               variable de valores necesita formulas matriciales, y esas no se
               comportan igual en Excel que en LibreOffice Calc, asi que la

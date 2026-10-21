@@ -67,6 +67,13 @@ python3 materializador/sonda_escritura.py salida/horario-saul.xlsx "Carga diaria
         Parametros!B4=1 -- "D8=Da 2 sesiones ese dia" || fallos=1
 
 echo
+echo "Casilla en conflicto: en el SEDER se manda una tercera brigada (C211) a"
+echo "la Pista 2 de la semana impar a las 11, donde ya chocan C212 y M21. La"
+echo "casilla tiene que nombrar las dos primeras y decir que hay una mas."
+python3 materializador/sonda_escritura.py salida/seder.xlsx "Reparto de brigadas" \
+        "E6=11 a.m." "F6=Pista 2" -- "OI - impar!C5=C211 / C212 (+1)" || fallos=1
+
+echo
 echo "Pagina web: se ejecuta el JavaScript que emitio la arquitectura y se"
 echo "comparan los valores que calcula."
 if command -v node >/dev/null 2>&1; then

@@ -255,11 +255,16 @@
 
    Si la vista declaro (:UNICA-SALVO <marca>), la casilla puede tener mas de
    una fila candidata, y entonces la formula pregunta primero CUANTAS hay.
-   Con mas de una escribe la primera y cuantas mas: es todo lo que una hoja
-   de calculo puede decir sin formulas matriciales, que no se comportan igual
-   en los dos programas. Por eso aqui la capacidad se emula y no se cumple.
-   Lo que no hace, y es lo que importa, es ensenar una de las dos como si
-   fuera la unica.
+   Con dos escribe las dos, \"C111 / F11\"; con mas, las dos primeras y
+   cuantas mas, \"C111 / F11 (+1)\". La segunda se busca con el mismo
+   COINCIDIR, pero sobre el trozo de la columna que queda debajo de la
+   primera: INDICE:INDICE da ese rango sin formulas matriciales, que no se
+   comportan igual en los dos programas. Escribirlas todas si necesitaria
+   una matricial, y por eso aqui la capacidad se emula y no se cumple. Lo
+   que no hace, y es lo que importa, es ensenar una como si fuera la unica.
+
+   Hasta el 2026-10-21 escribia solo la primera, \"C111 (+1)\": se veia que
+   habia choque, pero no con quien.
 
    La busqueda pregunta ademas si lo encontrado esta vacio. INDICE sobre una
    celda en blanco devuelve cero, no blanco, y sin la pregunta un turno libre
@@ -279,9 +284,19 @@
                            posicion encontrado encontrado)))
     (if (null (nucleo:conflicto (vista cruce)))
         (format nil "=~a" busqueda)
-        (let ((cuantas (format nil "SUMPRODUCT(1*~a)" coincide)))
-          (format nil "=IF(~a>1,~a&\" (+\"&(~a-1)&\")\",~a)"
-                  cuantas busqueda cuantas busqueda)))))
+        (let* ((cuantas (format nil "SUMPRODUCT(1*~a)" coincide))
+               ;; La segunda: la primera coincidencia en el trozo de la
+               ;; columna que queda debajo de la primera. Solo se evalua
+               ;; con dos o mas, y entonces la primera no es la ultima fila
+               ;; y el trozo no esta vacio.
+               (debajo (format nil "INDEX(~a,~a+1):INDEX(~a,ROWS(~a))"
+                               rango-clave posicion rango-clave rango-clave))
+               (posicion-2 (format nil "(~a+MATCH(1,INDEX(EXACT(~a,~a)*1,0),0))"
+                                   posicion debajo clave))
+               (encontrado-2 (format nil "INDEX(~a,~a)" rango-valor posicion-2))
+               (segunda (format nil "IF(ISBLANK(~a),\"\",~a)" encontrado-2 encontrado-2)))
+          (format nil "=IF(~a>1,~a&\" / \"&~a&IF(~a>2,\" (+\"&(~a-2)&\")\",\"\"),~a)"
+                  cuantas busqueda segunda cuantas cuantas busqueda)))))
 
 (defmethod protocolo:planificar-vista ((a excel) vista plan)
   "Una vista se materializa como la hoja de su coleccion.
