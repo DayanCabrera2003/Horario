@@ -161,7 +161,7 @@
       ;; Las pestanas de una vista se nombran juntas, para que compartan
       ;; esquema; despues cada una se hace unica.
       (let ((por-vista '()))
-        (dolist (cruce (cruces plan))
+        (dolist (cruce (remove-if #'selector (cruces plan)))
           (let ((par (assoc (vista cruce) por-vista)))
             (if par (push cruce (cdr par)) (push (list (vista cruce) cruce) por-vista))))
         (dolist (par (reverse por-vista))
@@ -176,5 +176,10 @@
                                (nombre cruce) (tomar nombre)))
                 (dolist (cruce suyos)
                   (setf (titulo cruce) (nucleo:etiqueta vista)
-                        (nombre cruce) (tomar (nucleo:etiqueta vista)))))))))
+                        (nombre cruce) (tomar (nucleo:etiqueta vista))))))))
+      ;; La pestana con selector, detras de las de su vista
+      ;; (excel/pestana-con-selector.lisp).
+      (dolist (cruce (remove-if-not #'selector (cruces plan)))
+        (setf (titulo cruce) (format nil "~a (elegir)" (nucleo:etiqueta (vista cruce)))
+              (nombre cruce) (tomar (titulo cruce)))))
     plan))

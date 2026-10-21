@@ -65,7 +65,8 @@
                                                              (length (valores-de-fila cruce))
                                                              1)))
                                   (cons "valor" (format nil "Aviso: ~a" aviso))))))
-                  (when de-entrada (celdas-de-la-rejilla plan cruce))))
+                  (when de-entrada (celdas-de-la-rejilla plan cruce))
+                  (when (selector cruce) (celdas-del-selector plan cruce))))
          (formulas (loop for v in (unless de-entrada (valores-de-fila cruce))
                          for f from fila-ini
                          append (loop for i from 1 to (length (valores-de-columna cruce))
@@ -84,16 +85,24 @@
           (cons "fila_primera" fila-ini)
           (cons "capacidad" (max 1 (length (valores-de-fila cruce))))
           ;; Azul si se escribe en ella, como cualquier hoja de entrada.
-          (cons "color_pestana" (if de-entrada "4472C4" "8EA9DB"))
+          (cons "color_pestana" (if (or de-entrada (selector cruce)) "4472C4" "8EA9DB"))
           (cons "encabezados" (lista encabezados))
           (cons "celdas" (lista celdas))
           (cons "formulas" (lista formulas))
           (cons "anchos" (anchos-de-cruce plan cruce))
           (cons "impresion" (impresion t))
-          (cons "editables" (if de-entrada (lista (list rango-de-casillas)) :lista-vacia))
-          (cons "validaciones" (if de-entrada
-                                   (lista (validacion-de-la-rejilla a plan cruce rango-de-casillas))
-                                   :lista-vacia))
+          ;; En una rejilla de entrada se escriben las casillas; en una
+          ;; pestana con selector, solo la seccion que se quiere ver.
+          (cons "editables" (cond (de-entrada (lista (list rango-de-casillas)))
+                                  ((selector cruce)
+                                   (lista (list (format nil "B~d" +fila-del-selector+))))
+                                  (t :lista-vacia)))
+          (cons "validaciones" (cond (de-entrada
+                                      (lista (validacion-de-la-rejilla a plan cruce
+                                                                       rango-de-casillas)))
+                                     ((selector cruce)
+                                      (lista (list (validacion-del-selector plan cruce))))
+                                     (t :lista-vacia)))
           (cons "formatos_condicionales" (lista (marcas-de-la-rejilla cruce fila-ini fila-enc)))
           (cons "rangos_nombrados" :lista-vacia)
           (cons "leyenda" :lista-vacia))
@@ -122,8 +131,7 @@
              (rango (lambda (letra) (format nil "~a!$~a$~d:$~a$~d" origen letra
                                             (fila-primera hoja) letra (fila-ultima hoja))))
              (clave (format nil "~@[~a&CHAR(31)&~]$A~d&CHAR(31)&B$~d"
-                            (when (seccion cruce)
-                              (cadena-excel (nucleo:como-texto (seccion cruce))))
+                            (seccion-en-formula cruce)
                             fila-ini fila-enc))
              (nivel (format nil "IFERROR(INDEX(~a,MATCH(1,INDEX(EXACT(~a,~a)*1,0),0)),0)"
                             (funcall rango (columna-de-nivel hoja))
@@ -143,11 +151,15 @@
 
    El nombre de la pestana no sirve para saberlo: se recorta a 31 caracteres
    y se renombra si se repite. Quien compare el libro con el oraculo de las
-   tablas cruzadas necesita el dato sin adivinarlo."
+   tablas cruzadas necesita el dato sin adivinarlo.
+
+   La pestana con selector dice ademas que lo es: su SECCION es solo la que
+   ensena al abrir el libro, y el verificador la compara con esa."
   (list (cons "vista" (string-downcase (symbol-name (nucleo:nombre (vista cruce)))))
         (cons "seccion" (if (seccion cruce)
                             (nucleo:como-texto (seccion cruce))
-                            ""))))
+                            ""))
+        (cons "selector" (if (selector cruce) t :false))))
 
 (defun formula-de-casilla (cruce rango-valor rango-clave fila columna fila-enc)
   "La formula de una casilla del cruce.
@@ -178,8 +190,7 @@
    mayusculas y lee \"*\" y \"?\" como comodines, y una sala llamada
    \"Sala*\" ensenaba la reunion de \"Sala Azul\"."
   (let* ((clave (format nil "~@[~a&CHAR(31)&~]$A~d&CHAR(31)&~a$~d"
-                        (when (seccion cruce)
-                          (cadena-excel (nucleo:como-texto (seccion cruce))))
+                        (seccion-en-formula cruce)
                         fila columna fila-enc))
          (coincide (format nil "EXACT(~a,~a)" rango-clave clave))
          (posicion (format nil "MATCH(1,INDEX(~a*1,0),0)" coincide))

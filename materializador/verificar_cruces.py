@@ -51,8 +51,10 @@ def _ejes_de(hoja_plan):
             letra = "".join(c for c in enc["celda"] if c.isalpha())
             columnas[letra] = enc["texto"]
     filas = {}
+    primera = hoja_plan.get("fila_primera", 0)
     for celda in hoja_plan.get("celdas") or []:
-        if celda["celda"].startswith("A"):
+        # Solo las del eje: encima puede ir la etiqueta de un selector.
+        if celda["celda"].startswith("A") and int(celda["celda"][1:]) >= primera:
             filas[int(celda["celda"][1:])] = celda["valor"]
     return filas, columnas
 

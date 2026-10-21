@@ -15,9 +15,14 @@
                  (hojas-del-plano plano)))
 
 (defun ejes-de-rejilla (hoja)
-  "(VALUES FILAS COLUMNAS) de una pestana cruzada del plano."
+  "(VALUES FILAS COLUMNAS) de una pestana cruzada del plano. Las filas son
+   las celdas de la columna A desde la primera fila de la rejilla: encima
+   puede ir la etiqueta de un selector."
   (values (mapcar (lambda (c) (dato c "valor"))
-                  (remove-if-not (lambda (c) (char= #\A (char (dato c "celda") 0)))
+                  (remove-if-not (lambda (c)
+                                   (and (char= #\A (char (dato c "celda") 0))
+                                        (>= (parse-integer (dato c "celda") :start 1)
+                                            (dato hoja "fila_primera"))))
                                  (lista-del-plano (dato hoja "celdas"))))
           (mapcar (lambda (e) (dato e "texto"))
                   (remove "__eje__" (lista-del-plano (dato hoja "encabezados"))

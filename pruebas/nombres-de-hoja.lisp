@@ -125,8 +125,10 @@
     "Nombres de hoja: las pestanas de una vista partida se nombran todas igual"
   (let* ((plano (plano-de (situacion.lenguaje:situacion-llamada "HORARIO-SAUL")
                           situacion.corpus:datos-del-saul))
+         ;; La pestana con selector se nombra aparte: no es de una seccion.
          (de-profesor (remove-if-not
-                       (lambda (h) (equal (dato (dato h "cruce") "vista") "por-profesor"))
+                       (lambda (h) (and (equal (dato (dato h "cruce") "vista") "por-profesor")
+                                        (not (eq t (dato (dato h "cruce") "selector")))))
                        (hojas-del-plano plano))))
     (comprobar (= 30 (length de-profesor)) "el Saul tiene 30 pestanas de profesor")
     (dolist (hoja de-profesor)

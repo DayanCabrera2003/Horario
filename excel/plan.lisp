@@ -103,7 +103,12 @@
           "La clave compuesta de la hoja de origen por la que busca este
            cruce. Es la maquinaria de la emulacion: sin ella no hay forma
            portable de buscar por dos criterios. NIL si el cruce sale en su
-           propio archivo, que lleva valores y no busquedas."))
+           propio archivo, que lleva valores y no busquedas.")
+   (selector :accessor selector :initarg :selector :initform nil
+             :documentation
+             "Cierto si la seccion de esta pestana no esta fijada: la escoge
+              el usuario en un desplegable, y SECCION es solo el valor con
+              el que empieza (excel/pestana-con-selector.lisp)."))
   (:documentation
    "Una vista cruzada, ya resuelta a geometria.
 
@@ -408,4 +413,20 @@
           ;; en vez del PUSH que usaba esta funcion antes de H2.
           (if (eq destino 'archivos)
               (setf (archivos plan) (cons cruce (archivos plan)))
-              (setf (cruces plan) (cons cruce (cruces plan)))))))))
+              (setf (cruces plan) (cons cruce (cruces plan))))))
+      ;; Si a la vista le pueden aparecer secciones despues de generar, una
+      ;; pestana mas con la seccion en un desplegable. Empieza ensenando la
+      ;; primera seccion, igual que su pestana fija.
+      (let ((primera (find vista (reverse (cruces plan)) :key #'vista)))
+        (when (and primera (eq destino 'cruces) (lleva-selector-p a plan vista))
+          (setf (cruces plan)
+                (cons (make-instance 'cruce
+                                     :vista vista
+                                     :hoja-origen hoja
+                                     :seccion (seccion primera)
+                                     :valores-de-fila (valores-de-fila primera)
+                                     :valores-de-columna (valores-de-columna primera)
+                                     :clave (clave primera)
+                                     :selector t)
+                      (cruces plan)))
+          (anotar-selector vista))))))
