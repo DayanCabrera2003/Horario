@@ -27,6 +27,10 @@
     (escribir-archivos-de-vista a plan destino))
   destino)
 
+(defvar *campos-rechazados* nil
+  "Los campos cuyo rechazo ya se anoto en esta emision: una formula por fila
+   no puede llenar el informe con el mismo rechazo cien veces.")
+
 (defun construir-plano (a plan)
   (let ((*campos-rechazados* '()))
     (armar-plano a plan)))
@@ -524,10 +528,6 @@
     (error (e)
       (rechazar-campo campo e)
       (cadena-excel protocolo:+pieza-ausente+))))
-
-(defvar *campos-rechazados* nil
-  "Los campos cuyo rechazo ya se anoto en esta emision: una formula por fila
-   no puede llenar el informe con el mismo rechazo cien veces.")
 
 (defun rechazar-campo (campo condicion)
   "Anota, una sola vez por campo, que CAMPO no tiene traduccion."
