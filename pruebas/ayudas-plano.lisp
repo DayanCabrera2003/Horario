@@ -56,3 +56,20 @@
   (with-open-file (f ruta :external-format :utf-8)
     (let ((s (make-string (file-length f))))
       (subseq s 0 (read-sequence s f)))))
+
+;;; Planos y datos que comparten varios archivos de pruebas.
+
+(defun datos-del-caso (nombre)
+  "Los datos de un caso de pruebas/casos/, por el nombre de su variable."
+  (symbol-value (find-symbol nombre '#:situacion.casos)))
+
+(defun plano-de-notas ()
+  "El plano del caso de las notas, que tiene un parametro de entrada y uno
+   fijo, y una marca sin leyenda."
+  (plano-de (situacion.lenguaje:situacion-llamada "CASO-NOTAS")
+            (datos-del-caso "DATOS-DE-NOTAS")))
+
+(defun plano-del-saul ()
+  "El plano del horario del Saul con sus datos reales."
+  (plano-de (situacion.lenguaje:situacion-llamada "HORARIO-SAUL")
+            situacion.corpus:datos-del-saul))

@@ -7,10 +7,6 @@
 
 (in-package #:situacion.pruebas)
 
-(defun plano-del-saul ()
-  (plano-de (situacion.lenguaje:situacion-llamada "HORARIO-SAUL")
-            situacion.corpus:datos-del-saul))
-
 (definir-prueba presentacion-anchos-medidos-sobre-valores
     "Presentacion: el ancho de una columna se mide sobre lo que ensena, no sobre la formula"
   (let* ((plano (plano-del-saul))

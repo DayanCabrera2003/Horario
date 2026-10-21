@@ -8,10 +8,6 @@
 
 (in-package #:situacion.pruebas)
 
-(defun datos-del-caso (nombre)
-  "Los datos de un caso de pruebas/casos/, por el nombre de su variable."
-  (symbol-value (find-symbol nombre '#:situacion.casos)))
-
 (definir-prueba web-cadena-es-json-valido
     "Escapes: un literal de JavaScript no lleva saltos de linea crudos ni cierra el script"
   (let ((cadena (situacion.web::js-cadena

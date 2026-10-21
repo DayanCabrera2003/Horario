@@ -7,10 +7,6 @@
 
 (in-package #:situacion.pruebas)
 
-(defun plano-del-saul ()
-  (plano-de (situacion.lenguaje:situacion-llamada "HORARIO-SAUL")
-            situacion.corpus:datos-del-saul))
-
 (definir-prueba rejilla-de-entrada-lleva-el-dato
     "Rejilla de entrada: el horario del grupo del Saul lleva el dato y se edita"
   (let ((hoja (hoja-llamada (plano-del-saul) "Horario del grupo - 10-3")))

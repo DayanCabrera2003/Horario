@@ -8,10 +8,6 @@
 
 (in-package #:situacion.pruebas)
 
-(defun plano-de-notas ()
-  (plano-de (situacion.lenguaje:situacion-llamada "CASO-NOTAS")
-            (datos-del-caso "DATOS-DE-NOTAS")))
-
 (definir-prueba parametro-de-entrada-tiene-su-celda
     "Parametros: uno de entrada tiene su celda editable en la hoja de parametros"
   (let* ((hoja (hoja-llamada (plano-de-notas) "Parametros"))
