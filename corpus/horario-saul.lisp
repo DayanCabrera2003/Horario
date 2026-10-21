@@ -325,6 +325,20 @@
                       (de fila faltan) " "
                       (plural (de fila faltan) "sesion" "sesiones")))
 
+  ;; "Una asignatura de frecuencia cinco tiene que admitir turno doble"
+  ;; (aclaracion de la otra tesis, 2026-10-21): el dia de preparacion le deja
+  ;; cuatro dias para cinco sesiones, y alguno lleva dos. Sin turno doble el
+  ;; plan no tiene horario posible. La implicacion es en un solo sentido:
+  ;; admitir turno doble no dice nada de la frecuencia.
+  (marca frecuencia-cinco-sin-turno-doble
+    :en plan-por-grupo
+    :cuando    (y (= (de fila frecuencia) 5)
+                  (= (de fila turno-doble) "no"))
+    :sobre     (frecuencia turno-doble)
+    :leyenda   "La asignatura tiene frecuencia cinco y no admite turno doble"
+    :severidad problema
+    :explica   "Con frecuencia cinco y un dia de preparacion quedan cuatro dias: tiene que admitir turno doble")
+
   (marca frecuencia-excedida
     :en plan-por-grupo
     :cuando    (< (de fila faltan) 0)
