@@ -94,8 +94,8 @@
 
 (defun anotar-selector (vista)
   "Lo que la pestana con selector cambia en la particion, dicho en el informe."
-  (protocolo:rebajar-en-informe
-   'protocolo:con-particion-de-vista (format nil "~a (elegir)" (nucleo:etiqueta vista)) :emula
+  (protocolo:anotar-en-informe
+   :emula 'protocolo:con-particion-de-vista
    (format nil "la pestana ~a (elegir) ensena la seccion que se escoja en su~@
                 desplegable, y una seccion anadida despues de generar se ve ahi~@
                 sin regenerar. Limite: sin dominio declarado, el desplegable lista~@

@@ -61,17 +61,14 @@
     (when (and (nucleo:es-entrada vista) (nucleo:cruzada-p vista))
       (let ((motivo (motivo-sin-rejilla-de-entrada a plan vista)))
         (if motivo
-            ;; REBAJAR-EN-INFORME anade la entrada si no hay otra de esta
-            ;; rejilla: es la forma que tiene una arquitectura de decir algo
-            ;; de un nodo concreto.
-            (protocolo:rebajar-en-informe
-             'protocolo:con-entrada (nucleo:etiqueta vista) :degrada
+            (protocolo:anotar-en-informe
+             :degrada 'protocolo:con-entrada
              (format nil "la rejilla ~a es de solo lectura: ~a; se escribe en la hoja de datos"
                      (nucleo:etiqueta vista) motivo))
             (progn
               (push vista (rejillas-de-entrada plan))
-              (protocolo:rebajar-en-informe
-               'protocolo:con-entrada (nucleo:etiqueta vista) :emula
+              (protocolo:anotar-en-informe
+               :emula 'protocolo:con-entrada
                (format nil "en la rejilla ~a se escribe y la hoja de datos copia de ella:~@
                             una celda es formula o dato, no las dos. Limite: esa columna~@
                             de la hoja de datos deja de poder escribirse."
