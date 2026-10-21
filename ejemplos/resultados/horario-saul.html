@@ -360,6 +360,8 @@ D["carga-diaria"] = [
   {"profesor": "Profesor de AL/AC en 10-4", "dia": "V"}
 ];
 const CRECEN = ["asignaturas", "plan-por-grupo", "profesores", "disponibilidad", "carga-diaria"];
+const P = {"tope-diario": 5};
+const PARAMETROS = [{n: "tope-diario", e: "Tope de sesiones al dia por profesor", tipo: "entero"}];
 
 // --- Coercion, identica a la del evaluador de referencia del nucleo ---
 function VACIO(x){ return x === null || x === undefined || x === ''; }
@@ -608,7 +610,7 @@ const MARCAS = [
    cond: (f) => ((!VACIO(V(f["asignatura"]))) && IG(V(f["profesor-vive-lejos"]),"si") && IG(V(f["turno"]),1)),
    explica: (f) => "Se preferiria no darle el primer turno a un profesor que vive lejos"},
   {nombre: "pasa-del-tope-diario", leyenda: "pasa del tope diario", coleccion: "carga-diaria", clase: "advertencia", campos: ["sesiones"],
-   cond: (f) => (N(V(f["sesiones"])) > N(5)),
+   cond: (f) => (N(V(f["sesiones"])) > N(P["tope-diario"])),
    explica: (f) => ["Da ", V(f["sesiones"]), " sesiones ese dia"].map(T).join("")},
   {nombre: "turno-libre", leyenda: "turno libre", coleccion: "casillas", clase: "informativa", campos: ["asignatura"],
    cond: (f) => VACIO(V(f["asignatura"])),
@@ -1164,6 +1166,28 @@ function actualizar(){
   for (const f of ACTUALIZADORES) f();
 }
 
+// Los parametros de entrada, antes que las vistas: una fila por parametro,
+// con su etiqueta y un control. El control es el mismo de cualquier campo de
+// entrada, y escribe en P, que es lo que leen las derivaciones.
+function dibujarParametros(app){
+  const seccion = document.createElement('section');
+  seccion.id = 'parametros';
+  const titulo = document.createElement('h2');
+  titulo.textContent = 'Parametros';
+  seccion.appendChild(titulo);
+  const tabla = document.createElement('table');
+  for (const p of PARAMETROS) {
+    const tr = document.createElement('tr');
+    const th = document.createElement('th');
+    th.textContent = p.e;
+    tr.appendChild(th);
+    tr.appendChild(controlDe('__parametros__', p, P, 'parametro.' + p.n));
+    tabla.appendChild(tr);
+  }
+  seccion.appendChild(tabla);
+  app.appendChild(seccion);
+}
+
 // Cada vista es una seccion con su titulo, un ancla para el indice y un
 // enlace para volver arriba. El indice de la pagina es la navegacion: un
 // enlace por vista, en el orden en que se declararon.
@@ -1171,6 +1195,12 @@ function dibujarVistas(app){
   const indice = document.getElementById('indice');
   if (indice) {
     indice.textContent = '';
+    if (PARAMETROS.length) {
+      const a = document.createElement('a');
+      a.href = '#parametros';
+      a.textContent = 'Parametros';
+      indice.appendChild(a);
+    }
     for (const o of ORDEN) {
       const v = o.tipo === 'cruce' ? CRUCES[o.indice] : TABLAS[o.indice];
       const a = document.createElement('a');
@@ -1179,6 +1209,7 @@ function dibujarVistas(app){
       indice.appendChild(a);
     }
   }
+  if (PARAMETROS.length) dibujarParametros(app);
   for (const o of ORDEN) {
     const v = o.tipo === 'cruce' ? CRUCES[o.indice] : TABLAS[o.indice];
     const seccion = document.createElement('section');
